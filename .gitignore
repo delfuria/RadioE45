@@ -1,0 +1,32 @@
+## Target: .NET Core / .NET MAUI / Visual Studio
+
+# Cartelle di output e build
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+
+# File utente e configurazioni locali di Visual Studio
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+_ReSharper*/
+
+# Cache dei pacchetti e strumenti NuGet
+*.nuget.props
+*.nuget.targets
+packages/
+node_modules/
+
+# File di log e diagnostica
+*.log
+*.clog
+*.tlog
+
+# File del sistema operativo (locali)
+.DS_Store
+Thumbs.db
+
+# Configurazioni di ambiente sensibili (se usate per chiavi API di streaming)
+.env
+*.env.local
