@@ -9,9 +9,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
-#if MACCATALYST
             .UseMauiCommunityToolkitMediaElement()
-#endif
             .UseMauiCommunityToolkit()
             .UseSkiaSharp()
             .ConfigureFonts(fonts =>

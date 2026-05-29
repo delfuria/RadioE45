@@ -2,12 +2,8 @@ using RadioE45.Logic;
 using System.Timers;
 using System;
 using Microsoft.Maui.Dispatching;
-using CommunityToolkit.Maui.Alerts;
-#if MACCATALYST
 using CommunityToolkit.Maui.Views;
-#else
-using LibVLCSharp.Shared;
-#endif
+using CommunityToolkit.Maui.Alerts; // For MainThread
 
 namespace RadioE45.Views;
 
@@ -18,61 +14,58 @@ public partial class RadioPage : ContentPage
     private System.Timers.Timer timer;
     private Random random = new Random();
     private int barCount = 64;
-    private float[] currentLevels;
-    private bool isPlaying = true;
-    private bool isAnimating;
 
-#if !MACCATALYST
-    private LibVLC _libVLC;
-    private LibVLCSharp.Shared.MediaPlayer _vlcPlayer;
-#endif
+    // Field to hold the current audio levels for sliding animation
+    private float[] currentLevels;
+
+
+    private bool isPlaying = true;
+
+    private bool isAnimating;
 
     public RadioPage(RadioStation radioStation)
     {
         InitializeComponent();
 
         this.radioStation = radioStation;
-
+        
+        // MediaPlayer.Source = radioStation.URL;
         RadioName.Text = radioStation.Name;
         RadioImage.Source = radioStation.IconPath;
 
+        // Initialize the currentLevels array (starting with zeros)
         currentLevels = new float[barCount];
         for (int i = 0; i < barCount; i++)
+        {
             currentLevels[i] = 0f;
+        }
 
+        // Start a timer to update audio levels every 200ms
         timer = new System.Timers.Timer(60);
         timer.Elapsed += Timer_Elapsed;
         timer.Start();
 
         FirstColor.Color = radioStation.LightColor.Color;
         SecondColor.Color = radioStation.DarkColor.Color;
-
-#if MACCATALYST
-        MediaPlayer.MediaFailed += async (s, e) =>
+        MediaPlayer.MediaFailed += async (s,e) =>
         {
             string errorMessage = $"Faild to load media: {e.ErrorMessage} {radioStation.Name}";
+
+            // Optional: Show a toast notification (for a small popup)
             await Toast.Make(errorMessage, CommunityToolkit.Maui.Core.ToastDuration.Long).Show();
         };
-#else
-        Core.Initialize();
-        _libVLC = new LibVLC();
-        _vlcPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
-
-        _vlcPlayer.EncounteredError += async (s, e) =>
-        {
-            await MainThread.InvokeOnMainThreadAsync(async () =>
-            {
-                await Toast.Make($"Errore riproduzione: {radioStation.Name}", CommunityToolkit.Maui.Core.ToastDuration.Long).Show();
-            });
-        };
-#endif
     }
 
     private void Timer_Elapsed(object sender, ElapsedEventArgs e)
     {
+
+        // Slide the audio data: shift currentLevels left by one index
         Array.Copy(currentLevels, 1, currentLevels, 0, barCount - 1);
+        // Generate a new random level for the rightmost bar
         currentLevels[barCount - 1] = (float)random.NextDouble();
 
+
+        // Update the visualizer on the main thread
         MainThread.BeginInvokeOnMainThread(() =>
         {
             AudioVisualizer.UpdateAudioLevels(currentLevels);
@@ -83,20 +76,12 @@ public partial class RadioPage : ContentPage
     {
         if (isPlaying)
         {
-#if MACCATALYST
             MediaPlayer.Pause();
-#else
-            _vlcPlayer.Pause();
-#endif
             MediaActionButton.Source = "play_icon.png";
         }
         else
         {
-#if MACCATALYST
             MediaPlayer.Play();
-#else
-            _vlcPlayer.Play();
-#endif
             MediaActionButton.Source = "pause_icon.png";
         }
 
@@ -105,15 +90,10 @@ public partial class RadioPage : ContentPage
 
     private void SkipToEnd_Clicked(object sender, EventArgs e)
     {
-#if MACCATALYST
         MediaPlayer.Source = null;
         MediaPlayer.Source = MediaSource.FromUri(radioStation.URL);
+
         MediaPlayer.Play();
-#else
-        var media = new Media(_libVLC, new Uri(radioStation.URL));
-        _vlcPlayer.Media = media;
-        _vlcPlayer.Play();
-#endif
         MediaActionButton.Source = "pause_icon.png";
         isPlaying = true;
     }
@@ -122,61 +102,54 @@ public partial class RadioPage : ContentPage
     {
         base.OnAppearing();
 
-#if MACCATALYST
         MediaPlayer.Source = MediaSource.FromUri(radioStation.URL);
         MediaPlayer.Play();
-#else
-        var media = new Media(_libVLC, new Uri(radioStation.URL));
-        _vlcPlayer.Media = media;
-        _vlcPlayer.Play();
-#endif
         isPlaying = true;
+
         isAnimating = true;
         AnimateGradient();
     }
 
     protected override void OnDisappearing()
     {
-#if MACCATALYST
         MediaPlayer.Stop();
-#else
-        _vlcPlayer.Stop();
-#endif
         isPlaying = false;
         isAnimating = false;
         base.OnDisappearing();
+
     }
 
     private async void AnimateGradient()
     {
         while (isAnimating)
         {
-            await AnimateOffset(0, 0.3, 3000, Easing.SinInOut);
-            await AnimateOffset(0.3, 0, 3000, Easing.SinInOut);
+            await AnimateOffset(0, 0.3, 3000, Easing.SinInOut); // Smooth forward animation
+            await AnimateOffset(0.3, 0, 3000, Easing.SinInOut); // Smooth backward animation
         }
     }
 
     private async Task AnimateOffset(double start, double end, int duration, Easing easing)
     {
         double timeElapsed = 0;
-        int frameRate = 60;
-        double frameTime = 1000.0 / frameRate;
+        int frameRate = 60; // 60 FPS for smoothness
+        double frameTime = 1000.0 / frameRate; // Milliseconds per frame
 
         while (timeElapsed < duration)
         {
             if (!isAnimating) return;
 
-            double progress = timeElapsed / duration;
-            double easedProgress = easing.Ease(progress);
-            double newOffset = Lerp(start, end, easedProgress);
+            double progress = timeElapsed / duration; // Normalize progress (0 to 1)
+            double easedProgress = easing.Ease(progress); // Apply easing
+            double newOffset = Lerp(start, end, easedProgress); // Interpolate
 
             FirstColor.Offset = (float)newOffset;
-            SecondColor.Offset = (float)(1 - newOffset);
+            SecondColor.Offset = (float)(1 - newOffset); // Reverse for smooth effect
 
             await Task.Delay((int)frameTime);
-            timeElapsed += frameTime;
+            timeElapsed += frameTime; // Increment time
         }
 
+        // Ensure it finishes exactly at the end
         FirstColor.Offset = (float)end;
         SecondColor.Offset = (float)(1 - end);
     }
@@ -186,3 +159,4 @@ public partial class RadioPage : ContentPage
         return start + (end - start) * t;
     }
 }
+

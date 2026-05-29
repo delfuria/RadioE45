@@ -4,11 +4,6 @@
 	<!-- Permissions -->
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />
-	<!-- Mantiene la CPU attiva durante lo streaming VLC -->
-	<uses-permission android:name="android.permission.WAKE_LOCK" />
-	<!-- Permette la riproduzione audio in background come foreground service -->
-	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
 	<application
         android:allowBackup="true"
