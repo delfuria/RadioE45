@@ -31,7 +31,7 @@
 		<ApplicationTitle>RadioE45</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.radioe45</ApplicationId>
+		<ApplicationId>com.delfo.radioe45</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
