@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.RadioPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:RadioE45.Views"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    Title="RadioPage">
+    <ContentPage.Background>
+        <LinearGradientBrush>
+
+            <GradientStop x:Name="FirstColor" Offset="0.0" Color="#552586" />
+
+            <GradientStop x:Name="SecondColor" Offset="1.0" Color="#B589D6" />
+
+        </LinearGradientBrush>
+    </ContentPage.Background>
+    <VerticalStackLayout Padding="20" Spacing="20">
+
+        <Label
+            x:Name="RadioName"
+            FontAttributes="Bold"
+            FontSize="34"
+            HorizontalOptions="Center">
+            <Label.Shadow>
+                <Shadow
+                    Brush="Black"
+                    Opacity="0.6"
+                    Radius="10"
+                    Offset="5,5" />
+            </Label.Shadow>
+        </Label>
+
+
+            <Image
+                x:Name="RadioImage"
+                Margin="20"
+                Aspect="AspectFit"
+                HorizontalOptions="Center"
+                MaximumHeightRequest="{OnPlatform Android=250,
+                                                  iOS=250,
+                                                  WinUI=300}"
+                MaximumWidthRequest="{OnPlatform Android=250,
+                                                 iOS=250,
+                                                 WinUI=300}"
+                Source="kan_88.png"
+                VerticalOptions="Center">
+                <Image.Shadow>
+                    <Shadow
+                        Brush="Black"
+                        Opacity="0.9"
+                        Radius="10"
+                        Offset="5,5" />
+                </Image.Shadow>
+            </Image>
+
+
+
+
+        <local:AudioVisualizerView
+            x:Name="AudioVisualizer"
+            HeightRequest="20"
+            WidthRequest="300" />
+
+
+
+        <HorizontalStackLayout
+            Padding="10"
+            HorizontalOptions="Center"
+            Spacing="20">
+
+            <ImageButton
+                x:Name="MediaActionButton"
+                BackgroundColor="Transparent"
+                Clicked="MediaAction_Clicked"
+                HeightRequest="{OnPlatform Android=80,
+                                           iOS=90,
+                                           WinUI=100}"
+                HorizontalOptions="Center"
+                Source="pause_icon.png"
+                VerticalOptions="End"
+                WidthRequest="{OnPlatform Android=80,
+                                          iOS=90,
+                                          WinUI=100}" />
+
+            <ImageButton
+                BackgroundColor="Transparent"
+                Clicked="SkipToEnd_Clicked"
+                HeightRequest="{OnPlatform Android=80,
+                                           iOS=90,
+                                           WinUI=100}"
+                HorizontalOptions="Center"
+                Source="skip_icon.png"
+                VerticalOptions="End"
+                WidthRequest="{OnPlatform Android=80,
+                                          iOS=90,
+                                          WinUI=100}" />
+        </HorizontalStackLayout>
+
+
+        <toolkit:MediaElement
+            x:Name="MediaPlayer"
+            HeightRequest="300"
+            HorizontalOptions="Center"
+            IsVisible="False"
+            ShouldAutoPlay="True"
+            VerticalOptions="Center" />
+
+    </VerticalStackLayout>
+</ContentPage>

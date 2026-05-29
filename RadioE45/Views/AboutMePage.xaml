@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.AboutMePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="AboutMePage">
+
+    <ContentPage.Background>
+        <LinearGradientBrush>
+            <GradientStop Offset="0.0" Color="#80CBC4" />
+            <GradientStop Offset="1.0" Color="#B4EBE6" />
+        </LinearGradientBrush>
+    </ContentPage.Background>
+
+    <VerticalStackLayout HorizontalOptions="Center" Spacing="20">
+
+        <!--  Scaled App Name  -->
+        <Label
+            FontSize="28"
+            HorizontalOptions="Center"
+            Text="Radio E45"
+            VerticalOptions="Center" />
+
+        <!--  Author Label  -->
+        <HorizontalStackLayout HorizontalOptions="Center">
+            <Label
+                FontSize="16"
+                Text="By "
+                VerticalOptions="Center" />
+            <Label
+                FontSize="16"
+                Text=" Delfo"
+                TextColor="Red"
+                VerticalOptions="Center" />
+        </HorizontalStackLayout>
+
+        <!--  Share This App  -->
+        <Label
+            FontSize="18"
+            HorizontalOptions="Center"
+            Text="Share this app"
+            VerticalOptions="Center" />
+
+        <ImageButton
+            BackgroundColor="Transparent"
+            Clicked="Share_Clicked"
+            HeightRequest="{OnPlatform Android=100,
+                                       iOS=150,
+                                       WinUI=150}"
+            HorizontalOptions="Center"
+            Source="radio.png"
+            WidthRequest="{OnPlatform Android=100,
+                                      iOS=150,
+                                      WinUI=150}" />
+
+        <!--  Support Me  -->
+        <Label
+            FontSize="18"
+            HorizontalOptions="Center"
+            Text="Support me"
+            VerticalOptions="Center" />
+
+        <ImageButton
+            BackgroundColor="Transparent"
+            Clicked="SupportMe_Clicked"
+            HeightRequest="{OnPlatform Android=100,
+                                       iOS=150,
+                                       WinUI=150}"
+            HorizontalOptions="Center"
+            Source="weezard12.png"
+            WidthRequest="{OnPlatform Android=100,
+                                      iOS=150,
+                                      WinUI=150}" />
+
+    </VerticalStackLayout>
+
+
+</ContentPage>

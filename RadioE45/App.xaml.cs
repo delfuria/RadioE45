@@ -1,17 +1,14 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿namespace RadioE45;
 
-namespace RadioE45
+public partial class App : Application
 {
-    public partial class App : Application
+    public App()
     {
-        public App()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+    }
 
-        protected override Window CreateWindow(IActivationState? activationState)
-        {
-            return new Window(new AppShell());
-        }
+    protected override Window CreateWindow(IActivationState? activationState)
+    {
+        return new Window(new MainPage()) { Width=400, Height=850};
     }
 }
