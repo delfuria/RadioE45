@@ -64,7 +64,90 @@
             HeightRequest="20"
             WidthRequest="300" />
 
+        <!-- Now Playing Card -->
+        <Border
+            Padding="12"
+            BackgroundColor="#33000000"
+            HorizontalOptions="Fill"
+            StrokeThickness="0">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="14" />
+            </Border.StrokeShape>
+            <Grid
+                ColumnDefinitions="80,*"
+                ColumnSpacing="12"
+                RowDefinitions="Auto,Auto,Auto"
+                RowSpacing="5">
 
+                <!--  Album Art  -->
+                <Border
+                    Grid.RowSpan="3"
+                    Grid.Column="0"
+                    HeightRequest="80"
+                    StrokeThickness="0"
+                    WidthRequest="80">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8" />
+                    </Border.StrokeShape>
+                    <Image
+                        x:Name="NowPlayingArt"
+                        Aspect="AspectFill"
+                        Source="iconblank.png" />
+                </Border>
+
+                <!--  Title  -->
+                <Label
+                    x:Name="NowPlayingTitle"
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    FontAttributes="Bold"
+                    FontSize="16"
+                    LineBreakMode="TailTruncation"
+                    Text="--"
+                    TextColor="White"
+                    VerticalOptions="End" />
+
+                <!--  Artist  -->
+                <Label
+                    x:Name="NowPlayingArtist"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    FontSize="13"
+                    LineBreakMode="TailTruncation"
+                    Text="--"
+                    TextColor="#CCFFFFFF"
+                    VerticalOptions="Start" />
+
+                <!--  Progress row  -->
+                <Grid
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    ColumnDefinitions="Auto,*,Auto"
+                    ColumnSpacing="6">
+                    <Label
+                        x:Name="NowPlayingElapsed"
+                        FontSize="11"
+                        Text="00:00"
+                        TextColor="#AAFFFFFF"
+                        VerticalOptions="Center" />
+                    <ProgressBar
+                        x:Name="NowPlayingProgress"
+                        Grid.Column="1"
+                        BackgroundColor="#44FFFFFF"
+                        Progress="0"
+                        ProgressColor="White"
+                        VerticalOptions="Center" />
+                    <Label
+                        x:Name="NowPlayingDuration"
+                        Grid.Column="2"
+                        FontSize="11"
+                        Text="00:00"
+                        TextColor="#AAFFFFFF"
+                        VerticalOptions="Center" />
+                </Grid>
+
+            </Grid>
+        </Border>
 
         <HorizontalStackLayout
             Padding="10"

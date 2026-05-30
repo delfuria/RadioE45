@@ -8,6 +8,7 @@ namespace RadioE45.Logic
 {
     public class RadioStation
     {
+        public int StationId { get; set; }
         public string Name { get; set; }
         public string URL { get; set; }
         public string IconPath { get; set; }
@@ -15,8 +16,9 @@ namespace RadioE45.Logic
         public GradientStop LightColor { get; set; }
         public GradientStop DarkColor { get; set; }
 
-        public RadioStation(string name, string url, string iconPath, Color lightColor, Color darkColor)
+        public RadioStation(int stationId, string name, string url, string iconPath, Color lightColor, Color darkColor)
         {
+            this.StationId = stationId;
             this.Name = name;
             this.URL = url;
             this.IconPath = iconPath;
@@ -24,8 +26,10 @@ namespace RadioE45.Logic
             LightColor = new GradientStop(lightColor, 0);
             DarkColor = new GradientStop(darkColor, 1);
         }
-        public RadioStation(string name, string url, string iconPath, string lightColor, string darkColor)
+
+        public RadioStation(int stationId, string name, string url, string iconPath, string lightColor, string darkColor)
         {
+            this.StationId = stationId;
             this.Name = name;
             this.URL = url;
             this.IconPath = iconPath;

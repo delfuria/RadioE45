@@ -17,6 +17,8 @@
   <component name="ChangeListManager">
     <list default="true" id="aec9f8fa-1e1d-4dfe-882a-158d8b49a230" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Logic/RadioStation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Logic/RadioStation.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Views/MainPage.xaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Views/MainPage.xaml.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" afterDir="false" />
     </list>
@@ -31,6 +33,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/d6224bbc80d54652867764c42fafd9694c8110/35/a71e238d/Task.cs" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="InvalidFacetManager">
     <ignored-facets>
       <facet id="RadioE45/invalid/Android Facet - RadioE45" />
@@ -42,61 +47,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0001476049023874" />
-      <entry key="S2" value="1.11894313243688" />
-      <entry key="S5" value="1.667524483797803" />
-      <entry key="S10" value="2.60307630707051" />
-      <entry key="S30" value="4.830637698793105" />
-      <entry key="S60" value="6.09083085407422" />
-      <entry key="M2" value="6.943299928993731" />
-      <entry key="M5" value="7.549440492611623" />
-      <entry key="M10" value="7.76975788080977" />
-      <entry key="M15" value="7.845377742401328" />
-      <entry key="M30" value="7.9221187857791335" />
-      <entry key="H1" value="7.960915671442393" />
-      <entry key="H2" value="7.980421754174536" />
-      <entry key="H4" value="7.990201837728652" />
-      <entry key="D1" value="7.9983657158745824" />
-      <entry key="W1" value="7.999766500032523" />
+      <entry key="MS100" value="4.66841660485263E-47" />
+      <entry key="MS500" value="8.758607879690875E-10" />
+      <entry key="S2" value="0.009110781663476796" />
+      <entry key="S5" value="0.23138721572529936" />
+      <entry key="S10" value="0.687803072779127" />
+      <entry key="S30" value="1.784674311131643" />
+      <entry key="S60" value="2.7418779361470142" />
+      <entry key="M2" value="3.61659115464086" />
+      <entry key="M5" value="4.371562344192648" />
+      <entry key="M10" value="4.8515382438496175" />
+      <entry key="M15" value="5.4200911338862925" />
+      <entry key="M30" value="7.156707704868415" />
+      <entry key="H1" value="9.20465264678932" />
+      <entry key="H2" value="10.810404096145243" />
+      <entry key="H4" value="11.820310252536176" />
+      <entry key="D1" value="12.790423363025846" />
+      <entry key="W1" value="12.969726563211477" />
     </decayedCancelled>
     <decayedSelected>
-      <entry key="MS100" value="0.29936967615473214" />
-      <entry key="MS500" value="0.7857980213531651" />
-      <entry key="S2" value="1.0548976400682726" />
-      <entry key="S5" value="1.5731828015025362" />
-      <entry key="S10" value="2.300765922388062" />
-      <entry key="S30" value="3.865231140006071" />
-      <entry key="S60" value="4.719975982296893" />
-      <entry key="M2" value="5.2931291442619015" />
-      <entry key="M5" value="5.699004264174671" />
-      <entry key="M10" value="5.846254669037583" />
-      <entry key="M15" value="5.8967652788867495" />
-      <entry key="M30" value="5.94800958773674" />
-      <entry key="H1" value="5.973910746963481" />
-      <entry key="H2" value="5.986931762989012" />
-      <entry key="H4" value="5.9934599664771" />
-      <entry key="D1" value="5.998909171828417" />
-      <entry key="W1" value="5.999844147245373" />
+      <entry key="MS100" value="1.0000000000000007" />
+      <entry key="MS500" value="1.0008970081481388" />
+      <entry key="S2" value="1.2442542963163017" />
+      <entry key="S5" value="2.116145594423018" />
+      <entry key="S10" value="3.0636968096387154" />
+      <entry key="S30" value="5.084658629953887" />
+      <entry key="S60" value="7.299568530262487" />
+      <entry key="M2" value="10.023170057908322" />
+      <entry key="M5" value="13.772415309807386" />
+      <entry key="M10" value="16.085613484619973" />
+      <entry key="M15" value="17.334283947000348" />
+      <entry key="M30" value="19.566569475601042" />
+      <entry key="H1" value="21.61222068943938" />
+      <entry key="H2" value="23.08318959614806" />
+      <entry key="H4" value="23.976932781879718" />
+      <entry key="D1" value="24.819630092396995" />
+      <entry key="W1" value="24.973979075716233" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.8721480282542448" />
-      <entry key="MS500" value="1.2486992963466854" />
-      <entry key="S2" value="1.9222482785662587" />
-      <entry key="S5" value="3.076678487279732" />
-      <entry key="S10" value="4.776856333929565" />
-      <entry key="S30" value="8.617289718659164" />
-      <entry key="S60" value="10.760738588374782" />
-      <entry key="M2" value="12.207664288449221" />
-      <entry key="M5" value="13.235863717494055" />
-      <entry key="M10" value="13.609525327232062" />
-      <entry key="M15" value="13.737773094248636" />
-      <entry key="M30" value="13.86792049342483" />
-      <entry key="H1" value="13.933716680592806" />
-      <entry key="H2" value="13.966797190147155" />
-      <entry key="H4" value="13.983383275080927" />
-      <entry key="D1" value="13.997228415309397" />
-      <entry key="W1" value="13.99960400711745" />
+      <entry key="MS100" value="6.825096849187115E-16" />
+      <entry key="MS500" value="9.342147879748689E-4" />
+      <entry key="S2" value="0.2734237568829186" />
+      <entry key="S5" value="1.529354328003355" />
+      <entry key="S10" value="3.1651411360335358" />
+      <entry key="S30" value="6.574324357474527" />
+      <entry key="S60" value="9.84531852939093" />
+      <entry key="M2" value="13.508559467049944" />
+      <entry key="M5" value="18.069948831606013" />
+      <entry key="M10" value="20.893167656485918" />
+      <entry key="M15" value="22.722862278905602" />
+      <entry key="M30" value="26.705969226213156" />
+      <entry key="H1" value="30.807639254564496" />
+      <entry key="H2" value="33.888787271151465" />
+      <entry key="H4" value="35.794784764197445" />
+      <entry key="D1" value="37.60963530639782" />
+      <entry key="W1" value="37.9436456853613" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -167,7 +172,7 @@
       <updated>1780078346374</updated>
       <workItem from="1780078348974" duration="27000" />
       <workItem from="1780083665134" duration="438000" />
-      <workItem from="1780163028465" duration="491000" />
+      <workItem from="1780163028465" duration="4847000" />
     </task>
     <servers />
   </component>
@@ -195,16 +200,81 @@
         </breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
-          <line>111</line>
-          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Lambda expression inside Method 'Timer_Elapsed'">
+          <line>218</line>
+          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Method 'HandleSsePayloadAsync'">
             <startOffsets>
-              <option value="3144" />
+              <option value="7114" />
             </startOffsets>
             <endOffsets>
-              <option value="3193" />
+              <option value="7151" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="5" />
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
+          <line>175</line>
+          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Method 'ProcessSseMessageAsync'">
+            <startOffsets>
+              <option value="5344" />
+            </startOffsets>
+            <endOffsets>
+              <option value="5385" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
+          <line>189</line>
+          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Method 'ProcessSseMessageAsync'">
+            <startOffsets>
+              <option value="5982" />
+            </startOffsets>
+            <endOffsets>
+              <option value="6025" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
+          <line>183</line>
+          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Method 'ProcessSseMessageAsync'">
+            <startOffsets>
+              <option value="5664" />
+            </startOffsets>
+            <endOffsets>
+              <option value="5712" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
+          <line>181</line>
+          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Method 'ProcessSseMessageAsync'">
+            <startOffsets>
+              <option value="5571" />
+            </startOffsets>
+            <endOffsets>
+              <option value="5625" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="16" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
+          <line>193</line>
+          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Method 'ProcessSseMessageAsync'">
+            <startOffsets>
+              <option value="6186" />
+            </startOffsets>
+            <endOffsets>
+              <option value="6228" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="17" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

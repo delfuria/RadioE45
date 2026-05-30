@@ -1,0 +1,294 @@
+{
+  "station": {
+    "id": 7,
+    "name": "Radio E45",
+    "shortcode": "radioe45",
+    "description": "",
+    "frontend": "icecast",
+    "backend": "liquidsoap",
+    "timezone": "Europe/Rome",
+    "listen_url": "https://radioe45.ddns.net:8060/radio.mp3",
+    "url": "https://radioe45.ddns.net",
+    "public_player_url": "https://radioe45.ddns.net/public/radioe45",
+    "playlist_pls_url": "https://radioe45.ddns.net/public/radioe45/playlist.pls",
+    "playlist_m3u_url": "https://radioe45.ddns.net/public/radioe45/playlist.m3u",
+    "is_public": true,
+    "mounts": [
+      {
+        "id": 7,
+        "name": "/radio.mp3 (128kbps MP3)",
+        "url": "https://radioe45.ddns.net:8060/radio.mp3",
+        "bitrate": 128,
+        "format": "mp3",
+        "listeners": {
+          "total": 1,
+          "unique": 1,
+          "current": 1
+        },
+        "path": "/radio.mp3",
+        "is_default": true
+      }
+    ],
+    "remotes": [],
+    "hls_enabled": false,
+    "hls_is_default": false,
+    "hls_url": null,
+    "hls_listeners": 0
+  },
+  "listeners": {
+    "total": 1,
+    "unique": 1,
+    "current": 1
+  },
+  "live": {
+    "is_live": false,
+    "streamer_name": "",
+    "broadcast_start": null,
+    "art": null
+  },
+  "now_playing": {
+    "sh_id": 218879,
+    "played_at": 1780163479,
+    "duration": 669,
+    "playlist": "ANNI 70 ITA",
+    "streamer": "",
+    "is_request": false,
+    "song": {
+      "id": "25916e7ec1b2edf1e6ba8810d405da17",
+      "art": "https://radioe45.ddns.net/api/station/radioe45/art/335db8c462b4b8beac171466-1775343716.jpg",
+      "custom_fields": [],
+      "text": "Adriano Pappalardo - Ricominciamo",
+      "artist": "Adriano Pappalardo",
+      "title": "Ricominciamo",
+      "album": "Ricominciamo",
+      "genre": "",
+      "isrc": "",
+      "lyrics": ""
+    },
+    "elapsed": 493,
+    "remaining": 176
+  },
+  "playing_next": {
+    "cued_at": 1780163467,
+    "played_at": 1780164140,
+    "duration": 142,
+    "playlist": "ITA-INT MUSICA D'OGGI",
+    "is_request": false,
+    "song": {
+      "id": "66f635db86d717d82f79526f96fa36cc",
+      "art": "https://radioe45.ddns.net/api/station/radioe45/art/d8cecd5f150996190e20829b-1778372180.jpg",
+      "custom_fields": [],
+      "text": "Geolier - 1H",
+      "artist": "Geolier",
+      "title": "1H",
+      "album": "TUTTO È POSSIBILE",
+      "genre": "",
+      "isrc": "",
+      "lyrics": ""
+    }
+  },
+  "song_history": [
+    {
+      "sh_id": 218878,
+      "played_at": 1780163460,
+      "duration": 22,
+      "playlist": "JINGLE ",
+      "streamer": "",
+      "is_request": false,
+      "song": {
+        "id": "4afb5868fd2ca9c2e98fb5144552fd74",
+        "art": "https://radioe45.ddns.net/api/station/radioe45/art/b11bab9fdbc56dc3d2dc05c3",
+        "custom_fields": [],
+        "text": " - JINGLE 7",
+        "artist": "",
+        "title": "JINGLE 7",
+        "album": "",
+        "genre": "",
+        "isrc": "",
+        "lyrics": ""
+      }
+    },
+    {
+      "sh_id": 218877,
+      "played_at": 1780163235,
+      "duration": 228,
+      "playlist": "ANNI 70 ITA",
+      "streamer": "",
+      "is_request": false,
+      "song": {
+        "id": "5e5eacd1af57a431ea01d08fa8ece14f",
+        "art": "https://radioe45.ddns.net/api/station/radioe45/art/192cc7a248c2c3fa401a1384-1775343669.jpg",
+        "custom_fields": [],
+        "text": "Pooh - Pensiero - 2014 Remaster",
+        "artist": "Pooh",
+        "title": "Pensiero - 2014 Remaster",
+        "album": "Pensiero - 2014 Remaster",
+        "genre": "",
+        "isrc": "",
+        "lyrics": ""
+      }
+    },
+    {
+      "sh_id": 218875,
+      "played_at": 1780163023,
+      "duration": 214,
+      "playlist": "ANNI 70 ITA",
+      "streamer": "",
+      "is_request": false,
+      "song": {
+        "id": "07941aee84c1d99dfd706fc0b6cef95c",
+        "art": "https://radioe45.ddns.net/api/station/radioe45/art/e4da9b5d3849cf34b7327225-1775343491.jpg",
+        "custom_fields": [],
+        "text": "Pupo - Gelato Al Cioccolato",
+        "artist": "Pupo",
+        "title": "Gelato Al Cioccolato",
+        "album": "Gelato Al Cioccolato",
+        "genre": "",
+        "isrc": "",
+        "lyrics": ""
+      }
+    },
+    {
+      "sh_id": 218874,
+      "played_at": 1780163012,
+      "duration": 12,
+      "playlist": "JINGLE ",
+      "streamer": "",
+      "is_request": false,
+      "song": {
+        "id": "a123cb5969d7363bb7ae5ddc2802e79f",
+        "art": "https://radioe45.ddns.net/api/station/radioe45/art/29c34d7a29a2b85320ae1981",
+        "custom_fields": [],
+        "text": " - jingle 4",
+        "artist": "",
+        "title": "jingle 4",
+        "album": "",
+        "genre": "",
+        "isrc": "",
+        "lyrics": ""
+      }
+    },
+    {
+      "sh_id": 218873,
+      "played_at": 1780162770,
+      "duration": 245,
+      "playlist": "ANNI 70 ITA",
+      "streamer": "",
+      "is_request": false,
+      "song": {
+        "id": "51d1c0f00ef441e18aeed79ff9394364",
+        "art": "https://radioe45.ddns.net/api/station/radioe45/art/8a62ec4ee1ccc9777c859cad-1775343391.jpg",
+        "custom_fields": [],
+        "text": "Vasco Rossi - Albachiara",
+        "artist": "Vasco Rossi",
+        "title": "Albachiara",
+        "album": "Albachiara",
+        "genre": "",
+        "isrc": "",
+        "lyrics": ""
+      }
+    },
+    {
+      "sh_id": 218871,
+      "played_at": 1780162593,
+      "duration": 179,
+      "playlist": "ANNI 70 ITA",
+      "streamer": "",
+      "is_request": false,
+      "song": {
+        "id": "d9f2bf928d42ef9def0d93944cc3a143",
+        "art": "https://radioe45.ddns.net/api/station/radioe45/art/1c5adcb5f0a2b9d3ecf3904d-1775343566.jpg",
+        "custom_fields": [],
+        "text": "Pino Daniele - Je So' Pazzo - Remastered 2008",
+        "artist": "Pino Daniele",
+        "title": "Je So' Pazzo - Remastered 2008",
+        "album": "Je So' Pazzo - Remastered 2008",
+        "genre": "",
+        "isrc": "",
+        "lyrics": ""
+      }
+    },
+    {
+      "sh_id": 218870,
+      "played_at": 1780162583,
+      "duration": 11,
+      "playlist": "JINGLE ",
+      "streamer": "",
+      "is_request": false,
+      "song": {
+        "id": "f57216ad55cf2cd089d5d4fe703ab87e",
+        "art": "https://radioe45.ddns.net/api/station/radioe45/art/1e952cdbee935ee6e049321d",
+        "custom_fields": [],
+        "text": " - jingle 2",
+        "artist": "",
+        "title": "jingle 2",
+        "album": "",
+        "genre": "",
+        "isrc": "",
+        "lyrics": ""
+      }
+    },
+    {
+      "sh_id": 218869,
+      "played_at": 1780162349,
+      "duration": 238,
+      "playlist": "ANNI 70 ITA",
+      "streamer": "",
+      "is_request": false,
+      "song": {
+        "id": "02ac8f6c137e5d8c80e78efdb40d23e7",
+        "art": "https://radioe45.ddns.net/api/station/radioe45/art/dd78e5904131951b9d130e87-1775343661.jpg",
+        "custom_fields": [],
+        "text": "Mina - Parole parole - 2001 Remastered Version",
+        "artist": "Mina",
+        "title": "Parole parole - 2001 Remastered Version",
+        "album": "Parole parole - 2001 Remastered Version",
+        "genre": "",
+        "isrc": "",
+        "lyrics": ""
+      }
+    },
+    {
+      "sh_id": 218867,
+      "played_at": 1780162093,
+      "duration": 259,
+      "playlist": "ANNI 70 ITA",
+      "streamer": "",
+      "is_request": false,
+      "song": {
+        "id": "6ac942b96908d1b0f7eb5dc64fe704c7",
+        "art": "https://radioe45.ddns.net/api/station/radioe45/art/8fd0502b254f95d8a40fb928-1775343499.jpg",
+        "custom_fields": [],
+        "text": "Francesco De Gregori - Generale",
+        "artist": "Francesco De Gregori",
+        "title": "Generale",
+        "album": "Generale",
+        "genre": "",
+        "isrc": "",
+        "lyrics": ""
+      }
+    },
+    {
+      "sh_id": 218866,
+      "played_at": 1780162064,
+      "duration": 30,
+      "playlist": "JINGLE ",
+      "streamer": "",
+      "is_request": false,
+      "song": {
+        "id": "61bb6fd36abe7c592fdf12eefdd9b3b6",
+        "art": "https://radioe45.ddns.net/api/station/radioe45/art/137107646c98871a08455023",
+        "custom_fields": [],
+        "text": " - jingle 6",
+        "artist": "",
+        "title": "jingle 6",
+        "album": "",
+        "genre": "",
+        "isrc": "",
+        "lyrics": ""
+      }
+    }
+  ],
+  "is_online": true,
+  "cache": null
+}
