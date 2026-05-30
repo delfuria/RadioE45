@@ -1,6 +1,8 @@
 using RadioE45.Logic;
+using RadioE45.Logic.AzuraResponses;
 using System.Timers;
 using System;
+using System.Text.Json;
 using Microsoft.Maui.Dispatching;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Maui.Alerts;
@@ -12,8 +14,11 @@ public partial class RadioPage : ContentPage
 {
     private RadioStation radioStation;
 
+    private static readonly HttpClient _httpClient = new();
+
     private System.Timers.Timer timer;
     private System.Timers.Timer watchdogTimer;
+    private CancellationTokenSource? _nowPlayingCts;
     private Random random = new Random();
     private int barCount = 64;
 
@@ -22,6 +27,8 @@ public partial class RadioPage : ContentPage
     private bool isPlaying = true;
     private bool isAnimating;
     private bool isReconnecting = false;
+
+    public NowPlayingResponse? NowPlayingData { get; private set; }
 
     public RadioPage(RadioStation radioStation)
     {
@@ -100,6 +107,57 @@ public partial class RadioPage : ContentPage
         });
     }
 
+    // --- AzuraCast Now Playing API ---
+
+    private async Task NowPlayingLoop(CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            await FetchNowPlayingAsync(ct);
+            try { await Task.Delay(10_000, ct); }
+            catch (OperationCanceledException) { break; }
+        }
+    }
+
+    private async Task FetchNowPlayingAsync(CancellationToken ct = default)
+    {
+        if (radioStation.StationId <= 0) return;
+
+        try
+        {
+            var json = await _httpClient.GetStringAsync(
+                $"https://radioe45.ddns.net/api/nowplaying/{radioStation.StationId}", ct);
+
+            var data = JsonSerializer.Deserialize<NowPlayingResponse>(json);
+            NowPlayingData = data;
+
+            if (data != null)
+                await MainThread.InvokeOnMainThreadAsync(() => UpdateNowPlayingUI(data));
+        }
+        catch (OperationCanceledException) { }
+        catch { }
+    }
+
+    private void UpdateNowPlayingUI(NowPlayingResponse data)
+    {
+        var entry = data.NowPlaying;
+        var song  = entry.Song;
+
+        NowPlayingTitle.Text  = string.IsNullOrEmpty(song.Title)  ? "--" : song.Title;
+        NowPlayingArtist.Text = string.IsNullOrEmpty(song.Artist) ? "--" : song.Artist;
+
+        if (!string.IsNullOrEmpty(song.Art))
+            NowPlayingArt.Source = ImageSource.FromUri(new Uri(song.Art));
+
+        double progress = entry.Duration > 0
+            ? Math.Clamp((double)entry.Elapsed / entry.Duration, 0, 1)
+            : 0;
+
+        NowPlayingProgress.Progress = progress;
+        NowPlayingElapsed.Text  = TimeSpan.FromSeconds(entry.Elapsed).ToString(@"mm\:ss");
+        NowPlayingDuration.Text = TimeSpan.FromSeconds(entry.Duration).ToString(@"mm\:ss");
+    }
+
     // --- Visualizer timer ---
 
     private void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -154,12 +212,19 @@ public partial class RadioPage : ContentPage
         isPlaying = true;
         watchdogTimer.Start();
 
+        _nowPlayingCts = new CancellationTokenSource();
+        _ = NowPlayingLoop(_nowPlayingCts.Token);
+
         isAnimating = true;
         AnimateGradient();
     }
 
     protected override void OnDisappearing()
     {
+        _nowPlayingCts?.Cancel();
+        _nowPlayingCts?.Dispose();
+        _nowPlayingCts = null;
+
         watchdogTimer.Stop();
         MediaPlayer.Stop();
         isPlaying = false;
@@ -213,4 +278,3 @@ public partial class RadioPage : ContentPage
         return start + (end - start) * t;
     }
 }
-

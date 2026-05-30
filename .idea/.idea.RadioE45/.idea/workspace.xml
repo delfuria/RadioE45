@@ -16,10 +16,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aec9f8fa-1e1d-4dfe-882a-158d8b49a230" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RadioE45/Logic/RadioStation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Logic/RadioStation.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RadioE45/Views/MainPage.xaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Views/MainPage.xaml.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -127,7 +123,7 @@
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "git-widget-placeholder": "main",
     "iOS.RadioE45.executor": "Run",
-    "macOS.RadioE45.executor": "Debug",
+    "macOS.RadioE45.executor": "Run",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -172,7 +168,7 @@
       <updated>1780078346374</updated>
       <workItem from="1780078348974" duration="27000" />
       <workItem from="1780083665134" duration="438000" />
-      <workItem from="1780163028465" duration="4847000" />
+      <workItem from="1780163028465" duration="5549000" />
     </task>
     <servers />
   </component>
@@ -198,84 +194,6 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
-          <line>218</line>
-          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Method 'HandleSsePayloadAsync'">
-            <startOffsets>
-              <option value="7114" />
-            </startOffsets>
-            <endOffsets>
-              <option value="7151" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
-          <line>175</line>
-          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Method 'ProcessSseMessageAsync'">
-            <startOffsets>
-              <option value="5344" />
-            </startOffsets>
-            <endOffsets>
-              <option value="5385" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="13" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
-          <line>189</line>
-          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Method 'ProcessSseMessageAsync'">
-            <startOffsets>
-              <option value="5982" />
-            </startOffsets>
-            <endOffsets>
-              <option value="6025" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="14" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
-          <line>183</line>
-          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Method 'ProcessSseMessageAsync'">
-            <startOffsets>
-              <option value="5664" />
-            </startOffsets>
-            <endOffsets>
-              <option value="5712" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="15" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
-          <line>181</line>
-          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Method 'ProcessSseMessageAsync'">
-            <startOffsets>
-              <option value="5571" />
-            </startOffsets>
-            <endOffsets>
-              <option value="5625" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="16" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
-          <line>193</line>
-          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Method 'ProcessSseMessageAsync'">
-            <startOffsets>
-              <option value="6186" />
-            </startOffsets>
-            <endOffsets>
-              <option value="6228" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="17" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
