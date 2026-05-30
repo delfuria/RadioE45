@@ -39,10 +39,12 @@
                 HorizontalOptions="Center"
                 MaximumHeightRequest="{OnPlatform Android=250,
                                                   iOS=250,
-                                                  WinUI=300}"
+                                                  WinUI=300,
+                                                  MacCatalyst=300}"
                 MaximumWidthRequest="{OnPlatform Android=250,
                                                  iOS=250,
-                                                 WinUI=300}"
+                                                 WinUI=300,
+                                                 MacCatalyst=300}"
                 Source="kan_88.png"
                 VerticalOptions="Center">
                 <Image.Shadow>
@@ -75,26 +77,30 @@
                 Clicked="MediaAction_Clicked"
                 HeightRequest="{OnPlatform Android=80,
                                            iOS=90,
-                                           WinUI=100}"
+                                           WinUI=100,
+                                           MacCatalyst=100}"
                 HorizontalOptions="Center"
                 Source="pause_icon.png"
                 VerticalOptions="End"
                 WidthRequest="{OnPlatform Android=80,
                                           iOS=90,
-                                          WinUI=100}" />
+                                          WinUI=100,
+                                          MacCatalyst=100}" />
 
             <ImageButton
                 BackgroundColor="Transparent"
                 Clicked="SkipToEnd_Clicked"
                 HeightRequest="{OnPlatform Android=80,
                                            iOS=90,
-                                           WinUI=100}"
+                                           WinUI=100,
+                                           MacCatalyst=100}"
                 HorizontalOptions="Center"
                 Source="skip_icon.png"
                 VerticalOptions="End"
                 WidthRequest="{OnPlatform Android=80,
                                           iOS=90,
-                                          WinUI=100}" />
+                                          WinUI=100,
+                                          MacCatalyst=100}" />
         </HorizontalStackLayout>
 
 

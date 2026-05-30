@@ -8,106 +8,25 @@
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
+  <component name="CMakeProjectFlavorService">
+    <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
+  <component name="CMakeSettings">
+    <configurations />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="aec9f8fa-1e1d-4dfe-882a-158d8b49a230" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_activity_activity.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_activity_activity_ktx.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_annotation_annotation.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_annotation_annotation_experimental.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_annotation_annotation_jvm.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_appcompat_appcompat.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_appcompat_appcompat_resources.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_arch_core_core_common.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_arch_core_core_runtime.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_browser_browser.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_cardview_cardview.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_collection_collection.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_collection_collection_jvm.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_collection_collection_ktx.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_concurrent_concurrent_futures.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_constraintlayout_constraintlayout.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_constraintlayout_constraintlayout_core.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_coordinatorlayout_coordinatorlayout.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_core_core.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_core_core_ktx.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_core_core_viewtree.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_cursoradapter_cursoradapter.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_customview_customview.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_customview_customview_poolingcontainer.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_drawerlayout_drawerlayout.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_dynamicanimation_dynamicanimation.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_emoji2_emoji2.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_emoji2_emoji2_views_helper.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_exifinterface_exifinterface.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_fragment_fragment.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_fragment_fragment_ktx.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_interpolator_interpolator.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_lifecycle_lifecycle_common.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_lifecycle_lifecycle_common_jvm.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_lifecycle_lifecycle_livedata.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_lifecycle_lifecycle_livedata_core.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_lifecycle_lifecycle_livedata_core_ktx.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_lifecycle_lifecycle_process.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_lifecycle_lifecycle_runtime_android.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_lifecycle_lifecycle_runtime_ktx_android.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_lifecycle_lifecycle_viewmodel_android.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_lifecycle_lifecycle_viewmodel_ktx.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_lifecycle_lifecycle_viewmodel_savedstate.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_lifecycle_lifecycle_viewmodel_savedstate_android.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_loader_loader.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media3_media3_common.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media3_media3_container.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media3_media3_database.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media3_media3_datasource.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media3_media3_decoder.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media3_media3_exoplayer.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media3_media3_exoplayer_dash.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media3_media3_exoplayer_hls.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media3_media3_exoplayer_rtsp.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media3_media3_extractor.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media3_media3_session.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media3_media3_ui.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_media_media.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_navigation_navigation_common.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_navigation_navigation_common_android.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_navigation_navigation_fragment.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_navigation_navigation_runtime.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_navigation_navigation_runtime_android.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_navigation_navigation_ui.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_profileinstaller_profileinstaller.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_recyclerview_recyclerview.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_resourceinspection_resourceinspection_annotation.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_savedstate_savedstate.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_savedstate_savedstate_android.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_savedstate_savedstate_ktx.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_security_security_crypto.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_slidingpanelayout_slidingpanelayout.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_startup_startup_runtime.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_swiperefreshlayout_swiperefreshlayout.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_tracing_tracing.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_tracing_tracing_android.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_transition_transition.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_vectordrawable_vectordrawable.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_vectordrawable_vectordrawable_animated.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_versionedparcelable_versionedparcelable.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_viewpager2_viewpager2.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_viewpager_viewpager.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_window_window.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_window_window_core.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/androidx_window_window_core_jvm.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/checker_qual.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/com_google_android_material_material.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/gifdecoder.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/glide.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/j2objc_annotations.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/libraries/maui.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DpaMonitoringSettings">
+    <option name="firstShow" value="false" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -121,6 +40,65 @@
     <commands />
     <urls />
   </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0001476049023874" />
+      <entry key="S2" value="1.11894313243688" />
+      <entry key="S5" value="1.667524483797803" />
+      <entry key="S10" value="2.60307630707051" />
+      <entry key="S30" value="4.830637698793105" />
+      <entry key="S60" value="6.09083085407422" />
+      <entry key="M2" value="6.943299928993731" />
+      <entry key="M5" value="7.549440492611623" />
+      <entry key="M10" value="7.76975788080977" />
+      <entry key="M15" value="7.845377742401328" />
+      <entry key="M30" value="7.9221187857791335" />
+      <entry key="H1" value="7.960915671442393" />
+      <entry key="H2" value="7.980421754174536" />
+      <entry key="H4" value="7.990201837728652" />
+      <entry key="D1" value="7.9983657158745824" />
+      <entry key="W1" value="7.999766500032523" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.29936967615473214" />
+      <entry key="MS500" value="0.7857980213531651" />
+      <entry key="S2" value="1.0548976400682726" />
+      <entry key="S5" value="1.5731828015025362" />
+      <entry key="S10" value="2.300765922388062" />
+      <entry key="S30" value="3.865231140006071" />
+      <entry key="S60" value="4.719975982296893" />
+      <entry key="M2" value="5.2931291442619015" />
+      <entry key="M5" value="5.699004264174671" />
+      <entry key="M10" value="5.846254669037583" />
+      <entry key="M15" value="5.8967652788867495" />
+      <entry key="M30" value="5.94800958773674" />
+      <entry key="H1" value="5.973910746963481" />
+      <entry key="H2" value="5.986931762989012" />
+      <entry key="H4" value="5.9934599664771" />
+      <entry key="D1" value="5.998909171828417" />
+      <entry key="W1" value="5.999844147245373" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="0.8721480282542448" />
+      <entry key="MS500" value="1.2486992963466854" />
+      <entry key="S2" value="1.9222482785662587" />
+      <entry key="S5" value="3.076678487279732" />
+      <entry key="S10" value="4.776856333929565" />
+      <entry key="S30" value="8.617289718659164" />
+      <entry key="S60" value="10.760738588374782" />
+      <entry key="M2" value="12.207664288449221" />
+      <entry key="M5" value="13.235863717494055" />
+      <entry key="M10" value="13.609525327232062" />
+      <entry key="M15" value="13.737773094248636" />
+      <entry key="M30" value="13.86792049342483" />
+      <entry key="H1" value="13.933716680592806" />
+      <entry key="H2" value="13.966797190147155" />
+      <entry key="H4" value="13.983383275080927" />
+      <entry key="D1" value="13.997228415309397" />
+      <entry key="W1" value="13.99960400711745" />
+    </decayedShown>
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 5
@@ -130,24 +108,31 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Device#class com.jetbrains.rider.run.multiPlatform.ios.devices.IOSSimulatorKind#com.jetbrains.rider.run.multiPlatform.ios.devices.IOSDevicesProvider#iOS: RadioE45&quot;: &quot;iPad Pro (11-inch) (4th generation) (16GB)&quot;,
-    &quot;DeviceKind#com.jetbrains.rider.run.multiPlatform.ios.devices.IOSDevicesProvider&quot;: &quot;Simulator&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Device#class com.jetbrains.rider.run.multiPlatform.ios.devices.IOSSimulatorKind#com.jetbrains.rider.run.multiPlatform.ios.devices.IOSDevicesProvider#iOS: RadioE45": "iPad Pro (11-inch) (4th generation) (16GB)",
+    "DeviceKind#com.jetbrains.rider.run.multiPlatform.ios.devices.IOSDevicesProvider": "Simulator",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "cidr.known.project.marker": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "main",
+    "iOS.RadioE45.executor": "Run",
+    "macOS.RadioE45.executor": "Debug",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
-  <component name="RunManager" selected="iOS.RadioE45">
+}]]></component>
+  <component name="RunManager" selected="macOS.RadioE45">
     <configuration name="RadioE45" type="XamarinAndroidProject" factoryName="Xamarin.Android">
       <option name="PROJECT_PATH" value="$PROJECT_DIR$/RadioE45/RadioE45.csproj" />
       <option name="PROGRAM_PARAMETERS" value="" />
@@ -181,6 +166,8 @@
       <option name="presentableId" value="Default" />
       <updated>1780078346374</updated>
       <workItem from="1780078348974" duration="27000" />
+      <workItem from="1780083665134" duration="438000" />
+      <workItem from="1780163028465" duration="491000" />
     </task>
     <servers />
   </component>
@@ -206,6 +193,19 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
+          <line>111</line>
+          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Lambda expression inside Method 'Timer_Elapsed'">
+            <startOffsets>
+              <option value="3144" />
+            </startOffsets>
+            <endOffsets>
+              <option value="3193" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>

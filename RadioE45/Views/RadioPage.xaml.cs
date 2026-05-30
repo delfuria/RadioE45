@@ -3,7 +3,8 @@ using System.Timers;
 using System;
 using Microsoft.Maui.Dispatching;
 using CommunityToolkit.Maui.Views;
-using CommunityToolkit.Maui.Alerts; // For MainThread
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 
 namespace RadioE45.Views;
 
@@ -12,65 +13,107 @@ public partial class RadioPage : ContentPage
     private RadioStation radioStation;
 
     private System.Timers.Timer timer;
+    private System.Timers.Timer watchdogTimer;
     private Random random = new Random();
     private int barCount = 64;
 
-    // Field to hold the current audio levels for sliding animation
     private float[] currentLevels;
 
-
     private bool isPlaying = true;
-
     private bool isAnimating;
+    private bool isReconnecting = false;
 
     public RadioPage(RadioStation radioStation)
     {
         InitializeComponent();
 
         this.radioStation = radioStation;
-        
-        // MediaPlayer.Source = radioStation.URL;
+
         RadioName.Text = radioStation.Name;
         RadioImage.Source = radioStation.IconPath;
 
-        // Initialize the currentLevels array (starting with zeros)
         currentLevels = new float[barCount];
-        for (int i = 0; i < barCount; i++)
-        {
-            currentLevels[i] = 0f;
-        }
 
-        // Start a timer to update audio levels every 200ms
         timer = new System.Timers.Timer(60);
         timer.Elapsed += Timer_Elapsed;
         timer.Start();
 
+        // Watchdog: if we should be playing but MediaElement has stalled, reconnect
+        watchdogTimer = new System.Timers.Timer(10_000);
+        watchdogTimer.Elapsed += Watchdog_Elapsed;
+        watchdogTimer.AutoReset = true;
+
         FirstColor.Color = radioStation.LightColor.Color;
         SecondColor.Color = radioStation.DarkColor.Color;
-        MediaPlayer.MediaFailed += async (s,e) =>
-        {
-            string errorMessage = $"Faild to load media: {e.ErrorMessage} {radioStation.Name}";
 
-            // Optional: Show a toast notification (for a small popup)
-            await Toast.Make(errorMessage, CommunityToolkit.Maui.Core.ToastDuration.Long).Show();
-        };
+        MediaPlayer.MediaFailed += OnMediaFailed;
+        MediaPlayer.MediaEnded += OnMediaEnded;
+
+        Connectivity.ConnectivityChanged += OnConnectivityChanged;
     }
+
+    // --- Reconnection logic ---
+
+    private async void OnMediaFailed(object s, MediaFailedEventArgs e)
+    {
+        if (!isPlaying) return;
+        await Task.Delay(3000);
+        TryReconnect();
+    }
+
+    private void OnMediaEnded(object s, EventArgs e)
+    {
+        // A live stream should never end; treat it as a dropped connection
+        if (isPlaying)
+            TryReconnect();
+    }
+
+    private void OnConnectivityChanged(object s, ConnectivityChangedEventArgs e)
+    {
+        if (e.NetworkAccess == NetworkAccess.Internet && isPlaying)
+            TryReconnect();
+    }
+
+    private void Watchdog_Elapsed(object sender, ElapsedEventArgs e)
+    {
+        if (!isPlaying) return;
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            var state = MediaPlayer.CurrentState;
+            if (state != MediaElementState.Playing && state != MediaElementState.Buffering)
+                TryReconnect();
+        });
+    }
+
+    private void TryReconnect()
+    {
+        if (isReconnecting) return;
+        isReconnecting = true;
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            MediaPlayer.Source = null;
+            MediaPlayer.Source = MediaSource.FromUri(radioStation.URL);
+            MediaPlayer.Play();
+            isReconnecting = false;
+        });
+    }
+
+    // --- Visualizer timer ---
 
     private void Timer_Elapsed(object sender, ElapsedEventArgs e)
     {
-
-        // Slide the audio data: shift currentLevels left by one index
         Array.Copy(currentLevels, 1, currentLevels, 0, barCount - 1);
-        // Generate a new random level for the rightmost bar
         currentLevels[barCount - 1] = (float)random.NextDouble();
 
-
-        // Update the visualizer on the main thread
         MainThread.BeginInvokeOnMainThread(() =>
         {
             AudioVisualizer.UpdateAudioLevels(currentLevels);
         });
     }
+
+    // --- Controls ---
 
     private void MediaAction_Clicked(object sender, EventArgs e)
     {
@@ -78,11 +121,13 @@ public partial class RadioPage : ContentPage
         {
             MediaPlayer.Pause();
             MediaActionButton.Source = "play_icon.png";
+            watchdogTimer.Stop();
         }
         else
         {
             MediaPlayer.Play();
             MediaActionButton.Source = "pause_icon.png";
+            watchdogTimer.Start();
         }
 
         isPlaying = !isPlaying;
@@ -98,6 +143,8 @@ public partial class RadioPage : ContentPage
         isPlaying = true;
     }
 
+    // --- Page lifecycle ---
+
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -105,6 +152,7 @@ public partial class RadioPage : ContentPage
         MediaPlayer.Source = MediaSource.FromUri(radioStation.URL);
         MediaPlayer.Play();
         isPlaying = true;
+        watchdogTimer.Start();
 
         isAnimating = true;
         AnimateGradient();
@@ -112,44 +160,50 @@ public partial class RadioPage : ContentPage
 
     protected override void OnDisappearing()
     {
+        watchdogTimer.Stop();
         MediaPlayer.Stop();
         isPlaying = false;
         isAnimating = false;
-        base.OnDisappearing();
 
+        MediaPlayer.MediaFailed -= OnMediaFailed;
+        MediaPlayer.MediaEnded -= OnMediaEnded;
+        Connectivity.ConnectivityChanged -= OnConnectivityChanged;
+
+        base.OnDisappearing();
     }
+
+    // --- Gradient animation ---
 
     private async void AnimateGradient()
     {
         while (isAnimating)
         {
-            await AnimateOffset(0, 0.3, 3000, Easing.SinInOut); // Smooth forward animation
-            await AnimateOffset(0.3, 0, 3000, Easing.SinInOut); // Smooth backward animation
+            await AnimateOffset(0, 0.3, 3000, Easing.SinInOut);
+            await AnimateOffset(0.3, 0, 3000, Easing.SinInOut);
         }
     }
 
     private async Task AnimateOffset(double start, double end, int duration, Easing easing)
     {
         double timeElapsed = 0;
-        int frameRate = 60; // 60 FPS for smoothness
-        double frameTime = 1000.0 / frameRate; // Milliseconds per frame
+        int frameRate = 60;
+        double frameTime = 1000.0 / frameRate;
 
         while (timeElapsed < duration)
         {
             if (!isAnimating) return;
 
-            double progress = timeElapsed / duration; // Normalize progress (0 to 1)
-            double easedProgress = easing.Ease(progress); // Apply easing
-            double newOffset = Lerp(start, end, easedProgress); // Interpolate
+            double progress = timeElapsed / duration;
+            double easedProgress = easing.Ease(progress);
+            double newOffset = Lerp(start, end, easedProgress);
 
             FirstColor.Offset = (float)newOffset;
-            SecondColor.Offset = (float)(1 - newOffset); // Reverse for smooth effect
+            SecondColor.Offset = (float)(1 - newOffset);
 
             await Task.Delay((int)frameTime);
-            timeElapsed += frameTime; // Increment time
+            timeElapsed += frameTime;
         }
 
-        // Ensure it finishes exactly at the end
         FirstColor.Offset = (float)end;
         SecondColor.Offset = (float)(1 - end);
     }

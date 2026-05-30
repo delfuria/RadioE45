@@ -30,3 +30,6 @@ Thumbs.db
 # Configurazioni di ambiente sensibili (se usate per chiavi API di streaming)
 .env
 *.env.local
+
+# Claude Code
+CLAUDE.md
