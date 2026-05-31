@@ -9,6 +9,12 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(new MainPage()) { Width=400, Height=850};
+        return new Window(new MainPage())
+        {
+            Width = 900,
+            Height = 1600,
+            MinimumWidth = 900,
+            MinimumHeight = 1600
+        };
     }
 }

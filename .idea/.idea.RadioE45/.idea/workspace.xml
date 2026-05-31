@@ -16,10 +16,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aec9f8fa-1e1d-4dfe-882a-158d8b49a230" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/RadioE45/RemoveResourceAttribute.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RadioE45/Resources/AppIcon/appiconfg.svg" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Resources/AppIcon/appiconfg.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RadioE45/Resources/Splash/splash.svg" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Resources/Splash/splash.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/App.xaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/App.xaml.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -187,7 +184,7 @@
       <workItem from="1780078348974" duration="27000" />
       <workItem from="1780083665134" duration="438000" />
       <workItem from="1780163028465" duration="7193000" />
-      <workItem from="1780227255107" duration="3745000" />
+      <workItem from="1780227255107" duration="4118000" />
     </task>
     <servers />
   </component>
