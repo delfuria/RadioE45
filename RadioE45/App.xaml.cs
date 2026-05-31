@@ -11,10 +11,10 @@ public partial class App : Application
     {
         return new Window(new MainPage())
         {
-            Width = 900,
-            Height = 1600,
-            MinimumWidth = 900,
-            MinimumHeight = 1600
+            Width = 600,
+            Height = 1200,
+            MinimumWidth = 600,
+            MinimumHeight = 1200
         };
     }
 }
