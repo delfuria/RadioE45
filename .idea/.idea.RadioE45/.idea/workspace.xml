@@ -16,7 +16,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aec9f8fa-1e1d-4dfe-882a-158d8b49a230" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.RadioE45/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Resources/Images/echo99.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Resources/Images/galey_israel.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Resources/Images/galgalatz.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Resources/Images/kan_88.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Resources/Images/kan_bet.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Resources/Images/kan_gimel.jpeg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Resources/Images/radio_darom.jpeg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Resources/Images/radius100.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Resources/Images/tel_aviv.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RadioE45/Views/MainPage.xaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/RadioE45/Views/MainPage.xaml.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,61 +53,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="4.66841660485263E-47" />
-      <entry key="MS500" value="8.758607879690875E-10" />
-      <entry key="S2" value="0.009110781663476796" />
-      <entry key="S5" value="0.23138721572529936" />
-      <entry key="S10" value="0.687803072779127" />
-      <entry key="S30" value="1.784674311131643" />
-      <entry key="S60" value="2.7418779361470142" />
-      <entry key="M2" value="3.61659115464086" />
-      <entry key="M5" value="4.371562344192648" />
-      <entry key="M10" value="4.8515382438496175" />
-      <entry key="M15" value="5.4200911338862925" />
-      <entry key="M30" value="7.156707704868415" />
-      <entry key="H1" value="9.20465264678932" />
-      <entry key="H2" value="10.810404096145243" />
-      <entry key="H4" value="11.820310252536176" />
-      <entry key="D1" value="12.790423363025846" />
-      <entry key="W1" value="12.969726563211477" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0000000003157323" />
+      <entry key="S2" value="1.007059543207619" />
+      <entry key="S5" value="1.208942960979038" />
+      <entry key="S10" value="1.6535943722018331" />
+      <entry key="S30" value="2.754582135266645" />
+      <entry key="S60" value="3.718663660726978" />
+      <entry key="M2" value="4.60124856697364" />
+      <entry key="M5" value="5.364134727460153" />
+      <entry key="M10" value="5.84741492551121" />
+      <entry key="M15" value="6.417019678066158" />
+      <entry key="M30" value="8.154679636890219" />
+      <entry key="H1" value="10.203348347050444" />
+      <entry key="H2" value="11.80963815161104" />
+      <entry key="H4" value="12.819891495645818" />
+      <entry key="D1" value="13.790347841080097" />
+      <entry key="W1" value="13.969715623090366" />
     </decayedCancelled>
     <decayedSelected>
-      <entry key="MS100" value="1.0000000000000007" />
-      <entry key="MS500" value="1.0008970081481388" />
-      <entry key="S2" value="1.2442542963163017" />
-      <entry key="S5" value="2.116145594423018" />
-      <entry key="S10" value="3.0636968096387154" />
-      <entry key="S30" value="5.084658629953887" />
-      <entry key="S60" value="7.299568530262487" />
-      <entry key="M2" value="10.023170057908322" />
-      <entry key="M5" value="13.772415309807386" />
-      <entry key="M10" value="16.085613484619973" />
-      <entry key="M15" value="17.334283947000348" />
-      <entry key="M30" value="19.566569475601042" />
-      <entry key="H1" value="21.61222068943938" />
-      <entry key="H2" value="23.08318959614806" />
-      <entry key="H4" value="23.976932781879718" />
-      <entry key="D1" value="24.819630092396995" />
-      <entry key="W1" value="24.973979075716233" />
+      <entry key="MS100" value="0.006087223278597657" />
+      <entry key="MS500" value="0.3608055733517403" />
+      <entry key="S2" value="0.9641178211221167" />
+      <entry key="S5" value="1.910882262771218" />
+      <entry key="S10" value="2.911320219640262" />
+      <entry key="S30" value="4.998923971954001" />
+      <entry key="S60" value="7.237766291703659" />
+      <entry key="M2" value="9.980648976939692" />
+      <entry key="M5" value="13.749014929268863" />
+      <entry key="M10" value="16.07194233503154" />
+      <entry key="M15" value="17.324460959526206" />
+      <entry key="M30" value="19.56102470073625" />
+      <entry key="H1" value="21.609158236690376" />
+      <entry key="H2" value="23.081554093650105" />
+      <entry key="H4" value="23.97608335359928" />
+      <entry key="D1" value="24.81948354316214" />
+      <entry key="W1" value="24.973958009863043" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="6.825096849187115E-16" />
-      <entry key="MS500" value="9.342147879748689E-4" />
-      <entry key="S2" value="0.2734237568829186" />
-      <entry key="S5" value="1.529354328003355" />
-      <entry key="S10" value="3.1651411360335358" />
-      <entry key="S30" value="6.574324357474527" />
-      <entry key="S60" value="9.84531852939093" />
-      <entry key="M2" value="13.508559467049944" />
-      <entry key="M5" value="18.069948831606013" />
-      <entry key="M10" value="20.893167656485918" />
-      <entry key="M15" value="22.722862278905602" />
-      <entry key="M30" value="26.705969226213156" />
-      <entry key="H1" value="30.807639254564496" />
-      <entry key="H2" value="33.888787271151465" />
-      <entry key="H4" value="35.794784764197445" />
-      <entry key="D1" value="37.60963530639782" />
-      <entry key="W1" value="37.9436456853613" />
+      <entry key="MS100" value="0.006087223278597657" />
+      <entry key="MS500" value="0.36081898568378773" />
+      <entry key="S2" value="0.9867199506450395" />
+      <entry key="S5" value="2.2840102941797147" />
+      <entry key="S10" value="3.957982907721147" />
+      <entry key="S30" value="7.446610354307677" />
+      <entry key="S60" value="10.753495983959496" />
+      <entry key="M2" value="14.447010114073551" />
+      <entry key="M5" value="19.0375475389154" />
+      <entry key="M10" value="21.874560671413036" />
+      <entry key="M15" value="23.70941901354033" />
+      <entry key="M30" value="27.698117908077812" />
+      <entry key="H1" value="31.803132110496602" />
+      <entry key="H2" value="34.886315312131465" />
+      <entry key="H4" value="36.79348123922052" />
+      <entry key="D1" value="38.60940733311654" />
+      <entry key="W1" value="38.94361283592548" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -111,8 +121,10 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Android.RadioE45.executor": "Run",
     "Device#class com.jetbrains.rider.run.multiPlatform.ios.devices.IOSSimulatorKind#com.jetbrains.rider.run.multiPlatform.ios.devices.IOSDevicesProvider#iOS: RadioE45": "iPad Pro (11-inch) (4th generation) (16GB)",
     "DeviceKind#com.jetbrains.rider.run.multiPlatform.ios.devices.IOSDevicesProvider": "Simulator",
+    "Publish to folder.Publish RadioE45 to folder.executor": "Run",
     "RunOnceActivity.MCP Project settings loaded": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
@@ -134,6 +146,19 @@
   }
 }]]></component>
   <component name="RunManager" selected="macOS.RadioE45">
+    <configuration name="Publish RadioE45 to folder" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" self_contained="true" target_folder="$PROJECT_DIR$/RadioE45/bin/Release/net10.0-android/publish" target_framework="net10.0-android" uuid_high="3146440416554474593" uuid_low="7509976821017692371">
+        <option name="extraSettings">
+          <map>
+            <entry key="AndroidKeyStore" value="false" />
+            <entry key="AndroidSigningKeyAlias" value="" />
+            <entry key="AndroidSigningKeyStore" value="" />
+            <entry key="RememberPasswords" value="false" />
+          </map>
+        </option>
+      </riderPublish>
+      <method v="2" />
+    </configuration>
     <configuration name="RadioE45" type="XamarinAndroidProject" factoryName="Xamarin.Android">
       <option name="PROJECT_PATH" value="$PROJECT_DIR$/RadioE45/RadioE45.csproj" />
       <option name="PROGRAM_PARAMETERS" value="" />
@@ -168,7 +193,8 @@
       <updated>1780078346374</updated>
       <workItem from="1780078348974" duration="27000" />
       <workItem from="1780083665134" duration="438000" />
-      <workItem from="1780163028465" duration="5549000" />
+      <workItem from="1780163028465" duration="7193000" />
+      <workItem from="1780227255107" duration="1392000" />
     </task>
     <servers />
   </component>
@@ -194,6 +220,19 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs</url>
+          <line>103</line>
+          <properties documentPath="$PROJECT_DIR$/RadioE45/Views/RadioPage.xaml.cs" containingFunctionPresentation="Lambda expression inside Method 'TryReconnect'">
+            <startOffsets>
+              <option value="2928" />
+            </startOffsets>
+            <endOffsets>
+              <option value="2987" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
