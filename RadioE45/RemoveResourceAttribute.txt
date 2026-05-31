@@ -1,0 +1,1 @@
+find . -type f -name 'radioe45.png' -exec xattr -c {} \;
