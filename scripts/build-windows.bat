@@ -17,8 +17,9 @@ if not exist %ISCC% (
 set PROJECT=..\RadioE45\RadioE45.csproj
 set FRAMEWORK=net10.0-windows10.0.19041.0
 
-:: Pulisce gli installer precedenti (contengono il numero di versione nel nome)
-if exist installer rmdir /s /q installer
+:: Pulisce solo gli installer Windows precedenti (non tocca APK/ZIP degli altri platform)
+if exist installer\RadioE45_Setup_x64.exe del /q installer\RadioE45_Setup_x64.exe
+if exist installer\RadioE45_Setup_arm64.exe del /q installer\RadioE45_Setup_arm64.exe
 
 :: ----------------------------------------
 :: PUBLISH x64
