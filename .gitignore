@@ -15,10 +15,11 @@ TestResults/
 *.snupkg
 packages/
  
-# Visual Studio / VS Code / Rider
+# Visual Studio / VS Code / Rider / Claude Code
 .vs/
 .vscode/
 .idea/
+.claude/
 *.suo
 *.user
 *.userosscache
@@ -34,6 +35,7 @@ RadioE45/AppSecrets.cs
 *.log
 *.tmp
 *.temp
+*.binlog
 
 # WinSetup output
 scripts/publish/
