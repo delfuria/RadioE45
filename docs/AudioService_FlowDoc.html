@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AudioService – Flusso Logico</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --surface2: #f1f3f5;
+    --border: #dee2e6;
+    --accent: #2563eb;
+    --accent-light: #eff6ff;
+    --accent2: #7c3aed;
+    --accent2-light: #f5f3ff;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --orange: #ea580c;
+    --orange-light: #fff7ed;
+    --gray: #6b7280;
+    --gray-dark: #374151;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --code-bg: #f3f4f6;
+    --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  /* Layout */
+  .page { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { color: var(--text-muted); font-size: 1rem; margin-bottom: 40px; }
+  h2 { font-size: 1.35rem; font-weight: 700; margin-bottom: 16px; color: var(--gray-dark); border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 10px; color: var(--gray-dark); }
+  p { margin-bottom: 10px; }
+  section { margin-bottom: 48px; }
+
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:700px) { .card-grid { grid-template-columns: 1fr; } }
+
+  /* Badges */
+  .badge { display: inline-block; font-size: .75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+  .badge-blue  { background: var(--accent-light); color: var(--accent); }
+  .badge-purple{ background: var(--accent2-light); color: var(--accent2); }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red   { background: var(--red-light); color: var(--red); }
+  .badge-orange{ background: var(--orange-light); color: var(--orange); }
+  .badge-gray  { background: var(--code-bg); color: var(--gray); }
+
+  /* Code */
+  code { font-family: 'SF Mono', Consolas, 'Courier New', monospace; font-size: .85em; background: var(--code-bg); padding: 1px 6px; border-radius: 4px; }
+  pre  { background: #1e293b; color: #e2e8f0; border-radius: 10px; padding: 16px 20px; font-size: .83em; overflow-x: auto; margin: 12px 0; line-height: 1.7; }
+  pre .c  { color: #94a3b8; }          /* comment */
+  pre .k  { color: #7dd3fc; }          /* keyword */
+  pre .t  { color: #86efac; }          /* type */
+  pre .s  { color: #fde68a; }          /* string */
+  pre .m  { color: #f9a8d4; }          /* method */
+
+  /* Note box */
+  .note { border-left: 4px solid var(--accent); background: var(--accent-light); border-radius: 0 8px 8px 0; padding: 10px 16px; margin: 12px 0; font-size: .9rem; }
+  .note-warn { border-left-color: var(--orange); background: var(--orange-light); }
+  .note-ok   { border-left-color: var(--green); background: var(--green-light); }
+
+  /* ─── SVG Flow Diagram ─── */
+  .diagram-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: var(--shadow); overflow-x: auto; }
+  svg.flow { display: block; margin: 0 auto; }
+
+  /* Node styles inside SVG are defined inline for portability */
+
+  /* State machine */
+  .states { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+  .state-node {
+    border: 2px solid var(--border); border-radius: 999px;
+    padding: 6px 18px; font-weight: 600; font-size: .9rem;
+    background: var(--surface);
+  }
+  .state-node.active { border-color: var(--green); color: var(--green); background: var(--green-light); }
+  .state-node.buffering { border-color: var(--orange); color: var(--orange); background: var(--orange-light); }
+  .state-node.error    { border-color: var(--red); color: var(--red); background: var(--red-light); }
+  .state-node.idle     { border-color: var(--gray); color: var(--gray); background: var(--code-bg); }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th { background: var(--surface2); font-weight: 600; padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border); }
+  td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* Layer diagram */
+  .layer-stack { display: flex; flex-direction: column; gap: 6px; }
+  .layer {
+    border-radius: 8px; padding: 10px 18px; font-weight: 600; font-size: .92rem;
+    border: 1.5px solid transparent; display: flex; align-items: center; gap: 10px;
+  }
+  .layer-ui      { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+  .layer-service { background: #f5f3ff; border-color: #ddd6fe; color: #6d28d9; }
+  .layer-platform{ background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+  .layer-os      { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
+  .layer-icon { font-size: 1.2rem; }
+  .layer-sub { font-size: .82rem; font-weight: 400; color: inherit; opacity: .75; }
+
+  /* Arrows in flow descriptions */
+  .arrow { display: inline-block; margin: 0 6px; color: var(--accent); font-weight: 700; }
+
+  /* Component header */
+  .comp-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .comp-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .comp-title { font-size: 1rem; font-weight: 700; }
+  .comp-path  { font-size: .78rem; color: var(--text-muted); font-family: monospace; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══════════════════════ HEADER ═══════════════════════ -->
+  <h1>AudioService — Flusso Logico</h1>
+  <p class="subtitle">RadioE45 · .NET MAUI + AzuraCast · Analisi architetturale</p>
+
+  <!-- ═══════════════════════ 1. ARCHITETTURA ═══════════════════════ -->
+  <section>
+    <h2>1. Architettura a strati</h2>
+    <p>Il sistema audio è organizzato in quattro strati separati con dipendenze unidirezionali dall'alto verso il basso.</p>
+
+    <div class="card" style="margin-bottom:0">
+      <div class="layer-stack">
+        <div class="layer layer-ui">
+          <span class="layer-icon">🖥️</span>
+          <div>
+            <div>UI — <code>OnAirPage.xaml</code></div>
+            <div class="layer-sub">Chiama <code>PlayAsync</code> / <code>PauseAsync</code> / <code>ResumeAsync</code> / <code>StopAsync</code> · Riceve eventi <code>PlaybackStateChanged</code></div>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:1.3rem;color:var(--accent)">↕</div>
+        <div class="layer layer-service">
+          <span class="layer-icon">🔧</span>
+          <div>
+            <div>Core Service — <code>AudioService</code> : <code>IAudioService</code></div>
+            <div class="layer-sub">Logica di streaming, watchdog, reconnect, metadata · Thread-safety con <code>Interlocked</code></div>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:1.3rem;color:var(--accent)">↕</div>
+        <div class="layer layer-platform">
+          <span class="layer-icon">📱</span>
+          <div>
+            <div>Platform Abstraction — <code>IPlatformNowPlayingService</code></div>
+            <div class="layer-sub"><code>AndroidNowPlayingService</code> · <code>IosNowPlayingService</code> · <code>NullPlatformNowPlayingService</code> (Windows/Mac)</div>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:1.3rem;color:var(--accent)">↕</div>
+        <div class="layer layer-os">
+          <span class="layer-icon">⚙️</span>
+          <div>
+            <div>OS APIs</div>
+            <div class="layer-sub">Android: <code>MediaSession</code> + <code>NotificationManager</code> · iOS/Mac: <code>MPNowPlayingInfoCenter</code></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ 2. COMPONENTI ═══════════════════════ -->
+  <section>
+    <h2>2. Componenti principali</h2>
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="comp-header">
+          <div class="comp-icon">🔊</div>
+          <div>
+            <div class="comp-title">AudioService</div>
+            <div class="comp-path">Services/Audio/AudioService.cs</div>
+          </div>
+        </div>
+        <p>Cuore del sistema. Gestisce il ciclo di vita dello stream, il watchdog di riconnessione e la propagazione degli eventi verso UI e piattaforma.</p>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="badge badge-blue">Play/Pause/Resume/Stop</span>
+          <span class="badge badge-blue">Watchdog</span>
+          <span class="badge badge-blue">Reconnect</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="comp-header">
+          <div class="comp-icon">🗄️</div>
+          <div>
+            <div class="comp-title">PlatformNowPlayingStateTracker</div>
+            <div class="comp-path">Services/Audio/PlatformNowPlayingStateTracker.cs</div>
+          </div>
+        </div>
+        <p>Stato thread-safe condiviso (lock su <code>_sync</code>) per artist, title, artworkUrl, elapsed, duration, isPlaying. Gestisce il versioning dell'artwork per evitare race condition.</p>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="badge badge-purple">Thread-safe</span>
+          <span class="badge badge-purple">Artwork versioning</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="comp-header">
+          <div class="comp-icon">🤖</div>
+          <div>
+            <div class="comp-title">AndroidNowPlayingService</div>
+            <div class="comp-path">Platforms/Android/Services/</div>
+          </div>
+        </div>
+        <p>Implementazione Android di <code>IPlatformNowPlayingService</code>. Aggiorna lo <code>StateStore</code>, scarica la cover art come <code>Bitmap</code> e chiede al <code>AndroidMediaNotificationService</code> di aggiornare la notifica.</p>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="badge badge-green">MediaSession</span>
+          <span class="badge badge-green">Notifica persistente</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="comp-header">
+          <div class="comp-icon">🍎</div>
+          <div>
+            <div class="comp-title">IosNowPlayingService</div>
+            <div class="comp-path">Platforms/iOS/Services/</div>
+          </div>
+        </div>
+        <p>Implementazione iOS/Mac. Pubblica su <code>MPNowPlayingInfoCenter</code> i metadati e la cover art (<code>MPMediaItemArtwork</code>) sul main thread. Se title e artist sono vuoti, pulisce il Now Playing.</p>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="badge badge-orange">MPNowPlayingInfoCenter</span>
+          <span class="badge badge-orange">Control Center</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="comp-header">
+          <div class="comp-icon">🔔</div>
+          <div>
+            <div class="comp-title">AndroidMediaNotificationService</div>
+            <div class="comp-path">Platforms/Android/Services/</div>
+          </div>
+        </div>
+        <p>Android <code>Service</code> in foreground. Gestisce la notifica media con controlli Play/Pause/Stop. Risponde anche ai comandi da <code>MediaSession.Callback</code> (Bluetooth, auricolari).</p>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="badge badge-red">ForegroundService</span>
+          <span class="badge badge-red">Bluetooth HW controls</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="comp-header">
+          <div class="comp-icon">🖼️</div>
+          <div>
+            <div class="comp-title">RemoteArtworkLoader</div>
+            <div class="comp-path">Services/Audio/RemoteArtworkLoader.cs</div>
+          </div>
+        </div>
+        <p>Utility minimale: scarica la cover art in <code>byte[]</code> tramite l'<code>HttpClient</code> named <code>"AzuraCast"</code>. Non gestisce cache — la deduplicazione è affidata al versioning in <code>StateTracker</code>.</p>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="badge badge-gray">HttpClient</span>
+          <span class="badge badge-gray">IHttpClientFactory</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ 3. FLUSSO PLAY ═══════════════════════ -->
+  <section>
+    <h2>3. Flusso: PlayAsync</h2>
+    <p>Il flusso di avvio è asincrono e non-bloccante. <code>PlayAsync</code> imposta lo stato e delega immediatamente a <code>TryReconnectAsync</code>.</p>
+
+    <div class="diagram-wrap">
+      <svg class="flow" viewBox="0 0 660 635" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#2563eb"/>
+          </marker>
+          <marker id="arr-r" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#dc2626"/>
+          </marker>
+          <marker id="arr-g" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#16a34a"/>
+          </marker>
+        </defs>
+
+        <!-- 1. UI -->
+        <rect x="205" y="15" width="250" height="42" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+        <text x="330" y="33" text-anchor="middle" font-weight="700" fill="#1d4ed8">UI</text>
+        <text x="330" y="49" text-anchor="middle" fill="#1d4ed8" font-size="12">PlayAsync(station)</text>
+        <line x1="330" y1="57" x2="330" y2="90" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- 2. AudioService — imposta stato -->
+        <rect x="165" y="90" width="330" height="78" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="330" y="111" text-anchor="middle" font-weight="700" fill="#6d28d9">AudioService — imposta stato</text>
+        <text x="330" y="130" text-anchor="middle" fill="#6d28d9" font-size="11.5">_currentStation = station · _shouldBePlaying = true</text>
+        <text x="330" y="148" text-anchor="middle" fill="#6d28d9" font-size="11.5">_bufferingStartedAt = MinValue · guard reset</text>
+        <line x1="330" y1="168" x2="330" y2="202" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- 3. TryQueueReconnect -->
+        <rect x="178" y="202" width="304" height="52" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+        <text x="330" y="224" text-anchor="middle" font-weight="700" fill="#c2410c">TryQueueReconnect</text>
+        <text x="330" y="243" text-anchor="middle" fill="#c2410c" font-size="11.5">Interlocked.CompareExchange(ref guard, 1, 0)</text>
+        <line x1="330" y1="254" x2="330" y2="288" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- 4. TryReconnectAsync -->
+        <rect x="192" y="288" width="276" height="50" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="330" y="310" text-anchor="middle" font-weight="700" fill="#15803d">TryReconnectAsync</text>
+        <text x="330" y="328" text-anchor="middle" fill="#15803d" font-size="11" font-style="italic">schedulato su MainThread</text>
+        <line x1="330" y1="338" x2="330" y2="372" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- 5. TryOpenStreamAsync -->
+        <rect x="158" y="372" width="344" height="52" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="330" y="394" text-anchor="middle" font-weight="700" fill="#15803d">TryOpenStreamAsync</text>
+        <text x="330" y="413" text-anchor="middle" fill="#15803d" font-size="11.5">candidates: OnAirUrl → StreamUrl → Fallback</text>
+        <line x1="330" y1="424" x2="330" y2="458" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- 6. LoadStreamWithTimeoutAsync -->
+        <rect x="145" y="458" width="370" height="72" rx="8" fill="#fefce8" stroke="#ca8a04" stroke-width="1.5"/>
+        <text x="330" y="478" text-anchor="middle" font-weight="700" fill="#92400e">LoadStreamWithTimeoutAsync</text>
+        <text x="330" y="497" text-anchor="middle" fill="#92400e" font-size="11.5">HTTP GET (solo headers, timeout 5s)</text>
+        <text x="330" y="516" text-anchor="middle" fill="#92400e" font-size="11.5">verifica risposta 2xx</text>
+
+        <!-- Freccia successo -->
+        <line x1="330" y1="530" x2="330" y2="562" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-g)"/>
+        <text x="352" y="549" fill="#16a34a" font-size="11">✓ 2xx</text>
+
+        <!-- 7. MediaElement.Source -->
+        <rect x="162" y="562" width="336" height="52" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="330" y="583" text-anchor="middle" font-weight="700" fill="#15803d">MediaElement.Source = URI</text>
+        <text x="330" y="602" text-anchor="middle" fill="#15803d" font-size="11.5">ShouldAutoPlay=true → OnStateChanged: Playing</text>
+
+        <!-- Loop fallimento (destra) -->
+        <path d="M 515 494 Q 620 494 620 398 Q 620 302 502 398" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-r)"/>
+        <text x="635" y="432" fill="#dc2626" font-size="11" text-anchor="middle">✗ fallisce</text>
+        <text x="635" y="448" fill="#dc2626" font-size="11" text-anchor="middle">prossimo</text>
+        <text x="635" y="464" fill="#dc2626" font-size="11" text-anchor="middle">candidate</text>
+
+        <!-- Tutti i candidate falliti (sinistra) -->
+        <line x1="158" y1="398" x2="95" y2="398" stroke="#dc2626" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="88" y1="398" x2="88" y2="560" stroke="#dc2626" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="52" y="450" fill="#dc2626" font-size="10.5" text-anchor="middle">tutti i</text>
+        <text x="52" y="464" fill="#dc2626" font-size="10.5" text-anchor="middle">candidate</text>
+        <text x="52" y="478" fill="#dc2626" font-size="10.5" text-anchor="middle">falliti →</text>
+        <text x="52" y="492" fill="#dc2626" font-size="10.5" text-anchor="middle">watchdog</text>
+        <text x="52" y="506" fill="#dc2626" font-size="10.5" text-anchor="middle">riproverà</text>
+      </svg>
+    </div>
+
+    <div class="note">
+      La guardia <code>_reconnectGuard</code> (gestita con <code>Interlocked.CompareExchange</code>) impedisce che due riconnessioni concorrenti (watchdog + evento) si sovrappongano. Solo il primo <code>CompareExchange(0→1)</code> vince; gli altri tornano immediatamente.
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ 4. PAUSE / RESUME ═══════════════════════ -->
+  <section>
+    <h2>4. Flusso: PauseAsync e ResumeAsync</h2>
+    <p>Per un live stream la pausa tradizionale non ha senso: <code>MediaElement.Pause()</code> bufferizza, e alla ripresa si sentirebbe audio vecchio. La soluzione è chiudere la sorgente (come <em>Stop</em>) preservando stazione e metadati.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3>⏸ PauseAsync</h3>
+        <ol style="padding-left:1.2em;line-height:2">
+          <li><code>_shouldBePlaying = false</code></li>
+          <li>Reset <code>_reconnectGuard</code> a 0 (nessun reconnect in attesa)</li>
+          <li><code>StopWatchdog()</code></li>
+          <li>Su main thread: <code>mediaElement.Stop()</code> + <code>Source = null</code></li>
+          <li><code>_platformNowPlayingService.UpdatePlaybackState(false)</code></li>
+        </ol>
+        <div class="note note-warn" style="margin-top:10px">
+          La stazione e i metadati vengono mantenuti: la notifica/widget rimane visibile in stato "pausa".
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>▶️ ResumeAsync</h3>
+        <ol style="padding-left:1.2em;line-height:2">
+          <li>Guard: <code>_mediaElement</code> e <code>_currentStation</code> devono esistere</li>
+          <li><code>_shouldBePlaying = true</code></li>
+          <li>Reset <code>_bufferingStartedAt</code></li>
+          <li>Reset <code>_reconnectGuard</code> a 0</li>
+          <li>Chiama <code>TryReconnectAsync()</code> → riapertura diretta live</li>
+        </ol>
+        <div class="note note-ok" style="margin-top:10px">
+          Il resume riapre lo stream dall'inizio: l'ascoltatore torna sul punto attuale della diretta, senza ritardo di buffer.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ 5. WATCHDOG ═══════════════════════ -->
+  <section>
+    <h2>5. Watchdog e riconnessione automatica</h2>
+    <p>Il watchdog è un <code>System.Timers.Timer</code> che scatta ogni <strong>10 secondi</strong> e verifica che lo stream sia in uno stato sano.</p>
+
+    <div class="diagram-wrap">
+      <svg class="flow" viewBox="0 0 860 380" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13">
+        <defs>
+          <marker id="arr2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#2563eb"/>
+          </marker>
+          <marker id="arr2r" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#dc2626"/>
+          </marker>
+          <marker id="arr2g" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#16a34a"/>
+          </marker>
+          <marker id="arr2o" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#ea580c"/>
+          </marker>
+        </defs>
+
+        <!-- Timer tick -->
+        <rect x="10" y="150" width="130" height="50" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+        <text x="75" y="172" text-anchor="middle" font-weight="700" fill="#c2410c">Timer Tick</text>
+        <text x="75" y="190" text-anchor="middle" fill="#c2410c" font-size="11.5">ogni 10 secondi</text>
+
+        <!-- Arrow right -->
+        <line x1="140" y1="175" x2="190" y2="175" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr2o)"/>
+
+        <!-- Guard check -->
+        <rect x="190" y="140" width="175" height="70" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="277" y="162" text-anchor="middle" font-weight="700" fill="#6d28d9">Guard check</text>
+        <text x="277" y="180" text-anchor="middle" fill="#6d28d9" font-size="11.5">_shouldBePlaying?</text>
+        <text x="277" y="196" text-anchor="middle" fill="#6d28d9" font-size="11.5">_currentStation != null?</text>
+
+        <!-- No: stop -->
+        <line x1="277" y1="140" x2="277" y2="100" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr2r)"/>
+        <text x="295" y="120" fill="#dc2626" font-size="11">No → return</text>
+
+        <!-- Yes arrow -->
+        <line x1="365" y1="175" x2="415" y2="175" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+        <!-- Condition diamond area -->
+        <rect x="415" y="100" width="200" height="150" rx="8" fill="#fefce8" stroke="#ca8a04" stroke-width="1.5"/>
+        <text x="515" y="122" text-anchor="middle" font-weight="700" fill="#92400e">Analisi stato</text>
+
+        <text x="425" y="145" fill="#92400e" font-size="11.5" font-weight="600">isStale?</text>
+        <text x="425" y="161" fill="#92400e" font-size="11">stato ≠ Playing/Buffering/Opening</text>
+
+        <text x="425" y="185" fill="#92400e" font-size="11.5" font-weight="600">isStuckBuffering?</text>
+        <text x="425" y="201" fill="#92400e" font-size="11">Buffering da &gt; 1 secondo</text>
+
+        <text x="425" y="225" fill="#92400e" font-size="11.5" font-weight="600">Source == null?</text>
+        <text x="425" y="241" fill="#92400e" font-size="11">MediaElement senza sorgente</text>
+
+        <!-- Arrow to reconnect -->
+        <line x1="615" y1="175" x2="680" y2="175" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <text x="648" y="165" fill="#16a34a" font-size="11">almeno una</text>
+        <text x="648" y="179" fill="#16a34a" font-size="11">condizione vera</text>
+
+        <!-- TryQueueReconnect -->
+        <rect x="680" y="140" width="170" height="70" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="765" y="162" text-anchor="middle" font-weight="700" fill="#15803d">TryQueueReconnect</text>
+        <text x="765" y="180" text-anchor="middle" fill="#15803d" font-size="11.5">CompareExchange(0→1)</text>
+        <text x="765" y="196" text-anchor="middle" fill="#15803d" font-size="11.5">→ TryReconnectAsync</text>
+
+        <!-- Other triggers -->
+        <rect x="10" y="270" width="170" height="50" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+        <text x="95" y="290" text-anchor="middle" font-weight="700" fill="#dc2626">OnMediaFailed</text>
+        <text x="95" y="308" text-anchor="middle" fill="#dc2626" font-size="11.5">se _shouldBePlaying</text>
+
+        <rect x="195" y="270" width="170" height="50" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+        <text x="280" y="290" text-anchor="middle" font-weight="700" fill="#dc2626">OnMediaEnded</text>
+        <text x="280" y="308" text-anchor="middle" fill="#dc2626" font-size="11.5">stream terminato</text>
+
+        <rect x="380" y="270" width="200" height="50" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+        <text x="480" y="290" text-anchor="middle" font-weight="700" fill="#1d4ed8">OnConnectivityChanged</text>
+        <text x="480" y="308" text-anchor="middle" fill="#1d4ed8" font-size="11.5">Internet ripristinato</text>
+
+        <!-- Arrows from triggers to TryQueueReconnect -->
+        <line x1="95" y1="270" x2="700" y2="215" stroke="#dc2626" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr2r)"/>
+        <line x1="280" y1="270" x2="720" y2="215" stroke="#dc2626" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr2r)"/>
+        <line x1="480" y1="270" x2="750" y2="215" stroke="#2563eb" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr2)"/>
+      </svg>
+    </div>
+
+    <div class="note">
+      <strong>BufferingTimeoutSeconds = 1.0</strong> — il timeout di buffering è volutamente basso perché per uno stream live il buffering continuo indica un problema di connessione, non un normale pre-caricamento.
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ 6. STATI ═══════════════════════ -->
+  <section>
+    <h2>6. Macchina a stati del MediaElement</h2>
+    <p>Lo stato corrente è tracciato in <code>_currentState</code> e aggiornato da <code>OnStateChanged</code>.</p>
+
+    <div class="diagram-wrap">
+      <svg class="flow" viewBox="0 0 860 280" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="12">
+        <defs>
+          <marker id="arr3" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#2563eb"/>
+          </marker>
+          <marker id="arr3g" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#16a34a"/>
+          </marker>
+          <marker id="arr3r" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#dc2626"/>
+          </marker>
+          <marker id="arr3o" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#ea580c"/>
+          </marker>
+        </defs>
+
+        <!-- None -->
+        <rect x="20" y="110" width="90" height="44" rx="22" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/>
+        <text x="65" y="128" text-anchor="middle" font-weight="700" fill="#6b7280">None</text>
+        <text x="65" y="144" text-anchor="middle" fill="#6b7280" font-size="10.5">Initialize()</text>
+
+        <!-- Opening -->
+        <rect x="160" y="110" width="100" height="44" rx="22" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+        <text x="210" y="128" text-anchor="middle" font-weight="700" fill="#c2410c">Opening</text>
+        <text x="210" y="144" text-anchor="middle" fill="#c2410c" font-size="10.5">IsBuffering=true</text>
+
+        <!-- Buffering -->
+        <rect x="320" y="50" width="105" height="44" rx="22" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+        <text x="372" y="68" text-anchor="middle" font-weight="700" fill="#c2410c">Buffering</text>
+        <text x="372" y="84" text-anchor="middle" fill="#c2410c" font-size="10.5">timestamp avviato</text>
+
+        <!-- Playing -->
+        <rect x="490" y="110" width="100" height="44" rx="22" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+        <text x="540" y="130" text-anchor="middle" font-weight="700" fill="#15803d">Playing</text>
+        <text x="540" y="146" text-anchor="middle" fill="#15803d" font-size="10.5">IsPlaying=true</text>
+
+        <!-- Paused/Stopped -->
+        <rect x="490" y="190" width="115" height="44" rx="22" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/>
+        <text x="547" y="210" text-anchor="middle" font-weight="700" fill="#6b7280">Paused/Stopped</text>
+        <text x="547" y="226" text-anchor="middle" fill="#6b7280" font-size="10.5">Source=null</text>
+
+        <!-- Failed -->
+        <rect x="680" y="110" width="90" height="44" rx="22" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+        <text x="725" y="130" text-anchor="middle" font-weight="700" fill="#dc2626">Failed</text>
+        <text x="725" y="146" text-anchor="middle" fill="#dc2626" font-size="10.5">OnMediaFailed</text>
+
+        <!-- Ended -->
+        <rect x="680" y="50" width="90" height="44" rx="22" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+        <text x="725" y="68" text-anchor="middle" font-weight="700" fill="#dc2626">Ended</text>
+        <text x="725" y="84" text-anchor="middle" fill="#dc2626" font-size="10.5">OnMediaEnded</text>
+
+        <!-- Transitions -->
+        <!-- None -> Opening -->
+        <line x1="110" y1="132" x2="160" y2="132" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr3o)"/>
+        <text x="135" y="124" text-anchor="middle" fill="#ea580c" font-size="10">Source=URI</text>
+
+        <!-- Opening -> Buffering -->
+        <line x1="240" y1="115" x2="330" y2="86" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr3o)"/>
+
+        <!-- Opening -> Playing -->
+        <line x1="260" y1="132" x2="490" y2="132" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr3g)"/>
+        <text x="370" y="125" text-anchor="middle" fill="#16a34a" font-size="10">fast start</text>
+
+        <!-- Buffering -> Playing -->
+        <line x1="425" y1="72" x2="520" y2="112" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr3g)"/>
+        <text x="500" y="80" text-anchor="middle" fill="#16a34a" font-size="10">buffer pronto</text>
+
+        <!-- Playing -> Buffering (rebuffer) -->
+        <path d="M 520 110 Q 450 30 425 72" fill="none" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr3o)"/>
+        <text x="460" y="28" text-anchor="middle" fill="#ea580c" font-size="10">re-buffer</text>
+
+        <!-- Playing -> Ended -->
+        <line x1="590" y1="115" x2="680" y2="82" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr3r)"/>
+
+        <!-- Playing -> Failed -->
+        <line x1="590" y1="132" x2="680" y2="132" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr3r)"/>
+
+        <!-- Ended/Failed -> reconnect (dashed) -->
+        <path d="M 680 72 Q 620 20 160 20 Q 140 20 140 108" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr3r)"/>
+        <text x="410" y="14" text-anchor="middle" fill="#dc2626" font-size="10">TryQueueReconnect → Source=URI</text>
+
+        <!-- Playing -> Paused/Stopped -->
+        <line x1="540" y1="154" x2="547" y2="190" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr3)"/>
+        <text x="580" y="174" fill="#6b7280" font-size="10">PauseAsync/StopAsync</text>
+
+        <!-- Paused -> Opening -->
+        <path d="M 490 212 Q 200 270 180 155" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr3)"/>
+        <text x="290" y="270" text-anchor="middle" fill="#2563eb" font-size="10">ResumeAsync → Source=URI</text>
+      </svg>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <table>
+        <thead>
+          <tr><th>Stato</th><th>IsPlaying</th><th>IsBuffering</th><th>Watchdog reagisce?</th><th>Note</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>None</code></td><td>—</td><td>—</td><td>Sì (isStale)</td><td>Stato iniziale dopo <code>Initialize()</code></td></tr>
+          <tr><td><code>Opening</code></td><td>false</td><td><strong>true</strong></td><td>No</td><td>Caricamento sorgente in corso</td></tr>
+          <tr><td><code>Buffering</code></td><td>false</td><td><strong>true</strong></td><td>Solo se stuck &gt;1s</td><td><code>_bufferingStartedAt</code> registra il timestamp</td></tr>
+          <tr><td><code>Playing</code></td><td><strong>true</strong></td><td>false</td><td>No</td><td>Stato sano · <code>ShouldAutoPlay=false</code></td></tr>
+          <tr><td><code>Paused / Stopped</code></td><td>false</td><td>false</td><td>Solo se <code>_shouldBePlaying</code></td><td><code>Source=null</code> dopo PauseAsync/StopAsync</td></tr>
+          <tr><td><code>Failed</code></td><td>false</td><td>false</td><td>Sì (isStale)</td><td><code>OnMediaFailed</code> → <code>TryQueueReconnect</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ 7. METADATA & ARTWORK ═══════════════════════ -->
+  <section>
+    <h2>7. Flusso: UpdateMetadata e Artwork</h2>
+    <p>Il percorso dei metadati (chiamato dalla ViewModel dopo ogni risposta AzuraCast) passa per tre strati fino ad aggiornare la notifica/widget di sistema.</p>
+
+    <div class="diagram-wrap">
+      <svg class="flow" viewBox="0 0 860 430" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="12.5">
+        <defs>
+          <marker id="am" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#2563eb"/>
+          </marker>
+          <marker id="amg" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#16a34a"/>
+          </marker>
+          <marker id="amo" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#ea580c"/>
+          </marker>
+        </defs>
+
+        <!-- ViewModel -->
+        <rect x="10" y="125" width="120" height="50" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+        <text x="70" y="146" text-anchor="middle" font-weight="700" fill="#1d4ed8">ViewModel</text>
+        <text x="70" y="163" text-anchor="middle" fill="#1d4ed8" font-size="11">UpdateMetadata()</text>
+        <line x1="130" y1="150" x2="185" y2="150" stroke="#2563eb" stroke-width="1.5" marker-end="url(#am)"/>
+
+        <!-- AudioService -->
+        <rect x="185" y="110" width="165" height="80" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="267" y="132" text-anchor="middle" font-weight="700" fill="#6d28d9">AudioService</text>
+        <text x="267" y="150" text-anchor="middle" fill="#6d28d9" font-size="11">MediaElement.MetadataTitle</text>
+        <text x="267" y="165" text-anchor="middle" fill="#6d28d9" font-size="11">MediaElement.MetadataArtist</text>
+        <text x="267" y="180" text-anchor="middle" fill="#6d28d9" font-size="11">MetadataArtworkUrl</text>
+        <line x1="350" y1="150" x2="405" y2="150" stroke="#2563eb" stroke-width="1.5" marker-end="url(#am)"/>
+
+        <!-- IPlatformNowPlayingService -->
+        <rect x="405" y="90" width="185" height="120" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="497" y="112" text-anchor="middle" font-weight="700" fill="#15803d">IPlatformNowPlaying</text>
+        <text x="497" y="128" text-anchor="middle" fill="#15803d" font-size="10.5">Service.UpdateMetadata()</text>
+        <text x="415" y="152" fill="#15803d" font-size="11">↓ StateTracker.UpdateMetadata()</text>
+        <text x="415" y="168" fill="#15803d" font-size="11">  restituisce UpdateResult:</text>
+        <text x="415" y="184" fill="#15803d" font-size="11">  Snapshot + ArtworkUrlToLoad</text>
+        <text x="415" y="200" fill="#15803d" font-size="11">  + ArtworkVersion</text>
+
+        <!-- Freccia IPlatform → StateTracker -->
+        <line x1="497" y1="210" x2="497" y2="335" stroke="#16a34a" stroke-width="1.5" marker-end="url(#amg)"/>
+
+        <!-- PlatformNowPlayingStateTracker (spostato in basso) -->
+        <rect x="365" y="335" width="265" height="45" rx="8" fill="#ecfdf5" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="497" y="354" text-anchor="middle" font-weight="700" fill="#15803d">PlatformNowPlayingStateTracker</text>
+        <text x="497" y="371" text-anchor="middle" fill="#15803d" font-size="10.5">lock + artworkVersion++ se URL cambiato</text>
+
+        <!-- Freccia IPlatform → OS -->
+        <line x1="590" y1="150" x2="645" y2="150" stroke="#ea580c" stroke-width="1.5" marker-end="url(#amo)"/>
+
+        <!-- Android -->
+        <rect x="645" y="80" width="200" height="55" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+        <text x="745" y="100" text-anchor="middle" font-weight="700" fill="#c2410c">Android</text>
+        <text x="745" y="117" text-anchor="middle" fill="#c2410c" font-size="11">AndroidNowPlayingStateStore</text>
+        <text x="745" y="131" text-anchor="middle" fill="#c2410c" font-size="11">→ RequestRefresh notifica</text>
+
+        <!-- iOS -->
+        <rect x="645" y="155" width="200" height="55" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+        <text x="745" y="175" text-anchor="middle" font-weight="700" fill="#c2410c">iOS / Mac</text>
+        <text x="745" y="192" text-anchor="middle" fill="#c2410c" font-size="11">MPNowPlayingInfoCenter</text>
+        <text x="745" y="207" text-anchor="middle" fill="#c2410c" font-size="11">.DefaultCenter.NowPlaying</text>
+
+        <!-- Artwork async path (arco più basso, non sovrapposto) -->
+        <path d="M 497 210 Q 497 290 660 290 Q 790 290 790 215" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#am)"/>
+
+        <!-- Artwork text (sotto l'arco, separato dal box StateTracker) -->
+        <text x="660" y="315" text-anchor="middle" fill="#2563eb" font-size="10.5">se artworkUrl cambiata:</text>
+        <text x="660" y="330" text-anchor="middle" fill="#2563eb" font-size="10.5">RemoteArtworkLoader.LoadAsync()</text>
+        <text x="660" y="345" text-anchor="middle" fill="#2563eb" font-size="10.5">→ verifica versione → aggiorna bitmap</text>
+      </svg>
+    </div>
+
+    <div class="note">
+      Il controllo <code>IsArtworkCurrent(url, version)</code> previene una race condition classica: se arriva una nuova canzone mentre l'artwork precedente è ancora in download, il download "vecchio" viene silenziosamente scartato al momento di aggiornare il bitmap.
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ 8. ANDROID NOTIFICATION ═══════════════════════ -->
+  <section>
+    <h2>8. Notifica Android e MediaSession</h2>
+    <div class="card-grid">
+      <div class="card">
+        <h3>Ciclo di vita della notifica</h3>
+        <ol style="padding-left:1.2em;line-height:2;font-size:.93rem">
+          <li><code>RequestRefresh(ctx)</code> → <code>StartForegroundService(intent)</code></li>
+          <li><code>OnStartCommand</code> riceve l'action (<code>REFRESH_MEDIA_NOTIFICATION</code>)</li>
+          <li><code>PublishNotification()</code> legge snapshot e bitmap da <code>AndroidNowPlayingStateStore</code></li>
+          <li>Prima chiamata → <code>StartForeground()</code>; le successive → <code>NotificationManager.Notify()</code></li>
+          <li><code>RequestStop</code> invia <code>DISMISS</code> → <code>StopServiceNotification()</code> → <code>StopSelf()</code></li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>Actions disponibili nella notifica</h3>
+        <table>
+          <thead><tr><th>Action</th><th>Effetto</th></tr></thead>
+          <tbody>
+            <tr><td><code>PAUSE</code></td><td><code>audio.PauseAsync()</code></td></tr>
+            <tr><td><code>RESUME</code></td><td><code>audio.ResumeAsync()</code></td></tr>
+            <tr><td><code>STOP</code></td><td><code>audio.StopAsync()</code></td></tr>
+            <tr><td><code>DISMISS</code></td><td>Stop notifica senza toccare lo stream</td></tr>
+          </tbody>
+        </table>
+        <div class="note note-warn" style="margin-top:12px">
+          Le stesse azioni sono disponibili tramite <code>MediaSession.Callback</code>, che gestisce i controlli hardware (Bluetooth, auricolari, Android Auto).
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ 9. STOP / SHUTDOWN ═══════════════════════ -->
+  <section>
+    <h2>9. Flusso: Stop e Shutdown</h2>
+    <div class="card-grid">
+      <div class="card">
+        <h3>🛑 StopAsync / StopImmediate</h3>
+        <p><code>StopAsync</code> usa <code>await InvokeOnMainThreadAsync</code> ed è sicuro da chiamare da qualsiasi thread. <code>StopImmediate</code> è ottimizzato per Android <code>OnTaskRemoved</code> (swipe): se già sul main thread esegue direttamente, altrimenti usa <code>BeginInvokeOnMainThread</code> senza attesa per evitare deadlock.</p>
+        <p>Entrambi azzerano: stazione, sorgente, metadati e chiamano <code>_platformNowPlayingService.Clear()</code>.</p>
+      </div>
+      <div class="card">
+        <h3>💀 Shutdown</h3>
+        <p>Chiamato alla chiusura dell'app. Oltre alle operazioni di Stop:</p>
+        <ul style="padding-left:1.2em;line-height:2;font-size:.93rem">
+          <li>Imposta <code>_isShuttingDown = true</code> → <code>TryQueueReconnect</code> ritornerà sempre <code>false</code></li>
+          <li>Blocca <code>_reconnectGuard = 1</code> permanentemente</li>
+          <li>Deregistra <code>Connectivity.ConnectivityChanged</code></li>
+          <li>Rimuove tutti gli event handler da <code>MediaElement</code></li>
+          <li>Annulla il riferimento a <code>_mediaElement</code></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ 10. THREAD SAFETY ═══════════════════════ -->
+  <section>
+    <h2>10. Thread Safety — Riepilogo</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Meccanismo</th><th>Dove</th><th>Scopo</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Interlocked.CompareExchange</code></td>
+            <td><code>AudioService._reconnectGuard</code></td>
+            <td>Garantisce che al massimo una riconnessione sia in volo alla volta. Tutti gli altri trigger (watchdog, evento connettività, MediaFailed) vengono ignorati se già busy.</td>
+          </tr>
+          <tr>
+            <td><code>lock(_sync)</code></td>
+            <td><code>PlatformNowPlayingStateTracker</code></td>
+            <td>Protegge lo snapshot di metadati scritto dall'AudioService e letto dal platform service su thread diversi.</td>
+          </tr>
+          <tr>
+            <td><code>MainThread.InvokeOnMainThreadAsync</code></td>
+            <td><code>PauseAsync</code>, <code>StopAsync</code>, <code>LoadStreamWithTimeoutAsync</code></td>
+            <td>Tutte le operazioni su <code>MediaElement</code> devono avvenire sul thread UI. La variante <code>await</code> blocca finché l'operazione non è completata.</td>
+          </tr>
+          <tr>
+            <td><code>MainThread.BeginInvokeOnMainThread</code></td>
+            <td><code>StopImmediate</code>, <code>SetVolume</code>, <code>UpdateMetadata</code>, <code>TryQueueReconnect</code></td>
+            <td>Post fire-and-forget sul thread UI. Usato quando non è necessario attendere la risposta o quando si rischia un deadlock (es. <code>OnTaskRemoved</code>).</td>
+          </tr>
+          <tr>
+            <td>Artwork versioning (<code>_artworkVersion</code>)</td>
+            <td><code>PlatformNowPlayingStateTracker</code></td>
+            <td>Versione incrementale che permette di scartare i download di artwork obsoleti quando la canzone cambia durante il download.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+  <div style="border-top:1px solid var(--border);padding-top:20px;color:var(--text-muted);font-size:.85rem">
+    Documento generato automaticamente · RadioE45 · .NET MAUI + AzuraCast · 2026
+  </div>
+
+</div>
+</body>
+</html>

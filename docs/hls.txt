@@ -1,0 +1,51 @@
+Considerazioni sul passaggio a HLS (HTTP Live Streaming)
+==========================================================
+
+COSA NON CAMBIA
+---------------
+MediaElement su iOS/macOS (AVPlayer) e Android (ExoPlayer) supportano HLS
+nativamente. Basta che StreamUrl punti a un file .m3u8 invece che al flusso
+audio diretto. Nessuna modifica al codice del player.
+
+
+COSA CAMBIA
+-----------
+
+StreamUrl nel database
+  I valori passano da un URL diretto del flusso audio (http://.../stream)
+  a un URL di playlist HLS (http://.../stream.m3u8).
+  Solo dati, non codice.
+
+Il problema di riconnessione probabilmente scompare
+  Punto più importante. HLS è progettato esattamente per lo streaming live:
+  il server pubblica nuovi segmenti .ts in una playlist rotante, il player
+  li scarica continuamente. Al cambio brano il server aggiunge semplicemente
+  nuovi segmenti — dal punto di vista del client la connessione non si
+  interrompe mai. Il watchdog e tutta la logica di reconnect diventerebbero
+  probabilmente superflui.
+
+Latenza più alta
+  HLS introduce un ritardo tipico di 6–15 secondi tra ciò che va in onda
+  e ciò che sente l'ascoltatore (contro 1–3 secondi di un flusso HTTP diretto).
+  Questo sfasa il NowPlayingService: il polling restituirebbe info sul brano
+  corrente del server, ma l'ascoltatore starebbe ancora sentendo il brano
+  precedente. Per compensare bisognerebbe o ritardare l'aggiornamento della UI
+  o leggere i metadati in-band (vedi sotto).
+
+Metadati in-band (opzionale)
+  HLS permette di incorporare tag ID3 direttamente nel flusso. AVPlayer li
+  espone tramite AVPlayerItemMetadataOutput. Se il server li emettesse, il
+  NowPlayingService basato su polling potrebbe essere sostituito con la lettura
+  diretta dei metadati dal player, con la precisione temporale corretta.
+
+Windows
+  Il target net10.0-windows10.0.19041.0 usa il MediaPlayer di WinUI che
+  supporta HLS, ma con limitazioni su alcuni formati di playlist.
+  Da verificare al momento dell'implementazione.
+
+
+SINTESI
+-------
+Cambia solo il valore di StreamUrl nel database. Il guadagno reale è che il
+problema di reconnect al cambio brano probabilmente non esiste in HLS,
+rendendo tutta la logica di watchdog irrilevante by design.

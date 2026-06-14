@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.RadioListPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels"
+    xmlns:models="clr-namespace:RadioE45.Models"
+    x:DataType="vm:RadioListViewModel"
+    Title="Radio">
+
+    <RefreshView
+        IsRefreshing="{Binding IsBusy}"
+        Command="{Binding ForceReloadStationsCommand}">
+
+        <CollectionView
+            Margin="0,50,0,0"
+            ItemsSource="{Binding Stations}"
+            SelectionMode="Single"
+            SelectedItem="{Binding SelectedStation, Mode=TwoWay}"
+            SelectionChangedCommand="{Binding SelectAndPlayCommand}"
+            BackgroundColor="Transparent">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    Spacing="12"
+                    Padding="32">
+                    <Label
+                        Text="📻"
+                        FontSize="48"
+                        HorizontalTextAlignment="Center" />
+                    <Label
+                        Text="Nessuna stazione disponibile"
+                        Style="{StaticResource SubtitleLabel}" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:AzuraStation">
+                    <Border
+                        Style="{StaticResource CardBorder}"
+                        Margin="16,8,16,0">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+
+                            <!-- Icona stazione -->
+                            <Border
+                                Grid.Column="0"
+                                BackgroundColor="{DynamicResource Accent}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="Transparent"
+                                WidthRequest="48"
+                                HeightRequest="48"
+                                VerticalOptions="Center">
+                                <Grid>
+                                    <Image
+                                        Source="{Binding LogoUrl}"
+                                        Aspect="AspectFill"
+                                        IsVisible="{Binding LogoUrl, Converter={toolkit:IsNotNullConverter}}" />
+                                    <Label
+                                        Text ="📻"
+                                        FontSize="22"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center"
+                                        IsVisible="{Binding LogoUrl, Converter={toolkit:IsStringNullOrEmptyConverter}}" />
+                                </Grid>
+                            </Border>
+
+                            <!-- Nome e descrizione -->
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="3">
+                                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                    <Label
+                                        Text="{Binding Name}"
+                                        TextColor="{DynamicResource PrimaryText}"
+                                        FontSize="16"
+                                        FontAttributes="Bold"
+                                        VerticalOptions="Center" />
+                                    <Image
+                                        Source="heart_filled.png"
+                                        HeightRequest="14"
+                                        WidthRequest="14"
+                                        VerticalOptions="Center"
+                                        IsVisible="{Binding IsFavorite}" />
+                                </HorizontalStackLayout>
+                                <Label
+                                    Text="{Binding Description}"
+                                    TextColor="{DynamicResource MutedText}"
+                                    FontSize="13"
+                                    IsVisible="{Binding IsOnline}" />
+                                <Label
+                                    Text="● Off Line"
+                                    TextColor="{DynamicResource MutedText}"
+                                    FontSize="12"
+                                    FontAttributes="Italic"
+                                    IsVisible="{Binding IsOnline, Converter={toolkit:InvertedBoolConverter}}" />
+                            </VerticalStackLayout>
+
+                            <!-- Indicatore stazione attiva -->
+                            <Label
+                                Grid.Column="2"
+                                Text="▶"
+                                TextColor="{DynamicResource Accent}"
+                                FontSize="16"
+                                VerticalOptions="Center"
+                                IsVisible="{Binding IsActive}" />
+
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.Footer>
+                <BoxView HeightRequest="20" Color="Transparent" />
+            </CollectionView.Footer>
+
+        </CollectionView>
+    </RefreshView>
+
+</ContentPage>

@@ -1,0 +1,75 @@
+# Privacy Policy
+
+Ultimo aggiornamento: 13 giugno 2026
+
+## 1. Introduzione
+
+Questa Privacy Policy descrive le modalità di trattamento delle informazioni relative all'utilizzo dell'applicazione RadioE45 ("App"), sviluppata e distribuita da Radio E45.
+
+L'App consente esclusivamente l'ascolto di flussi audio streaming forniti tramite la piattaforma AzuraCast.
+
+## 2. Raccolta dei dati personali
+
+L'App non raccoglie, memorizza o condivide dati personali identificativi degli utenti.
+
+In particolare, l'App non richiede:
+
+- registrazione di un account;
+- autenticazione tramite credenziali;
+- accesso ai contatti;
+- accesso alle fotografie;
+- accesso alla posizione geografica;
+- accesso al microfono per finalità di registrazione;
+- accesso alla fotocamera.
+
+## 3. Dati tecnici e di connessione
+
+Per consentire la riproduzione dello streaming audio, il dispositivo dell'utente si connette ai server che ospitano i flussi radio.
+
+Durante tale connessione, i server di streaming e i servizi di rete utilizzati potrebbero registrare automaticamente informazioni tecniche standard quali:
+
+- indirizzo IP;
+- data e ora della connessione;
+- informazioni sul dispositivo e sul browser/sistema operativo;
+- statistiche di ascolto aggregate.
+
+Tali dati sono trattati dai gestori dell'infrastruttura di streaming esclusivamente per finalità tecniche, statistiche e di sicurezza.
+
+## 4. Utilizzo della piattaforma AzuraCast
+
+L'App utilizza contenuti audio e servizi forniti tramite la piattaforma AzuraCast.
+
+Le informazioni eventualmente raccolte dai server AzuraCast o dai servizi infrastrutturali collegati sono soggette alle rispettive politiche sulla privacy dei gestori del servizio.
+
+## 5. Cookie e tecnologie simili
+
+L'App non utilizza cookie.
+
+Eventuali tecnologie di tracciamento possono essere utilizzate esclusivamente dai servizi web o dai server di streaming esterni necessari all'erogazione del servizio audio.
+
+## 6. Condivisione dei dati
+
+L'App non vende, trasferisce o condivide dati personali degli utenti con terze parti.
+
+## 7. Sicurezza
+
+L'App è progettata per minimizzare il trattamento dei dati e utilizza esclusivamente le connessioni necessarie alla riproduzione dei contenuti audio.
+
+## 8. Minori
+
+L'App può essere utilizzata da utenti di qualsiasi età. Non vengono raccolti consapevolmente dati personali di minori.
+
+## 9. Modifiche alla presente Privacy Policy
+
+Ci riserviamo il diritto di aggiornare questa Privacy Policy in qualsiasi momento. Eventuali modifiche saranno pubblicate attraverso i canali ufficiali dell'App.
+
+## 10. Contatti
+
+Per qualsiasi domanda relativa alla presente Privacy Policy è possibile contattare:
+
+Radio E45
+Email: support@radioe45.it
+
+## 11. Conformità normativa
+
+La presente Privacy Policy è redatta nel rispetto delle normative applicabili in materia di protezione dei dati personali, incluse, ove applicabili, il Regolamento (UE) 2016/679 ("GDPR") e le altre disposizioni vigenti.

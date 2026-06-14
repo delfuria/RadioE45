@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RadioE45 — Istruzioni per i Tester</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      line-height: 1.6;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1d1d1f;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      margin-top: 0.5rem;
+      color: #6e6e73;
+      font-size: 1rem;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #e8f4fd;
+      color: #0071e3;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.2rem 0.7rem;
+      border-radius: 20px;
+      margin-top: 0.6rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #1d1d1f;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      background: #0071e3;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .card p {
+      color: #3a3a3c;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p:last-child { margin-bottom: 0; }
+
+    ol, ul {
+      padding-left: 1.25rem;
+      color: #3a3a3c;
+      font-size: 0.95rem;
+    }
+
+    li { margin-bottom: 0.4rem; }
+
+    code {
+      background: #f0f0f5;
+      padding: 0.15rem 0.45rem;
+      border-radius: 5px;
+      font-family: "SF Mono", Menlo, Monaco, monospace;
+      font-size: 0.85rem;
+      color: #c0392b;
+    }
+
+    .note {
+      background: #fff8e1;
+      border-left: 4px solid #f5a623;
+      border-radius: 0 8px 8px 0;
+      padding: 0.85rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.88rem;
+      color: #5a4000;
+    }
+
+    .note strong { color: #3d2b00; }
+
+    .tip {
+      background: #e8f5e9;
+      border-left: 4px solid #34c759;
+      border-radius: 0 8px 8px 0;
+      padding: 0.85rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.88rem;
+      color: #1a3d22;
+    }
+
+    .screenshot-hint {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      background: #f5f5f7;
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.88rem;
+      color: #3a3a3c;
+    }
+
+    .screenshot-hint .icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #e5e5ea;
+      margin: 1.75rem 0;
+    }
+
+    footer {
+      text-align: center;
+      color: #8e8e93;
+      font-size: 0.82rem;
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 480px) {
+      header h1 { font-size: 1.5rem; }
+      .card { padding: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <h1>RadioE45</h1>
+      <p>Guida all'installazione per tester</p>
+      <span class="badge">Versione 0.5.1 — Beta</span>
+    </header>
+
+    <!-- Step 1 -->
+    <div class="card">
+      <h2><span class="step-num">1</span> Decomprimi il file ZIP</h2>
+      <p>Hai ricevuto un file chiamato <code>RadioE45-v0.5.1.zip</code>.</p>
+      <p>Fai doppio clic sul file per decomprimerlo. Troverai l'app <code>RadioE45.app</code> nella stessa cartella.</p>
+      <div class="tip">
+        Sposta <code>RadioE45.app</code> nella cartella <strong>Applicazioni</strong> trascinandola
+        dal Finder su <em>Applicazioni</em> nella barra laterale.
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="card">
+      <h2><span class="step-num">2</span> Primo avvio — sblocca l'app</h2>
+      <p>
+        macOS blocca le app non scaricate dall'App Store. Per sbloccarla
+        basta un passaggio aggiuntivo, che vai a fare solo la prima volta.
+      </p>
+
+      <div class="screenshot-hint">
+        <span class="icon">👆</span>
+        <div>
+          <strong>Tasto destro del mouse</strong> sull'icona di <code>RadioE45.app</code>
+          (oppure <strong>Control + clic</strong> sul trackpad)
+          → seleziona <strong>Apri</strong> dal menu contestuale.
+        </div>
+      </div>
+
+      <div class="screenshot-hint" style="margin-top: 0.5rem;">
+        <span class="icon">✅</span>
+        <div>
+          Nella finestra di avviso che compare, clicca nuovamente su <strong>Apri</strong>.
+          L'app si avvia e da questo momento si aprirà normalmente con doppio clic.
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>Non vedi il pulsante "Apri"?</strong> Vai in
+        <strong>Impostazioni di Sistema → Privacy e Sicurezza</strong>,
+        scorri in basso e clicca <strong>"Apri comunque"</strong> accanto al nome di RadioE45.
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="card">
+      <h2><span class="step-num">3</span> Avvii successivi</h2>
+      <p>
+        Dopo il primo sblocco, apri RadioE45 normalmente con doppio clic
+        sull'icona, esattamente come qualsiasi altra app.
+      </p>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Problemi -->
+    <div class="card">
+      <h2>Risoluzione problemi</h2>
+
+      <p><strong>macOS dice "RadioE45 è danneggiata"</strong></p>
+      <p>Apri il Terminale e incolla questo comando, poi premi Invio:</p>
+      <p><code>xattr -d com.apple.quarantine ~/Applications/RadioE45.app</code></p>
+      <p style="margin-top:0.5rem;">
+        Se hai copiato l'app in una posizione diversa, sostituisci il percorso di conseguenza.
+        Poi riprova ad aprire l'app normalmente.
+      </p>
+
+      <div style="margin-top: 1rem;">
+        <p><strong>L'app non si avvia o si chiude subito</strong></p>
+        <p>Contatta lo sviluppatore indicando il modello del Mac e la versione di macOS
+        (menu Apple → Informazioni su questo Mac).</p>
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="card">
+      <h2>Come inviare feedback</h2>
+      <p>
+        Scrivi allo sviluppatore descrivendo il problema o il suggerimento.
+        Se l'app si blocca, indica cosa stavi facendo al momento del crash
+        e la versione di macOS che usi.
+      </p>
+    </div>
+
+    <footer>
+      RadioE45 v0.5.1 — Build di test, non destinata alla distribuzione pubblica.<br/>
+      Grazie per il tuo supporto!
+    </footer>
+
+  </div>
+</body>
+</html>

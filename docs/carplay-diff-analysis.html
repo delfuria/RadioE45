@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CarPlay — Analisi delle differenze implementative</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --surface-alt: #f1f3f5;
+    --border: #dee2e6;
+    --accent: #1971c2;
+    --accent-light: #e7f5ff;
+    --accent-mid: #74c0fc;
+    --green: #2f9e44;
+    --green-light: #ebfbee;
+    --red: #c92a2a;
+    --red-light: #fff5f5;
+    --orange: #e67700;
+    --orange-light: #fff9db;
+    --text: #212529;
+    --text-muted: #868e96;
+    --text-light: #495057;
+    --code-bg: #f1f3f5;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 48px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: var(--shadow);
+  }
+
+  header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  header .subtitle {
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  header .commits {
+    margin-top: 10px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .commit-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 12px;
+    color: var(--text-light);
+  }
+
+  .commit-badge .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-old { background: var(--orange); }
+  .dot-new { background: var(--green); }
+
+  main {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  section { margin-bottom: 56px; }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  h2 .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 10px;
+  }
+
+  p { margin-bottom: 12px; color: var(--text-light); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .card + .card { margin-top: 12px; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  .col-old { border-top: 3px solid var(--orange); }
+  .col-new { border-top: 3px solid var(--green); }
+
+  .col-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 10px;
+  }
+  .col-old .col-label { color: var(--orange); }
+  .col-new .col-label { color: var(--green); }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+    color: var(--text);
+  }
+
+  code {
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 12.5px;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  th {
+    background: var(--surface-alt);
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    border-bottom: 2px solid var(--border);
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text-light);
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--accent-light); }
+
+  td:first-child { font-weight: 500; color: var(--text); white-space: nowrap; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+  }
+  .tag-new  { background: var(--green-light); color: var(--green); }
+  .tag-changed { background: var(--orange-light); color: var(--orange); }
+  .tag-removed { background: var(--red-light); color: var(--red); }
+  .tag-structural { background: var(--accent-light); color: var(--accent); }
+
+  .svg-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+    text-align: center;
+  }
+
+  .note {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    color: var(--text-light);
+    margin-top: 16px;
+  }
+  .note strong { color: var(--accent); }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .summary-card .sc-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .summary-card .sc-val {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  hr.sep {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Apple CarPlay — Analisi delle differenze implementative</h1>
+  <div class="subtitle">RadioE45 · .NET MAUI 10 · Piattaforma iOS</div>
+  <div class="commits">
+    <span class="commit-badge"><span class="dot dot-old"></span>3480aa5 · Initial Apple CarPlay and Android Auto support</span>
+    <span class="commit-badge"><span class="dot dot-new"></span>43630a1 · HEAD (Fixed carplay support)</span>
+  </div>
+</header>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════════
+     SEZIONE 1 — FLUSSO DI NAVIGAZIONE
+════════════════════════════════════════════════════ -->
+<section>
+  <h2><span class="num">1</span> Flusso di navigazione CarPlay</h2>
+  <p>Il cambiamento più visibile per l'utente: il template radice e la direzione della navigazione sono stati invertiti.</p>
+
+  <div class="svg-wrapper">
+    <svg width="900" height="300" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+
+      <!-- ── LEGENDA ── -->
+      <text x="20" y="22" font-size="11" font-weight="700" fill="#868e96" letter-spacing=".08em">PRIMA (3480aa5)</text>
+      <text x="470" y="22" font-size="11" font-weight="700" fill="#868e96" letter-spacing=".08em">DOPO (HEAD)</text>
+      <line x1="450" y1="10" x2="450" y2="290" stroke="#dee2e6" stroke-width="1" stroke-dasharray="4,4"/>
+
+      <!-- ═══ FLUSSO PRIMA ═══ -->
+
+      <!-- NowPlaying ROOT -->
+      <rect x="30" y="40" width="160" height="64" rx="8" fill="#fff9db" stroke="#e67700" stroke-width="1.5"/>
+      <text x="110" y="62" text-anchor="middle" font-size="11" font-weight="700" fill="#e67700">CPNowPlayingTemplate</text>
+      <text x="110" y="78" text-anchor="middle" font-size="10" fill="#868e96">(root)</text>
+      <rect x="44" y="88" width="52" height="10" rx="3" fill="#e67700" opacity=".15"/>
+      <text x="70" y="97" text-anchor="middle" font-size="8" fill="#e67700">Artwork</text>
+      <rect x="104" y="88" width="72" height="10" rx="3" fill="#e67700" opacity=".15"/>
+      <text x="140" y="97" text-anchor="middle" font-size="8" fill="#e67700">Titolo brano</text>
+
+      <!-- freccia tap icona lista -->
+      <line x1="190" y1="72" x2="240" y2="72" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="215" y="63" text-anchor="middle" font-size="9" fill="#868e96">tap</text>
+      <text x="215" y="85" text-anchor="middle" font-size="9" fill="#868e96">icona lista</text>
+
+      <!-- Lista stazioni PUSHED -->
+      <rect x="240" y="40" width="160" height="64" rx="8" fill="#f1f3f5" stroke="#adb5bd" stroke-width="1.5"/>
+      <text x="320" y="62" text-anchor="middle" font-size="11" font-weight="700" fill="#495057">CPListTemplate</text>
+      <text x="320" y="78" text-anchor="middle" font-size="10" fill="#868e96">(pushed)</text>
+
+      <!-- freccia tap stazione -->
+      <line x1="240" y1="148" x2="170" y2="148" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="205" y="138" text-anchor="middle" font-size="9" fill="#868e96">tap stazione</text>
+      <text x="205" y="160" text-anchor="middle" font-size="9" fill="#868e96">→ pop</text>
+
+      <!-- barra pulsante -->
+      <rect x="365" y="52" width="18" height="18" rx="3" fill="#e67700" opacity=".2"/>
+      <text x="374" y="65" text-anchor="middle" font-size="9" fill="#e67700">♪</text>
+      <line x1="365" y1="61" x2="400" y2="61" stroke="#e67700" stroke-width="1" stroke-dasharray="3,2" opacity=".6"/>
+      <text x="410" y="58" font-size="8.5" fill="#e67700">pulsante barra</text>
+      <text x="410" y="70" font-size="8.5" fill="#e67700">aggiunto al</text>
+      <text x="410" y="82" font-size="8.5" fill="#e67700">NowPlaying</text>
+
+      <!-- etichetta stato play -->
+      <rect x="30" y="140" width="370" height="44" rx="6" fill="#fff9db" stroke="#e67700" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="215" y="158" text-anchor="middle" font-size="10" fill="#e67700" font-weight="600">PlayAsync() sincrono (fire-and-forget)</text>
+      <text x="215" y="174" text-anchor="middle" font-size="9" fill="#868e96">PopTemplate() chiamato immediatamente dopo, senza await</text>
+
+      <!-- etichetta servizi DI -->
+      <rect x="30" y="200" width="370" height="44" rx="6" fill="#f1f3f5" stroke="#dee2e6" stroke-width="1"/>
+      <text x="215" y="218" text-anchor="middle" font-size="10" fill="#495057" font-weight="600">Servizi risolti on-demand</text>
+      <text x="215" y="234" text-anchor="middle" font-size="9" fill="#868e96">IPlatformApplication.Current?.Services richiamato ad ogni operazione</text>
+
+      <!-- ═══ FLUSSO DOPO ═══ -->
+
+      <!-- Lista ROOT -->
+      <rect x="470" y="40" width="160" height="64" rx="8" fill="#ebfbee" stroke="#2f9e44" stroke-width="1.5"/>
+      <text x="550" y="62" text-anchor="middle" font-size="11" font-weight="700" fill="#2f9e44">CPListTemplate</text>
+      <text x="550" y="78" text-anchor="middle" font-size="10" fill="#868e96">(root)</text>
+
+      <!-- subtitle dinamico -->
+      <line x1="630" y1="61" x2="670" y2="61" stroke="#2f9e44" stroke-width="1" stroke-dasharray="3,2" opacity=".6"/>
+      <text x="680" y="55" font-size="8.5" fill="#2f9e44">subtitle:</text>
+      <text x="680" y="67" font-size="8.5" fill="#2f9e44">titolo brano</text>
+      <text x="680" y="79" font-size="8.5" fill="#2f9e44">o descrizione</text>
+
+      <!-- freccia tap stazione -->
+      <line x1="630" y1="72" x2="680" y2="118" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="5,3"/>
+      <text x="672" y="105" text-anchor="middle" font-size="9" fill="#868e96">tap</text>
+      <text x="672" y="117" text-anchor="middle" font-size="9" fill="#868e96">stazione</text>
+
+      <!-- NowPlaying PUSHED -->
+      <rect x="700" y="120" width="160" height="64" rx="8" fill="#e7f5ff" stroke="#1971c2" stroke-width="1.5"/>
+      <text x="780" y="142" text-anchor="middle" font-size="11" font-weight="700" fill="#1971c2">CPNowPlayingTemplate</text>
+      <text x="780" y="158" text-anchor="middle" font-size="10" fill="#868e96">(pushed)</text>
+      <text x="780" y="172" text-anchor="middle" font-size="8" fill="#1971c2">dopo await PlayAsync()</text>
+
+      <!-- etichetta stato play -->
+      <rect x="470" y="140" width="370" height="44" rx="6" fill="#ebfbee" stroke="#2f9e44" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="655" y="158" text-anchor="middle" font-size="10" fill="#2f9e44" font-weight="600">await PlayAsync() → poi PushTemplate</text>
+      <text x="655" y="174" text-anchor="middle" font-size="9" fill="#868e96">Navigazione avviene solo quando la riproduzione è avviata</text>
+
+      <!-- etichetta servizi DI -->
+      <rect x="470" y="200" width="370" height="44" rx="6" fill="#f1f3f5" stroke="#dee2e6" stroke-width="1"/>
+      <text x="655" y="218" text-anchor="middle" font-size="10" fill="#495057" font-weight="600">IServiceScope creato in DidConnect</text>
+      <text x="655" y="234" text-anchor="middle" font-size="9" fill="#868e96">Tutti i servizi risolti una volta sola, disposti in DidDisconnect</text>
+
+      <!-- marker frecce -->
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#adb5bd"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="note">
+    <strong>Impatto UX:</strong> Nella versione iniziale l'utente entrava subito nel NowPlaying (che mostrava uno schermo nero se niente era in riproduzione). Ora vede subito la lista stazioni — più intuitivo per un primo avvio CarPlay.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SEZIONE 2 — STRUTTURA CLASSI
+════════════════════════════════════════════════════ -->
+<section>
+  <h2><span class="num">2</span> Struttura delle classi iOS</h2>
+  <p>Sono stati aggiunti file, modificata la gerarchia di ereditarietà e ristrutturato il wiring delle scene.</p>
+
+  <div class="svg-wrapper">
+    <svg width="860" height="340" viewBox="0 0 860 340" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+      <defs>
+        <marker id="inh" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+          <path d="M0,0 L0,10 L10,5 z" fill="none" stroke="#adb5bd" stroke-width="1.5"/>
+        </marker>
+        <marker id="dep" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+          <path d="M0,0 L0,10 L10,5 z" fill="#74c0fc"/>
+        </marker>
+      </defs>
+
+      <!-- ── PRIMA ── -->
+      <text x="30" y="20" font-size="11" font-weight="700" fill="#868e96" letter-spacing=".08em">PRIMA</text>
+
+      <!-- NSObject -->
+      <rect x="30" y="30" width="180" height="44" rx="6" fill="#f1f3f5" stroke="#adb5bd" stroke-width="1.5"/>
+      <text x="120" y="48" text-anchor="middle" font-size="11" fill="#868e96">NSObject</text>
+      <text x="120" y="64" text-anchor="middle" font-size="9" fill="#adb5bd">Foundation</text>
+
+      <line x1="120" y1="74" x2="120" y2="94" stroke="#adb5bd" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#inh)"/>
+      <text x="135" y="88" font-size="9" fill="#adb5bd">implements</text>
+
+      <!-- ICPTemplateApplicationSceneDelegate -->
+      <rect x="30" y="94" width="180" height="44" rx="6" fill="#fff9db" stroke="#e67700" stroke-width="1.5"/>
+      <text x="120" y="112" text-anchor="middle" font-size="10" fill="#e67700">ICPTemplate</text>
+      <text x="120" y="126" text-anchor="middle" font-size="10" fill="#e67700">ApplicationSceneDelegate</text>
+
+      <line x1="120" y1="138" x2="120" y2="158" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#inh)"/>
+
+      <!-- CarPlaySceneDelegate PRIMA -->
+      <rect x="30" y="158" width="180" height="52" rx="6" fill="#fff9db" stroke="#e67700" stroke-width="2"/>
+      <text x="120" y="177" text-anchor="middle" font-size="11" font-weight="700" fill="#e67700">CarPlaySceneDelegate</text>
+      <text x="120" y="193" text-anchor="middle" font-size="9" fill="#adb5bd">NSObject + interfaccia</text>
+      <text x="120" y="205" text-anchor="middle" font-size="9" fill="#adb5bd">_controller, _logger</text>
+
+      <!-- AppDelegate PRIMA -->
+      <rect x="30" y="242" width="180" height="52" rx="6" fill="#f1f3f5" stroke="#adb5bd" stroke-width="1.5"/>
+      <text x="120" y="261" text-anchor="middle" font-size="11" font-weight="600" fill="#495057">AppDelegate</text>
+      <text x="120" y="277" text-anchor="middle" font-size="9" fill="#868e96">FinishedLaunching</text>
+      <text x="120" y="291" text-anchor="middle" font-size="9" fill="#868e96">BeginReceivingRemoteControl</text>
+
+      <!-- ── DOPO ── -->
+      <text x="430" y="20" font-size="11" font-weight="700" fill="#868e96" letter-spacing=".08em">DOPO</text>
+      <line x1="410" y1="15" x2="410" y2="330" stroke="#dee2e6" stroke-width="1" stroke-dasharray="5,4"/>
+
+      <!-- CPTemplateApplicationSceneDelegate -->
+      <rect x="430" y="30" width="195" height="44" rx="6" fill="#f1f3f5" stroke="#adb5bd" stroke-width="1.5"/>
+      <text x="527" y="48" text-anchor="middle" font-size="10" fill="#868e96">CPTemplateApplication</text>
+      <text x="527" y="64" text-anchor="middle" font-size="10" fill="#868e96">SceneDelegate (base class)</text>
+
+      <line x1="527" y1="74" x2="527" y2="94" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#inh)"/>
+
+      <!-- CarPlaySceneDelegate DOPO -->
+      <rect x="430" y="94" width="195" height="68" rx="6" fill="#ebfbee" stroke="#2f9e44" stroke-width="2"/>
+      <text x="527" y="114" text-anchor="middle" font-size="11" font-weight="700" fill="#2f9e44">CarPlaySceneDelegate</text>
+      <text x="527" y="130" text-anchor="middle" font-size="9" fill="#868e96">: CPTemplateApplicationSceneDelegate</text>
+      <text x="527" y="145" text-anchor="middle" font-size="9" fill="#2f9e44">_scope, _audioService, _nowPlayingService</text>
+      <text x="527" y="158" text-anchor="middle" font-size="9" fill="#2f9e44">_catalog, _logger, _controller</text>
+
+      <!-- SceneDelegate NUOVO -->
+      <rect x="648" y="94" width="180" height="68" rx="6" fill="#e7f5ff" stroke="#1971c2" stroke-width="2"/>
+      <text x="738" y="113" text-anchor="middle" font-size="11" font-weight="700" fill="#1971c2">SceneDelegate</text>
+      <text x="738" y="129" text-anchor="middle" font-size="9" fill="#868e96">: MauiUISceneDelegate</text>
+      <text x="738" y="145" text-anchor="middle" font-size="9" fill="#1971c2">classe vuota</text>
+      <text x="738" y="158" text-anchor="middle" font-size="9" fill="#1971c2">MAUI gestisce il wiring</text>
+      <rect x="785" y="94" width="38" height="16" rx="3" fill="#1971c2"/>
+      <text x="804" y="106" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">NEW</text>
+
+      <!-- AppDelegate DOPO -->
+      <rect x="430" y="194" width="195" height="100" rx="6" fill="#ebfbee" stroke="#2f9e44" stroke-width="2"/>
+      <text x="527" y="214" text-anchor="middle" font-size="11" font-weight="700" fill="#2f9e44">AppDelegate</text>
+      <text x="527" y="230" text-anchor="middle" font-size="9" fill="#2f9e44">FinishedLaunching</text>
+      <text x="527" y="245" text-anchor="middle" font-size="9" fill="#2f9e44">GetConfiguration() ← NEW</text>
+      <text x="527" y="260" text-anchor="middle" font-size="9" fill="#2f9e44">SetupRemoteCommandCenter() ← NEW</text>
+      <text x="527" y="278" text-anchor="middle" font-size="8" fill="#868e96">Play/Pause/Toggle + disabilita Seek</text>
+      <text x="527" y="291" text-anchor="middle" font-size="8" fill="#868e96">MPRemoteCommandCenter</text>
+
+      <!-- freccia AppDelegate → CarPlaySceneDelegate -->
+      <line x1="527" y1="194" x2="527" y2="162" stroke="#2f9e44" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#dep)"/>
+      <text x="535" y="183" font-size="8.5" fill="#2f9e44">GetConfiguration</text>
+      <text x="535" y="193" font-size="8.5" fill="#2f9e44">assegna DelegateType</text>
+
+      <!-- freccia AppDelegate → SceneDelegate -->
+      <path d="M625,244 Q680,244 680,162" fill="none" stroke="#1971c2" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#dep)"/>
+      <text x="655" y="215" font-size="8.5" fill="#1971c2">main scene</text>
+
+    </svg>
+  </div>
+
+  <div class="two-col" style="margin-top:16px">
+    <div class="card col-old">
+      <div class="col-label">Prima</div>
+      <pre>public sealed class CarPlaySceneDelegate
+    : NSObject, ICPTemplateApplicationSceneDelegate
+{
+    private CPInterfaceController? _controller;
+    private ILogger? _logger;
+
+    public void DidConnect(...)   // non override
+    public void DidDisconnect(...)
+}</pre>
+    </div>
+    <div class="card col-new">
+      <div class="col-label">Dopo</div>
+      <pre>public sealed class CarPlaySceneDelegate
+    : CPTemplateApplicationSceneDelegate
+{
+    private IServiceScope? _scope;
+    private IAudioService? _audioService;
+    private INowPlayingService? _nowPlayingService;
+    private IAzuraStationCatalog? _catalog;
+    private ILogger? _logger;
+    private CPInterfaceController? _controller;
+
+    public override void DidConnect(...)
+    public override void DidDisconnect(...)
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SEZIONE 3 — SCENE MANIFEST E ROUTING
+════════════════════════════════════════════════════ -->
+<section>
+  <h2><span class="num">3</span> Scene manifest e routing <code>AppDelegate</code></h2>
+  <p>Nella versione iniziale il manifest era commentato e il routing scene non esisteva. Ora entrambi sono attivi.</p>
+
+  <div class="svg-wrapper">
+    <svg width="860" height="360" viewBox="0 0 860 360" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+      <defs>
+        <marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#74c0fc"/>
+        </marker>
+        <marker id="a3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#2f9e44"/>
+        </marker>
+        <marker id="a4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#e67700"/>
+        </marker>
+      </defs>
+
+      <!-- ── PRIMA ── -->
+      <text x="30" y="20" font-size="11" font-weight="700" fill="#868e96" letter-spacing=".08em">PRIMA — routing implicito da Info.plist (commentato)</text>
+
+      <!-- iOS avvia app -->
+      <rect x="30" y="36" width="120" height="40" rx="6" fill="#f1f3f5" stroke="#adb5bd" stroke-width="1.5"/>
+      <text x="90" y="56" text-anchor="middle" font-size="11" fill="#495057">iOS connette</text>
+      <text x="90" y="70" text-anchor="middle" font-size="9" fill="#868e96">CPSession</text>
+
+      <!-- freccia -->
+      <line x1="150" y1="56" x2="196" y2="56" stroke="#e67700" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#a4)"/>
+      <text x="173" y="46" text-anchor="middle" font-size="9" fill="#e67700">manifest</text>
+      <text x="173" y="68" text-anchor="middle" font-size="9" fill="#e67700">commentato</text>
+
+      <!-- X -->
+      <rect x="196" y="36" width="140" height="40" rx="6" fill="#fff5f5" stroke="#c92a2a" stroke-width="1.5"/>
+      <text x="266" y="56" text-anchor="middle" font-size="11" fill="#c92a2a">Nessun routing</text>
+      <text x="266" y="70" text-anchor="middle" font-size="9" fill="#c92a2a">CarPlay non funziona</text>
+
+      <!-- ── DOPO ── -->
+      <text x="30" y="120" font-size="11" font-weight="700" fill="#868e96" letter-spacing=".08em">DOPO — routing in codice (GetConfiguration) + manifest iniettato</text>
+
+      <!-- iOS launch -->
+      <rect x="30" y="136" width="130" height="52" rx="6" fill="#f1f3f5" stroke="#adb5bd" stroke-width="1.5"/>
+      <text x="95" y="156" text-anchor="middle" font-size="11" fill="#495057">iOS avvia</text>
+      <text x="95" y="172" text-anchor="middle" font-size="9" fill="#868e96">scene session</text>
+      <text x="95" y="184" text-anchor="middle" font-size="9" fill="#868e96">(main o CarPlay)</text>
+
+      <line x1="160" y1="162" x2="200" y2="162" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#a2)"/>
+
+      <!-- GetConfiguration -->
+      <rect x="200" y="136" width="180" height="52" rx="6" fill="#e7f5ff" stroke="#1971c2" stroke-width="2"/>
+      <text x="290" y="156" text-anchor="middle" font-size="11" font-weight="700" fill="#1971c2">AppDelegate</text>
+      <text x="290" y="170" text-anchor="middle" font-size="10" fill="#1971c2">GetConfiguration()</text>
+      <text x="290" y="184" text-anchor="middle" font-size="9" fill="#868e96">controlla session.Role</text>
+
+      <!-- branching -->
+      <line x1="380" y1="162" x2="420" y2="130" stroke="#adb5bd" stroke-width="1.5"/>
+      <line x1="380" y1="162" x2="420" y2="195" stroke="#adb5bd" stroke-width="1.5"/>
+
+      <!-- CarPlay branch -->
+      <rect x="420" y="106" width="175" height="48" rx="6" fill="#ebfbee" stroke="#2f9e44" stroke-width="1.5"/>
+      <text x="507" y="126" text-anchor="middle" font-size="10" font-weight="600" fill="#2f9e44">Role = CarTemplateApplication</text>
+      <text x="507" y="142" text-anchor="middle" font-size="9" fill="#868e96">→ CarPlaySceneDelegate</text>
+
+      <line x1="595" y1="130" x2="635" y2="130" stroke="#2f9e44" stroke-width="1.5" marker-end="url(#a3)"/>
+
+      <rect x="635" y="106" width="160" height="48" rx="6" fill="#ebfbee" stroke="#2f9e44" stroke-width="2"/>
+      <text x="715" y="126" text-anchor="middle" font-size="11" font-weight="700" fill="#2f9e44">CarPlaySceneDelegate</text>
+      <text x="715" y="142" text-anchor="middle" font-size="9" fill="#868e96">DidConnect → lista stazioni</text>
+
+      <!-- Main branch -->
+      <rect x="420" y="172" width="175" height="48" rx="6" fill="#e7f5ff" stroke="#1971c2" stroke-width="1.5"/>
+      <text x="507" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#1971c2">Role = WindowScene</text>
+      <text x="507" y="208" text-anchor="middle" font-size="9" fill="#868e96">→ SceneDelegate</text>
+
+      <line x1="595" y1="196" x2="635" y2="196" stroke="#1971c2" stroke-width="1.5" marker-end="url(#a2)"/>
+
+      <rect x="635" y="172" width="160" height="48" rx="6" fill="#e7f5ff" stroke="#1971c2" stroke-width="2"/>
+      <text x="715" y="192" text-anchor="middle" font-size="11" font-weight="700" fill="#1971c2">SceneDelegate</text>
+      <text x="715" y="208" text-anchor="middle" font-size="9" fill="#868e96">MauiUISceneDelegate → MAUI</text>
+
+      <!-- Info.plist box -->
+      <rect x="30" y="260" width="800" height="80" rx="8" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1.5"/>
+      <text x="45" y="282" font-size="11" font-weight="700" fill="#495057">Info.plist (source, iniettato da script)</text>
+
+      <!-- UIWindowScene entry -->
+      <rect x="45" y="290" width="240" height="38" rx="5" fill="#e7f5ff" stroke="#1971c2" stroke-width="1"/>
+      <text x="165" y="307" text-anchor="middle" font-size="10" font-weight="600" fill="#1971c2">UIWindowSceneSessionRoleApplication</text>
+      <text x="165" y="322" text-anchor="middle" font-size="9" fill="#868e96">__MAUI_DEFAULT_SCENE_CONFIGURATION__</text>
+
+      <!-- CPTemplate entry -->
+      <rect x="305" y="290" width="260" height="38" rx="5" fill="#ebfbee" stroke="#2f9e44" stroke-width="1"/>
+      <text x="435" y="307" text-anchor="middle" font-size="10" font-weight="600" fill="#2f9e44">CPTemplateApplicationSceneSession...</text>
+      <text x="435" y="322" text-anchor="middle" font-size="9" fill="#868e96">CarPlay Configuration → CarPlaySceneDelegate</text>
+
+      <!-- nota mancante prima -->
+      <rect x="580" y="290" width="235" height="38" rx="5" fill="#fff5f5" stroke="#c92a2a" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="697" y="307" text-anchor="middle" font-size="10" fill="#c92a2a">Nella versione iniziale:</text>
+      <text x="697" y="322" text-anchor="middle" font-size="9" fill="#c92a2a">solo CPTemplate, commentato, no UIWindowScene</text>
+
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SEZIONE 4 — PIPELINE DI BUILD
+════════════════════════════════════════════════════ -->
+<section>
+  <h2><span class="num">4</span> Pipeline di build iOS</h2>
+  <p>L'implementazione attuale aggiunge due MSBuild target per aggirare un limite di MAUI che rimuove <code>UIApplicationSceneManifest</code> durante il merge dei plist.</p>
+
+  <div class="svg-wrapper">
+    <svg width="860" height="280" viewBox="0 0 860 280" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+      <defs>
+        <marker id="b1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#adb5bd"/>
+        </marker>
+        <marker id="b2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#2f9e44"/>
+        </marker>
+        <marker id="b3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#c92a2a"/>
+        </marker>
+      </defs>
+
+      <!-- PRIMA: una riga -->
+      <text x="20" y="22" font-size="11" font-weight="700" fill="#868e96" letter-spacing=".08em">PRIMA — build senza target custom</text>
+
+      <rect x="20" y="36" width="120" height="40" rx="6" fill="#f1f3f5" stroke="#adb5bd" stroke-width="1.5"/>
+      <text x="80" y="56" text-anchor="middle" font-size="10" fill="#495057">dotnet build</text>
+      <text x="80" y="70" text-anchor="middle" font-size="9" fill="#868e96">MAUI compila</text>
+
+      <line x1="140" y1="56" x2="175" y2="56" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#b1)"/>
+
+      <rect x="175" y="36" width="150" height="40" rx="6" fill="#fff9db" stroke="#e67700" stroke-width="1.5"/>
+      <text x="250" y="56" text-anchor="middle" font-size="10" fill="#e67700">Info.plist mergato</text>
+      <text x="250" y="70" text-anchor="middle" font-size="9" fill="#e67700">UIAppSceneManifest → rimosso</text>
+
+      <line x1="325" y1="56" x2="360" y2="56" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#b1)"/>
+
+      <rect x="360" y="36" width="140" height="40" rx="6" fill="#f1f3f5" stroke="#adb5bd" stroke-width="1.5"/>
+      <text x="430" y="56" text-anchor="middle" font-size="10" fill="#495057">.app bundle</text>
+      <text x="430" y="70" text-anchor="middle" font-size="9" fill="#868e96">+ codesign</text>
+
+      <line x1="500" y1="56" x2="535" y2="56" stroke="#c92a2a" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#b3)"/>
+
+      <rect x="535" y="36" width="160" height="40" rx="6" fill="#fff5f5" stroke="#c92a2a" stroke-width="1.5"/>
+      <text x="615" y="56" text-anchor="middle" font-size="10" fill="#c92a2a">CarPlay non funziona</text>
+      <text x="615" y="70" text-anchor="middle" font-size="9" fill="#c92a2a">nessuna scena registrata</text>
+
+      <!-- DOPO: pipeline a cascata -->
+      <text x="20" y="120" font-size="11" font-weight="700" fill="#868e96" letter-spacing=".08em">DOPO — due MSBuild target custom (AfterTargets="Build")</text>
+
+      <!-- Step 1 -->
+      <rect x="20" y="136" width="120" height="52" rx="6" fill="#f1f3f5" stroke="#adb5bd" stroke-width="1.5"/>
+      <text x="80" y="158" text-anchor="middle" font-size="10" fill="#495057">dotnet build</text>
+      <text x="80" y="172" text-anchor="middle" font-size="9" fill="#868e96">MAUI compila</text>
+      <text x="80" y="184" text-anchor="middle" font-size="9" fill="#868e96">+ codesign</text>
+
+      <line x1="140" y1="162" x2="175" y2="162" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#b1)"/>
+
+      <!-- Step 2 -->
+      <rect x="175" y="136" width="175" height="52" rx="6" fill="#e7f5ff" stroke="#1971c2" stroke-width="2"/>
+      <text x="262" y="155" text-anchor="middle" font-size="10" font-weight="700" fill="#1971c2">InjectCarPlayScene</text>
+      <text x="262" y="169" text-anchor="middle" font-size="10" font-weight="700" fill="#1971c2">Manifest</text>
+      <text x="262" y="183" text-anchor="middle" font-size="8.5" fill="#868e96">inject-carplay-manifest.sh</text>
+
+      <!-- nota sotto step 2 -->
+      <rect x="175" y="200" width="175" height="40" rx="5" fill="#e7f5ff" stroke="#1971c2" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="262" y="216" text-anchor="middle" font-size="8.5" fill="#1971c2">Inietta UIApplicationSceneManifest</text>
+      <text x="262" y="230" text-anchor="middle" font-size="8.5" fill="#1971c2">nel bundle .app post-build</text>
+
+      <line x1="350" y1="162" x2="385" y2="162" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#b1)"/>
+
+      <!-- Step 3 -->
+      <rect x="385" y="136" width="175" height="52" rx="6" fill="#e7f5ff" stroke="#1971c2" stroke-width="2"/>
+      <text x="472" y="155" text-anchor="middle" font-size="10" font-weight="700" fill="#1971c2">ResignAppBundle</text>
+      <text x="472" y="169" text-anchor="middle" font-size="10" fill="#1971c2">AfterTargets="Inject..."</text>
+      <text x="472" y="183" text-anchor="middle" font-size="8.5" fill="#868e96">resign-app-bundle.sh</text>
+
+      <!-- nota sotto step 3 -->
+      <rect x="385" y="200" width="175" height="40" rx="5" fill="#e7f5ff" stroke="#1971c2" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="472" y="216" text-anchor="middle" font-size="8.5" fill="#1971c2">iOS 26 verifica la firma</text>
+      <text x="472" y="230" text-anchor="middle" font-size="8.5" fill="#1971c2">ad-hoc re-sign del bundle</text>
+
+      <line x1="560" y1="162" x2="595" y2="162" stroke="#2f9e44" stroke-width="1.5" marker-end="url(#b2)"/>
+
+      <!-- Step 4 -->
+      <rect x="595" y="136" width="145" height="52" rx="6" fill="#ebfbee" stroke="#2f9e44" stroke-width="2"/>
+      <text x="667" y="158" text-anchor="middle" font-size="10" font-weight="700" fill="#2f9e44">.app bundle</text>
+      <text x="667" y="172" text-anchor="middle" font-size="9" fill="#2f9e44">con manifest iniettato</text>
+      <text x="667" y="184" text-anchor="middle" font-size="9" fill="#2f9e44">e firma valida</text>
+
+      <!-- Entitlement -->
+      <rect x="760" y="136" width="80" height="52" rx="6" fill="#ebfbee" stroke="#2f9e44" stroke-width="1.5"/>
+      <text x="800" y="155" text-anchor="middle" font-size="9" font-weight="600" fill="#2f9e44">Entitlement</text>
+      <text x="800" y="169" text-anchor="middle" font-size="8" fill="#2f9e44">CustomEntitle</text>
+      <text x="800" y="181" text-anchor="middle" font-size="8" fill="#2f9e44">ments in .csproj</text>
+      <line x1="760" y1="158" x2="740" y2="158" stroke="#2f9e44" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#b2)"/>
+
+    </svg>
+  </div>
+
+  <div class="two-col" style="margin-top:16px">
+    <div class="card col-old">
+      <div class="col-label">Prima — Entitlements.plist (eliminato)</div>
+      <pre>&lt;!-- com.apple.developer.carplay-audio
+     richiede approvazione Apple.
+     &lt;key&gt;com.apple.developer.carplay-audio&lt;/key&gt;
+     &lt;true/&gt;
+--&gt;</pre>
+    </div>
+    <div class="card col-new">
+      <div class="col-label">Dopo — CustomEntitlements in .csproj</div>
+      <pre>&lt;ItemGroup Condition="...== 'ios'"&gt;
+  &lt;CustomEntitlements
+    Include="com.apple.developer.carplay-audio"
+    Type="Boolean" Value="true"
+    Visible="false" /&gt;
+&lt;/ItemGroup&gt;</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SEZIONE 5 — REMOTE COMMAND CENTER
+════════════════════════════════════════════════════ -->
+<section>
+  <h2><span class="num">5</span> Remote Command Center (lock screen / CarPlay)</h2>
+
+  <div class="two-col">
+    <div class="card col-old">
+      <div class="col-label">Prima</div>
+      <pre>// Una sola riga in FinishedLaunching:
+application.BeginReceivingRemoteControlEvents();
+
+// Nessun handler registrato →
+// i tasti fisici e CarPlay non
+// controllano la riproduzione</pre>
+    </div>
+    <div class="card col-new">
+      <div class="col-label">Dopo — SetupRemoteCommandCenter()</div>
+      <pre>center.PlayCommand.Enabled = true;
+center.PlayCommand.AddTarget(e => {
+    audio.ResumeAsync();
+    return Success;
+});
+
+center.PauseCommand.Enabled = true;
+center.PauseCommand.AddTarget(e => {
+    audio.PauseAsync();
+    return Success;
+});
+
+center.TogglePlayPauseCommand.Enabled = true;
+center.TogglePlayPauseCommand.AddTarget(e => {
+    if (audio.IsPlaying) PauseAsync();
+    else ResumeAsync();
+    return Success;
+});
+
+// Stream live — disabilita tutto il seek:
+center.SeekForwardCommand.Enabled = false;
+center.SeekBackwardCommand.Enabled = false;
+center.SkipForwardCommand.Enabled = false;
+center.SkipBackwardCommand.Enabled = false;
+center.NextTrackCommand.Enabled = false;
+center.PreviousTrackCommand.Enabled = false;</pre>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Timing critico:</strong> <code>SetupRemoteCommandCenter()</code> viene chiamato dopo <code>base.FinishedLaunching()</code> così il container DI MAUI è già inizializzato e i servizi sono risolvibili.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SEZIONE 6 — SUBTITLE DINAMICO E SERVIZI
+════════════════════════════════════════════════════ -->
+<section>
+  <h2><span class="num">6</span> Subtitle dinamico nelle card stazione</h2>
+
+  <div class="two-col">
+    <div class="card col-old">
+      <div class="col-label">Prima — sempre statico</div>
+      <pre>private CPListItem BuildStationItem(
+    AzuraStation station, IAudioService audio)
+{
+    CPListItem item = new CPListItem(
+        station.Name,
+        station.Description);  // sempre fisso
+    ...
+}</pre>
+    </div>
+    <div class="card col-new">
+      <div class="col-label">Dopo — titolo brano se in riproduzione</div>
+      <pre>private CPListItem BuildStationListItem(
+    AzuraStation station)
+{
+    bool isCurrent =
+        _audioService?.CurrentStation?.Id == station.Id;
+    string? currentTitle =
+        _nowPlayingService?.Current.Title;
+
+    string? subtitle =
+        (isCurrent && !string.IsNullOrEmpty(currentTitle))
+        ? currentTitle          // ← titolo brano live
+        : station.Description; // ← fallback
+
+    CPListItem item = new(station.Name, subtitle);
+    ...
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SEZIONE 7 — TABELLA RIEPILOGATIVA
+════════════════════════════════════════════════════ -->
+<section>
+  <h2><span class="num">7</span> Riepilogo di tutte le differenze</h2>
+
+  <div class="card" style="padding:0; overflow:hidden">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:24%">Aspetto</th>
+          <th style="width:27%">Prima (3480aa5)</th>
+          <th style="width:27%">Dopo (HEAD)</th>
+          <th style="width:22%">Tipo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ereditarietà <code>CarPlaySceneDelegate</code></td>
+          <td><code>NSObject + ICPTemplate…Delegate</code></td>
+          <td><code>CPTemplateApplicationSceneDelegate</code></td>
+          <td><span class="tag tag-structural">strutturale</span></td>
+        </tr>
+        <tr>
+          <td>Root template CarPlay</td>
+          <td><code>CPNowPlayingTemplate</code></td>
+          <td><code>CPListTemplate</code></td>
+          <td><span class="tag tag-changed">flusso UX</span></td>
+        </tr>
+        <tr>
+          <td>Navigazione</td>
+          <td>NowPlaying → push Lista → pop</td>
+          <td>Lista → push NowPlaying</td>
+          <td><span class="tag tag-changed">flusso UX</span></td>
+        </tr>
+        <tr>
+          <td>Riproduzione</td>
+          <td>Fire-and-forget + pop sincrono</td>
+          <td><code>await PlayAsync()</code> → push NowPlaying</td>
+          <td><span class="tag tag-changed">flusso</span></td>
+        </tr>
+        <tr>
+          <td>Risoluzione servizi DI</td>
+          <td>On-demand via <code>IPlatformApplication</code></td>
+          <td><code>IServiceScope</code> creato in <code>DidConnect</code></td>
+          <td><span class="tag tag-structural">strutturale</span></td>
+        </tr>
+        <tr>
+          <td><code>INowPlayingService</code> in CarPlay</td>
+          <td>Assente</td>
+          <td>Presente — subtitle dinamico</td>
+          <td><span class="tag tag-new">nuovo</span></td>
+        </tr>
+        <tr>
+          <td><code>AppDelegate.GetConfiguration</code></td>
+          <td>Assente</td>
+          <td>Routing esplicito CarPlay vs Main scene</td>
+          <td><span class="tag tag-new">nuovo</span></td>
+        </tr>
+        <tr>
+          <td>Remote Command Center</td>
+          <td><code>BeginReceivingRemoteControlEvents()</code></td>
+          <td>Play / Pause / Toggle + disabilita Seek</td>
+          <td><span class="tag tag-new">nuovo</span></td>
+        </tr>
+        <tr>
+          <td><code>SceneDelegate.cs</code></td>
+          <td>Assente</td>
+          <td>Sottoclasse <code>MauiUISceneDelegate</code></td>
+          <td><span class="tag tag-new">nuovo file</span></td>
+        </tr>
+        <tr>
+          <td><code>UIApplicationSceneManifest</code></td>
+          <td>Commentato</td>
+          <td>Attivo + <code>UIWindowScene</code> entry aggiunta</td>
+          <td><span class="tag tag-changed">modificato</span></td>
+        </tr>
+        <tr>
+          <td>Entitlement CarPlay</td>
+          <td><code>Entitlements.plist</code> (commentato)</td>
+          <td><code>CustomEntitlements</code> in <code>.csproj</code></td>
+          <td><span class="tag tag-changed">modificato</span></td>
+        </tr>
+        <tr>
+          <td>Post-build inject manifest</td>
+          <td>Assente</td>
+          <td><code>InjectCarPlaySceneManifest</code> MSBuild target</td>
+          <td><span class="tag tag-new">nuovo</span></td>
+        </tr>
+        <tr>
+          <td>Post-build re-sign</td>
+          <td>Assente</td>
+          <td><code>ResignAppBundle</code> MSBuild target</td>
+          <td><span class="tag tag-new">nuovo</span></td>
+        </tr>
+        <tr>
+          <td><code>Entitlements.plist</code></td>
+          <td>Presente (vuoto/commentato)</td>
+          <td>Eliminato</td>
+          <td><span class="tag tag-removed">rimosso</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+</body>
+</html>

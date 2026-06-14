@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels"
+    x:DataType="vm:SettingsViewModel"
+    Title="Impostazioni">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,32">
+
+            <!-- Sezione Audio -->
+            <Label
+                Text="AUDIO"
+                Style="{StaticResource CaptionLabel}"
+                HorizontalTextAlignment="Start"
+                Margin="20,24,20,8"
+                FontAttributes="Bold" />
+
+            <Border Style="{StaticResource CardBorder}" Margin="16,0">
+                <VerticalStackLayout Spacing="12">
+                    <Label
+                        Text="Volume"
+                        TextColor="{DynamicResource PrimaryText}"
+                        FontSize="15" />
+                    <Slider
+                        Minimum="0"
+                        Maximum="1"
+                        Value="{Binding Volume}" />
+                    <Label
+                        Text="{Binding Volume, StringFormat='{0:P0}'}"
+                        Style="{StaticResource CaptionLabel}"
+                        HorizontalTextAlignment="End" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Sezione Riproduzione -->
+            <Label
+                Text="RIPRODUZIONE"
+                Style="{StaticResource CaptionLabel}"
+                HorizontalTextAlignment="Start"
+                Margin="20,24,20,8"
+                FontAttributes="Bold" />
+
+            <Border Style="{StaticResource CardBorder}" Margin="16,0">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
+                        <Label
+                            Text="Avvia con la stazione preferita"
+                            TextColor="{DynamicResource PrimaryText}"
+                            FontSize="15" />
+                        <Label
+                            Text="Se non c'è una stazione preferita viene caricata la prima della lista"
+                            HorizontalTextAlignment = "Start"
+                            Style="{StaticResource CaptionLabel}" />
+                    </VerticalStackLayout>
+                    <CheckBox
+                        Grid.Column="1"
+                        IsChecked="{Binding StartWithFavorite}"
+                        VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Sezione Tema -->
+            <Label
+                Text="TEMA"
+                Style="{StaticResource CaptionLabel}"
+                HorizontalTextAlignment="Start"
+                Margin="20,24,20,8"
+                FontAttributes="Bold" />
+
+            <Border Style="{StaticResource CardBorder}" Margin="16,0">
+                <VerticalStackLayout Spacing="12">
+                    <Label
+                        Text="Preferenza tema"
+                        TextColor="{DynamicResource PrimaryText}"
+                        FontSize="15" />
+                    <Picker
+                        SelectedItem="{Binding ThemePreference}"
+                        TextColor="{DynamicResource PrimaryText}"
+                        BackgroundColor="{DynamicResource CardElevated}">
+                        <Picker.Items>
+                            <x:String>Dark</x:String>
+                            <x:String>Light</x:String>
+                            <x:String>System</x:String>
+                        </Picker.Items>
+                    </Picker>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Sezione Visualizzazione (solo desktop) -->
+            <Label
+                Text="VISUALIZZAZIONE"
+                Style="{StaticResource CaptionLabel}"
+                HorizontalTextAlignment="Start"
+                Margin="20,24,20,8"
+                FontAttributes="Bold">
+                <Label.IsVisible>
+                    <OnPlatform x:TypeArguments="x:Boolean">
+                        <On Platform="WinUI,MacCatalyst" Value="True" />
+                        <On Platform="Android,iOS" Value="False" />
+                    </OnPlatform>
+                </Label.IsVisible>
+            </Label>
+
+            <Border Style="{StaticResource CardBorder}" Margin="16,0">
+                <Border.IsVisible>
+                    <OnPlatform x:TypeArguments="x:Boolean">
+                        <On Platform="WinUI,MacCatalyst" Value="True" />
+                        <On Platform="Android,iOS" Value="False" />
+                    </OnPlatform>
+                </Border.IsVisible>
+                <VerticalStackLayout Spacing="12">
+                    <Label
+                        Text="Orientamento finestra"
+                        TextColor="{DynamicResource PrimaryText}"
+                        FontSize="15" />
+                    <Label
+                        Text="Modifica orientamento dell'applicazione."
+                        Style="{StaticResource CaptionLabel}" />
+                    <Picker
+                        SelectedItem="{Binding DesktopOrientation}"
+                        TextColor="{DynamicResource PrimaryText}"
+                        BackgroundColor="{DynamicResource CardElevated}">
+                        <Picker.Items>
+                            <x:String>Portrait</x:String>
+                            <x:String>Landscape</x:String>
+                        </Picker.Items>
+                    </Picker>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Salva -->
+            <Button
+                Text="Salva impostazioni"
+                Command="{Binding SaveSettingsCommand}"
+                BackgroundColor="{DynamicResource Accent}"
+                TextColor="{DynamicResource PrimaryText}"
+                CornerRadius="12"
+                Margin="16,20,16,0"
+                HeightRequest="50">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal" />
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="0.4" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+            </Button>
+            
+            <!-- Sezione Diagnostica -->
+            <Label
+                Text="DIAGNOSTICA"
+                Style="{StaticResource CaptionLabel}"
+                HorizontalTextAlignment="Start"
+                Margin="20,24,20,8"
+                FontAttributes="Bold">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer
+                        NumberOfTapsRequired="2"
+                        Tapped="OnDiagnosticaLabelTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <Border x:Name="DiagnosticaBorder" Style="{StaticResource CardBorder}" Margin="16,0" IsVisible="False">
+                <VerticalStackLayout Spacing="12">
+                    <VerticalStackLayout Spacing="12" IsVisible="{Binding IsDebugBuild}">
+                        <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" />
+                        <Label
+                            Text="Ripristina dati di default"
+                            TextColor="{DynamicResource PrimaryText}"
+                            FontSize="15" />
+                        <Label
+                            Text="Cancella tutte le stazioni e i dati di seed, poi li reinserisce con i valori definiti nel codice."
+                            Style="{StaticResource CaptionLabel}" />
+                        <Button
+                            Text="Reset database"
+                            Command="{Binding ResetDatabaseCommand}"
+                            BackgroundColor="{StaticResource LiveRed}"
+                            TextColor="White"
+                            CornerRadius="8"
+                            HeightRequest="44" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="12" IsVisible="{Binding IsCrashReportingAvailable}">
+                        <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
+                                <Label
+                                    Text="Invia i crash allo sviluppatore"
+                                    TextColor="{DynamicResource PrimaryText}"
+                                    FontSize="15" />
+                                <Label
+                                    Text="Se attivo, i crash dell'app vengono inviati automaticamente per aiutare la diagnosi. La modifica richiede il riavvio dell'app."
+                                    HorizontalTextAlignment="Start"
+                                    Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <CheckBox
+                                Grid.Column="1"
+                                IsChecked="{Binding CrashReportingEnabled}"
+                                VerticalOptions="Center" />
+                        </Grid>
+                        <Button
+                            Text="Invia crash report di test"
+                            Command="{Binding SendCrashReportTestCommand}"
+                            IsEnabled="{Binding CrashReportingEnabled}"
+                            BackgroundColor="{DynamicResource Accent}"
+                            TextColor="{DynamicResource PrimaryText}"
+                            CornerRadius="8"
+                            HeightRequest="44" >
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="Disabled">
+                                        <VisualState.Setters>
+                                            <Setter Property="Opacity" Value="0.4" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Button>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Sezione Info -->
+            <Label
+                Text="INFO"
+                Style="{StaticResource CaptionLabel}"
+                HorizontalTextAlignment="Start"
+                Margin="20,28,20,8"
+                FontAttributes="Bold" />
+
+            <Border Style="{StaticResource CardBorder}" Margin="16,0">
+                <VerticalStackLayout Spacing="14">
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label
+                            Grid.Column="0"
+                            Text="Versione app"
+                            TextColor="{DynamicResource PrimaryText}"
+                            FontSize="15" />
+                        <Label
+                            Grid.Column="1"
+                            Text="{Binding AppVersion}"
+                            Style="{StaticResource CaptionLabel}" />
+                    </Grid>
+
+                    <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" />
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label
+                            Grid.Column="0"
+                            Text="Versione DB"
+                            TextColor="{DynamicResource PrimaryText}"
+                            FontSize="15" />
+                        <Label
+                            Grid.Column="1"
+                            Text="{Binding SeedVersion, StringFormat='{}{0:F2}'}"
+                            Style="{StaticResource CaptionLabel}" />
+                    </Grid>
+
+                    <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" />
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label
+                            Grid.Column="0"
+                            Text="Aggiornamento richiesto"
+                            TextColor="{DynamicResource PrimaryText}"
+                            FontSize="15" />
+                        <Label
+                            Grid.Column="1"
+                            Text="{Binding MustUpdate, Converter={toolkit:BoolToObjectConverter TrueObject='Sì', FalseObject='No'}}"
+                            FontSize="13"
+                            FontAttributes="Bold">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding MustUpdate}" Value="True">
+                                    <Setter Property="TextColor" Value="{StaticResource LiveRed}" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Label" Binding="{Binding MustUpdate}" Value="False">
+                                    <Setter Property="TextColor" Value="{DynamicResource MutedText}" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </Grid>
+
+                    <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" />
+
+                    <Label
+                        Text="Visita il sito"
+                        TextColor="{DynamicResource AccentBlue}"
+                        FontSize="15">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnSiteUrlTapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+
+                    <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" />
+
+                    <Label
+                        Text="© RadioE45 — Tutti i diritti riservati"
+                        Style="{StaticResource CaptionLabel}"
+                        HorizontalTextAlignment="Start" />
+
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

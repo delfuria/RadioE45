@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.OnAirPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels"
+    x:DataType="vm:OnAirViewModel"
+    Title="In Onda">
+
+    <ContentPage.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertBool" />
+        <toolkit:BoolToObjectConverter x:Key="FavoriteIconConverter" TrueObject="heart_filled.png" FalseObject="heart_outline.png" />
+        <toolkit:BoolToObjectConverter x:Key="PlayPauseTextConverter" x:TypeArguments="x:String" TrueObject="⏸" FalseObject="▶" />
+        <toolkit:BoolToObjectConverter x:Key="MuteTextConverter" x:TypeArguments="x:String" TrueObject="🔇" FalseObject="🔊" />
+    </ContentPage.Resources>
+
+    <RefreshView
+        IsRefreshing="{Binding IsBusy}"
+        Command="{Binding RefreshNowPlayingCommand}">
+        <ScrollView>
+            <Grid x:Name="MainGrid" RowDefinitions="Auto,Auto">
+
+                <!-- Hidden MediaElement — must be in visual tree for audio to work -->
+                <toolkit:MediaElement
+                    x:Name="AudioPlayer"
+                    IsVisible="False"
+                    HeightRequest="0"
+                    WidthRequest="0" />
+
+                <!-- LEFT: artwork · badge · titolo · artista · progress -->
+                <VerticalStackLayout x:Name="LeftPanel" Grid.Row="0" Grid.Column="0" Spacing="0" Padding="0,0,0,8">
+
+                    <!-- Artwork copertina -->
+                    <Border
+                        x:Name="ArtworkBorder"
+                        Margin="24,32,24,0"
+                        HeightRequest="{Binding ArtworkHeight}"
+                        StrokeShape="RoundRectangle 20"
+                        Stroke="{DynamicResource CardElevated}"
+                        StrokeThickness="1"
+                        BackgroundColor="{DynamicResource CardBackground}">
+                        <Grid>
+                            <Image
+                                Source="{Binding ArtworkUrl}"
+                                Aspect="AspectFill"
+                                IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNotNullConverter}}" />
+                            <Image
+                                Source="radio_placeholder.png"
+                                Aspect="AspectFit"
+                                Margin="48"
+                                IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNullConverter}}" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Badge stazione + indicatore LIVE -->
+                    <Grid Margin="24,20,24,0">
+
+                        <HorizontalStackLayout
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            Spacing="8">
+
+                            <Border
+                                BackgroundColor="{DynamicResource Accent}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="Transparent"
+                                Padding="10,4">
+                                <Label
+                                    Text="{Binding CurrentStation.Name}"
+                                    TextColor="{DynamicResource PrimaryText}"
+                                    FontSize="13"
+                                    FontAttributes="Bold" />
+                            </Border>
+
+                            <Border
+                                BackgroundColor="{StaticResource LiveRed}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="Transparent"
+                                Padding="10,4"
+                                IsVisible="{Binding NowPlaying.IsLive}">
+                                <Label
+                                    Text="• LIVE"
+                                    TextColor="{DynamicResource PrimaryText}"
+                                    Style="{StaticResource LiveBadgeLabel}" />
+                            </Border>
+
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout
+                            HorizontalOptions="Start"
+                            VerticalOptions="Center"
+                            Spacing="10">
+
+                            <!-- Favoriti -->
+                            <ImageButton
+                                HeightRequest="36"
+                                WidthRequest="36"
+                                BackgroundColor="Transparent"
+                                Padding="4"
+                                Source="{Binding IsFavorite, Converter={StaticResource FavoriteIconConverter}}"
+                                Command="{Binding ToggleFavoriteCommand}" />
+
+                            <!-- Ascoltatori -->
+                            <Label
+                                Text="{Binding NowPlaying.ListenerCount, StringFormat='👥 {0}'}"
+                                Style="{StaticResource CaptionLabel}"
+                                VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                    </Grid>
+
+                    <!-- Titolo brano -->
+                    <Label
+                        Text="{Binding NowPlaying.Title}"
+                        Style="{StaticResource HeadlineLabel}"
+                        Margin="24,16,24,0"
+                        LineBreakMode="TailTruncation"
+                        MaxLines="2" />
+
+                    <!-- Artista -->
+                    <Label
+                        Text="{Binding NowPlaying.Artist}"
+                        Style="{StaticResource SubtitleLabel}"
+                        Margin="24,6,24,0"
+                        LineBreakMode="TailTruncation" />
+
+                    <!-- Progress brano -->
+                    <ProgressBar
+                        Progress="{Binding TrackProgress}"
+                        ProgressColor="{DynamicResource Accent}"
+                        Margin="24,16,24,0" />
+                    <Grid Margin="24,4,24,0">
+                        <Label
+                            Text="{Binding ElapsedTimeText}"
+                            Style="{StaticResource CaptionLabel}"
+                            HorizontalOptions="Start" />
+                        <Label
+                            Text="{Binding TotalTimeText}"
+                            Style="{StaticResource CaptionLabel}"
+                            HorizontalOptions="End" />
+                    </Grid>
+
+                </VerticalStackLayout>
+
+                <!-- RIGHT: prossimo brano · controlli · volume · errore -->
+                <VerticalStackLayout x:Name="RightPanel" Grid.Row="1" Grid.Column="0" Spacing="0" Padding="0,0,0,20">
+
+                    <!-- Prossimo brano -->
+                    <Border
+                        Margin="24,16,24,0"
+                        Padding="12"
+                        StrokeShape="RoundRectangle 16"
+                        Stroke="{DynamicResource CardElevated}"
+                        StrokeThickness="1"
+                        BackgroundColor="{DynamicResource CardBackground}"
+                        IsVisible="{Binding NowPlaying.Next, Converter={toolkit:IsNotNullConverter}}">
+                        <HorizontalStackLayout Spacing="12">
+
+                            <Border
+                                HeightRequest="64"
+                                WidthRequest="64"
+                                StrokeShape="RoundRectangle 10"
+                                Stroke="Transparent">
+                                <Grid>
+                                    <Image
+                                        Source="{Binding NowPlaying.Next.ArtworkUrl}"
+                                        Aspect="AspectFill"
+                                        IsVisible="{Binding NowPlaying.Next.ArtworkUrl, Converter={toolkit:IsNotNullConverter}}" />
+                                    <Image
+                                        Source="radio_placeholder.png"
+                                        Aspect="AspectFit"
+                                        IsVisible="{Binding NowPlaying.Next.ArtworkUrl, Converter={toolkit:IsNullConverter}}" />
+                                </Grid>
+                            </Border>
+
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="4">
+                                <Label
+                                    Text="Prossimo"
+                                    Style="{StaticResource CaptionLabel}"
+                                    FontAttributes="Bold"
+                                    IsVisible="{Binding NowPlaying.Next.IsJingle, Converter={StaticResource InvertBool}}" />
+                                <Label
+                                    Text="{Binding NowPlaying.Next.Title}"
+                                    Style="{StaticResource SubtitleLabel}"
+                                    LineBreakMode="TailTruncation"
+                                    MaxLines="2" />
+                                <Label
+                                    Text="{Binding NowPlaying.Next.Artist}"
+                                    Style="{StaticResource CaptionLabel}"
+                                    LineBreakMode="TailTruncation" />
+                            </VerticalStackLayout>
+
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <!-- Buffering indicator -->
+                    <ActivityIndicator
+                        IsRunning="{Binding IsBuffering}"
+                        IsVisible="{Binding IsBuffering}"
+                        HorizontalOptions="Center"
+                        Margin="0,16,0,0"
+                        HeightRequest="32"
+                        WidthRequest="32" />
+
+                    <!-- Controlli playback -->
+                    <HorizontalStackLayout
+                        HorizontalOptions="Center"
+                        Spacing="24"
+                        Margin="0,24,0,0">
+
+                        <Button
+                            Text="{Binding IsPlaying, Converter={StaticResource PlayPauseTextConverter}}"
+                            Style="{StaticResource PlayButton}"
+                            Command="{Binding PlayPauseCommand}"
+                            IsEnabled="{Binding IsBuffering, Converter={StaticResource InvertBool}}" />
+
+                        <Button
+                            Text="⏹"
+                            BackgroundColor="{DynamicResource CardElevated}"
+                            TextColor="{DynamicResource MutedText}"
+                            CornerRadius="30"
+                            HeightRequest="60"
+                            WidthRequest="60"
+                            FontSize="22"
+                            Padding="0"
+                            Command="{Binding StopCommand}" />
+
+                    </HorizontalStackLayout>
+
+                    <!-- Volume slider -->
+                    <Grid Margin="24,28,24,0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <Button
+                            Grid.Column="0"
+                            Text="{Binding IsMuted, Converter={StaticResource MuteTextConverter}}"
+                            Command="{Binding ToggleMuteCommand}"
+                            BackgroundColor="Transparent"
+                            TextColor="{DynamicResource MutedText}"
+                            FontSize="14"
+                            HeightRequest="22"
+                            WidthRequest="28"
+                            Padding="0"
+                            BorderWidth="0"
+                            VerticalOptions="Center" />
+                        <Slider
+                            Grid.Column="1"
+                            Minimum="0"
+                            Maximum="1"
+                            Value="{Binding Volume}"
+                            ValueChanged="OnVolumeChanged" />
+                    </Grid>
+
+                    <!-- Errore -->
+                    <Label
+                        Text="{Binding ErrorMessage}"
+                        IsVisible="{Binding ErrorMessage, Converter={toolkit:IsNotNullConverter}}"
+                        TextColor="{StaticResource LiveRed}"
+                        FontSize="13"
+                        HorizontalTextAlignment="Center"
+                        Margin="24,12,24,0" />
+
+                </VerticalStackLayout>
+
+            </Grid>
+        </ScrollView>
+    </RefreshView>
+
+</ContentPage>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<key>UIDeviceFamily</key>
+		<array>
+			<integer>1</integer>
+			<integer>2</integer>
+		</array>
+		<key>UIRequiredDeviceCapabilities</key>
+		<array>
+			<string>arm64</string>
+		</array>
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>XSAppIconAssets</key>
+		<string>Assets.xcassets/appicon.appiconset</string>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>audio</string>
+		</array>
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsArbitraryLoads</key>
+			<true/>
+		</dict>
+		<!--
+			CARPLAY SCENE MANIFEST — DISABILITATO (nessun certificato Apple CarPlay disponibile)
+			══════════════════════════════════════════════════════════════════════════════════════
+			UIApplicationSceneManifest abilita la modalità multi-scena richiesta da CarPlay
+			(CPTemplateApplicationSceneDelegate ha bisogno di una sessione di scena separata).
+			Senza questo blocco iOS tratta l'app come single-scene e MAUI funziona normalmente.
+
+			NOTA TECNICA: MAUI rimuove UIApplicationSceneManifest durante il merge dei plist
+			in fase di build. Per questo motivo esiste scripts/inject-carplay-manifest.sh che
+			lo re-inietta nel bundle compilato. Questa copia nel sorgente serve come riferimento
+			e come input per lo script di iniezione.
+
+			COME RIPRISTINARE (una volta ottenuto il certificato Apple CarPlay):
+			  1. Completare prima i passi descritti nei blocchi CustomEntitlements e nei
+			     MSBuild target in RadioE45.csproj.
+			  2. Decommentare il blocco <key>UIApplicationSceneManifest</key> ... </dict>
+			     qui sotto (tutto il contenuto tra i tag INIZIO CARPLAY e FINE CARPLAY).
+			  3. Il manifest in questo file viene usato dallo script inject-carplay-manifest.sh
+			     come sorgente; lo stesso contenuto verrà iniettato nel bundle compilato.
+			  4. I file C# coinvolti (già pronti, non necessitano modifiche):
+			     - Platforms/iOS/AppDelegate.cs  → GetConfiguration() e SetupRemoteCommandCenter()
+			     - Platforms/iOS/CarPlaySceneDelegate.cs → DidConnect / DidDisconnect / lista stazioni
+			     - Platforms/iOS/SceneDelegate.cs → delega la finestra principale a MauiUISceneDelegate
+
+			═══ INIZIO BLOCCO CARPLAY (decommentare tutto fino a FINE BLOCCO CARPLAY) ═══
+		<key>UIApplicationSceneManifest</key>
+		<dict>
+			<key>UIApplicationSupportsMultipleScenes</key>
+			<true/>
+			<key>UISceneConfigurations</key>
+			<dict>
+				Finestra principale iPhone/iPad — il nome DEVE essere __MAUI_DEFAULT_SCENE_CONFIGURATION__
+				perché MauiUISceneDelegate.WillConnect lo riconosce e crea la finestra MAUI.
+				<key>UIWindowSceneSessionRoleApplication</key>
+				<array>
+					<dict>
+						<key>UISceneClassName</key>
+						<string>UIWindowScene</string>
+						<key>UISceneConfigurationName</key>
+						<string>__MAUI_DEFAULT_SCENE_CONFIGURATION__</string>
+						<key>UISceneDelegateClassName</key>
+						<string>SceneDelegate</string>
+					</dict>
+				</array>
+				Display CarPlay — CarPlaySceneDelegate mostra la lista stazioni come root template.
+				<key>CPTemplateApplicationSceneSessionRoleApplication</key>
+				<array>
+					<dict>
+						<key>UISceneClassName</key>
+						<string>CPTemplateApplicationScene</string>
+						<key>UISceneConfigurationName</key>
+						<string>CarPlay Configuration</string>
+						<key>UISceneDelegateClassName</key>
+						<string>CarPlaySceneDelegate</string>
+					</dict>
+				</array>
+			</dict>
+		</dict>
+			═══ FINE BLOCCO CARPLAY ═══
+		-->
+	</dict>
+</plist>

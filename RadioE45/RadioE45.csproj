@@ -1,0 +1,152 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">net10.0-windows10.0.19041.0</TargetFrameworks>
+
+        <!-- Note for MacCatalyst:
+        The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
+        When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
+        The Mac App Store will NOT accept apps with ONLY maccatalyst-arm64 indicated;
+        either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
+        <!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
+
+        <OutputType>Exe</OutputType>
+        <RootNamespace>RadioE45</RootNamespace>
+        <UseMaui>true</UseMaui>
+        <SingleProject>true</SingleProject>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <MtouchLink>None</MtouchLink>
+        <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+        
+        <!-- Display name -->
+        <ApplicationTitle>Radio E45</ApplicationTitle>
+
+        <!-- App Identifier -->
+        <ApplicationId>com.radioe45.app</ApplicationId>
+        <!-- Microsoft Store requires the Partner Center package identity name -->
+        <ApplicationId Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">42646Delfo.RadioE45</ApplicationId>
+
+        <!-- Versions -->
+        <!-- Android versionCode must be >= 1; Windows Store requires revision = 0, so we split by platform -->
+        <ApplicationDisplayVersion>0.20</ApplicationDisplayVersion>
+        <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">0</ApplicationVersion>
+        <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">20</ApplicationVersion>
+
+        <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
+        <WindowsPackageType>None</WindowsPackageType>
+
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+        <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+    </PropertyGroup>
+
+    <!--
+        CARPLAY ENTITLEMENT — DISABILITATO (nessun certificato Apple CarPlay disponibile)
+        ══════════════════════════════════════════════════════════════════════════════════
+        Questo entitlement causa il fallimento del code signing su device fisico se il
+        provisioning profile non include "com.apple.developer.carplay-audio".
+
+        COME RIPRISTINARE (una volta ottenuto il certificato Apple CarPlay):
+          1. Richiedere l'entitlement CarPlay su https://developer.apple.com/contact/carplay/
+          2. Dopo l'approvazione, rigenerare il provisioning profile su developer.apple.com
+             includendo la capability "CarPlay Audio".
+          3. Scaricare il nuovo profilo e installarlo in Xcode (o tramite dotnet).
+          4. Decommentare il blocco <ItemGroup> qui sotto.
+          5. Decommentare anche i target InjectCarPlaySceneManifest e ResignAppBundle più in basso.
+          6. Decommentare UIApplicationSceneManifest in Platforms/iOS/Info.plist.
+    <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+        <CustomEntitlements Include="com.apple.developer.carplay-audio"
+                            Type="Boolean"
+                            Value="true"
+                            Visible="false" />
+    </ItemGroup>
+    -->
+
+    <ItemGroup>
+        <!-- Escludi il template dei segreti dalla compilazione -->
+        <Compile Remove="AppSecrets.template.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- App Icon -->
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+
+        <!-- Splash Screen -->
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+
+        <!-- Images -->
+        <MauiImage Include="Resources\Images\*" />
+        <MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
+
+        <!-- Custom Fonts -->
+        <MauiFont Include="Resources\Fonts\*" />
+
+        <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+        <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.70" />
+        <PackageReference Include="CommunityToolkit.Maui" Version="14.2.0" />
+        <PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="10.0.0" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+        <PackageReference Include="Microsoft.Maui.Core" Version="10.0.70" />
+        <PackageReference Include="Refit" Version="11.0.1" />
+        <PackageReference Include="Refit.HttpClientFactory" Version="11.0.1" />
+        <PackageReference Include="Sentry.Maui" Version="6.6.0" />
+        <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+        <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.11" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.8" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' AND '$(Configuration)' == 'Debug'">
+        <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+    </PropertyGroup>
+
+    <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+        <PackageReference Include="Xamarin.AndroidX.LocalBroadcastManager" Version="1.1.0.24" />
+    </ItemGroup>
+
+    <!--
+        CARPLAY POST-BUILD TARGETS — DISABILITATI (nessun certificato Apple CarPlay disponibile)
+        ══════════════════════════════════════════════════════════════════════════════════════════
+        Questi due target servono SOLO per il simulatore iOS, dove la firma è ad-hoc e può
+        essere alterata dopo il build. Su device fisico con certificato reale NON vanno usati:
+        modificare Info.plist dopo il codesign del certificato Distribution/Development
+        invaliderebbe la firma e impedirebbe l'installazione.
+
+        InjectCarPlaySceneManifest: MAUI rimuove UIApplicationSceneManifest durante il merge
+        dei plist; lo script lo re-inietta nel bundle compilato dopo ogni build iOS.
+
+        ResignAppBundle: il simulatore iOS 26 verifica la firma del bundle prima di creare
+        sessioni CarPlay; re-firma ad-hoc il bundle dopo l'iniezione.
+
+        COME RIPRISTINARE (solo per test su simulatore, dopo aver ottenuto il certificato):
+          1. Completare prima i passi 1-4 descritti nel blocco CustomEntitlements qui sopra.
+          2. Decommentare entrambi i target qui sotto.
+          3. Verificare che scripts/inject-carplay-manifest.sh e scripts/resign-app-bundle.sh
+             siano presenti e abbiano i permessi di esecuzione (chmod +x).
+          4. Su device fisico i target non servono: la firma del certificato Distribution
+             viene applicata da MAUI in fase di build e non va alterata post-build.
+
+    <Target Name="InjectCarPlaySceneManifest"
+            AfterTargets="Build"
+            Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+        <Exec Command="bash &quot;$(MSBuildProjectDirectory)/../scripts/inject-carplay-manifest.sh&quot; &quot;$(OutputPath)&quot; &quot;$(MSBuildProjectName)&quot;" />
+    </Target>
+
+    <Target Name="ResignAppBundle"
+            AfterTargets="InjectCarPlaySceneManifest"
+            Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+        <Exec Command="bash &quot;$(MSBuildProjectDirectory)/../scripts/resign-app-bundle.sh&quot; &quot;$(OutputPath)&quot; &quot;$(MSBuildProjectName)&quot;" />
+    </Target>
+    -->
+
+
+</Project>

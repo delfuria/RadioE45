@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.SchedulePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels"
+    xmlns:models="clr-namespace:RadioE45.Models"
+    x:DataType="vm:ScheduleViewModel"
+    Title="Palinsesto">
+
+    <RefreshView
+        IsRefreshing="{Binding IsBusy}"
+        Command="{Binding LoadScheduleCommand}">
+
+        <CollectionView
+            Margin="0,50,0,0"
+            ItemsSource="{Binding ScheduleItems}"
+            SelectionMode="None"
+            BackgroundColor="Transparent">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    Spacing="12"
+                    Padding="32">
+                    <Label
+                        Text="📅"
+                        FontSize="48"
+                        HorizontalTextAlignment="Center" />
+                    <Label
+                        Text="Nessun palinsesto disponibile"
+                        Style="{StaticResource SubtitleLabel}" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:PlaylistSchedule">
+                    <Border
+                        Style="{StaticResource CardBorder}"
+                        Margin="16,8,16,0">
+
+                        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+
+                            <!-- Fascia oraria + badge ORA -->
+                            <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                                <Label
+                                    Grid.Column="0"
+                                    TextColor="{DynamicResource TextSecondary}"
+                                    FontSize="13"
+                                    VerticalOptions="Center">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Start, StringFormat='{0:HH:mm}'}" />
+                                            <Span Text=" – " />
+                                            <Span Text="{Binding End, StringFormat='{0:HH:mm}'}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <Border
+                                    Grid.Column="1"
+                                    BackgroundColor="{DynamicResource Accent}"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="Transparent"
+                                    Padding="8,3"
+                                    IsVisible="{Binding IsNow}">
+                                    <Label
+                                        Text="● ORA"
+                                        TextColor="{DynamicResource PrimaryText}"
+                                        FontSize="11"
+                                        FontAttributes="Bold"
+                                        HorizontalTextAlignment="Center" />
+                                </Border>
+                            </Grid>
+
+                            <!-- Nome playlist -->
+                            <Label
+                                Grid.Row="1"
+                                Text="{Binding Name}"
+                                TextColor="{DynamicResource PrimaryText}"
+                                FontSize="16"
+                                FontAttributes="Bold"
+                                LineBreakMode="TailTruncation"
+                                MaxLines="1" />
+
+                            <!-- Data (solo se non è oggi) -->
+                            <Label
+                                Grid.Row="2"
+                                TextColor="{DynamicResource MutedText}"
+                                FontSize="12">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding Start, StringFormat='{0:dddd d MMMM}'}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.Footer>
+                <BoxView HeightRequest="20" Color="Transparent" />
+            </CollectionView.Footer>
+
+        </CollectionView>
+    </RefreshView>
+
+</ContentPage>
