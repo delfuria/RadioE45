@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guida Pubblicazione App Store – RadioE45</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --primary: #0071e3;
+    --primary-light: #e8f1fd;
+    --success: #34c759;
+    --success-light: #e9f9ef;
+    --warning: #ff9500;
+    --warning-light: #fff5e6;
+    --danger: #ff3b30;
+    --danger-light: #fff0ef;
+    --text: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --code-bg: #f1f3f5;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+  header {
+    background: linear-gradient(135deg, #1d1d1f 0%, #2d2d30 100%);
+    color: white;
+    padding: 48px 40px 40px;
+    border-bottom: 3px solid var(--primary);
+  }
+  header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+  header p { margin-top: 8px; opacity: 0.75; font-size: 1rem; }
+  .badge {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    margin-top: 16px;
+  }
+
+  main { max-width: 920px; margin: 0 auto; padding: 40px 24px; }
+
+  /* Indice */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-bottom: 40px;
+    box-shadow: var(--shadow);
+  }
+  .toc h2 { font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-secondary); margin-bottom: 14px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 6px 0; }
+  .toc a { color: var(--primary); text-decoration: none; font-weight: 500; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* Sezioni */
+  section { margin-bottom: 48px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-number {
+    background: var(--primary);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px; }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; }
+  .card p, .card li { font-size: 0.9rem; color: #333; }
+  .card ul, .card ol { padding-left: 18px; }
+  .card li { margin: 5px 0; }
+
+  /* Callout */
+  .callout {
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    font-size: 0.875rem;
+  }
+  .callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .callout.info { background: var(--primary-light); border-left: 4px solid var(--primary); }
+  .callout.success { background: var(--success-light); border-left: 4px solid var(--success); }
+  .callout.warning { background: var(--warning-light); border-left: 4px solid var(--warning); }
+  .callout.danger { background: var(--danger-light); border-left: 4px solid var(--danger); }
+
+  /* Code */
+  code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 2px 7px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.82rem;
+    color: #c0392b;
+  }
+  pre {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 10px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin: 14px 0;
+  }
+  pre code { background: none; border: none; color: inherit; padding: 0; font-size: inherit; }
+  .kw { color: #569cd6; }
+  .str { color: #ce9178; }
+  .cm { color: #6a9955; }
+  .val { color: #b5cea8; }
+
+  /* Steps inline */
+  .steps { counter-reset: step; }
+  .step {
+    display: flex;
+    gap: 14px;
+    margin: 12px 0;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .step-num {
+    counter-increment: step;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 700;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-num::before { content: counter(step); }
+  .step-body { flex: 1; font-size: 0.875rem; }
+  .step-body strong { display: block; font-size: 0.9rem; margin-bottom: 3px; }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* SVG containers */
+  .svg-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+    text-align: center;
+  }
+  .svg-caption {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .tag-mac { background: #e0e7ff; color: #3730a3; }
+  .tag-xcode { background: #e0f2fe; color: #0369a1; }
+  .tag-portal { background: #fce7f3; color: #be185d; }
+  .tag-connect { background: #dcfce7; color: #15803d; }
+  .tag-maui { background: #fff7ed; color: #c2410c; }
+  .tag-terminal { background: #f5f3ff; color: #6d28d9; }
+
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  footer { text-align: center; padding: 32px; font-size: 0.8rem; color: var(--text-secondary); border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📱 Guida Pubblicazione App Store</h1>
+  <p>Tutti i passaggi per fare la build di un'app .NET MAUI e caricarla su Apple App Store</p>
+  <div class="badge">Bundle ID: com.radio45.app</div>
+</header>
+
+<main>
+
+<!-- INDICE -->
+<div class="toc">
+  <h2>Indice</h2>
+  <ol>
+    <li><a href="#s1">Prerequisiti</a></li>
+    <li><a href="#s2">Apple Developer Portal – Certificati e Provisioning</a></li>
+    <li><a href="#s3">App Store Connect – Configurazione App</a></li>
+    <li><a href="#s4">Configurazione progetto .NET MAUI</a></li>
+    <li><a href="#s5">Build dell'archivio (.ipa)</a></li>
+    <li><a href="#s6">Caricamento su App Store Connect</a></li>
+    <li><a href="#s7">Invio alla Revisione Apple</a></li>
+    <li><a href="#s8">Flusso completo (schema riepilogativo)</a></li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-number">1</div>
+    <h2>Prerequisiti</h2>
+  </div>
+
+  <p style="margin-bottom:16px;">Assicurati di avere tutto il necessario prima di iniziare.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>🖥️ Hardware &amp; OS <span class="tag tag-mac">Mac</span></h3>
+      <ul>
+        <li>Mac con macOS Ventura 14+ (o superiore)</li>
+        <li>Almeno 16 GB RAM consigliati</li>
+        <li>30 GB di spazio libero</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🛠️ Software <span class="tag tag-xcode">Xcode</span> <span class="tag tag-maui">MAUI</span></h3>
+      <ul>
+        <li>Xcode 15+ (da Mac App Store)</li>
+        <li>.NET 8+ SDK con workload iOS</li>
+        <li>Visual Studio 2022 for Mac <em>o</em> VS Code con .NET MAUI extension</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🍎 Apple Developer Account <span class="tag tag-portal">Portal</span></h3>
+      <ul>
+        <li>Account Apple Developer attivo (99 $/anno) ✅ <em>già rinnovato</em></li>
+        <li>Accesso a <a href="https://developer.apple.com" target="_blank">developer.apple.com</a></li>
+        <li>Accesso a <a href="https://appstoreconnect.apple.com" target="_blank">appstoreconnect.apple.com</a></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>📦 Workload .NET MAUI iOS</h3>
+      <ul>
+        <li>Verifica installazione:</li>
+      </ul>
+      <pre><code>dotnet workload list</code></pre>
+      <ul>
+        <li>Se mancante, installa:</li>
+      </ul>
+      <pre><code>dotnet workload install maui-ios</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-number">2</div>
+    <h2>Apple Developer Portal – Certificati e Provisioning</h2>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">ℹ️</span>
+    <div>Vai su <strong>developer.apple.com → Certificates, Identifiers &amp; Profiles</strong> per eseguire questi passaggi.</div>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" width="720" height="200">
+      <!-- Box 1 -->
+      <rect x="10" y="60" width="160" height="80" rx="10" fill="#e8f1fd" stroke="#0071e3" stroke-width="1.5"/>
+      <text x="90" y="94" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#0071e3">App ID</text>
+      <text x="90" y="112" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#333">com.radio45.app</text>
+      <!-- Arrow -->
+      <line x1="172" y1="100" x2="204" y2="100" stroke="#aaa" stroke-width="2" marker-end="url(#arr)"/>
+      <!-- Box 2 -->
+      <rect x="206" y="60" width="160" height="80" rx="10" fill="#fce7f3" stroke="#be185d" stroke-width="1.5"/>
+      <text x="286" y="94" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#be185d">Certificato</text>
+      <text x="286" y="112" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#333">Distribution (App Store)</text>
+      <!-- Arrow -->
+      <line x1="368" y1="100" x2="400" y2="100" stroke="#aaa" stroke-width="2" marker-end="url(#arr)"/>
+      <!-- Box 3 -->
+      <rect x="402" y="60" width="160" height="80" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+      <text x="482" y="94" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#15803d">Provisioning</text>
+      <text x="482" y="112" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#333">App Store Profile</text>
+      <!-- Arrow -->
+      <line x1="564" y1="100" x2="596" y2="100" stroke="#aaa" stroke-width="2" marker-end="url(#arr)"/>
+      <!-- Box 4 -->
+      <rect x="598" y="60" width="150" height="80" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.5"/>
+      <text x="673" y="94" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#c2410c">Xcode / MAUI</text>
+      <text x="673" y="112" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#333">Firma del binario</text>
+      <!-- Freccia marker -->
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#aaa"/>
+        </marker>
+      </defs>
+    </svg>
+    <p class="svg-caption">Flusso: App ID → Certificato → Provisioning Profile → Firma app</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Registra l'App ID</strong>
+        Vai in <em>Identifiers → +</em>. Scegli <strong>App IDs</strong> → <strong>App</strong>. Inserisci:<br>
+        Description: <code>RadioE45</code> &nbsp;|&nbsp; Bundle ID (Explicit): <code>com.radio45.app</code><br>
+        Abilita le capability necessarie (es. Push Notifications, Background Audio se servono). Salva.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Genera la Certificate Signing Request (CSR) con Keychain Access</strong>
+        Prima di creare il certificato nel portale Apple, devi generare un file CSR dal tuo Mac. Questo file contiene la tua chiave pubblica e i dati identificativi, che Apple userà per firmare il certificato.
+
+        <div style="margin-top:12px;">
+          <div class="callout info" style="margin-bottom:10px;">
+            <span class="callout-icon">ℹ️</span>
+            <div>Questo passaggio si esegue <strong>sul Mac</strong> prima di tornare sul portale Apple. Genera la chiave privata nel Keychain locale e produce un file <code>.certSigningRequest</code> da caricare.</div>
+          </div>
+
+          <strong style="display:block;margin-bottom:8px;font-size:0.9rem;">Passaggi dettagliati in Keychain Access:</strong>
+
+          <div class="steps" style="counter-reset:substep;">
+            <div class="step" style="margin:6px 0;">
+              <div class="step-num" style="background:#f5f3ff;color:#6d28d9;"></div>
+              <div class="step-body">
+                <strong>Apri Keychain Access</strong>
+                Spotlight (<code>⌘ Spazio</code>) → digita <strong>Keychain Access</strong> → apri l'app.
+              </div>
+            </div>
+            <div class="step" style="margin:6px 0;">
+              <div class="step-num" style="background:#f5f3ff;color:#6d28d9;"></div>
+              <div class="step-body">
+                <strong>Apri Certificate Assistant</strong>
+                Dalla barra dei menu in alto: <strong>Keychain Access → Certificate Assistant → Request a Certificate from a Certificate Authority…</strong>
+              </div>
+            </div>
+            <div class="step" style="margin:6px 0;">
+              <div class="step-num" style="background:#f5f3ff;color:#6d28d9;"></div>
+              <div class="step-body">
+                <strong>Compila il form "Certificate Information"</strong>
+                Si apre una finestra con tre campi:
+                <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85rem;">
+                  <thead>
+                    <tr style="background:#f1f5f9;">
+                      <th style="text-align:left;padding:6px 10px;border:1px solid #e2e8f0;font-weight:700;">Campo</th>
+                      <th style="text-align:left;padding:6px 10px;border:1px solid #e2e8f0;font-weight:700;">Cosa inserire</th>
+                      <th style="text-align:left;padding:6px 10px;border:1px solid #e2e8f0;font-weight:700;">Esempio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="padding:6px 10px;border:1px solid #e2e8f0;"><strong>User Email Address</strong></td>
+                      <td style="padding:6px 10px;border:1px solid #e2e8f0;">La tua email Apple ID sviluppatore</td>
+                      <td style="padding:6px 10px;border:1px solid #e2e8f0;font-family:monospace;font-size:0.8rem;">delfuria@gmail.com</td>
+                    </tr>
+                    <tr style="background:#fafafa;">
+                      <td style="padding:6px 10px;border:1px solid #e2e8f0;"><strong>Common Name</strong></td>
+                      <td style="padding:6px 10px;border:1px solid #e2e8f0;">Il tuo nome o nome dell'organizzazione (serve solo a identificare la chiave nel Keychain)</td>
+                      <td style="padding:6px 10px;border:1px solid #e2e8f0;font-family:monospace;font-size:0.8rem;">Stefano Delfuria</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:6px 10px;border:1px solid #e2e8f0;"><strong>CA Email Address</strong></td>
+                      <td style="padding:6px 10px;border:1px solid #e2e8f0;"><strong>Lascia vuoto</strong> — non si invia via email ad Apple, si salva su disco</td>
+                      <td style="padding:6px 10px;border:1px solid #e2e8f0;color:#888;">— lascia vuoto —</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="step" style="margin:6px 0;">
+              <div class="step-num" style="background:#f5f3ff;color:#6d28d9;"></div>
+              <div class="step-body">
+                <strong>Seleziona "Saved to disk"</strong>
+                Nella sezione <em>Request is</em>, seleziona <strong>Saved to disk</strong> (non "Emailed to the CA").<br>
+                Spunta anche <strong>"Let me specify key pair information"</strong> se vuoi controllare i parametri della chiave (opzionale, i default vanno bene).
+              </div>
+            </div>
+            <div class="step" style="margin:6px 0;">
+              <div class="step-num" style="background:#f5f3ff;color:#6d28d9;"></div>
+              <div class="step-body">
+                <strong>Clicca "Continue" e salva il file</strong>
+                Scegli dove salvarlo (es. Desktop). Il file si chiamerà <code>CertificateSigningRequest.certSigningRequest</code>.<br>
+                <div class="callout success" style="margin-top:8px;">
+                  <span class="callout-icon">✅</span>
+                  <div>Keychain Access crea automaticamente una coppia di chiavi RSA 2048-bit nel tuo Keychain di login. La <strong>chiave privata rimane sul Mac</strong> — non va mai condivisa.</div>
+                </div>
+              </div>
+            </div>
+            <div class="step" style="margin:6px 0;">
+              <div class="step-num" style="background:#f5f3ff;color:#6d28d9;"></div>
+              <div class="step-body">
+                <strong>(Opzionale) Parametri chiave RSA</strong>
+                Se hai spuntato "Let me specify key pair information", nella schermata successiva i valori corretti sono:
+                <ul style="margin-top:6px;">
+                  <li><strong>Key Size:</strong> <code>2048 bits</code></li>
+                  <li><strong>Algorithm:</strong> <code>RSA</code></li>
+                </ul>
+                Clicca <strong>Continue</strong>.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <strong style="display:block;margin-top:14px;margin-bottom:8px;font-size:0.9rem;">Torna sul Developer Portal – carica la CSR:</strong>
+
+        <div class="steps" style="counter-reset:csr;">
+          <div class="step" style="margin:6px 0;">
+            <div class="step-num" style="background:#fce7f3;color:#be185d;"></div>
+            <div class="step-body">
+              Vai su <strong>developer.apple.com → Certificates → +</strong> e scegli <strong>Apple Distribution</strong>.
+            </div>
+          </div>
+          <div class="step" style="margin:6px 0;">
+            <div class="step-num" style="background:#fce7f3;color:#be185d;"></div>
+            <div class="step-body">
+              Clicca <strong>Choose File</strong> e seleziona il file <code>.certSigningRequest</code> salvato in precedenza. Clicca <strong>Continue</strong>.
+            </div>
+          </div>
+          <div class="step" style="margin:6px 0;">
+            <div class="step-num" style="background:#fce7f3;color:#be185d;"></div>
+            <div class="step-body">
+              Apple genera il certificato. Clicca <strong>Download</strong> — ottieni un file <code>distribution.cer</code>.
+            </div>
+          </div>
+          <div class="step" style="margin:6px 0;">
+            <div class="step-num" style="background:#fce7f3;color:#be185d;"></div>
+            <div class="step-body">
+              <strong>Fai doppio clic</strong> su <code>distribution.cer</code> — si importa automaticamente nel Keychain di login accoppiandosi alla chiave privata generata prima.
+            </div>
+          </div>
+        </div>
+
+        <div class="callout warning" style="margin-top:12px;">
+          <span class="callout-icon">⚠️</span>
+          <div><strong>Esegui SEMPRE la CSR sullo stesso Mac</strong> dove sviluppi. Il certificato è legato alla chiave privata in quel Keychain. Se cambi Mac, esporti il certificato con la chiave privata come file <code>.p12</code> (tasto destro sul certificato in Keychain Access → <em>Export</em>).</div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Crea il Provisioning Profile App Store</strong>
+        Vai in <em>Profiles → +</em>. Scegli <strong>App Store Connect</strong>.<br>
+        Seleziona App ID: <code>com.radio45.app</code> → seleziona il certificato creato sopra → dai un nome tipo <code>RadioE45 AppStore</code>.<br>
+        Scarica il file <code>.mobileprovision</code> e fai doppio clic per installarlo in Xcode.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <span class="callout-icon">✅</span>
+    <div>In alternativa puoi usare il <strong>Automatic Signing</strong> di Xcode: apri il progetto in Xcode, vai in <em>Signing &amp; Capabilities</em>, spunta "Automatically manage signing" e accedi con il tuo Apple ID. Xcode creerà e aggiornerà certificati e profili in automatico.</div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s3">
+  <div class="section-header">
+    <div class="section-number">3</div>
+    <h2>App Store Connect – Configurazione App</h2>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">ℹ️</span>
+    <div>Vai su <strong>appstoreconnect.apple.com → Le mie app → +</strong></div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Crea nuova app</strong>
+        Piattaforme: <strong>iOS</strong> | Nome: <strong>RadioE45</strong> (come apparirà nello Store)<br>
+        Lingua primaria: Italiano | Bundle ID: <code>com.radio45.app</code> (sceglilo dal menu, deve corrispondere a quello registrato nel portale) | SKU: <code>radioe45app</code> (identificativo interno tuo)
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Compila le informazioni della versione</strong>
+        Vai nella scheda <em>Distribuzione → iOS App → 1.0 Prepara l'invio</em>:<br>
+        <ul style="margin-top:6px;">
+          <li><strong>Screenshot</strong>: obbligatori per iPhone 6.5" e 5.5" (puoi usare il Simulatore Xcode)</li>
+          <li><strong>Descrizione</strong>: descrizione dell'app per gli utenti</li>
+          <li><strong>Parole chiave</strong>: fino a 100 caratteri</li>
+          <li><strong>URL supporto</strong>: una pagina web valida</li>
+          <li><strong>Categoria</strong>: Musica</li>
+          <li><strong>Classificazione età</strong>: compila il questionario</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Compilazione sulla Privacy</strong>
+        Sezione <em>Privacy dell'app</em>: dichiara i dati che la tua app raccoglie (tipicamente: nessun dato raccolto per una web radio, o al massimo dati di utilizzo anonimi).
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s4">
+  <div class="section-header">
+    <div class="section-number">4</div>
+    <h2>Configurazione progetto .NET MAUI</h2>
+  </div>
+
+  <p style="margin-bottom:14px;">Apri il file <code>RadioE45.csproj</code> e verifica/aggiorna le seguenti proprietà:</p>
+
+  <pre><code><span class="cm">&lt;!-- RadioE45.csproj --&gt;</span>
+&lt;<span class="kw">PropertyGroup</span>&gt;
+  <span class="cm">&lt;!-- Versione app --&gt;</span>
+  &lt;<span class="kw">ApplicationVersion</span>&gt;<span class="val">1</span>&lt;/<span class="kw">ApplicationVersion</span>&gt;          <span class="cm">&lt;!-- Build number, incrementa ad ogni upload --&gt;</span>
+  &lt;<span class="kw">ApplicationDisplayVersion</span>&gt;<span class="str">1.0.0</span>&lt;/<span class="kw">ApplicationDisplayVersion</span>&gt; <span class="cm">&lt;!-- Versione visibile utente --&gt;</span>
+
+  <span class="cm">&lt;!-- Bundle ID iOS --&gt;</span>
+  &lt;<span class="kw">ApplicationId</span>&gt;<span class="str">com.radio45.app</span>&lt;/<span class="kw">ApplicationId</span>&gt;
+
+  <span class="cm">&lt;!-- Target framework minimo iOS --&gt;</span>
+  &lt;<span class="kw">SupportedOSPlatformVersion</span> Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'"&gt;<span class="val">15.0</span>&lt;/<span class="kw">SupportedOSPlatformVersion</span>&gt;
+&lt;/<span class="kw">PropertyGroup</span>&gt;
+
+<span class="cm">&lt;!-- Firma per la distribuzione App Store --&gt;</span>
+&lt;<span class="kw">PropertyGroup</span> Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'"&gt;
+  &lt;<span class="kw">CodesignKey</span>&gt;<span class="str">Apple Distribution: [TuoNome] ([TEAMID])</span>&lt;/<span class="kw">CodesignKey</span>&gt;
+  &lt;<span class="kw">CodesignProvision</span>&gt;<span class="str">RadioE45 AppStore</span>&lt;/<span class="kw">CodesignProvision</span>&gt;
+  &lt;<span class="kw">CodesignEntitlements</span>&gt;<span class="str">Platforms/iOS/Entitlements.plist</span>&lt;/<span class="kw">CodesignEntitlements</span>&gt;
+&lt;/<span class="kw">PropertyGroup</span>&gt;</code></pre>
+
+  <div class="callout warning">
+    <span class="callout-icon">⚠️</span>
+    <div>Il valore di <code>ApplicationVersion</code> (Build Number) deve essere <strong>incrementato ad ogni caricamento</strong> su App Store Connect, anche se la versione visibile rimane la stessa. Apple rifiuta build con lo stesso numero.</div>
+  </div>
+
+  <div class="card">
+    <h3>📁 Verifica Info.plist (Platforms/iOS/Info.plist)</h3>
+    <p>Assicurati che contenga almeno:</p>
+    <pre style="margin-top:8px;"><code><span class="kw">&lt;key&gt;</span>NSMicrophoneUsageDescription<span class="kw">&lt;/key&gt;</span>       <span class="cm">&lt;!-- Solo se usi microfono --&gt;</span>
+<span class="kw">&lt;key&gt;</span>UIBackgroundModes<span class="kw">&lt;/key&gt;</span>
+<span class="kw">&lt;array&gt;</span>
+  <span class="kw">&lt;string&gt;</span><span class="str">audio</span><span class="kw">&lt;/string&gt;</span>                       <span class="cm">&lt;!-- Riproduzione audio in background --&gt;</span>
+<span class="kw">&lt;/array&gt;</span></code></pre>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s5">
+  <div class="section-header">
+    <div class="section-number">5</div>
+    <h2>Build dell'archivio (.ipa)</h2>
+  </div>
+
+  <p style="margin-bottom:14px;">Hai due opzioni: da riga di comando (consigliata per automazione) o tramite Xcode.</p>
+
+  <div class="card">
+    <h3>⌨️ Opzione A – Riga di comando <span class="tag tag-terminal">Terminal</span></h3>
+    <p style="margin-bottom:10px;">Esegui dal percorso del file <code>.csproj</code>:</p>
+    <pre><code><span class="cm"># 1. Pubblica il progetto per iOS in modalità Release</span>
+dotnet publish -f net9.0-ios \
+               -c Release \
+               -p:ArchiveOnBuild=true \
+               -p:RuntimeIdentifier=ios-arm64 \
+               -p:CodesignKey="Apple Distribution: TuoNome (TEAMID)" \
+               -p:CodesignProvision="RadioE45 AppStore"
+
+<span class="cm"># Il file .ipa sarà in:
+# bin/Release/net9.0-ios/ios-arm64/publish/RadioE45.ipa</span></code></pre>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>🔨 Opzione B – Xcode Organizer <span class="tag tag-xcode">Xcode</span></h3>
+    <div class="steps" style="margin-top:10px;">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body"><strong>Apri il progetto in Xcode</strong> (apri il file <code>.xcodeproj</code> o usa Visual Studio for Mac)</div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body"><strong>Seleziona il target</strong> come <em>Any iOS Device (arm64)</em> nella barra in alto</div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">Menu <strong>Product → Archive</strong> — Xcode compilerà e aprirà l'Organizer</div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">Nell'Organizer, seleziona l'archivio e clicca <strong>Distribute App → App Store Connect</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">💡</span>
+    <div>Per .NET 8 sostituisci <code>net9.0-ios</code> con <code>net8.0-ios</code> nel comando dotnet publish.</div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s6">
+  <div class="section-header">
+    <div class="section-number">6</div>
+    <h2>Caricamento su App Store Connect</h2>
+  </div>
+
+  <p style="margin-bottom:14px;">Hai tre modi per caricare il file <code>.ipa</code>:</p>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" width="660" height="220">
+      <defs>
+        <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b7280"/>
+        </marker>
+      </defs>
+      <!-- .ipa box -->
+      <rect x="280" y="10" width="140" height="55" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="350" y="34" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#1d1d1f">📦 .ipa</text>
+      <text x="350" y="52" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">RadioE45.ipa</text>
+      <!-- Frecce verso i 3 tool -->
+      <line x1="280" y1="55" x2="100" y2="120" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <line x1="350" y1="65" x2="350" y2="120" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <line x1="420" y1="55" x2="600" y2="120" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <!-- Tool 1: Transporter -->
+      <rect x="20" y="122" width="160" height="70" rx="10" fill="#e8f1fd" stroke="#0071e3" stroke-width="1.5"/>
+      <text x="100" y="148" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#0071e3">🚀 Transporter</text>
+      <text x="100" y="165" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9.5" fill="#333">App di Apple (Mac App Store)</text>
+      <text x="100" y="181" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9.5" fill="#333">Trascina e carica ✅ Consigliato</text>
+      <!-- Tool 2: Xcode Organizer -->
+      <rect x="270" y="122" width="160" height="70" rx="10" fill="#fce7f3" stroke="#be185d" stroke-width="1.5"/>
+      <text x="350" y="148" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#be185d">🔧 Xcode Organizer</text>
+      <text x="350" y="165" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9.5" fill="#333">Archive → Distribute App</text>
+      <text x="350" y="181" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9.5" fill="#333">Integrato in Xcode</text>
+      <!-- Tool 3: altool/notarytool -->
+      <rect x="520" y="122" width="160" height="70" rx="10" fill="#f5f3ff" stroke="#6d28d9" stroke-width="1.5"/>
+      <text x="600" y="148" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#6d28d9">⚙️ xcrun altool</text>
+      <text x="600" y="165" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9.5" fill="#333">Riga di comando</text>
+      <text x="600" y="181" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9.5" fill="#333">Per CI/CD automatizzato</text>
+    </svg>
+    <p class="svg-caption">Tre metodi per caricare l'IPA su App Store Connect</p>
+  </div>
+
+  <div class="card">
+    <h3>🚀 Metodo consigliato: Transporter</h3>
+    <ol style="margin-top:8px;">
+      <li>Scarica <strong>Transporter</strong> dal Mac App Store (gratis)</li>
+      <li>Aprilo e accedi con il tuo Apple ID sviluppatore</li>
+      <li>Trascina il file <code>RadioE45.ipa</code> nella finestra</li>
+      <li>Clicca <strong>Consegna</strong> — Transporter caricherà e validerà il binario</li>
+    </ol>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3>⚙️ Metodo alternativo: xcrun altool (CI/CD) <span class="tag tag-terminal">Terminal</span></h3>
+    <pre><code><span class="cm"># Carica con App-Specific Password</span>
+xcrun altool --upload-app \
+             --type ios \
+             --file "RadioE45.ipa" \
+             --apiKey  "CHIAVE_API_KEY_ID" \
+             --apiIssuer "ISSUER_ID"
+
+<span class="cm"># In alternativa con username/password App-Specific:</span>
+xcrun altool --upload-app -f RadioE45.ipa -t ios \
+             -u "tua@email.com" -p "@keychain:AC_PASSWORD"</code></pre>
+    <div class="callout warning" style="margin-top:8px;">
+      <span class="callout-icon">⚠️</span>
+      <div>Usa sempre una <strong>App-Specific Password</strong> (generabile su appleid.apple.com), mai la password del tuo Apple ID principale.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s7">
+  <div class="section-header">
+    <div class="section-number">7</div>
+    <h2>Invio alla Revisione Apple</h2>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Attendi la build su App Store Connect</strong>
+        Dopo il caricamento, la build appare in <em>TestFlight</em> entro 5-30 minuti (a volte più). Riceverai una mail di conferma. Potrebbero volerci fino a 24h per il completamento della validazione.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Collega la build alla versione</strong>
+        In App Store Connect → <em>La mia app → RadioE45 → Distribuzione → 1.0</em>, scorri fino a "Build" e clicca <strong>+ Aggiungi build</strong>. Seleziona la build appena caricata.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Completa tutte le sezioni obbligatorie</strong>
+        Controlla che non ci siano triangoli gialli ⚠️ a sinistra. Le sezioni più comuni da completare: Screenshot, Descrizione, Note sulla versione, Informativa sulla privacy (URL), Classificazione età.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Invia per revisione</strong>
+        Clicca <strong>"Invia per revisione"</strong> (in alto a destra). Se vuoi, abilita il rilascio automatico dopo l'approvazione, oppure imposta il rilascio manuale.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Attendi l'approvazione</strong>
+        Apple impiega tipicamente <strong>1-3 giorni</strong> per le prime submission, meno per gli aggiornamenti. Ricevi notifiche via e-mail sullo stato.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <span class="callout-icon">🎉</span>
+    <div>Una volta approvata, l'app sarà disponibile sull'App Store per tutti gli utenti!</div>
+  </div>
+
+  <div class="callout danger">
+    <span class="callout-icon">❌</span>
+    <div>Se Apple rigetta l'app, riceverai un'email con i motivi. Puoi rispondere direttamente nella Resolution Center di App Store Connect, correggere e rinviare.</div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s8">
+  <div class="section-header">
+    <div class="section-number">8</div>
+    <h2>Flusso completo (schema riepilogativo)</h2>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 720 540" xmlns="http://www.w3.org/2000/svg" width="680" height="540">
+      <defs>
+        <marker id="arr3" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#64748b"/>
+        </marker>
+      </defs>
+
+      <!-- Step boxes -->
+      <!-- 1 -->
+      <rect x="260" y="10" width="200" height="52" rx="10" fill="#e8f1fd" stroke="#0071e3" stroke-width="1.5"/>
+      <text x="360" y="32" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#0071e3">① Prerequisiti</text>
+      <text x="360" y="50" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">Mac · Xcode · .NET MAUI · Dev Account</text>
+      <line x1="360" y1="62" x2="360" y2="90" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 2 -->
+      <rect x="260" y="92" width="200" height="52" rx="10" fill="#fce7f3" stroke="#be185d" stroke-width="1.5"/>
+      <text x="360" y="114" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#be185d">② Developer Portal</text>
+      <text x="360" y="132" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">App ID · Certificato · Provisioning Profile</text>
+      <line x1="360" y1="144" x2="360" y2="172" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 3 -->
+      <rect x="260" y="174" width="200" height="52" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+      <text x="360" y="196" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#15803d">③ App Store Connect</text>
+      <text x="360" y="214" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">Crea app · Schede · Screenshot · Privacy</text>
+      <line x1="360" y1="226" x2="360" y2="254" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 4 -->
+      <rect x="260" y="256" width="200" height="52" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.5"/>
+      <text x="360" y="278" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#c2410c">④ Configura .csproj</text>
+      <text x="360" y="296" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">Bundle ID · Versione · Firma · Info.plist</text>
+      <line x1="360" y1="308" x2="360" y2="336" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 5 -->
+      <rect x="260" y="338" width="200" height="52" rx="10" fill="#f5f3ff" stroke="#6d28d9" stroke-width="1.5"/>
+      <text x="360" y="360" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#6d28d9">⑤ Build → .ipa</text>
+      <text x="360" y="378" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">dotnet publish o Xcode Archive</text>
+      <line x1="360" y1="390" x2="360" y2="418" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 6 -->
+      <rect x="260" y="420" width="200" height="52" rx="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="360" y="442" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#ca8a04">⑥ Carica su ASC</text>
+      <text x="360" y="460" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">Transporter / Xcode / altool</text>
+      <line x1="360" y1="472" x2="360" y2="500" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 7 -->
+      <rect x="235" y="502" width="250" height="32" rx="10" fill="#1d1d1f" stroke="#1d1d1f" stroke-width="1.5"/>
+      <text x="360" y="523" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="white">🎉 Invia per revisione → App Store</text>
+    </svg>
+    <p class="svg-caption">Pipeline completa: dalla configurazione alla pubblicazione</p>
+  </div>
+
+  <hr class="divider">
+
+  <div class="card">
+    <h3>📋 Checklist rapida pre-invio</h3>
+    <ul>
+      <li>☐ Bundle ID nel progetto corrisponde a quello nel Developer Portal (<code>com.radio45.app</code>)</li>
+      <li>☐ <code>ApplicationVersion</code> incrementato rispetto all'ultimo caricamento</li>
+      <li>☐ Firma con certificato <em>Apple Distribution</em> (non Development)</li>
+      <li>☐ Screenshot per tutte le dimensioni richieste</li>
+      <li>☐ URL supporto e URL informativa privacy compilati</li>
+      <li>☐ Classificazione età completata</li>
+      <li>☐ Build collegata alla versione in App Store Connect</li>
+      <li>☐ Note sulla versione compilate (anche "Prima versione")</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>RadioE45 – Guida Pubblicazione App Store · Generato con Claude · Giugno 2026</p>
+  <p style="margin-top:4px;">Bundle ID: <strong>com.radio45.app</strong></p>
+</footer>
+
+</body>
+</html>
