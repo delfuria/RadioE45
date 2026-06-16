@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guida Pubblicazione Google Play Store – RadioE45</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --primary: #01875f;
+    --primary-light: #e6f4f0;
+    --secondary: #3ddc84;
+    --success: #34c759;
+    --success-light: #e9f9ef;
+    --warning: #ff9500;
+    --warning-light: #fff5e6;
+    --danger: #ff3b30;
+    --danger-light: #fff0ef;
+    --text: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --code-bg: #f1f3f5;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Google Sans", -apple-system, BlinkMacSystemFont, "Roboto", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+  header {
+    background: linear-gradient(135deg, #01401c 0%, #01875f 100%);
+    color: white;
+    padding: 48px 40px 40px;
+    border-bottom: 3px solid var(--secondary);
+  }
+  header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+  header p { margin-top: 8px; opacity: 0.85; font-size: 1rem; }
+  .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    margin-top: 16px;
+    margin-right: 8px;
+    border: 1px solid rgba(255,255,255,0.35);
+  }
+  .badge-green { background: var(--secondary); color: #01401c; border-color: transparent; }
+
+  main { max-width: 920px; margin: 0 auto; padding: 40px 24px; }
+
+  /* Indice */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-bottom: 40px;
+    box-shadow: var(--shadow);
+  }
+  .toc h2 { font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-secondary); margin-bottom: 14px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 6px 0; }
+  .toc a { color: var(--primary); text-decoration: none; font-weight: 500; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* Sezioni */
+  section { margin-bottom: 48px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-number {
+    background: var(--primary);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px; }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; }
+  .card p, .card li { font-size: 0.9rem; color: #333; }
+  .card ul, .card ol { padding-left: 18px; }
+  .card li { margin: 5px 0; }
+
+  /* Callout */
+  .callout {
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    font-size: 0.875rem;
+  }
+  .callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .callout.info { background: var(--primary-light); border-left: 4px solid var(--primary); }
+  .callout.success { background: var(--success-light); border-left: 4px solid var(--success); }
+  .callout.warning { background: var(--warning-light); border-left: 4px solid var(--warning); }
+  .callout.danger { background: var(--danger-light); border-left: 4px solid var(--danger); }
+
+  /* Code */
+  code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 2px 7px;
+    font-family: "Roboto Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.82rem;
+    color: #c0392b;
+  }
+  pre {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 10px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: "Roboto Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin: 14px 0;
+  }
+  pre code { background: none; border: none; color: inherit; padding: 0; font-size: inherit; }
+  .kw { color: #569cd6; }
+  .str { color: #ce9178; }
+  .cm { color: #6a9955; }
+  .val { color: #b5cea8; }
+
+  /* Steps inline */
+  .steps { counter-reset: step; }
+  .step {
+    display: flex;
+    gap: 14px;
+    margin: 12px 0;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .step-num {
+    counter-increment: step;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 700;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-num::before { content: counter(step); }
+  .step-body { flex: 1; font-size: 0.875rem; }
+  .step-body strong { display: block; font-size: 0.9rem; margin-bottom: 3px; }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* SVG containers */
+  .svg-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+    text-align: center;
+  }
+  .svg-caption {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .tag-android { background: #e6f9ef; color: #01875f; }
+  .tag-play { background: #e8f1fd; color: #1a73e8; }
+  .tag-terminal { background: #f5f3ff; color: #6d28d9; }
+  .tag-maui { background: #fff7ed; color: #c2410c; }
+  .tag-key { background: #fef9c3; color: #92400e; }
+  .tag-diff { background: #fef9c3; color: #92400e; }
+
+  /* Diff note (diverso da Apple) */
+  .diff-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #e6f4f0;
+    border: 1px solid #a7d7c5;
+    color: #01401c;
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+
+  /* Table */
+  .diff-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: 12px; }
+  .diff-table th { background: #f1f5f9; padding: 8px 12px; text-align: left; border: 1px solid var(--border); font-weight: 700; }
+  .diff-table td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+  .diff-table tr:nth-child(even) td { background: #fafafa; }
+
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  footer { text-align: center; padding: 32px; font-size: 0.8rem; color: var(--text-secondary); border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🤖 Guida Pubblicazione Google Play Store</h1>
+  <p>Tutti i passaggi per fare la build di un'app .NET MAUI Android e pubblicarla su Google Play</p>
+  <div class="badge">Package ID: com.radioe45.app</div>
+  <div class="badge badge-green">Android App Bundle · net10.0-android</div>
+</header>
+
+<main>
+
+<!-- NOTA RISPETTO AD APPLE -->
+<div class="callout info" style="margin-bottom: 32px;">
+  <span class="callout-icon">ℹ️</span>
+  <div>
+    <strong>Differenze rispetto all'App Store Apple</strong> — Google Play non usa provisioning profile né CSR. La firma avviene tramite un <strong>keystore locale</strong> (file <code>.jks</code>); Google gestisce poi automaticamente la firma finale con la propria chiave tramite <strong>Google Play App Signing</strong>. L'output è un <strong>Android App Bundle</strong> (<code>.aab</code>) invece di un <code>.ipa</code> o <code>.pkg</code>.
+  </div>
+</div>
+
+<!-- INDICE -->
+<div class="toc">
+  <h2>Indice</h2>
+  <ol>
+    <li><a href="#s1">Prerequisiti</a></li>
+    <li><a href="#s2">Keystore e firma (Upload Key)</a></li>
+    <li><a href="#s3">Google Play Console – Configurazione App</a></li>
+    <li><a href="#s4">Schede obbligatorie: Privacy, Rating e Data Safety</a></li>
+    <li><a href="#s5">Configurazione progetto .NET MAUI</a></li>
+    <li><a href="#s6">Build del pacchetto (.aab)</a></li>
+    <li><a href="#s7">Caricamento e pubblicazione su Google Play</a></li>
+    <li><a href="#s8">Flusso completo (schema riepilogativo)</a></li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-number">1</div>
+    <h2>Prerequisiti</h2>
+  </div>
+
+  <p style="margin-bottom:16px;">Assicurati di avere tutto il necessario prima di iniziare.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>🖥️ Sistema operativo <span class="tag tag-android">Android</span></h3>
+      <ul>
+        <li>Qualsiasi OS: macOS, Windows o Linux</li>
+        <li>La build Android funziona su tutti e tre, a differenza di iOS/macOS che richiedono un Mac</li>
+        <li>Almeno 8 GB RAM; 20 GB spazio libero</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🛠️ SDK e strumenti <span class="tag tag-maui">MAUI</span></h3>
+      <ul>
+        <li>.NET 10 SDK con workload Android:</li>
+      </ul>
+      <pre><code>dotnet workload install maui-android</code></pre>
+      <ul>
+        <li>Java JDK 17+ (per <code>keytool</code>) — incluso nel .NET Android workload</li>
+        <li>Verifica che <code>keytool</code> sia disponibile nel PATH:</li>
+      </ul>
+      <pre><code>keytool -help</code></pre>
+    </div>
+    <div class="card">
+      <h3>🏪 Account Google Play Developer <span class="tag tag-play">Play Console</span></h3>
+      <ul>
+        <li>Account Google Play Developer attivo ✅ <em>già creato</em></li>
+        <li>Registrazione: <strong>25 $ una tantum</strong> (non annuale come Apple)</li>
+        <li>Accesso a <a href="https://play.google.com/console" target="_blank">play.google.com/console</a></li>
+        <li>Email Google associata all'account developer</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>📋 Materiali necessari</h3>
+      <ul>
+        <li><strong>Privacy Policy URL</strong> — obbligatoria (es. GitHub Pages, sito web)</li>
+        <li><strong>Icona alta risoluzione</strong>: 512×512 px PNG (già hai l'SVG nel progetto)</li>
+        <li><strong>Screenshot</strong>: almeno 2 per telefono (min 320px, max 3840px)</li>
+        <li><strong>Feature graphic</strong>: 1024×500 px (banner opzionale ma consigliato)</li>
+        <li><strong>Descrizione breve</strong>: max 80 caratteri</li>
+        <li><strong>Descrizione lunga</strong>: max 4000 caratteri</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Confronto Apple vs Google -->
+  <div class="card" style="margin-top:8px;">
+    <h3>📊 Confronto Apple App Store vs Google Play</h3>
+    <table class="diff-table">
+      <thead>
+        <tr>
+          <th>Aspetto</th>
+          <th>🍎 Apple App Store</th>
+          <th>🤖 Google Play Store</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Costo account</strong></td>
+          <td>99 $/anno</td>
+          <td>25 $ una tantum</td>
+        </tr>
+        <tr>
+          <td><strong>Firma app</strong></td>
+          <td>Certificato + Provisioning Profile (Apple Portal)</td>
+          <td>Keystore JKS locale (upload key) + Google Play App Signing</td>
+        </tr>
+        <tr>
+          <td><strong>Formato output</strong></td>
+          <td><code>.ipa</code> (iOS) / <code>.pkg</code> (macOS)</td>
+          <td><code>.aab</code> (Android App Bundle)</td>
+        </tr>
+        <tr>
+          <td><strong>Tempi revisione</strong></td>
+          <td>1–3 giorni</td>
+          <td>Poche ore – 3 giorni</td>
+        </tr>
+        <tr>
+          <td><strong>Privacy dichiarazione</strong></td>
+          <td>Privacy Nutrition Label (App Store Connect)</td>
+          <td>Data Safety Section (Play Console) — più dettagliata</td>
+        </tr>
+        <tr>
+          <td><strong>Target API</strong></td>
+          <td>Definito da <code>SupportedOSPlatformVersion</code></td>
+          <td>Obbligo di targetare API recente (attualmente Android 14, API 34+)</td>
+        </tr>
+        <tr>
+          <td><strong>Sandbox / entitlements</strong></td>
+          <td>App Sandbox obbligatoria per macOS</td>
+          <td>Permessi dichiarati in <code>AndroidManifest.xml</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-number">2</div>
+    <h2>Keystore e firma (Upload Key) <span class="diff-note">🔑 Solo Android</span></h2>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">ℹ️</span>
+    <div>
+      <strong>Come funziona la firma su Android:</strong> Non si usano certificati Apple. Si crea un <strong>keystore</strong> (file <code>.jks</code>) con una coppia di chiavi RSA. Su Google Play si usa il modello <strong>Google Play App Signing</strong>: tu firmi con la tua <em>upload key</em>, Google ri-firma con la propria <em>app signing key</em> (che gestisce lui). In questo modo anche se perdi il keystore puoi richiedere a Google una nuova upload key.
+    </div>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 760 180" xmlns="http://www.w3.org/2000/svg" width="720" height="180">
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#aaa"/>
+        </marker>
+      </defs>
+      <!-- Box 1 -->
+      <rect x="10" y="55" width="155" height="70" rx="10" fill="#e6f4f0" stroke="#01875f" stroke-width="1.5"/>
+      <text x="87" y="84" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#01875f">Keystore locale</text>
+      <text x="87" y="101" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">radioe45-upload.jks</text>
+      <text x="87" y="116" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#666">(upload key)</text>
+      <!-- Arrow -->
+      <line x1="167" y1="90" x2="199" y2="90" stroke="#aaa" stroke-width="2" marker-end="url(#arr)"/>
+      <!-- Box 2 -->
+      <rect x="201" y="55" width="155" height="70" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.5"/>
+      <text x="278" y="84" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#c2410c">AAB firmato</text>
+      <text x="278" y="101" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">dotnet publish</text>
+      <text x="278" y="116" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#666">RadioE45.aab</text>
+      <!-- Arrow -->
+      <line x1="358" y1="90" x2="390" y2="90" stroke="#aaa" stroke-width="2" marker-end="url(#arr)"/>
+      <!-- Box 3 -->
+      <rect x="392" y="55" width="155" height="70" rx="10" fill="#e8f1fd" stroke="#1a73e8" stroke-width="1.5"/>
+      <text x="469" y="80" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1a73e8">Play Console</text>
+      <text x="469" y="97" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">Upload + verifica</text>
+      <text x="469" y="112" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#666">Google valida upload key</text>
+      <!-- Arrow -->
+      <line x1="549" y1="90" x2="581" y2="90" stroke="#aaa" stroke-width="2" marker-end="url(#arr)"/>
+      <!-- Box 4 -->
+      <rect x="583" y="55" width="165" height="70" rx="10" fill="#e6f9ef" stroke="#01875f" stroke-width="1.5"/>
+      <text x="665" y="80" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#01875f">Play Store</text>
+      <text x="665" y="97" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">Google ri-firma con</text>
+      <text x="665" y="112" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#333">app signing key propria</text>
+    </svg>
+    <p class="svg-caption">Flusso firma Android: keystore locale → AAB → Play Console → ri-firma Google → Play Store</p>
+  </div>
+
+  <div class="card">
+    <h3>🔑 Passo 1 – Crea il keystore (upload key)</h3>
+    <p style="margin-bottom:10px;">Il progetto si aspetta il keystore in <code>~/.android/radioe45-upload.jks</code>. Esegui questo comando <strong>una sola volta</strong>:</p>
+    <pre><code><span class="cm"># Crea la directory se non esiste</span>
+mkdir -p ~/.android
+
+<span class="cm"># Genera il keystore con chiave RSA 2048-bit, validità 27 anni</span>
+keytool -genkey -v \
+  -keystore ~/.android/radioe45-upload.jks \
+  -alias radioe45 \
+  -keyalg RSA \
+  -keysize 2048 \
+  -validity 10000 \
+  -dname "CN=Stefano Del Furia, OU=RadioE45, O=RadioE45, L=Italia, ST=Italia, C=IT"
+
+<span class="cm"># keytool chiederà di impostare una password per il keystore
+# e una per la chiave — annotale in un posto sicuro!</span></code></pre>
+
+    <div class="callout danger" style="margin-top:12px;">
+      <span class="callout-icon">🚨</span>
+      <div><strong>Conserva il keystore e le password in modo sicuro.</strong> Se perdi la upload key prima di registrarti su Google Play App Signing, non potrai più aggiornare l'app. Fai sempre un backup del file <code>.jks</code> fuori dal repository (es. su un password manager o cloud storage cifrato). <strong>Non committare mai il keystore su git.</strong></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3>🔐 Passo 2 – Aggiorna le credenziali nello script di build</h3>
+    <p style="margin-bottom:10px;">Apri <code>scripts/build-store-android.sh</code> e sostituisci le password placeholder:</p>
+    <pre><code><span class="cm"># scripts/build-store-android.sh — modifica queste righe:</span>
+KEYSTORE_PATH="$HOME/.android/radioe45-upload.jks"
+KEY_ALIAS="<span class="str">radioe45</span>"
+STORE_PASS="<span class="str">la-tua-password-keystore</span>"   <span class="cm"># sostituisci "changeme"</span>
+KEY_PASS="<span class="str">la-tua-password-chiave</span>"      <span class="cm"># sostituisci "changeme"</span></code></pre>
+
+    <div class="callout warning" style="margin-top:10px;">
+      <span class="callout-icon">⚠️</span>
+      <div>Non committare le password in chiaro su git. Se il repository è pubblico, considera di leggerle da variabili d'ambiente o da un file <code>.env</code> gitignored.</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3>☁️ Passo 3 – Iscriviti a Google Play App Signing</h3>
+    <p style="margin-bottom:8px;">Google Play App Signing è <strong>obbligatorio per le nuove app</strong> create dopo agosto 2021. Google genera e custodisce la chiave finale di distribuzione; la tua upload key serve solo per autenticarti al momento dell'upload.</p>
+    <p style="margin-bottom:8px;">L'iscrizione avviene automaticamente quando carichi il primo AAB — Play Console ti chiederà di confermare durante la creazione della prima release.</p>
+    <div class="callout success" style="margin-top:8px;">
+      <span class="callout-icon">✅</span>
+      <div>Con Google Play App Signing, se perdi l'upload key, puoi richiedere a Google di associarne una nuova senza perdere l'app. Questo è il vantaggio principale rispetto alla firma manuale.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s3">
+  <div class="section-header">
+    <div class="section-number">3</div>
+    <h2>Google Play Console – Configurazione App <span class="tag tag-play">Play Console</span></h2>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">ℹ️</span>
+    <div>Vai su <strong>play.google.com/console → Tutte le app → Crea app</strong></div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Crea la nuova app</strong>
+        Compila il form iniziale:
+        <ul style="margin-top:6px;">
+          <li><strong>Nome app</strong>: <code>Radio E45</code></li>
+          <li><strong>Lingua predefinita</strong>: Italiano</li>
+          <li><strong>App o gioco</strong>: App</li>
+          <li><strong>Gratuita o a pagamento</strong>: Gratuita</li>
+        </ul>
+        Accetta le dichiarazioni sulle policy per sviluppatori e le leggi sull'export degli Stati Uniti. Clicca <strong>Crea app</strong>.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Compila la Scheda dello Store</strong>
+        Vai in <em>Presenza sullo store → Scheda principale dello store</em>:
+        <ul style="margin-top:6px;">
+          <li><strong>Nome app</strong>: <code>Radio E45</code></li>
+          <li><strong>Descrizione breve</strong>: max 80 caratteri (es. "Ascolta Radio E45 in diretta, ovunque tu sia")</li>
+          <li><strong>Descrizione</strong>: max 4000 caratteri — descrivi la radio, i programmi, le funzionalità</li>
+          <li><strong>Icona</strong>: 512×512 px, PNG, max 1 MB (esporta dal file SVG nel progetto)</li>
+          <li><strong>Feature graphic</strong>: 1024×500 px (banner opzionale ma molto consigliato)</li>
+          <li><strong>Screenshot telefono</strong>: min 2, formato JPEG/PNG, min 320px su lato corto</li>
+          <li><strong>Categoria</strong>: Musica e audio</li>
+          <li><strong>Tag</strong>: radio, streaming, musica, Italia</li>
+          <li><strong>Sito web</strong>: URL del sito (se disponibile)</li>
+          <li><strong>Email supporto</strong>: la tua email</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Impostazioni app</strong>
+        Vai in <em>Configurazione dell'app → Impostazioni app</em>:
+        <ul style="margin-top:6px;">
+          <li><strong>Categoria</strong>: Musica e audio</li>
+          <li><strong>Tag</strong>: puoi aggiungere fino a 5 tag per la scopribilità</li>
+          <li><strong>Accesso dell'app</strong>: dichiara se l'app richiede login o se è accessibile a tutti (RadioE45 è accessibile a tutti senza account)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Dichiarazione sulla pubblicità</strong>
+        Vai in <em>Configurazione dell'app → Annunci</em>:<br>
+        Seleziona <strong>"La mia app non contiene annunci"</strong> (a meno che tu non abbia integrato AdMob o simili).
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3>🖼️ Dimensioni screenshot richieste per Android</h3>
+    <table class="diff-table">
+      <thead>
+        <tr><th>Tipo dispositivo</th><th>Dimensioni</th><th>Obbligatorio</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Telefono</strong></td>
+          <td>Min 320px, max 3840px per lato; rapporto 16:9 o 9:16 consigliato</td>
+          <td>✅ Sì (min 2 screenshot)</td>
+        </tr>
+        <tr>
+          <td><strong>Tablet 7"</strong></td>
+          <td>Stesse regole del telefono</td>
+          <td>No (consigliato)</td>
+        </tr>
+        <tr>
+          <td><strong>Tablet 10"</strong></td>
+          <td>Stesse regole del telefono</td>
+          <td>No (consigliato)</td>
+        </tr>
+        <tr>
+          <td><strong>Chromebook</strong></td>
+          <td>Landscape, min 1080px larghezza</td>
+          <td>No</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout info" style="margin-top:12px;">
+      <span class="callout-icon">💡</span>
+      <div>Puoi catturare screenshot direttamente dall'emulatore Android in Android Studio, o da un dispositivo fisico con <code>adb exec-out screencap -p &gt; screenshot.png</code>. L'emulatore include preset per molti formati di schermo popolari.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s4">
+  <div class="section-header">
+    <div class="section-number">4</div>
+    <h2>Schede obbligatorie: Privacy, Rating e Data Safety <span class="diff-note">📋 Obbligatorio Play</span></h2>
+  </div>
+
+  <div class="callout danger">
+    <span class="callout-icon">❗</span>
+    <div><strong>Queste tre sezioni devono essere completate prima di poter pubblicare.</strong> Google non permette il lancio senza rating dei contenuti, Data Safety e privacy policy. Sono più dettagliate rispetto a quanto richiesto da Apple.</div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Privacy Policy</strong>
+        Vai in <em>Configurazione dell'app → Privacy Policy</em>.<br>
+        Inserisci l'URL della tua privacy policy. <strong>È obbligatoria</strong> anche se l'app non raccoglie dati personali — in quel caso basta dichiararlo esplicitamente nel documento.<br><br>
+        Il file <code>docs/PrivacyPolicy.html</code> già presente nel progetto può essere pubblicato su GitHub Pages o simili e usato come URL.
+        <div class="callout info" style="margin-top:8px;">
+          <span class="callout-icon">💡</span>
+          <div>Se non hai ancora un URL, puoi pubblicare <code>PrivacyPolicy.html</code> gratis su <strong>GitHub Pages</strong>: crea un repository pubblico, abilita Pages, e avrai un URL <code>https://tuonome.github.io/privacy-radioe45</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Classificazione dei contenuti (Rating)</strong>
+        Vai in <em>Classificazione contenuti → Questionario</em>.<br>
+        Compila il questionario IARC. Per RadioE45 (radio musicale, nessun contenuto generato dagli utenti, nessuna violenza):
+        <ul style="margin-top:6px;">
+          <li>Categoria: <strong>Musica e audio</strong></li>
+          <li>Violenza: No | Linguaggio: No | Contenuto sessuale: No</li>
+          <li>Contenuto generato dagli utenti: No</li>
+          <li>Giochi d'azzardo: No</li>
+        </ul>
+        Il sistema calcolerà automaticamente una classificazione (tipicamente <strong>PEGI 3</strong> o <strong>Per tutti</strong>) nelle varie giurisdizioni.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Data Safety (Sicurezza dei dati) <span class="diff-note">📋 Più dettagliato di Apple</span></strong>
+        Vai in <em>Configurazione dell'app → Sicurezza dei dati</em>.<br>
+        Devi dichiarare esattamente quali dati l'app raccoglie, trasmette e come li protegge. Per RadioE45:
+        <table class="diff-table" style="margin-top:12px;">
+          <thead>
+            <tr><th>Domanda</th><th>Risposta per RadioE45</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>L'app raccoglie o condivide dati utente?</td>
+              <td><strong>No</strong> (se non usi analytics) — oppure Sì con dettaglio se usi Sentry o analytics anonimi</td>
+            </tr>
+            <tr>
+              <td>Tutti i dati trasmessi sono cifrati?</td>
+              <td><strong>Sì</strong> — lo streaming HLS avviene via HTTPS</td>
+            </tr>
+            <tr>
+              <td>Puoi gli utenti richiedere la cancellazione dei dati?</td>
+              <td><strong>Non applicabile</strong> se non si raccolgono dati personali</td>
+            </tr>
+            <tr>
+              <td>Permessi "Sensibili" (microfono, posizione…)?</td>
+              <td><strong>No</strong> — RadioE45 non richiede permessi sensibili (solo internet e audio in foreground)</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout warning" style="margin-top:10px;">
+          <span class="callout-icon">⚠️</span>
+          <div>Se hai integrato <strong>Sentry</strong> (presente nel progetto), devi dichiararlo: Sentry raccoglie dati diagnostici anonimi (crash reports, device info). Nella sezione Data Safety → Informazioni diagnostiche → Dati sull'app → Rapporti sugli arresti anomali. Seleziona "condiviso con terze parti" (Sentry) e "non utilizzato per scopi di tracciamento".</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Pubblico di destinazione e contenuto per bambini</strong>
+        Vai in <em>Configurazione dell'app → Pubblico target e contenuto</em>.<br>
+        Seleziona <strong>età 18+</strong> o almeno <strong>13+</strong> — <strong>non selezionare "Per bambini"</strong> a meno che l'app non sia specificamente progettata per minori. Selezionando "Per bambini" si applicano restrizioni molto più severe (COPPA compliance, no analytics, no pubblicità personalizzata).
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s5">
+  <div class="section-header">
+    <div class="section-number">5</div>
+    <h2>Configurazione progetto .NET MAUI <span class="tag tag-maui">MAUI</span></h2>
+  </div>
+
+  <p style="margin-bottom:14px;">La configurazione Android è già presente nel file <code>RadioE45.csproj</code>. Verifica le proprietà chiave:</p>
+
+  <pre><code><span class="cm">&lt;!-- RadioE45.csproj — sezioni rilevanti per Android --&gt;</span>
+&lt;<span class="kw">PropertyGroup</span>&gt;
+  <span class="cm">&lt;!-- Package name su Google Play (immutabile dopo la prima pubblicazione!) --&gt;</span>
+  &lt;<span class="kw">ApplicationId</span>&gt;<span class="str">com.radioe45.app</span>&lt;/<span class="kw">ApplicationId</span>&gt;
+
+  <span class="cm">&lt;!-- versionName visibile agli utenti (es. "0.20") --&gt;</span>
+  &lt;<span class="kw">ApplicationDisplayVersion</span>&gt;<span class="str">0.20</span>&lt;/<span class="kw">ApplicationDisplayVersion</span>&gt;
+
+  <span class="cm">&lt;!-- versionCode numerico — DEVE essere incrementato ad ogni upload su Play --&gt;</span>
+  &lt;<span class="kw">ApplicationVersion</span> Condition="...platform != windows"&gt;<span class="val">20</span>&lt;/<span class="kw">ApplicationVersion</span>&gt;
+
+  <span class="cm">&lt;!-- Versione Android minima (26 = Android 8.0 Oreo) --&gt;</span>
+  &lt;<span class="kw">SupportedOSPlatformVersion</span> Condition="...platform == 'android'"&gt;<span class="val">26.0</span>&lt;/<span class="kw">SupportedOSPlatformVersion</span>&gt;
+&lt;/<span class="kw">PropertyGroup</span>&gt;
+
+<span class="cm">&lt;!-- Ottimizzazione build Debug Android --&gt;</span>
+&lt;<span class="kw">PropertyGroup</span> Condition="...android AND '$(Configuration)' == 'Debug'"&gt;
+  &lt;<span class="kw">EmbedAssembliesIntoApk</span>&gt;<span class="val">true</span>&lt;/<span class="kw">EmbedAssembliesIntoApk</span>&gt;
+&lt;/<span class="kw">PropertyGroup</span>&gt;</code></pre>
+
+  <div class="callout danger">
+    <span class="callout-icon">🚨</span>
+    <div>
+      <strong>ApplicationId = Package Name: è immutabile.</strong> Una volta pubblicata l'app su Google Play con <code>com.radioe45.app</code>, non puoi mai più cambiarlo. Se lo cambi, Play Store la tratta come app completamente nuova e perdi tutti gli utenti e le recensioni esistenti.
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <span class="callout-icon">⚠️</span>
+    <div>
+      <strong>Il versionCode (<code>ApplicationVersion</code>) deve essere incrementato ad ogni upload.</strong> Google Play rifiuta build con versionCode uguale o inferiore all'ultimo caricato. La versione attuale è <code>20</code> — il prossimo upload deve essere almeno <code>21</code>.
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3>📄 AndroidManifest.xml — Permessi già configurati</h3>
+    <p style="margin-bottom:8px;">Il file <code>Platforms/Android/AndroidManifest.xml</code> contiene già i permessi necessari:</p>
+    <table class="diff-table">
+      <thead>
+        <tr><th>Permesso</th><th>Motivo</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>INTERNET</code></td>
+          <td>Streaming audio HLS da AzuraCast</td>
+        </tr>
+        <tr>
+          <td><code>ACCESS_NETWORK_STATE</code></td>
+          <td>Verifica connettività prima di riprodurre</td>
+        </tr>
+        <tr>
+          <td><code>FOREGROUND_SERVICE</code></td>
+          <td>Mantiene attiva la riproduzione in background</td>
+        </tr>
+        <tr>
+          <td><code>FOREGROUND_SERVICE_MEDIA_PLAYBACK</code></td>
+          <td>Tipo specifico di foreground service per audio (Android 10+)</td>
+        </tr>
+        <tr>
+          <td><code>POST_NOTIFICATIONS</code></td>
+          <td>Notifica media player visibile in Android 13+ (obbligatoria)</td>
+        </tr>
+        <tr>
+          <td><code>WAKE_LOCK</code></td>
+          <td>Impedisce al sistema di sospendere lo streaming</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout info" style="margin-top:10px;">
+      <span class="callout-icon">ℹ️</span>
+      <div><strong>Android Auto</strong> è già configurato nel manifest (<code>RadioMediaBrowserService</code> con <code>MediaBrowserService</code> intent). Se intendi distribuire anche su Android Auto, dovrai richiedere l'approvazione separata nel Play Console sotto "Android Auto" nella sezione configurazione app.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s6">
+  <div class="section-header">
+    <div class="section-number">6</div>
+    <h2>Build del pacchetto (.aab) <span class="diff-note">📦 Android App Bundle</span></h2>
+  </div>
+
+  <p style="margin-bottom:14px;">Google Play richiede il formato <strong>Android App Bundle</strong> (<code>.aab</code>) — non l'APK — per tutte le nuove app dal 2021. L'AAB è più piccolo dell'APK perché Google genera APK ottimizzati per ogni dispositivo al momento del download.</p>
+
+  <div class="card">
+    <h3>🚀 Metodo consigliato: script di build <span class="tag tag-terminal">Terminal</span></h3>
+    <p style="margin-bottom:10px;">Dopo aver configurato le credenziali nel passo 2, esegui:</p>
+    <pre><code><span class="cm"># Dalla root del repository</span>
+bash scripts/build-store-android.sh
+
+<span class="cm"># Output: scripts/store-packages/RadioE45.aab</span></code></pre>
+    <p style="margin-top:10px;">Lo script esegue automaticamente:</p>
+    <ol style="margin-top:6px;padding-left:18px;font-size:0.875rem;">
+      <li>Verifica che il keystore esista</li>
+      <li><code>dotnet publish</code> in modalità Release con firma AAB</li>
+      <li>Copia l'AAB in <code>scripts/store-packages/RadioE45.aab</code></li>
+    </ol>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>⌨️ Metodo alternativo: dotnet publish manuale <span class="tag tag-terminal">Terminal</span></h3>
+    <pre><code><span class="cm"># Dal percorso del file .csproj</span>
+dotnet publish RadioE45/RadioE45.csproj \
+  -f net10.0-android \
+  -c Release \
+  -p:AndroidPackageFormat=aab \
+  -p:AndroidSigningKeyStore="$HOME/.android/radioe45-upload.jks" \
+  -p:AndroidSigningKeyAlias="radioe45" \
+  -p:AndroidSigningStorePass="la-tua-password" \
+  -p:AndroidSigningKeyPass="la-tua-password"
+
+<span class="cm"># L'AAB sarà in:
+# RadioE45/bin/Release/net10.0-android/*.aab</span></code></pre>
+  </div>
+
+  <div class="callout info" style="margin-top:8px;">
+    <span class="callout-icon">💡</span>
+    <div>
+      <strong>Tempi di build:</strong> la prima build Android in Release può richiedere 5–15 minuti (linking, AOT compilation). Le build successive sono più veloci grazie alla cache incrementale. Non interrompere il processo durante la compilazione.
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3>✅ Verifica l'AAB prima di caricare</h3>
+    <p style="margin-bottom:8px;">Puoi verificare che l'AAB sia valido e firmato correttamente con:</p>
+    <pre><code><span class="cm"># Verifica la firma (cerca "Verified" nell'output)</span>
+jarsigner -verify -verbose -certs scripts/store-packages/RadioE45.aab
+
+<span class="cm"># Controlla contenuto e metadati dell'AAB</span>
+bundletool validate --bundle=scripts/store-packages/RadioE45.aab</code></pre>
+    <p style="margin-top:8px;font-size:0.875rem;">Se <code>bundletool</code> non è installato: <code>brew install bundletool</code> su macOS, oppure scaricalo da GitHub.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s7">
+  <div class="section-header">
+    <div class="section-number">7</div>
+    <h2>Caricamento e pubblicazione su Google Play <span class="tag tag-play">Play Console</span></h2>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" width="660" height="200">
+      <defs>
+        <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b7280"/>
+        </marker>
+      </defs>
+      <!-- .aab box -->
+      <rect x="270" y="10" width="160" height="55" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="350" y="34" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1d1d1f">📦 .aab</text>
+      <text x="350" y="52" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">RadioE45.aab</text>
+      <!-- Frecce -->
+      <line x1="270" y1="50" x2="110" y2="120" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <line x1="350" y1="65" x2="350" y2="120" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <line x1="430" y1="50" x2="590" y2="120" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <!-- Produzione -->
+      <rect x="30" y="122" width="160" height="65" rx="10" fill="#e6f4f0" stroke="#01875f" stroke-width="1.5"/>
+      <text x="110" y="147" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#01875f">🚀 Produzione</text>
+      <text x="110" y="164" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#333">Distribuzione diretta</text>
+      <text x="110" y="178" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#01875f">✅ Consigliato</text>
+      <!-- Test interno -->
+      <rect x="270" y="122" width="160" height="65" rx="10" fill="#e8f1fd" stroke="#1a73e8" stroke-width="1.5"/>
+      <text x="350" y="147" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1a73e8">🧪 Test interno</text>
+      <text x="350" y="164" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#333">Tester invitati via email</text>
+      <text x="350" y="178" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#555">Nessuna revisione</text>
+      <!-- Closed testing -->
+      <rect x="510" y="122" width="160" height="65" rx="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="590" y="147" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#ca8a04">🔒 Closed testing</text>
+      <text x="590" y="164" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#333">Gruppo beta ristretto</text>
+      <text x="590" y="178" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#555">Con revisione Google</text>
+    </svg>
+    <p class="svg-caption">Tre canali di distribuzione — per la prima pubblicazione usa Produzione o Test interno</p>
+  </div>
+
+  <div class="card">
+    <h3>🚀 Prima pubblicazione: canale Produzione</h3>
+    <div class="steps" style="margin-top:10px;">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Vai in Versioni → Produzione → Crea nuova versione</strong>
+          In Play Console, menu laterale: <em>Versioni dell'app → Produzione → Crea nuova versione</em>.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Conferma Google Play App Signing</strong>
+          Al primo upload, Google ti chiederà di accettare i termini di Google Play App Signing. Accetta — è obbligatorio per le nuove app.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Carica l'AAB</strong>
+          Trascina il file <code>scripts/store-packages/RadioE45.aab</code> nell'area di upload, oppure clicca <strong>Carica</strong>. Play Console validerà il file (firma, package name, versionCode).
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Note sulla versione</strong>
+          Inserisci le note per gli utenti (es. "Prima versione di Radio E45 per Android. Ascolta il palinsesto in diretta e accedi alle informazioni sui programmi."). Puoi inserirle in più lingue.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Controlla gli errori</strong>
+          Play Console mostrerà eventuali errori o avvisi in rosso/giallo. Gli avvisi comuni per una prima app:
+          <ul style="margin-top:6px;">
+            <li>Data Safety non compilata → completa la sezione (passo 4)</li>
+            <li>Rating non completato → completa il questionario (passo 4)</li>
+            <li>Privacy policy mancante → aggiungi l'URL (passo 4)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Invia per revisione</strong>
+          Clicca <strong>"Salva" → "Controlla versione" → "Inizia lancio in produzione"</strong>.<br>
+          Puoi scegliere un <strong>rollout graduale</strong> (es. 10% degli utenti prima) o il 100% immediato. Per una prima pubblicazione va bene il 100%.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3>🧪 Alternativa: Test interno (senza revisione Google)</h3>
+    <p style="margin-bottom:8px;">Il <strong>Test interno</strong> è il canale più veloce per testare l'app prima della pubblicazione ufficiale. Non richiede revisione Google e l'AAB è disponibile entro pochi minuti per gli utenti invitati.</p>
+    <ol style="padding-left:18px;font-size:0.875rem;">
+      <li>Vai in <em>Versioni dell'app → Test interno → Crea nuova versione</em></li>
+      <li>Carica l'AAB e salva</li>
+      <li>Vai in <em>Tester → Gestisci lista tester</em> e aggiungi le email dei tuoi tester</li>
+      <li>Condividi il link di opt-in con i tester</li>
+    </ol>
+    <div class="callout success" style="margin-top:10px;">
+      <span class="callout-icon">✅</span>
+      <div>Usa il test interno per verificare che l'app funzioni correttamente su dispositivi reali prima di avviare la revisione per la produzione. Puoi caricare build di test interno in parallelo alle versioni di produzione.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s8">
+  <div class="section-header">
+    <div class="section-number">8</div>
+    <h2>Flusso completo (schema riepilogativo)</h2>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 720 620" xmlns="http://www.w3.org/2000/svg" width="680" height="620">
+      <defs>
+        <marker id="arr3" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#64748b"/>
+        </marker>
+      </defs>
+
+      <!-- 1 -->
+      <rect x="260" y="10" width="200" height="52" rx="10" fill="#e6f4f0" stroke="#01875f" stroke-width="1.5"/>
+      <text x="360" y="32" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#01875f">① Prerequisiti</text>
+      <text x="360" y="50" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">.NET 10 · workload android · JDK · Account Play</text>
+      <line x1="360" y1="62" x2="360" y2="90" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 2 -->
+      <rect x="260" y="92" width="200" height="62" rx="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="360" y="114" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#ca8a04">② Keystore (Upload Key)</text>
+      <text x="360" y="131" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">keytool → radioe45-upload.jks</text>
+      <text x="360" y="146" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">Aggiorna credenziali in build-store-android.sh</text>
+      <line x1="360" y1="154" x2="360" y2="182" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 3 -->
+      <rect x="260" y="184" width="200" height="52" rx="10" fill="#e8f1fd" stroke="#1a73e8" stroke-width="1.5"/>
+      <text x="360" y="206" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1a73e8">③ Play Console – Configura App</text>
+      <text x="360" y="224" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">Crea app · Scheda store · Screenshot · Icona</text>
+      <line x1="360" y1="236" x2="360" y2="264" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 4 -->
+      <rect x="260" y="266" width="200" height="62" rx="10" fill="#fff0ef" stroke="#ff3b30" stroke-width="1.5"/>
+      <text x="360" y="288" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#c0392b">④ Privacy, Rating, Data Safety</text>
+      <text x="360" y="305" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">Privacy Policy URL · IARC Rating</text>
+      <text x="360" y="320" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">Data Safety Section (Sentry, permessi)</text>
+      <line x1="360" y1="328" x2="360" y2="356" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 5 -->
+      <rect x="260" y="358" width="200" height="52" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.5"/>
+      <text x="360" y="380" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#c2410c">⑤ Verifica .csproj</text>
+      <text x="360" y="398" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">ApplicationId · versionCode incrementato</text>
+      <line x1="360" y1="410" x2="360" y2="438" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 6 -->
+      <rect x="260" y="440" width="200" height="52" rx="10" fill="#f5f3ff" stroke="#6d28d9" stroke-width="1.5"/>
+      <text x="360" y="462" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#6d28d9">⑥ Build → .aab</text>
+      <text x="360" y="480" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">bash scripts/build-store-android.sh</text>
+      <line x1="360" y1="492" x2="360" y2="520" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 7 -->
+      <rect x="260" y="522" width="200" height="42" rx="10" fill="#e6f4f0" stroke="#01875f" stroke-width="1.5"/>
+      <text x="360" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#01875f">⑦ Upload su Play Console</text>
+      <text x="360" y="558" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">Versioni → Produzione → Crea nuova versione</text>
+      <line x1="360" y1="564" x2="360" y2="584" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 8 -->
+      <rect x="225" y="586" width="270" height="26" rx="8" fill="#01875f" stroke="#01875f"/>
+      <text x="360" y="604" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="white">🎉 Inizia lancio in produzione → Play Store</text>
+    </svg>
+    <p class="svg-caption">Pipeline completa Android: dalla configurazione alla pubblicazione</p>
+  </div>
+
+  <hr class="divider">
+
+  <div class="card">
+    <h3>📋 Checklist rapida pre-invio Android</h3>
+    <ul>
+      <li>☐ Keystore creato in <code>~/.android/radioe45-upload.jks</code> e backup effettuato</li>
+      <li>☐ Credenziali aggiornate in <code>scripts/build-store-android.sh</code> (no placeholder "changeme")</li>
+      <li>☐ <code>ApplicationVersion</code> (versionCode) incrementato rispetto all'ultimo upload</li>
+      <li>☐ Package name <code>com.radioe45.app</code> confermato (non modificarlo mai dopo la prima pubblicazione)</li>
+      <li>☐ AAB generato e firma verificata con <code>jarsigner -verify</code></li>
+      <li>☐ Privacy Policy URL inserito in Play Console</li>
+      <li>☐ Questionario IARC (classificazione contenuti) completato</li>
+      <li>☐ Data Safety section compilata (incluso Sentry se abilitato)</li>
+      <li>☐ Scheda store compilata: icona 512×512, almeno 2 screenshot, descrizione</li>
+      <li>☐ Categoria impostata: Musica e audio</li>
+      <li>☐ Dichiarazione pubblicità completata (nessun annuncio)</li>
+      <li>☐ Note sulla versione inserite</li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>🔧 Troubleshooting comune</h3>
+    <table class="diff-table">
+      <thead>
+        <tr><th>Errore / Sintomo</th><th>Soluzione</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>"Version code already used"</td>
+          <td>Incrementa <code>ApplicationVersion</code> nel <code>.csproj</code> e rifai la build</td>
+        </tr>
+        <tr>
+          <td>"Package name does not match"</td>
+          <td>Il package name nell'AAB deve essere identico a quello registrato in Play Console: <code>com.radioe45.app</code></td>
+        </tr>
+        <tr>
+          <td>"The APK or Android App Bundle was not signed"</td>
+          <td>Verifica che le variabili <code>STORE_PASS</code> e <code>KEY_PASS</code> siano corrette e che il keystore esista nel percorso specificato</td>
+        </tr>
+        <tr>
+          <td>"Target API level must be 34 or above"</td>
+          <td>Google richiede target API 34 (Android 14) per le nuove app. Verifica che il workload <code>net10.0-android</code> targeti API 34+ (automatico con .NET 10)</td>
+        </tr>
+        <tr>
+          <td>App si chiude subito (Foreground Service)</td>
+          <td>Verifica che <code>FOREGROUND_SERVICE_MEDIA_PLAYBACK</code> sia dichiarato nel manifest e che il servizio abbia <code>foregroundServiceType="mediaPlayback"</code></td>
+        </tr>
+        <tr>
+          <td>"Data safety section incomplete"</td>
+          <td>Completa tutte le domande nella sezione Data Safety, incluse quelle su Sentry (dati diagnostici). Play Console blocca la pubblicazione se ci sono domande senza risposta.</td>
+        </tr>
+        <tr>
+          <td>Build molto lenta in Release</td>
+          <td>È normale la prima volta (AOT compilation). Aggiungi <code>-p:RunAOTCompilation=false</code> per test rapidi — ma non per la build finale del Play Store.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout success" style="margin-top:16px;">
+    <span class="callout-icon">🎉</span>
+    <div>Una volta approvata (tipicamente in poche ore), RadioE45 sarà disponibile su Google Play per tutti i dispositivi Android compatibili (Android 8.0+, API 26+)!</div>
+  </div>
+
+  <div class="callout warning" style="margin-top:8px;">
+    <span class="callout-icon">⚠️</span>
+    <div>Se Google rifiuta l'app per violazione delle policy, riceverai un'email con i dettagli. Puoi rispondere tramite la <strong>Policy Appeal</strong> nella Play Console, correggere il problema e rinviare. I motivi più comuni: permessi non giustificati, Data Safety incompleta, privacy policy assente o non accessibile.</div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>RadioE45 – Guida Pubblicazione Google Play Store · Generato con Claude · Giugno 2026</p>
+  <p style="margin-top:4px;">Package ID: <strong>com.radioe45.app</strong> &nbsp;|&nbsp; Target: <strong>net10.0-android</strong> &nbsp;|&nbsp; Min Android: <strong>8.0 (API 26)</strong></p>
+</footer>
+
+</body>
+</html>

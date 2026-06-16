@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guida Pubblicazione Mac App Store – RadioE45</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --primary: #0071e3;
+    --primary-light: #e8f1fd;
+    --success: #34c759;
+    --success-light: #e9f9ef;
+    --warning: #ff9500;
+    --warning-light: #fff5e6;
+    --danger: #ff3b30;
+    --danger-light: #fff0ef;
+    --text: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --code-bg: #f1f3f5;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+  header {
+    background: linear-gradient(135deg, #1d1d1f 0%, #2d2d30 100%);
+    color: white;
+    padding: 48px 40px 40px;
+    border-bottom: 3px solid var(--primary);
+  }
+  header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+  header p { margin-top: 8px; opacity: 0.75; font-size: 1rem; }
+  .badge {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    margin-top: 16px;
+    margin-right: 8px;
+  }
+  .badge-mac {
+    background: #3730a3;
+  }
+
+  main { max-width: 920px; margin: 0 auto; padding: 40px 24px; }
+
+  /* Indice */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-bottom: 40px;
+    box-shadow: var(--shadow);
+  }
+  .toc h2 { font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-secondary); margin-bottom: 14px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 6px 0; }
+  .toc a { color: var(--primary); text-decoration: none; font-weight: 500; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* Sezioni */
+  section { margin-bottom: 48px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-number {
+    background: var(--primary);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px; }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; }
+  .card p, .card li { font-size: 0.9rem; color: #333; }
+  .card ul, .card ol { padding-left: 18px; }
+  .card li { margin: 5px 0; }
+
+  /* Callout */
+  .callout {
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    font-size: 0.875rem;
+  }
+  .callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .callout.info { background: var(--primary-light); border-left: 4px solid var(--primary); }
+  .callout.success { background: var(--success-light); border-left: 4px solid var(--success); }
+  .callout.warning { background: var(--warning-light); border-left: 4px solid var(--warning); }
+  .callout.danger { background: var(--danger-light); border-left: 4px solid var(--danger); }
+
+  /* Code */
+  code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 2px 7px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.82rem;
+    color: #c0392b;
+  }
+  pre {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 10px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin: 14px 0;
+  }
+  pre code { background: none; border: none; color: inherit; padding: 0; font-size: inherit; }
+  .kw { color: #569cd6; }
+  .str { color: #ce9178; }
+  .cm { color: #6a9955; }
+  .val { color: #b5cea8; }
+
+  /* Steps inline */
+  .steps { counter-reset: step; }
+  .step {
+    display: flex;
+    gap: 14px;
+    margin: 12px 0;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .step-num {
+    counter-increment: step;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 700;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-num::before { content: counter(step); }
+  .step-body { flex: 1; font-size: 0.875rem; }
+  .step-body strong { display: block; font-size: 0.9rem; margin-bottom: 3px; }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* SVG containers */
+  .svg-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+    text-align: center;
+  }
+  .svg-caption {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .tag-mac { background: #e0e7ff; color: #3730a3; }
+  .tag-xcode { background: #e0f2fe; color: #0369a1; }
+  .tag-portal { background: #fce7f3; color: #be185d; }
+  .tag-connect { background: #dcfce7; color: #15803d; }
+  .tag-maui { background: #fff7ed; color: #c2410c; }
+  .tag-terminal { background: #f5f3ff; color: #6d28d9; }
+  .tag-diff { background: #fef9c3; color: #92400e; }
+
+  /* Diff badge per differenze vs iOS */
+  .diff-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #fef9c3;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  footer { text-align: center; padding: 32px; font-size: 0.8rem; color: var(--text-secondary); border-top: 1px solid var(--border); }
+
+  /* Differenze iOS vs macOS table */
+  .diff-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: 12px; }
+  .diff-table th { background: #f1f5f9; padding: 8px 12px; text-align: left; border: 1px solid var(--border); font-weight: 700; }
+  .diff-table td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+  .diff-table tr:nth-child(even) td { background: #fafafa; }
+  .diff-table .col-ios { color: #be185d; font-weight: 600; }
+  .diff-table .col-mac { color: #3730a3; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🖥️ Guida Pubblicazione Mac App Store</h1>
+  <p>Tutti i passaggi per fare la build di un'app .NET MAUI (Mac Catalyst) e caricarla sul Mac App Store</p>
+  <div class="badge">Bundle ID: com.radio45.app</div>
+  <div class="badge badge-mac">Mac Catalyst · net9.0-maccatalyst</div>
+</header>
+
+<main>
+
+<!-- DIFFERENZE PRINCIPALI VS iOS -->
+<div class="callout warning" style="margin-bottom: 32px;">
+  <span class="callout-icon">⚠️</span>
+  <div>
+    <strong>Hai già seguito la guida iOS?</strong> Molti passi sono simili ma ci sono differenze importanti: tipo di certificato, entitlements (App Sandbox obbligatoria), target framework, formato output (<code>.pkg</code> invece di <code>.ipa</code>) e requisiti screenshot. Le sezioni che differiscono sono evidenziate con <span class="diff-note">⚡ Diverso da iOS</span>.
+  </div>
+</div>
+
+<!-- INDICE -->
+<div class="toc">
+  <h2>Indice</h2>
+  <ol>
+    <li><a href="#s1">Prerequisiti</a></li>
+    <li><a href="#s2">Apple Developer Portal – Certificati e Provisioning</a></li>
+    <li><a href="#s3">App Store Connect – Configurazione App macOS</a></li>
+    <li><a href="#s4">Configurazione progetto .NET MAUI (Mac Catalyst)</a></li>
+    <li><a href="#s5">Entitlements e App Sandbox</a></li>
+    <li><a href="#s6">Build del pacchetto (.pkg)</a></li>
+    <li><a href="#s7">Caricamento su App Store Connect</a></li>
+    <li><a href="#s8">Invio alla Revisione Apple</a></li>
+    <li><a href="#s9">Flusso completo (schema riepilogativo)</a></li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-number">1</div>
+    <h2>Prerequisiti</h2>
+  </div>
+
+  <p style="margin-bottom:16px;">Assicurati di avere tutto il necessario prima di iniziare.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>🖥️ Hardware &amp; OS <span class="tag tag-mac">Mac</span></h3>
+      <ul>
+        <li>Mac con macOS Ventura 13.5+ (consigliato Sequoia 15+)</li>
+        <li>Almeno 16 GB RAM consigliati</li>
+        <li>30 GB di spazio libero su disco</li>
+        <li>Architettura Apple Silicon o Intel x86-64</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🛠️ Software <span class="tag tag-xcode">Xcode</span> <span class="tag tag-maui">MAUI</span></h3>
+      <ul>
+        <li>Xcode 16+ (da Mac App Store) — obbligatorio</li>
+        <li>.NET 9+ SDK con workload <code>maui-maccatalyst</code></li>
+        <li>Visual Studio 2022 for Mac <em>o</em> VS Code con .NET MAUI extension</li>
+        <li>Rider con plugin MAUI (alternativa)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🍎 Apple Developer Account <span class="tag tag-portal">Portal</span></h3>
+      <ul>
+        <li>Account Apple Developer attivo (99 $/anno) ✅ <em>già rinnovato</em></li>
+        <li>Accesso a <a href="https://developer.apple.com" target="_blank">developer.apple.com</a></li>
+        <li>Accesso a <a href="https://appstoreconnect.apple.com" target="_blank">appstoreconnect.apple.com</a></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>📦 Workload .NET MAUI Mac Catalyst <span class="diff-note">⚡ Diverso da iOS</span></h3>
+      <ul>
+        <li>Verifica installazione:</li>
+      </ul>
+      <pre><code>dotnet workload list</code></pre>
+      <ul>
+        <li>Installa il workload macOS/Mac Catalyst:</li>
+      </ul>
+      <pre><code>dotnet workload install maui-maccatalyst</code></pre>
+      <div class="callout info" style="margin-top:8px;">
+        <span class="callout-icon">ℹ️</span>
+        <div>.NET MAUI su macOS usa <strong>Mac Catalyst</strong>, che porta le app UIKit (iOS/iPadOS) su macOS. Non è lo stesso di un'app AppKit nativa, ma funziona benissimo per RadioE45.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabella differenze iOS vs macOS -->
+  <div class="card" style="margin-top:8px;">
+    <h3>📊 Confronto iOS vs macOS App Store <span class="diff-note">⚡ Diverso da iOS</span></h3>
+    <table class="diff-table">
+      <thead>
+        <tr>
+          <th>Aspetto</th>
+          <th class="col-ios">📱 iOS App Store</th>
+          <th class="col-mac">🖥️ Mac App Store</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Target framework</strong></td>
+          <td><code>net9.0-ios</code></td>
+          <td><code>net9.0-maccatalyst</code></td>
+        </tr>
+        <tr>
+          <td><strong>Certificato</strong></td>
+          <td>Apple Distribution</td>
+          <td>Apple Distribution <em>+</em> Mac Installer Distribution</td>
+        </tr>
+        <tr>
+          <td><strong>Provisioning Profile</strong></td>
+          <td>App Store Connect (iOS)</td>
+          <td>Mac App Store Connect</td>
+        </tr>
+        <tr>
+          <td><strong>App Sandbox</strong></td>
+          <td>Facoltativa</td>
+          <td><strong>Obbligatoria</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Output build</strong></td>
+          <td><code>.ipa</code></td>
+          <td><code>.pkg</code></td>
+        </tr>
+        <tr>
+          <td><strong>Screenshot richiesti</strong></td>
+          <td>iPhone 6.5" e 5.5"</td>
+          <td>1280×800 o 1440×900 px</td>
+        </tr>
+        <tr>
+          <td><strong>Entitlements</strong></td>
+          <td>Platforms/iOS/Entitlements.plist</td>
+          <td>Platforms/MacCatalyst/Entitlements.plist</td>
+        </tr>
+        <tr>
+          <td><strong>Notarization</strong></td>
+          <td>Non applicabile</td>
+          <td>Inclusa automaticamente nel processo Mac App Store</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-number">2</div>
+    <h2>Apple Developer Portal – Certificati e Provisioning <span class="diff-note">⚡ Diverso da iOS</span></h2>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">ℹ️</span>
+    <div>Vai su <strong>developer.apple.com → Certificates, Identifiers &amp; Profiles</strong>. Per macOS hai bisogno di <strong>due certificati</strong> invece di uno solo.</div>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg" width="760" height="200">
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#aaa"/>
+        </marker>
+      </defs>
+      <!-- Box 1 -->
+      <rect x="10" y="60" width="150" height="80" rx="10" fill="#e8f1fd" stroke="#0071e3" stroke-width="1.5"/>
+      <text x="85" y="94" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#0071e3">App ID</text>
+      <text x="85" y="112" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#333">com.radio45.app</text>
+      <!-- Arrow -->
+      <line x1="162" y1="100" x2="184" y2="100" stroke="#aaa" stroke-width="2" marker-end="url(#arr)"/>
+      <!-- Box 2a -->
+      <rect x="186" y="40" width="155" height="55" rx="10" fill="#fce7f3" stroke="#be185d" stroke-width="1.5"/>
+      <text x="263" y="62" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#be185d">Certificato 1</text>
+      <text x="263" y="79" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9.5" fill="#333">Apple Distribution</text>
+      <!-- Box 2b -->
+      <rect x="186" y="108" width="155" height="55" rx="10" fill="#fce7f3" stroke="#9d174d" stroke-width="1.5"/>
+      <text x="263" y="130" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#9d174d">Certificato 2</text>
+      <text x="263" y="147" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9.5" fill="#333">Mac Installer Distribution</text>
+      <!-- Arrows -->
+      <line x1="343" y1="67" x2="378" y2="100" stroke="#aaa" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="343" y1="135" x2="378" y2="102" stroke="#aaa" stroke-width="2" marker-end="url(#arr)"/>
+      <!-- Box 3 -->
+      <rect x="380" y="60" width="165" height="80" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+      <text x="462" y="90" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#15803d">Provisioning</text>
+      <text x="462" y="108" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#333">Mac App Store Connect</text>
+      <!-- Arrow -->
+      <line x1="547" y1="100" x2="578" y2="100" stroke="#aaa" stroke-width="2" marker-end="url(#arr)"/>
+      <!-- Box 4 -->
+      <rect x="580" y="60" width="165" height="80" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.5"/>
+      <text x="662" y="90" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#c2410c">Xcode / MAUI</text>
+      <text x="662" y="108" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#333">Firma + Pacchettizzazione .pkg</text>
+    </svg>
+    <p class="svg-caption">Flusso macOS: App ID → 2 Certificati → Provisioning Profile → Firma + .pkg</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Verifica/Registra l'App ID</strong>
+        Se hai già registrato <code>com.radio45.app</code> per iOS, puoi usare lo stesso identificatore — è valido per tutte le piattaforme Apple.<br>
+        Vai in <em>Identifiers → com.radio45.app</em> e verifica che la piattaforma includa <strong>macOS</strong>. Se hai creato l'App ID solo per iOS, potrebbe essere necessario creare un nuovo identificatore esplicito oppure abilitare macOS nella configurazione esistente.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Genera la CSR con Keychain Access (se non già fatto per iOS)</strong>
+        Se hai già generato una CSR per la guida iOS, puoi riutilizzarla (la chiave privata è già nel Keychain). Altrimenti segui gli stessi passi:<br><br>
+        <strong>Keychain Access → Certificate Assistant → Request a Certificate from a Certificate Authority…</strong><br>
+        Compila email e nome → <strong>Saved to disk</strong> → Salva il file <code>.certSigningRequest</code>.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Crea il certificato "Apple Distribution" (per la firma del codice app)</strong>
+        <div class="callout info" style="margin-top:8px;">
+          <span class="callout-icon">ℹ️</span>
+          <div>Se hai già il certificato <strong>Apple Distribution</strong> creato per iOS, puoi usarlo anche per macOS. Salta a questo punto se ce l'hai già nel Keychain.</div>
+        </div>
+        Vai in <em>Certificates → +</em> → scegli <strong>Apple Distribution</strong>.<br>
+        Carica la CSR → scarica <code>distribution.cer</code> → doppio clic per importarlo nel Keychain.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Crea il certificato "Mac Installer Distribution" (per firmare il pacchetto .pkg) <span class="diff-note">⚡ Solo macOS</span></strong>
+        Questo secondo certificato è esclusivo per macOS e firma il <em>pacchetto di installazione</em> (non il codice dell'app).<br><br>
+        Vai in <em>Certificates → +</em> → scegli <strong>Mac Installer Distribution</strong>.<br>
+        Carica la stessa CSR → scarica <code>macinstallerdist.cer</code> → doppio clic per importarlo nel Keychain.<br><br>
+        Dopo l'importazione, nel Keychain di login avrai due certificati di distribuzione:
+        <ul style="margin-top:8px;">
+          <li><code>Apple Distribution: [TuoNome] ([TEAMID])</code></li>
+          <li><code>3rd Party Mac Developer Installer: [TuoNome] ([TEAMID])</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Crea il Provisioning Profile "Mac App Store Connect" <span class="diff-note">⚡ Diverso da iOS</span></strong>
+        Vai in <em>Profiles → +</em> → scegli <strong>Mac App Store Connect</strong> (non "App Store Connect" che è per iOS).<br><br>
+        <ul style="margin-top:6px;">
+          <li>App ID: <code>com.radio45.app</code></li>
+          <li>Certificate: seleziona il certificato <strong>Apple Distribution</strong></li>
+          <li>Name: <code>RadioE45 Mac AppStore</code></li>
+        </ul>
+        Scarica il file <code>.provisionprofile</code> e fai doppio clic per installarlo in Xcode.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <span class="callout-icon">✅</span>
+    <div>Puoi usare il <strong>Automatic Signing</strong> di Xcode anche per macOS: apri il progetto, vai in <em>Signing &amp; Capabilities</em>, spunta "Automatically manage signing", seleziona il team e scegli la destinazione <em>Mac Catalyst</em>. Xcode gestirà entrambi i certificati automaticamente.</div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s3">
+  <div class="section-header">
+    <div class="section-number">3</div>
+    <h2>App Store Connect – Configurazione App macOS <span class="diff-note">⚡ Diverso da iOS</span></h2>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">ℹ️</span>
+    <div>Vai su <strong>appstoreconnect.apple.com → Le mie app</strong>. Se hai già creato l'app per iOS, puoi <strong>aggiungere la piattaforma macOS alla stessa app</strong> invece di crearne una nuova.</div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Aggiungi la piattaforma macOS all'app esistente</strong>
+        Se RadioE45 esiste già su App Store Connect (versione iOS):<br>
+        Apri l'app → in alto a sinistra clicca sul menu a tendina accanto al nome → <strong>Aggiungi piattaforma → macOS</strong>.<br><br>
+        Se stai creando l'app da zero:<br>
+        <em>Le mie app → +</em> | Piattaforme: <strong>macOS</strong> | Nome: <strong>RadioE45</strong> | Bundle ID: <code>com.radio45.app</code> | SKU: <code>radioe45app</code>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Compila le informazioni della versione macOS</strong>
+        Vai nella scheda <em>Distribuzione → macOS App → 1.0 Prepara l'invio</em>:
+        <ul style="margin-top:6px;">
+          <li><strong>Screenshot macOS</strong> <span class="diff-note">⚡ Diverso da iOS</span>: obbligatori in formato <strong>1280×800 px</strong> o <strong>1440×900 px</strong> (puoi catturarli dal Simulatore macOS in Xcode o con Cmd+Shift+4)</li>
+          <li><strong>Descrizione</strong>: descrizione dell'app per gli utenti macOS</li>
+          <li><strong>Parole chiave</strong>: fino a 100 caratteri</li>
+          <li><strong>URL supporto</strong>: una pagina web valida</li>
+          <li><strong>Categoria</strong>: Musica</li>
+          <li><strong>Classificazione età</strong>: compila il questionario (stesso di iOS se già fatto)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Compilazione sulla Privacy</strong>
+        Sezione <em>Privacy dell'app</em>: per una web radio senza raccolta dati, dichiara "Nessun dato raccolto". Se usi analytics, dichiara dati di utilizzo anonimi.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🖼️ Dimensioni screenshot richieste per macOS <span class="diff-note">⚡ Diverso da iOS</span></h3>
+    <p style="margin-bottom:10px;">A differenza di iOS, macOS richiede screenshot in formato desktop. Almeno uno dei due formati è obbligatorio:</p>
+    <table class="diff-table">
+      <thead>
+        <tr><th>Formato</th><th>Dimensione</th><th>Note</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Standard</strong></td>
+          <td><code>1280 × 800 px</code></td>
+          <td>Equivale a un MacBook 13"</td>
+        </tr>
+        <tr>
+          <td><strong>Retina / Large</strong></td>
+          <td><code>1440 × 900 px</code></td>
+          <td>Equivale a un MacBook Pro 15"</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout info" style="margin-top:12px;">
+      <span class="callout-icon">💡</span>
+      <div>Per catturare screenshot dal Simulatore macOS: in Xcode scegli <em>My Mac (Mac Catalyst)</em> come destinazione, avvia l'app e usa <strong>Cmd+Shift+4</strong> per catturare la finestra alla dimensione esatta.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s4">
+  <div class="section-header">
+    <div class="section-number">4</div>
+    <h2>Configurazione progetto .NET MAUI (Mac Catalyst) <span class="diff-note">⚡ Diverso da iOS</span></h2>
+  </div>
+
+  <p style="margin-bottom:14px;">Apri il file <code>RadioE45.csproj</code> e aggiungi/verifica le proprietà per Mac Catalyst:</p>
+
+  <pre><code><span class="cm">&lt;!-- RadioE45.csproj --&gt;</span>
+&lt;<span class="kw">PropertyGroup</span>&gt;
+  <span class="cm">&lt;!-- Versione app (stessa usata per iOS, incrementa ad ogni upload) --&gt;</span>
+  &lt;<span class="kw">ApplicationVersion</span>&gt;<span class="val">1</span>&lt;/<span class="kw">ApplicationVersion</span>&gt;
+  &lt;<span class="kw">ApplicationDisplayVersion</span>&gt;<span class="str">1.0.0</span>&lt;/<span class="kw">ApplicationDisplayVersion</span>&gt;
+
+  <span class="cm">&lt;!-- Bundle ID (stesso di iOS) --&gt;</span>
+  &lt;<span class="kw">ApplicationId</span>&gt;<span class="str">com.radio45.app</span>&lt;/<span class="kw">ApplicationId</span>&gt;
+
+  <span class="cm">&lt;!-- Versione minima macOS per Mac Catalyst --&gt;</span>
+  &lt;<span class="kw">SupportedOSPlatformVersion</span> Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'"&gt;<span class="val">13.1</span>&lt;/<span class="kw">SupportedOSPlatformVersion</span>&gt;
+&lt;/<span class="kw">PropertyGroup</span>&gt;
+
+<span class="cm">&lt;!-- Firma per la distribuzione Mac App Store --&gt;</span>
+&lt;<span class="kw">PropertyGroup</span> Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'"&gt;
+  <span class="cm">&lt;!-- Certificato per firma del codice --&gt;</span>
+  &lt;<span class="kw">CodesignKey</span>&gt;<span class="str">Apple Distribution: [TuoNome] ([TEAMID])</span>&lt;/<span class="kw">CodesignKey</span>&gt;
+  &lt;<span class="kw">CodesignProvision</span>&gt;<span class="str">RadioE45 Mac AppStore</span>&lt;/<span class="kw">CodesignProvision</span>&gt;
+  &lt;<span class="kw">CodesignEntitlements</span>&gt;<span class="str">Platforms/MacCatalyst/Entitlements.plist</span>&lt;/<span class="kw">CodesignEntitlements</span>&gt;
+  <span class="cm">&lt;!-- Certificato per firma del pacchetto .pkg --&gt;</span>
+  &lt;<span class="kw">PackageSigningKey</span>&gt;<span class="str">3rd Party Mac Developer Installer: [TuoNome] ([TEAMID])</span>&lt;/<span class="kw">PackageSigningKey</span>&gt;
+&lt;/<span class="kw">PropertyGroup</span>&gt;</code></pre>
+
+  <div class="callout warning">
+    <span class="callout-icon">⚠️</span>
+    <div>Il valore di <code>ApplicationVersion</code> deve essere <strong>incrementato ad ogni caricamento</strong> su App Store Connect, anche se la versione visibile rimane uguale. Vale sia per iOS che per macOS — se le pubblichi insieme, incrementa una volta sola.</div>
+  </div>
+
+  <div class="card">
+    <h3>📁 Verifica Info.plist macOS (Platforms/MacCatalyst/Info.plist) <span class="diff-note">⚡ Diverso da iOS</span></h3>
+    <p style="margin-bottom:8px;">Crea o verifica che esista la cartella <code>Platforms/MacCatalyst/</code> con il suo <code>Info.plist</code>:</p>
+    <pre><code><span class="kw">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="kw">&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "..."&gt;</span>
+<span class="kw">&lt;plist</span> version=<span class="str">"1.0"</span><span class="kw">&gt;</span>
+<span class="kw">&lt;dict&gt;</span>
+  <span class="cm">&lt;!-- Necessario per Mac App Store --&gt;</span>
+  <span class="kw">&lt;key&gt;</span>LSMinimumSystemVersion<span class="kw">&lt;/key&gt;</span>
+  <span class="kw">&lt;string&gt;</span><span class="str">13.1</span><span class="kw">&lt;/string&gt;</span>
+
+  <span class="cm">&lt;!-- Background audio (se la radio deve continuare in background) --&gt;</span>
+  <span class="kw">&lt;key&gt;</span>UIBackgroundModes<span class="kw">&lt;/key&gt;</span>
+  <span class="kw">&lt;array&gt;</span>
+    <span class="kw">&lt;string&gt;</span><span class="str">audio</span><span class="kw">&lt;/string&gt;</span>
+  <span class="kw">&lt;/array&gt;</span>
+
+  <span class="cm">&lt;!-- Categoria App Store --&gt;</span>
+  <span class="kw">&lt;key&gt;</span>LSApplicationCategoryType<span class="kw">&lt;/key&gt;</span>
+  <span class="kw">&lt;string&gt;</span><span class="str">public.app-category.music</span><span class="kw">&lt;/string&gt;</span>
+<span class="kw">&lt;/dict&gt;</span>
+<span class="kw">&lt;/plist&gt;</span></code></pre>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s5">
+  <div class="section-header">
+    <div class="section-number">5</div>
+    <h2>Entitlements e App Sandbox <span class="diff-note">⚡ Solo macOS – OBBLIGATORIO</span></h2>
+  </div>
+
+  <div class="callout danger">
+    <span class="callout-icon">🔒</span>
+    <div><strong>App Sandbox è obbligatoria per il Mac App Store.</strong> Senza di essa Apple rifiuterà la build automaticamente. Questo è il requisito più importante che differenzia macOS da iOS.</div>
+  </div>
+
+  <p style="margin-bottom:14px;">Crea il file <code>Platforms/MacCatalyst/Entitlements.plist</code> con almeno questi entitlements:</p>
+
+  <pre><code><span class="kw">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="kw">&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "..."&gt;</span>
+<span class="kw">&lt;plist</span> version=<span class="str">"1.0"</span><span class="kw">&gt;</span>
+<span class="kw">&lt;dict&gt;</span>
+
+  <span class="cm">&lt;!-- OBBLIGATORIO: App Sandbox per Mac App Store --&gt;</span>
+  <span class="kw">&lt;key&gt;</span>com.apple.security.app-sandbox<span class="kw">&lt;/key&gt;</span>
+  <span class="kw">&lt;true/&gt;</span>
+
+  <span class="cm">&lt;!-- Accesso a Internet (in uscita) – necessario per lo streaming radio --&gt;</span>
+  <span class="kw">&lt;key&gt;</span>com.apple.security.network.client<span class="kw">&lt;/key&gt;</span>
+  <span class="kw">&lt;true/&gt;</span>
+
+  <span class="cm">&lt;!-- Audio (riproduzione) – non richiede entitlement specifico oltre al sandbox --&gt;</span>
+  <span class="cm">&lt;!-- Ma se usi AVAudioSession in modo avanzato, potresti aggiungere: --&gt;</span>
+  <span class="cm">&lt;!-- com.apple.security.device.audio-input (solo se registri audio) --&gt;</span>
+
+<span class="kw">&lt;/dict&gt;</span>
+<span class="kw">&lt;/plist&gt;</span></code></pre>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>🔐 Guida agli entitlements comuni per RadioE45</h3>
+    <table class="diff-table">
+      <thead>
+        <tr><th>Entitlement</th><th>Quando aggiungerlo</th><th>Obbligatorio</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>com.apple.security.app-sandbox</code></td>
+          <td>Sempre — richiesto da Mac App Store</td>
+          <td>✅ Sì</td>
+        </tr>
+        <tr>
+          <td><code>com.apple.security.network.client</code></td>
+          <td>L'app si connette a Internet (streaming AzuraCast)</td>
+          <td>✅ Sì per RadioE45</td>
+        </tr>
+        <tr>
+          <td><code>com.apple.security.network.server</code></td>
+          <td>L'app accetta connessioni in entrata</td>
+          <td>❌ Non necessario</td>
+        </tr>
+        <tr>
+          <td><code>com.apple.security.device.audio-input</code></td>
+          <td>L'app registra audio dal microfono</td>
+          <td>❌ Non necessario per radioE45</td>
+        </tr>
+        <tr>
+          <td><code>com.apple.security.files.user-selected.read-write</code></td>
+          <td>L'app legge/scrive file scelti dall'utente</td>
+          <td>❌ Non necessario</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warning">
+    <span class="callout-icon">⚠️</span>
+    <div>Ogni entitlement aggiuntivo oltre al minimo necessario richiede una <strong>giustificazione esplicita</strong> durante la revisione Apple. Aggiungi solo ciò che serve effettivamente all'app.</div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s6">
+  <div class="section-header">
+    <div class="section-number">6</div>
+    <h2>Build del pacchetto (.pkg) <span class="diff-note">⚡ Diverso da iOS</span></h2>
+  </div>
+
+  <p style="margin-bottom:14px;">Su macOS l'output è un file <code>.pkg</code> (invece di <code>.ipa</code>). Hai due opzioni.</p>
+
+  <div class="card">
+    <h3>⌨️ Opzione A – Riga di comando (consigliata) <span class="tag tag-terminal">Terminal</span></h3>
+    <p style="margin-bottom:10px;">Esegui dal percorso del file <code>.csproj</code>:</p>
+    <pre><code><span class="cm"># 1. Pubblica per Mac Catalyst in modalità Release</span>
+dotnet publish -f net9.0-maccatalyst \
+               -c Release \
+               -p:ArchiveOnBuild=true \
+               -p:CodesignKey="Apple Distribution: TuoNome (TEAMID)" \
+               -p:CodesignProvision="RadioE45 Mac AppStore" \
+               -p:PackageSigningKey="3rd Party Mac Developer Installer: TuoNome (TEAMID)"
+
+<span class="cm"># Il file .pkg sarà in:
+# bin/Release/net9.0-maccatalyst/publish/RadioE45-1.0.pkg</span></code></pre>
+
+    <div class="callout info" style="margin-top:8px;">
+      <span class="callout-icon">💡</span>
+      <div>Se il flag <code>PackageSigningKey</code> non produce automaticamente il <code>.pkg</code>, puoi usare <code>productbuild</code> (vedi Opzione B alternativa sotto).</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>🔨 Opzione B – Xcode Organizer <span class="tag tag-xcode">Xcode</span></h3>
+    <div class="steps" style="margin-top:10px;">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body"><strong>Apri il progetto in Xcode</strong> e seleziona come destinazione <em>My Mac (Mac Catalyst)</em></div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">Menu <strong>Product → Archive</strong> — attendi la compilazione; si aprirà l'Organizer automaticamente</div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">Nell'Organizer seleziona l'archivio → clicca <strong>Distribute App</strong></div>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">Scegli <strong>App Store Connect</strong> → <strong>Upload</strong>. Xcode firmerà e caricherà direttamente su App Store Connect</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>⚙️ Opzione C – productbuild manuale <span class="tag tag-terminal">Terminal</span></h3>
+    <p style="margin-bottom:10px;">Se hai l'app già firmata (.app) e vuoi creare il .pkg separatamente:</p>
+    <pre><code><span class="cm"># Firma il bundle .app</span>
+codesign --force --options runtime \
+         --sign "Apple Distribution: TuoNome (TEAMID)" \
+         --entitlements Platforms/MacCatalyst/Entitlements.plist \
+         "RadioE45.app"
+
+<span class="cm"># Crea il pacchetto .pkg firmato per Mac App Store</span>
+productbuild --component "RadioE45.app" /Applications \
+             --sign "3rd Party Mac Developer Installer: TuoNome (TEAMID)" \
+             "RadioE45.pkg"</code></pre>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s7">
+  <div class="section-header">
+    <div class="section-number">7</div>
+    <h2>Caricamento su App Store Connect <span class="diff-note">⚡ File .pkg invece di .ipa</span></h2>
+  </div>
+
+  <p style="margin-bottom:14px;">I metodi di caricamento sono gli stessi dell'iOS, ma si usa il file <code>.pkg</code> e il tipo <code>osx</code>.</p>
+
+  <div class="card">
+    <h3>🚀 Metodo consigliato: Transporter</h3>
+    <ol style="margin-top:8px;">
+      <li>Scarica <strong>Transporter</strong> dal Mac App Store (gratis, se non già installato)</li>
+      <li>Aprilo e accedi con il tuo Apple ID sviluppatore</li>
+      <li>Trascina il file <code>RadioE45.pkg</code> nella finestra</li>
+      <li>Clicca <strong>Consegna</strong> — Transporter validerà e caricherà il pacchetto</li>
+    </ol>
+    <div class="callout success" style="margin-top:12px;">
+      <span class="callout-icon">✅</span>
+      <div>Transporter esegue anche la validazione locale prima del caricamento e ti avvisa di eventuali errori (certificati mancanti, entitlements errati, App Sandbox disabilitata) senza dover aspettare la revisione Apple.</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3>⚙️ Metodo alternativo: xcrun altool (CI/CD) <span class="tag tag-terminal">Terminal</span></h3>
+    <pre><code><span class="cm"># Carica il .pkg con API Key App Store Connect</span>
+xcrun altool --upload-app \
+             --type osx \
+             --file "RadioE45.pkg" \
+             --apiKey  "CHIAVE_API_KEY_ID" \
+             --apiIssuer "ISSUER_ID"
+
+<span class="cm"># In alternativa con App-Specific Password:</span>
+xcrun altool --upload-app -f RadioE45.pkg -t osx \
+             -u "tua@email.com" -p "@keychain:AC_PASSWORD"</code></pre>
+    <div class="callout warning" style="margin-top:8px;">
+      <span class="callout-icon">⚠️</span>
+      <div>Nota il parametro <code>--type osx</code> invece di <code>--type ios</code>. Usa sempre una <strong>App-Specific Password</strong> (generabile su appleid.apple.com), mai la password principale.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s8">
+  <div class="section-header">
+    <div class="section-number">8</div>
+    <h2>Invio alla Revisione Apple</h2>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Attendi la build su App Store Connect</strong>
+        Dopo il caricamento, la build macOS appare sotto la sezione <em>macOS App</em> in App Store Connect entro 5-30 minuti. Riceverai una mail di conferma. Potrebbero volerci fino a 24h per la validazione completa.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Collega la build alla versione macOS</strong>
+        In App Store Connect → <em>RadioE45 → Distribuzione → macOS App → 1.0</em>, scorri fino a "Build" e clicca <strong>+ Aggiungi build</strong>. Seleziona la build macOS appena caricata.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Completa tutte le sezioni obbligatorie</strong>
+        Controlla che non ci siano triangoli gialli ⚠️ a sinistra. Le sezioni da completare per macOS: Screenshot 1280×800, Descrizione, Note sulla versione, Informativa sulla privacy (URL), Classificazione età.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Invia per revisione</strong>
+        Clicca <strong>"Invia per revisione"</strong> (in alto a destra nella sezione macOS). Puoi scegliere rilascio automatico dopo approvazione o manuale.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <strong>Attendi l'approvazione</strong>
+        Apple impiega tipicamente <strong>1-3 giorni</strong>. Per le app macOS la revisione tende ad essere leggermente più lunga rispetto a iOS per le prime submission.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <span class="callout-icon">🎉</span>
+    <div>Una volta approvata, RadioE45 sarà disponibile sul Mac App Store per tutti gli utenti macOS!</div>
+  </div>
+
+  <div class="callout danger">
+    <span class="callout-icon">❌</span>
+    <div>I motivi di rifiuto più comuni per macOS: App Sandbox non abilitata, entitlements dichiarati ma non usati, screenshot nel formato sbagliato, accesso a risorse di sistema non dichiarate nel plist. Puoi rispondere nella Resolution Center di App Store Connect.</div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s9">
+  <div class="section-header">
+    <div class="section-number">9</div>
+    <h2>Flusso completo (schema riepilogativo)</h2>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 720 600" xmlns="http://www.w3.org/2000/svg" width="680" height="600">
+      <defs>
+        <marker id="arr3" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="#64748b"/>
+        </marker>
+      </defs>
+
+      <!-- 1 -->
+      <rect x="260" y="10" width="200" height="52" rx="10" fill="#e8f1fd" stroke="#0071e3" stroke-width="1.5"/>
+      <text x="360" y="32" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#0071e3">① Prerequisiti</text>
+      <text x="360" y="50" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">Mac · Xcode · .NET MAUI · workload maccatalyst</text>
+      <line x1="360" y1="62" x2="360" y2="90" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 2 -->
+      <rect x="260" y="92" width="200" height="62" rx="10" fill="#fce7f3" stroke="#be185d" stroke-width="1.5"/>
+      <text x="360" y="114" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#be185d">② Developer Portal</text>
+      <text x="360" y="131" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">App ID · Apple Distribution</text>
+      <text x="360" y="146" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">Mac Installer Distribution · Mac Profile</text>
+      <line x1="360" y1="154" x2="360" y2="182" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 3 -->
+      <rect x="260" y="184" width="200" height="52" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+      <text x="360" y="206" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#15803d">③ App Store Connect</text>
+      <text x="360" y="224" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">Aggiungi macOS · Screenshot · Privacy</text>
+      <line x1="360" y1="236" x2="360" y2="264" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 4 -->
+      <rect x="260" y="266" width="200" height="52" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.5"/>
+      <text x="360" y="288" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#c2410c">④ Configura .csproj</text>
+      <text x="360" y="306" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">net9.0-maccatalyst · Firma · PackageSigningKey</text>
+      <line x1="360" y1="318" x2="360" y2="346" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 5 -->
+      <rect x="260" y="348" width="200" height="52" rx="10" fill="#fff0ef" stroke="#ff3b30" stroke-width="1.5"/>
+      <text x="360" y="370" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#ff3b30">⑤ Entitlements + Sandbox</text>
+      <text x="360" y="388" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">MacCatalyst/Entitlements.plist · network.client</text>
+      <line x1="360" y1="400" x2="360" y2="428" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 6 -->
+      <rect x="260" y="430" width="200" height="52" rx="10" fill="#f5f3ff" stroke="#6d28d9" stroke-width="1.5"/>
+      <text x="360" y="452" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#6d28d9">⑥ Build → .pkg</text>
+      <text x="360" y="470" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">dotnet publish maccatalyst o Xcode Archive</text>
+      <line x1="360" y1="482" x2="360" y2="510" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 7 -->
+      <rect x="260" y="512" width="200" height="42" rx="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="360" y="532" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#ca8a04">⑦ Carica (Transporter / altool)</text>
+      <text x="360" y="548" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#555">--type osx</text>
+      <line x1="360" y1="554" x2="360" y2="572" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- 8 -->
+      <rect x="235" y="574" width="250" height="22" rx="8" fill="#1d1d1f" stroke="#1d1d1f"/>
+      <text x="360" y="590" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="white">🎉 Invia per revisione → Mac App Store</text>
+    </svg>
+    <p class="svg-caption">Pipeline completa macOS: dalla configurazione alla pubblicazione</p>
+  </div>
+
+  <hr class="divider">
+
+  <div class="card">
+    <h3>📋 Checklist rapida pre-invio macOS</h3>
+    <ul>
+      <li>☐ Bundle ID nel progetto corrisponde a quello nel Developer Portal (<code>com.radio45.app</code>)</li>
+      <li>☐ <code>ApplicationVersion</code> incrementato rispetto all'ultimo caricamento</li>
+      <li>☐ Certificato <em>Apple Distribution</em> presente nel Keychain</li>
+      <li>☐ Certificato <em>Mac Installer Distribution</em> (3rd Party Mac Developer Installer) nel Keychain</li>
+      <li>☐ Provisioning Profile <em>Mac App Store Connect</em> installato</li>
+      <li>☐ <code>Platforms/MacCatalyst/Entitlements.plist</code> creato con App Sandbox abilitata</li>
+      <li>☐ <code>com.apple.security.network.client</code> presente negli entitlements (per lo streaming)</li>
+      <li>☐ Screenshot in formato 1280×800 px o 1440×900 px caricati</li>
+      <li>☐ URL supporto e URL informativa privacy compilati</li>
+      <li>☐ Classificazione età completata</li>
+      <li>☐ Build <code>.pkg</code> caricata e collegata alla versione in App Store Connect</li>
+      <li>☐ Note sulla versione compilate</li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>🔧 Troubleshooting comune</h3>
+    <table class="diff-table">
+      <thead>
+        <tr><th>Errore / Sintomo</th><th>Soluzione</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>"App sandbox not enabled"</td>
+          <td>Aggiungi <code>com.apple.security.app-sandbox = true</code> in <code>Entitlements.plist</code> e verifica che <code>CodesignEntitlements</code> punti al file corretto nel <code>.csproj</code></td>
+        </tr>
+        <tr>
+          <td>"No suitable installer signing certificate"</td>
+          <td>Verifica che il certificato <em>3rd Party Mac Developer Installer</em> sia nel Keychain di login. Riesegui la CSR e ricrea il certificato se necessario</td>
+        </tr>
+        <tr>
+          <td>Transporter: "Invalid bundle"</td>
+          <td>Controlla che il Bundle ID nel <code>.pkg</code> corrisponda esattamente a quello registrato in App Store Connect e nel Developer Portal</td>
+        </tr>
+        <tr>
+          <td>"The app references non-public selectors"</td>
+          <td>Problema noto con alcune versioni di .NET MAUI su Mac Catalyst. Aggiorna all'ultima versione stabile di .NET e riprova</td>
+        </tr>
+        <tr>
+          <td>App si chiude subito dopo l'apertura (App Sandbox)</td>
+          <td>L'app tenta di accedere a risorse non dichiarate negli entitlements. Controlla i log in Console.app filtrando per il nome del processo</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>RadioE45 – Guida Pubblicazione Mac App Store · Generato con Claude · Giugno 2026</p>
+  <p style="margin-top:4px;">Bundle ID: <strong>com.radio45.app</strong> &nbsp;|&nbsp; Target: <strong>net9.0-maccatalyst</strong></p>
+</footer>
+
+</body>
+</html>

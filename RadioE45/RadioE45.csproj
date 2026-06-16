@@ -105,6 +105,20 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.8" />
     </ItemGroup>
 
+    <!-- iOS App Store signing -->
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
+        <CodesignKey>Apple Distribution: Stefano Del Furia (VZWMBQL256)</CodesignKey>
+        <CodesignProvision>Radio E45 AppStore</CodesignProvision>
+        <CodesignEntitlements>Platforms/iOS/Entitlements.plist</CodesignEntitlements>
+    </PropertyGroup>
+
+    <!-- Mac App Store signing — create the provisioning profile on developer.apple.com first -->
+    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
+        <CodesignKey>Apple Distribution: Stefano Del Furia (VZWMBQL256)</CodesignKey>
+        <CodesignProvision>Radio E45 Mac AppStore</CodesignProvision>
+        <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.plist</CodesignEntitlements>
+    </PropertyGroup>
+
     <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' AND '$(Configuration)' == 'Debug'">
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     </PropertyGroup>
@@ -148,5 +162,11 @@
     </Target>
     -->
 
-
+    <!-- Rider looks for $(AssemblyName).app but MAUI names the bundle after ApplicationTitle.
+         This symlink bridges the gap without changing either name. -->
+    <Target Name="CreateRiderBundleAlias" AfterTargets="Build"
+            Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+        <Exec Command="ln -sfn &quot;Radio E45.app&quot; &quot;$(OutputPath)RadioE45.app&quot;" />
+    </Target>
+    
 </Project>

@@ -1,0 +1,10 @@
+Microsoft Store
+<a href="https://apps.microsoft.com/detail/9pj0lkl6mnvq?referrer=appbadge&mode=full" target="_blank"  rel="noopener noreferrer">
+	<img src="https://get.microsoft.com/images/it%20dark.svg" width="200"/>
+</a>
+
+Google Play Store
+N/A
+
+Apple Store
+N/A

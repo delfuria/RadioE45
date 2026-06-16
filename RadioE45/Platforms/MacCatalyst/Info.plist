@@ -15,8 +15,10 @@
 	<array>
 		<integer>2</integer>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSApplicationCategoryType</key>
-	<string>public.app-category.lifestyle</string>
+	<string>public.app-category.music</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>
