@@ -22,6 +22,7 @@ public class AudioService : IAudioService
     private bool _isShuttingDown;
     private bool _isConnectivitySubscribed;
     private CancellationTokenSource _reconnectCts = new();
+    private readonly object _ctsLock = new();
 
     public bool IsPlaying { get; private set; }
     public bool IsBuffering { get; private set; }
@@ -107,7 +108,7 @@ public class AudioService : IAudioService
         _logger.LogDebug("Pause station streaming...");
 
         _shouldBePlaying = false;
-        _reconnectCts.Cancel();
+        CancelReconnect();
         Interlocked.Exchange(ref _reconnectGuard, 0);
         StopWatchdog();
 
@@ -147,7 +148,7 @@ public class AudioService : IAudioService
         _logger.LogDebug("Stop station streaming...");
 
         _shouldBePlaying = false;
-        _reconnectCts.Cancel();
+        CancelReconnect();
         Interlocked.Exchange(ref _reconnectGuard, 0);
         _currentStation = null;
         StopWatchdog();
@@ -170,7 +171,7 @@ public class AudioService : IAudioService
     public void StopImmediate()
     {
         _shouldBePlaying = false;
-        _reconnectCts.Cancel();
+        CancelReconnect();
         Interlocked.Exchange(ref _reconnectGuard, 0);
         _currentStation = null;
         StopWatchdog();
@@ -390,7 +391,7 @@ public class AudioService : IAudioService
             return;
         }
 
-        var ct = _reconnectCts.Token;
+        var ct = CurrentReconnectToken();
         _logger.LogDebug("Try reconnect...");
 
         await TryOpenStreamAsync(_currentStation, _mediaElement, ct);
@@ -447,9 +448,22 @@ public class AudioService : IAudioService
 
     private void RenewReconnectCts()
     {
-        _reconnectCts.Cancel();
-        _reconnectCts.Dispose();
-        _reconnectCts = new CancellationTokenSource();
+        lock (_ctsLock)
+        {
+            _reconnectCts.Cancel();
+            _reconnectCts.Dispose();
+            _reconnectCts = new CancellationTokenSource();
+        }
+    }
+
+    private void CancelReconnect()
+    {
+        lock (_ctsLock) { _reconnectCts.Cancel(); }
+    }
+
+    private CancellationToken CurrentReconnectToken()
+    {
+        lock (_ctsLock) { return _reconnectCts.Token; }
     }
 
     private bool TryQueueReconnect()
@@ -471,8 +485,11 @@ public class AudioService : IAudioService
 
         _isShuttingDown = true;
         _shouldBePlaying = false;
-        _reconnectCts.Cancel();
-        _reconnectCts.Dispose();
+        lock (_ctsLock)
+        {
+            _reconnectCts.Cancel();
+            _reconnectCts.Dispose();
+        }
         _currentStation = null;
         _bufferingStartedAt = DateTime.MinValue;
         IsPlaying = false;
