@@ -1,14 +1,21 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-    <!-- See https://aka.ms/maui-publish-app-store#add-entitlements for more information about adding entitlements.-->
-    <dict>
-        <!-- App Sandbox must be enabled to distribute a MacCatalyst app through the Mac App Store. -->
-        <key>com.apple.security.app-sandbox</key>
-        <true/>
-        <!-- When App Sandbox is enabled, this value is required to open outgoing network connections. -->
-        <key>com.apple.security.network.client</key>
-        <true/>
-    </dict>
-</plist>
+<dict>
+    <!-- App Sandbox: obbligatorio per Mac Catalyst (App Store e Developer ID) -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
 
+    <!-- Connessioni di rete in uscita (streaming radio) -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+
+    <!-- Hardened Runtime: il runtime .NET richiede compilazione JIT -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+
+    <!-- Hardened Runtime: il runtime .NET scrive in memoria eseguibile -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+</dict>
+</plist>

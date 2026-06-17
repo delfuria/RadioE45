@@ -9,7 +9,7 @@ namespace RadioE45;
 
 public partial class App : Application
 {
-    private const double PortraitWidth = 400;
+    private const double PortraitWidth = 500;
     private const double PortraitHeight = 900;
     private const double LandscapeWidth = 900;
     private const double LandscapeHeight = 500;
