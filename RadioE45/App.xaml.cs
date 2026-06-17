@@ -9,10 +9,10 @@ namespace RadioE45;
 
 public partial class App : Application
 {
-    private const double PortraitWidth = 500;
-    private const double PortraitHeight = 900;
-    private const double LandscapeWidth = 900;
-    private const double LandscapeHeight = 500;
+    internal const double PortraitWidth = 500;
+    internal const double PortraitHeight = 950;
+    internal const double LandscapeWidth = 900;
+    internal const double LandscapeHeight = 500;
     private readonly IAppSettingsRepository _settingsRepo;
 
     public App(IAppSettingsRepository settingsRepo, ILogRepository logRepo, DatabaseLoggerProvider dbLoggerProvider, IAzuraStationCatalog stationCatalog)
@@ -53,7 +53,8 @@ public partial class App : Application
         DevicePlatform platform = DeviceInfo.Current.Platform;
         if (platform == DevicePlatform.WinUI || platform == DevicePlatform.MacCatalyst)
         {
-            bool isLandscape = Preferences.Default.Get("desktop_orientation", "Portrait") == "Landscape";
+            Enum.TryParse(Preferences.Default.Get("desktop_orientation", "Portrait"), out DesktopOrientationMode orientation);
+            bool isLandscape = orientation == DesktopOrientationMode.Landscape;
             double w = isLandscape ? LandscapeWidth : PortraitWidth;
             double h = isLandscape ? LandscapeHeight : PortraitHeight;
             window.Width = w;

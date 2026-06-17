@@ -121,14 +121,10 @@
                         Text="Modifica orientamento dell'applicazione."
                         Style="{StaticResource CaptionLabel}" />
                     <Picker
-                        SelectedItem="{Binding DesktopOrientation}"
+                        ItemsSource="{Binding OrientationLabels}"
+                        SelectedIndex="{Binding DesktopOrientationIndex}"
                         TextColor="{DynamicResource PrimaryText}"
-                        BackgroundColor="{DynamicResource CardElevated}">
-                        <Picker.Items>
-                            <x:String>Portrait</x:String>
-                            <x:String>Landscape</x:String>
-                        </Picker.Items>
-                    </Picker>
+                        BackgroundColor="{DynamicResource CardElevated}" />
                 </VerticalStackLayout>
             </Border>
 

@@ -46,7 +46,15 @@ public partial class SettingsViewModel : BaseViewModel
     public partial bool CrashReportingEnabled { get; set; }
 
     [ObservableProperty]
-    public partial string DesktopOrientation { get; set; } = "Portrait";
+    public partial DesktopOrientationMode DesktopOrientation { get; set; } = DesktopOrientationMode.Portrait;
+
+    public IReadOnlyList<string> OrientationLabels { get; } = ["Verticale", "Orizzontale"];
+
+    public int DesktopOrientationIndex
+    {
+        get => (int)DesktopOrientation;
+        set => DesktopOrientation = (DesktopOrientationMode)value;
+    }
 
     public bool IsCrashReportingAvailable => CrashReportingConfiguration.IsConfigured;
 
@@ -71,7 +79,8 @@ public partial class SettingsViewModel : BaseViewModel
         MustUpdate = _currentSettings.MustUpdate;
         StartWithFavorite = _currentSettings.StartWithFavorite;
         CrashReportingEnabled = _currentSettings.CrashReportingEnabled;
-        DesktopOrientation = _currentSettings.DesktopOrientation;
+        Enum.TryParse(_currentSettings.DesktopOrientation, out DesktopOrientationMode orientation);
+        DesktopOrientation = orientation;
         _hasChanges = false;
         SaveSettingsCommand.NotifyCanExecuteChanged();
     }
@@ -92,7 +101,11 @@ public partial class SettingsViewModel : BaseViewModel
 
     partial void OnCrashReportingEnabledChanged(bool value) => MarkChanged();
 
-    partial void OnDesktopOrientationChanged(string value) => MarkChanged();
+    partial void OnDesktopOrientationChanged(DesktopOrientationMode value)
+    {
+        OnPropertyChanged(nameof(DesktopOrientationIndex));
+        MarkChanged();
+    }
 
     private void MarkChanged()
     {
@@ -135,15 +148,15 @@ public partial class SettingsViewModel : BaseViewModel
 #endif
     }
 
-    private static void ApplyDesktopOrientation(string orientation)
+    private static void ApplyDesktopOrientation(DesktopOrientationMode orientation)
     {
         DevicePlatform p = DeviceInfo.Current.Platform;
         if (p != DevicePlatform.WinUI && p != DevicePlatform.MacCatalyst) return;
         if (Application.Current?.Windows.FirstOrDefault() is not { } win) return;
 
-        bool landscape = orientation == "Landscape";
-        double w = landscape ? 900 : 400;
-        double h = landscape ? 400 : 900;
+        bool landscape = orientation == DesktopOrientationMode.Landscape;
+        double w = landscape ? App.LandscapeWidth : App.PortraitWidth;
+        double h = landscape ? App.LandscapeHeight : App.PortraitHeight;
         win.MinimumWidth  = w;
         win.MaximumWidth  = w;
         win.MinimumHeight = h;
@@ -159,17 +172,17 @@ public partial class SettingsViewModel : BaseViewModel
     {
         _currentSettings ??= new AppSettings();
         bool crashReportingChanged = _currentSettings.CrashReportingEnabled != CrashReportingEnabled;
-        bool orientationChanged = _currentSettings.DesktopOrientation != DesktopOrientation;
+        bool orientationChanged = _currentSettings.DesktopOrientation != DesktopOrientation.ToString();
 
         _currentSettings.Volume = Volume;
         _currentSettings.ThemePreference = ThemePreference;
         _currentSettings.StartWithFavorite = StartWithFavorite;
-        _currentSettings.DesktopOrientation = DesktopOrientation;
+        _currentSettings.DesktopOrientation = DesktopOrientation.ToString();
         CrashReportingSettings.ApplyTo(_currentSettings, CrashReportingEnabled, consentRequested: true);
         await _settingsRepo.SaveAsync(_currentSettings);
         Preferences.Default.Set("player_volume", Volume);
         Preferences.Default.Set("theme_preference", ThemePreference);
-        Preferences.Default.Set("desktop_orientation", DesktopOrientation);
+        Preferences.Default.Set("desktop_orientation", DesktopOrientation.ToString());
         CrashReportingSettings.SaveToPreferences(CrashReportingEnabled, consentRequested: true);
         _hasChanges = false;
         SaveSettingsCommand.NotifyCanExecuteChanged();

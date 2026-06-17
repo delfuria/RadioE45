@@ -18,7 +18,6 @@ using Sentry;
 #if WINDOWS
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
-using Windows.Graphics;
 using WinRT.Interop;
 #endif
 
@@ -67,8 +66,8 @@ public static class MauiProgram
                 WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
                 AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
 
-                appWindow.Resize(new SizeInt32(400, 1000));
-
+                // Window size is set in App.xaml.cs CreateWindow() using MAUI logical pixels,
+                // which are DPI-aware — no resize needed here.
                 if (appWindow.Presenter is OverlappedPresenter presenter)
                 {
                     presenter.IsResizable = false;
