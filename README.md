@@ -4,7 +4,7 @@ Cross-platform .NET MAUI 10 app for AzuraCast webradio streaming.
 
 ## Platforms
 - iOS 15+
-- Android 8.0+ (API 21)
+- Android 8.0+ (API 26)
 - macOS (Mac Catalyst) 15+
 - Windows 10 (build 17763+)
 

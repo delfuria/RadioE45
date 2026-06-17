@@ -16,7 +16,7 @@ public class AudioService : IAudioService
     private int _reconnectGuard;   // 0 = idle, 1 = busy — accesso tramite Interlocked
     private MediaElementState _currentState = MediaElementState.None;
     private DateTime _bufferingStartedAt = DateTime.MinValue;
-    private const double BufferingTimeoutSeconds = 1.0;
+    private const double BufferingTimeoutSeconds = 12.0;
     private System.Timers.Timer? _watchdog;
     private const double WatchdogIntervalMs = 10000;
     private bool _isShuttingDown;

@@ -79,7 +79,7 @@ public partial class App : Application
         Page? hostPage = await GetPromptHostPageAsync();
         if (hostPage is null)
             return;
-        return;
+        /*
         //TODO: Enable it when in production
         bool enabled = await hostPage.DisplayAlertAsync(
             "Segnalazione crash",
@@ -96,6 +96,7 @@ public partial class App : Application
                 "La raccolta dei crash sara' attiva dal prossimo avvio dell'app.",
                 "OK");
         }
+        */
     }
 
     private async Task SaveCrashReportingPreferenceAsync(bool enabled, bool consentRequested)
