@@ -26,6 +26,7 @@ public sealed class AndroidMediaNotificationService : Service
     private MediaSession? _mediaSession;
     private NotificationManager? _notificationManager;
     private bool _isForeground;
+    private BecomingNoisyReceiver? _noisyReceiver;
 
     public override void OnCreate()
     {
@@ -38,6 +39,17 @@ public sealed class AndroidMediaNotificationService : Service
         _mediaSession.SetCallback(new MediaSessionCallback(this));
         _mediaSession.SetSessionActivity(CreateContentPendingIntent());
         _mediaSession.Active = true;
+
+        IAudioService? audio = IPlatformApplication.Current?.Services?.GetService<IAudioService>();
+        if (audio is not null)
+        {
+            _noisyReceiver = new BecomingNoisyReceiver(audio);
+            IntentFilter filter = new(AudioManager.ActionAudioBecomingNoisy);
+            if (OperatingSystem.IsAndroidVersionAtLeast(33))
+                RegisterReceiver(_noisyReceiver, filter, ReceiverFlags.NotExported);
+            else
+                RegisterReceiver(_noisyReceiver, filter);
+        }
     }
 
     public override IBinder? OnBind(Intent? intent) => null;
@@ -68,6 +80,12 @@ public sealed class AndroidMediaNotificationService : Service
 
     public override void OnDestroy()
     {
+        if (_noisyReceiver is not null)
+        {
+            UnregisterReceiver(_noisyReceiver);
+            _noisyReceiver = null;
+        }
+
         StopServiceNotification();
         _mediaSession?.Release();
         _mediaSession = null;
