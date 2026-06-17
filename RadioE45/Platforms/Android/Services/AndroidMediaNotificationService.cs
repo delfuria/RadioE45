@@ -83,10 +83,22 @@ public sealed class AndroidMediaNotificationService : Service
         Intent intent = new(context, typeof(AndroidMediaNotificationService));
         intent.SetAction(action);
 
-        if (preferForeground && OperatingSystem.IsAndroidVersionAtLeast(26))
-            context.StartForegroundService(intent);
-        else
-            context.StartService(intent);
+        try
+        {
+            if (preferForeground && OperatingSystem.IsAndroidVersionAtLeast(26))
+                context.StartForegroundService(intent);
+            else
+                context.StartService(intent);
+        }
+        catch (Exception ex) when (
+            ex is Java.Lang.IllegalStateException ||
+            ex is Android.App.ForegroundServiceStartNotAllowedException)
+        {
+            // ForegroundServiceStartNotAllowedException (API 31+): the system blocks FGS
+            // starts from the background when the app has no active MediaSession exemption.
+            // Control should flow through the existing active MediaSession instead.
+            System.Diagnostics.Debug.WriteLine($"[RadioE45] FGS start blocked: {ex.Message}");
+        }
     }
 
     private void PublishNotification()
