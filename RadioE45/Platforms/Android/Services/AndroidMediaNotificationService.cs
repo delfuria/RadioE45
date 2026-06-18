@@ -4,7 +4,6 @@ using Android.Content.PM;
 using Android.Media;
 using Android.Media.Session;
 using Android.OS;
-using Microsoft.Extensions.DependencyInjection;
 using RadioE45.Services.Audio;
 
 namespace RadioE45;

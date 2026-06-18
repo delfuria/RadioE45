@@ -245,8 +245,8 @@ public partial class OnAirViewModel : BaseViewModel
         _localElapsedSeconds = 0;
         _trackDurationSeconds = 0;
         UpdateProgressDisplay();
-
-        await StartPlayAndNowPollingAsync(station);
+        if (station is not null)
+            await StartPlayAndNowPollingAsync(station);
     }
 
     private async Task ResumePlayAndRefreshPollingAsync()
