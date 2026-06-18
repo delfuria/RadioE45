@@ -1,6 +1,8 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Networking;
+using Microsoft.Maui.ApplicationModel;
 using RadioE45.Models;
 
 namespace RadioE45.Services.Audio;
@@ -223,9 +225,17 @@ public class AudioService : IAudioService
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            mediaElement.MetadataTitle = title;
-            mediaElement.MetadataArtist = artist;
-            mediaElement.MetadataArtworkUrl = artworkUrl ?? string.Empty;
+            // Guard: avoid setting unchanged values — on Windows, re-setting MetadataArtworkUrl
+            // via the CommunityToolkit handler causes a brief Playing→Buffering→Playing cycle
+            // even when the URL is identical, because the underlying MediaPlayer reacts to the
+            // property change regardless of value equality.
+            if (mediaElement.MetadataTitle != title)
+                mediaElement.MetadataTitle = title;
+            if (mediaElement.MetadataArtist != artist)
+                mediaElement.MetadataArtist = artist;
+            string newArtworkUrl = artworkUrl ?? string.Empty;
+            if (mediaElement.MetadataArtworkUrl != newArtworkUrl)
+                mediaElement.MetadataArtworkUrl = newArtworkUrl;
         });
 
         _platformNowPlayingService.UpdateMetadata(artist, title, artworkUrl, elapsedSeconds, durationSeconds, IsPlaying);
