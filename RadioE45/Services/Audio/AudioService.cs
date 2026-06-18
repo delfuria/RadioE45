@@ -11,6 +11,7 @@ public class AudioService : IAudioService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IPlatformNowPlayingService _platformNowPlayingService;
+    private readonly IAudioFocusManager _audioFocusManager;
     private readonly ILogger<AudioService> _logger;
     private MediaElement? _mediaElement;
     private AzuraStation? _currentStation;
@@ -34,10 +35,11 @@ public class AudioService : IAudioService
     public event EventHandler<string?>? ErrorOccurred;
     public event EventHandler<AzuraStation>? StreamOpened;
 
-    public AudioService(IHttpClientFactory httpClientFactory, IPlatformNowPlayingService platformNowPlayingService, ILogger<AudioService> logger)
+    public AudioService(IHttpClientFactory httpClientFactory, IPlatformNowPlayingService platformNowPlayingService, IAudioFocusManager audioFocusManager, ILogger<AudioService> logger)
     {
         _httpClientFactory = httpClientFactory;
         _platformNowPlayingService = platformNowPlayingService;
+        _audioFocusManager = audioFocusManager;
         _logger = logger;
     }
     
@@ -87,6 +89,12 @@ public class AudioService : IAudioService
         if (_mediaElement is null)
             return;
 
+        if (!_audioFocusManager.RequestFocus())
+        {
+            _logger.LogWarning("Audio focus denied — playback blocked");
+            return;
+        }
+
         _logger.LogDebug("Start radio streaming...");
 
         _currentStation = station;
@@ -130,6 +138,12 @@ public class AudioService : IAudioService
         if (_mediaElement is null || _currentStation is null)
             return Task.CompletedTask;
 
+        if (!_audioFocusManager.RequestFocus())
+        {
+            _logger.LogWarning("Audio focus denied — resume blocked");
+            return Task.CompletedTask;
+        }
+
         _logger.LogDebug("Resume station streaming...");
 
         _shouldBePlaying = true;
@@ -164,6 +178,7 @@ public class AudioService : IAudioService
             mediaElement.MetadataArtworkUrl = string.Empty;
         });
 
+        _audioFocusManager.AbandonFocus();
         _platformNowPlayingService.Clear();
     }
 
@@ -177,6 +192,7 @@ public class AudioService : IAudioService
         Interlocked.Exchange(ref _reconnectGuard, 0);
         _currentStation = null;
         StopWatchdog();
+        _audioFocusManager.AbandonFocus();
 
         _logger.LogDebug("Stop immediate station streaming...");
 
@@ -214,6 +230,7 @@ public class AudioService : IAudioService
             return;
 
         double clamped = Math.Clamp(volume, 0.0, 1.0);
+        _audioFocusManager.NotifyVolumeChanged(clamped);
         MainThread.BeginInvokeOnMainThread(() => mediaElement.Volume = clamped);
     }
 
@@ -534,6 +551,7 @@ public class AudioService : IAudioService
             mediaElement.MetadataArtworkUrl = string.Empty;
         }
 
+        _audioFocusManager.AbandonFocus();
         _platformNowPlayingService.Clear();
     }
 }

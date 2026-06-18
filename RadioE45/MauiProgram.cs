@@ -115,6 +115,11 @@ public static class MauiProgram
  #else
         builder.Services.AddSingleton<IPlatformNowPlayingService, NullPlatformNowPlayingService>();
  #endif
+ #if ANDROID
+        builder.Services.AddSingleton<IAudioFocusManager, AudioFocusManager>();
+ #else
+        builder.Services.AddSingleton<IAudioFocusManager, NullAudioFocusManager>();
+ #endif
         builder.Services.AddSingleton<INowPlayingService, NowPlayingService>();
         builder.Services.AddSingleton<IStationDetailService, StationDetailService>();
         builder.Services.AddTransient<IStationListService, StationListService>();
