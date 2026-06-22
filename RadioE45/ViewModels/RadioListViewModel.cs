@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
+using RadioE45.Services.Data;
 using RadioE45.Services.Radio;
 
 namespace RadioE45.ViewModels;
@@ -11,6 +12,8 @@ public partial class RadioListViewModel : BaseViewModel
 {
     private readonly IAzuraStationCatalog _catalog;
     private readonly OnAirViewModel _onAirViewModel;
+    private readonly IRadioRepository _radioRepository;
+    private readonly IDatabaseService _databaseService;
 
     [ObservableProperty]
     public partial ObservableCollection<AzuraStation> Stations { get; set; } = [];
@@ -20,11 +23,18 @@ public partial class RadioListViewModel : BaseViewModel
 
     public OnAirViewModel OnAirViewModel => _onAirViewModel;
 
-    public RadioListViewModel(IAzuraStationCatalog catalog, OnAirViewModel onAirViewModel, ILogger<RadioListViewModel> logger)
+    public RadioListViewModel(
+        IAzuraStationCatalog catalog,
+        OnAirViewModel onAirViewModel,
+        IRadioRepository radioRepository,
+        IDatabaseService databaseService,
+        ILogger<RadioListViewModel> logger)
     {
         Logger = logger;
         _catalog = catalog;
         _onAirViewModel = onAirViewModel;
+        _radioRepository = radioRepository;
+        _databaseService = databaseService;
         Title = "Canali Radio";
 
         _catalog.StationsRefreshed += OnStationsRefreshed;
@@ -35,6 +45,33 @@ public partial class RadioListViewModel : BaseViewModel
     {
         await SafeExecuteAsync(async () =>
         {
+            bool hasStations = await _radioRepository.HasStationsAsync();
+            if (!hasStations)
+            {
+                bool accepted = await Shell.Current.DisplayAlertAsync(
+                    "Radio E45",
+                    "Vuoi contribuire alla sperimentazione della Radio E45?",
+                    "Si",
+                    "No");
+
+                if (!accepted)
+                {
+                    await Shell.Current.GoToAsync("//OnAirPage");
+                    return;
+                }
+
+                await _databaseService.SeedStationsAsync();
+                await _catalog.ReloadAsync();
+                RefreshStationsFromCatalog();
+
+                AzuraStation? first = _catalog.Stations.OrderBy(s => s.SortOrder).FirstOrDefault();
+                if (first != null)
+                    await _onAirViewModel.SelectStationCommand.ExecuteAsync(first);
+
+                await Shell.Current.GoToAsync("//OnAirPage");
+                return;
+            }
+
             await _catalog.LoadAsync();
             RefreshStationsFromCatalog();
         }, "Caricamento stazioni");
