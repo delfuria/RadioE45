@@ -12,6 +12,13 @@ public class RadioRepository : IRadioRepository
         _db = db;
     }
 
+    public async Task<bool> HasStationsAsync()
+    {
+        SQLiteAsyncConnection conn = await _db.GetConnectionAsync();
+        int count = await conn.Table<RadioStation>().CountAsync();
+        return count > 0;
+    }
+
     public async Task<List<RadioStation>> GetAllAsync()
     {
         SQLiteAsyncConnection conn = await _db.GetConnectionAsync();
