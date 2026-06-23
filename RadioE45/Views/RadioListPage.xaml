@@ -9,12 +9,31 @@
     x:DataType="vm:RadioListViewModel"
     Title="Radio">
 
-    <RefreshView
-        IsRefreshing="{Binding IsBusy}"
-        Command="{Binding ForceReloadStationsCommand}">
+    <Grid RowDefinitions="50,*">
+
+        <!-- Header with add button -->
+        <Button
+            Grid.Row="0"
+            Text="+"
+            Command="{Binding NavigateToAddStationCommand}"
+            HorizontalOptions="End"
+            VerticalOptions="Center"
+            Margin="0,0,16,0"
+            BackgroundColor="{DynamicResource Accent}"
+            TextColor="{DynamicResource PrimaryText}"
+            CornerRadius="22"
+            WidthRequest="44"
+            HeightRequest="44"
+            FontSize="22"
+            Padding="0" />
+
+        <RefreshView
+            Grid.Row="1"
+            IsRefreshing="{Binding IsBusy}"
+            Command="{Binding ForceReloadStationsCommand}">
 
         <CollectionView
-            Margin="0,50,0,0"
+            Margin="0"
             ItemsSource="{Binding Stations}"
             SelectionMode="Single"
             SelectedItem="{Binding SelectedStation, Mode=TwoWay}"
@@ -115,6 +134,8 @@
             </CollectionView.Footer>
 
         </CollectionView>
-    </RefreshView>
+        </RefreshView>
+
+    </Grid>
 
 </ContentPage>

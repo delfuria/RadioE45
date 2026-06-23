@@ -102,6 +102,12 @@ public partial class RadioListViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private async Task NavigateToAddStationAsync()
+    {
+        await Shell.Current.GoToAsync("AddStationPage");
+    }
+
+    [RelayCommand]
     private async Task SelectAndPlayAsync()
     {
         var station = SelectedStation;
