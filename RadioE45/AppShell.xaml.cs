@@ -1,4 +1,5 @@
 using RadioE45.Services.Data;
+using RadioE45.Views;
 
 namespace RadioE45;
 
@@ -11,6 +12,7 @@ public partial class AppShell : Shell
     {
         _radioRepository = radioRepository;
         InitializeComponent();
+        Routing.RegisterRoute("AddStationPage", typeof(AddStationPage));
         Navigated += OnNavigated;
     }
 

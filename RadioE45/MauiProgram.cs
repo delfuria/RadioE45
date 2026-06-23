@@ -113,6 +113,7 @@ public static class MauiProgram
  #endif
         builder.Services.AddSingleton<INowPlayingService, NowPlayingService>();
         builder.Services.AddSingleton<IStationDetailService, StationDetailService>();
+        builder.Services.AddTransient<IStationListService, StationListService>();
         builder.Services.AddSingleton<IAzuraStationCatalog, AzuraStationCatalog>();
         builder.Services.AddTransient<IScheduleService, ScheduleService>();
         builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
@@ -126,11 +127,13 @@ public static class MauiProgram
 
         // Other ViewModels as Transient
         builder.Services.AddTransient<RadioListViewModel>();
+        builder.Services.AddTransient<AddStationViewModel>();
         builder.Services.AddTransient<ScheduleViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
 
         // Views as Transient
         builder.Services.AddTransient<OnAirPage>();
+        builder.Services.AddTransient<AddStationPage>();
         builder.Services.AddTransient<RadioListPage>();
         builder.Services.AddTransient<SchedulePage>();
         builder.Services.AddTransient<SettingsPage>();
