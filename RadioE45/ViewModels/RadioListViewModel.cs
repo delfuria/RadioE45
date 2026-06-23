@@ -50,7 +50,7 @@ public partial class RadioListViewModel : BaseViewModel
             {
                 bool accepted = await Shell.Current.DisplayAlertAsync(
                     "Radio E45",
-                    "Vuoi contribuire alla sperimentazione della Radio E45?",
+                    "Nessuna stazione selezionata. Vuoi aggiungerne qualcuna di prova ?",
                     "Si",
                     "No");
 
