@@ -58,9 +58,28 @@
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:AzuraStation">
+                    <SwipeView Margin="16,8,16,0">
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem
+                                    Text="Elimina"
+                                    BackgroundColor="{StaticResource LiveRed}"
+                                    Command="{Binding DeleteCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
                     <Border
-                        Style="{StaticResource CardBorder}"
-                        Margin="16,8,16,0">
+                        Style="{StaticResource CardBorder}">
+                        <FlyoutBase.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem
+                                    x:DataType="models:AzuraStation"
+                                    Text="Elimina stazione"
+                                    Command="{Binding DeleteCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </MenuFlyout>
+                        </FlyoutBase.ContextFlyout>
                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
 
                             <!-- Icona stazione -->
@@ -126,6 +145,7 @@
 
                         </Grid>
                     </Border>
+                    </SwipeView>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
 

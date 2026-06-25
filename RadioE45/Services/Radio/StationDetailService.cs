@@ -22,7 +22,7 @@ public class StationDetailService : IStationDetailService
             string baseUrl = $"https://{station.UrlBase}";
             HttpClient client = _httpClientFactory.CreateClient("AzuraCast");
             client.BaseAddress = new Uri(baseUrl);
-            client.Timeout = TimeSpan.FromSeconds(3);
+            client.Timeout = TimeSpan.FromSeconds(5);
 
             IAzuraCastStationApi api = RestService.For<IAzuraCastStationApi>(client);
             AzuraCastStationDetailResponse detail = await api.GetStationDetailAsync(station.StationId, ct);

@@ -97,8 +97,41 @@ public partial class RadioListViewModel : BaseViewModel
         int? currentId = _onAirViewModel.CurrentStation?.Id;
         var updated = new ObservableCollection<AzuraStation>(_catalog.Stations);
         foreach (AzuraStation s in updated)
+        {
             s.IsActive = s.Id == currentId;
+            s.DeleteCommand = DeleteStationCommand;
+        }
         Stations = updated;
+    }
+
+    [RelayCommand]
+    private async Task DeleteStationAsync(AzuraStation station)
+    {
+        bool confirmed = await Shell.Current.DisplayAlertAsync(
+            "Elimina stazione",
+            $"Vuoi eliminare \"{station.Name}\"?",
+            "Elimina",
+            "Annulla");
+
+        if (!confirmed)
+            return;
+
+        try
+        {
+            await _radioRepository.DeleteAsync(station.Id);
+            _catalog.RemoveStation(station.Id);
+
+            if (_onAirViewModel.CurrentStation?.Id == station.Id)
+                await _onAirViewModel.ClearStationAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[RadioListViewModel] Eliminazione stazione: {Message}", ex.Message);
+            ErrorMessage = $"Eliminazione stazione: {ex.Message}";
+            return;
+        }
+
+        await MainThread.InvokeOnMainThreadAsync(RefreshStationsFromCatalog);
     }
 
     [RelayCommand]
