@@ -12,6 +12,8 @@ public class AzuraStationCatalog : IAzuraStationCatalog
     private readonly ILogger<AzuraStationCatalog> _logger;
     private List<AzuraStation> _stations = [];
     private Task? _loadingTask;
+    private readonly SemaphoreSlim _reloadLock = new(1, 1);
+    private DateTimeOffset _lastLoadedAt = DateTimeOffset.MinValue;
 
     private PeriodicTimer? _offlineTimer;
     private CancellationTokenSource? _offlineTimerCts;
@@ -19,6 +21,7 @@ public class AzuraStationCatalog : IAzuraStationCatalog
     public event Action? StationsRefreshed;
 
     public IReadOnlyList<AzuraStation> Stations => _stations.AsReadOnly();
+    public DateTimeOffset LastLoadedAt => _lastLoadedAt;
 
     public AzuraStationCatalog(
         IRadioRepository radioRepository,
@@ -40,9 +43,20 @@ public class AzuraStationCatalog : IAzuraStationCatalog
 
     public async Task ReloadAsync(CancellationToken ct = default)
     {
-        _loadingTask = null;
-        await LoadAsync(ct);
-        StationsRefreshed?.Invoke();
+        // Se un reload è già in corso, il secondo chiamante non aspetta: esce.
+        if (!await _reloadLock.WaitAsync(0, ct))
+            return;
+
+        try
+        {
+            _loadingTask = null;
+            await LoadAsync(ct);
+            StationsRefreshed?.Invoke();
+        }
+        finally
+        {
+            _reloadLock.Release();
+        }
     }
 
     private async Task LoadInternalAsync(CancellationToken ct)
@@ -51,13 +65,25 @@ public class AzuraStationCatalog : IAzuraStationCatalog
 
         AzuraStation[] stations = await Task.WhenAll(dbStations.Select(async db =>
         {
-            AzuraCastStationDetailResponse? detail = await _stationDetailService.FetchAsync(db, ct);
-            AzuraStation station = detail is not null ? Map(detail, db) : MapFallback(db);
-            _logger.LogInformation("Station loaded: {Name} online={IsOnline}", station.Name, station.IsOnline);
-            return station;
+            try
+            {
+                AzuraCastStationDetailResponse? detail = await _stationDetailService.FetchAsync(db, ct);
+                AzuraStation station = detail is not null ? Map(detail, db) : MapFallback(db);
+                _logger.LogInformation("Station loaded: {Name} online={IsOnline}", station.Name, station.IsOnline);
+                return station;
+            }
+            catch (StationRateLimitedException)
+            {
+                // 429: non è un problema di disponibilità. Preserva lo stato precedente se esiste.
+                AzuraStation? existing = _stations.FirstOrDefault(s => s.Id == db.Id);
+                _logger.LogWarning("Rate limited loading station {Id} — preserving {State}",
+                    db.Id, existing is not null ? "existing state" : "offline fallback");
+                return existing ?? MapFallback(db);
+            }
         }));
 
         _stations = [.. stations];
+        _lastLoadedAt = DateTimeOffset.UtcNow;
         StartOfflineCheckIfNeeded();
     }
 
@@ -74,8 +100,18 @@ public class AzuraStationCatalog : IAzuraStationCatalog
             RadioStation? db = dbStations.FirstOrDefault(d => d.Id == station.Id);
             if (db is null) return;
 
-            AzuraCastStationDetailResponse? detail = await _stationDetailService.FetchAsync(db, ct);
-            if (detail is null) return;
+            AzuraCastStationDetailResponse? detail;
+            try
+            {
+                detail = await _stationDetailService.FetchAsync(db, ct);
+            }
+            catch (StationRateLimitedException)
+            {
+                _logger.LogWarning("Rate limited refreshing station {Name} — riprovo al prossimo tick", station.Name);
+                return;
+            }
+            if (detail is null)
+                return;
 
             station.Name = detail.Name;
             station.ShortName = detail.Shortcode;
