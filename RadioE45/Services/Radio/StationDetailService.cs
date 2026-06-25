@@ -32,6 +32,11 @@ public class StationDetailService : IStationDetailService
 
             return detail;
         }
+        catch (Refit.ApiException ex) when ((int)ex.StatusCode == 429)
+        {
+            _logger.LogWarning("Rate limit (429) per station {StationId}", station.StationId);
+            throw new StationRateLimitedException();
+        }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "HTTP error fetching station detail for {StationId}", station.StationId);

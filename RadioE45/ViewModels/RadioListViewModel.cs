@@ -61,7 +61,7 @@ public partial class RadioListViewModel : BaseViewModel
                 }
 
                 await _databaseService.SeedStationsAsync();
-                await _catalog.ReloadAsync();
+                await _catalog.ReloadAsync(); // seed appena fatto: reload sempre
                 RefreshStationsFromCatalog();
 
                 AzuraStation? first = _catalog.Stations.OrderBy(s => s.SortOrder).FirstOrDefault();
@@ -72,7 +72,13 @@ public partial class RadioListViewModel : BaseViewModel
                 return;
             }
 
-            await _catalog.LoadAsync();
+            // Ricarica solo se i dati sono vecchi (> 20s) o ci sono stazioni offline.
+            // Evita di colpire il rate limit subito dopo il caricamento iniziale di InitializeAsync.
+            bool stale = DateTimeOffset.UtcNow - _catalog.LastLoadedAt > TimeSpan.FromSeconds(20);
+            bool hasOffline = _catalog.Stations.Any(s => !s.IsOnline);
+            if (stale || hasOffline)
+                await _catalog.ReloadAsync();
+
             RefreshStationsFromCatalog();
         }, "Caricamento stazioni");
     }
