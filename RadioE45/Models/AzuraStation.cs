@@ -1,3 +1,4 @@
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace RadioE45.Models;
@@ -34,4 +35,6 @@ public partial class AzuraStation : ObservableObject
 
     [ObservableProperty]
     public partial bool IsActive { get; set; }
+
+    public ICommand? DeleteCommand { get; set; }
 }

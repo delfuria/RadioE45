@@ -101,7 +101,9 @@ public class AzuraStationCatalog : IAzuraStationCatalog
         if (!_stations.Any(s => !s.IsOnline)) return;
 
         var cts = new CancellationTokenSource();
-        var timer = new PeriodicTimer(TimeSpan.FromSeconds(60));
+        // 15 s per i primi tentativi: si risolve in breve se la rete era temporaneamente assente.
+        // Il loop si ferma da solo appena tutte le stazioni tornano online.
+        var timer = new PeriodicTimer(TimeSpan.FromSeconds(15));
         _offlineTimerCts = cts;
         _offlineTimer = timer;
         _ = RunOfflineCheckLoopAsync(timer, cts.Token);
@@ -142,11 +144,13 @@ public class AzuraStationCatalog : IAzuraStationCatalog
 
     private void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
     {
-        if (e.NetworkAccess == NetworkAccess.Internet)
-        {
-            _logger.LogInformation("Connectivity restored — reloading station catalog");
-            _ = ReloadAsync();
-        }
+        if (e.NetworkAccess != NetworkAccess.Internet) return;
+        // Reload solo se ci sono stazioni offline da recuperare. Evita di degradare
+        // stazioni già online quando la connettività cambia (es. WiFi → 4G).
+        if (!_stations.Any(s => !s.IsOnline)) return;
+
+        _logger.LogInformation("Connectivity restored — reloading station catalog");
+        _ = ReloadAsync();
     }
 
     private static AzuraStation Map(AzuraCastStationDetailResponse detail, RadioStation db) =>
@@ -197,6 +201,11 @@ public class AzuraStationCatalog : IAzuraStationCatalog
 
     public AzuraStation? GetFirst() =>
         _stations.Where(s => s.IsOnline).MinBy(s => s.SortOrder);
+
+    public void RemoveStation(int id)
+    {
+        _stations = _stations.Where(s => s.Id != id).ToList();
+    }
 
     public async Task SetFavoriteAsync(int dbId, bool isFavorite)
     {
