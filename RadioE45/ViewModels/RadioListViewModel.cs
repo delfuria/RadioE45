@@ -61,14 +61,8 @@ public partial class RadioListViewModel : BaseViewModel
                 }
 
                 await _databaseService.SeedStationsAsync();
-                await _catalog.ReloadAsync(); // seed appena fatto: reload sempre
-                RefreshStationsFromCatalog();
-
-                AzuraStation? first = _catalog.Stations.OrderBy(s => s.SortOrder).FirstOrDefault();
-                if (first != null)
-                    await _onAirViewModel.SelectStationCommand.ExecuteAsync(first);
-
                 await Shell.Current.GoToAsync("//OnAirPage");
+                _ = _catalog.ReloadAsync(); // dopo navigazione: StationsRefreshed → auto-play, senza bloccare la transizione Android
                 return;
             }
 
