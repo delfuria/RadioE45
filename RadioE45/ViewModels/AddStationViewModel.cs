@@ -19,7 +19,7 @@ public partial class AddStationViewModel : BaseViewModel
     public partial string UrlBase { get; set; } = "";
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(SaveButtonText))]
+    [NotifyPropertyChangedFor(nameof(BottomButtonText))]
     [NotifyPropertyChangedFor(nameof(HasSelections))]
     public partial int SelectedCount { get; set; }
 
@@ -30,7 +30,9 @@ public partial class AddStationViewModel : BaseViewModel
     public partial bool HasResults { get; set; }
 
     public bool HasSelections => SelectedCount > 0;
-    public string SaveButtonText => $"Aggiungi selezionate ({SelectedCount})";
+    public string BottomButtonText => HasSelections
+        ? $"Aggiungi selezionate ({SelectedCount})"
+        : "Annulla";
 
     public AddStationViewModel(
         IStationListService stationListService,
@@ -89,6 +91,14 @@ public partial class AddStationViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private async Task BottomActionAsync()
+    {
+        if (HasSelections)
+            await SaveAsync();
+        else
+            await Shell.Current.GoToAsync("..");
+    }
+
     private async Task SaveAsync()
     {
         if (SelectedCount == 0 || IsBusy)
@@ -118,7 +128,6 @@ public partial class AddStationViewModel : BaseViewModel
                 });
             }
 
-            // Reload catalog in background, then navigate back
             _ = _catalog.ReloadAsync();
             await Shell.Current.GoToAsync("..");
         }, "Salvataggio stazioni");

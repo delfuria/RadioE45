@@ -139,12 +139,11 @@
             </CollectionView>
         </Grid>
 
-        <!-- Save button -->
+        <!-- Save / Cancel button -->
         <Button
             Grid.Row="3"
-            Text="{Binding SaveButtonText}"
-            Command="{Binding SaveCommand}"
-            IsVisible="{Binding HasSelections}"
+            Text="{Binding BottomButtonText}"
+            Command="{Binding BottomActionCommand}"
             IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
             BackgroundColor="{DynamicResource Accent}"
             TextColor="{DynamicResource PrimaryText}"
