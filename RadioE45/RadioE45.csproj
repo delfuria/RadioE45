@@ -31,9 +31,9 @@
 
         <!-- Versions -->
         <!-- Android versionCode must be >= 1; Windows Store requires revision = 0, so we split by platform -->
-        <ApplicationDisplayVersion>0.22</ApplicationDisplayVersion>
+        <ApplicationDisplayVersion>0.23</ApplicationDisplayVersion>
         <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">0</ApplicationVersion>
-        <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">22</ApplicationVersion>
+        <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">23</ApplicationVersion>
 
         <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
         <WindowsPackageType>None</WindowsPackageType>
@@ -101,7 +101,8 @@
         <PackageReference Include="Microsoft.Maui.Core" Version="10.0.70" />
         <PackageReference Include="Refit" Version="11.0.1" />
         <PackageReference Include="Refit.HttpClientFactory" Version="11.0.1" />
-        <PackageReference Include="Sentry.Maui" Version="6.6.0" />
+        <PackageReference Include="Sentry.Maui" Version="6.6.0"
+                          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'" />
         <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
         <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.11" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
