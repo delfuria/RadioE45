@@ -7,6 +7,8 @@
 
 Questo documento è il **piano operativo di riferimento** per l'implementazione: ogni sessione futura di lavoro su questo branch deve partire da qui.
 
+**Regola permanente:** al completamento di ogni sotto-fase (3.1, 3.2, 3.3, ... e successive), va aggiunta una voce in **§11 Log di implementazione** con cosa è stato fatto, dove l'implementazione reale si è discostata da quanto scritto qui in origine, e perché. Il log non sostituisce le sezioni §2-§10 (che restano il piano), ma le integra: se una fase futura contraddice qualcosa scritto nel log, il log (più recente) prevale finché non si aggiorna anche il piano.
+
 ---
 
 ## 1. Perché si salta la Fase 2 e si va dritti alla Fase 3
@@ -271,3 +273,36 @@ La Fase 3 si considera completa quando:
 8. Codice legacy (`RadioMediaBrowserService`, `AndroidMediaNotificationService`, `AudioLifecycleService`) rimosso e manifest consolidato su un solo service.
 9. Tutti i criteri applicabili della tabella §3.a sono ✅ o esplicitamente derogati con motivazione scritta.
 10. Nessuna regressione su iOS/macOS/Windows (che non toccano il codice Android — verificare comunque una build pulita su tutte le piattaforme).
+
+---
+
+## 11. Log di implementazione (aggiornare dopo ogni fase)
+
+Formato di ogni voce: **cosa è stato fatto** (file), **aderenza al piano** (fedele / con modifiche), **decisioni prese e perché**, **verifica**.
+
+### 3.1 — Pin espliciti Media3 (2026-07-01)
+- **File modificati:** `RadioE45.csproj` (aggiunti `PackageReference` espliciti a `Xamarin.AndroidX.Media3.Common/ExoPlayer/ExoPlayer.Hls/Session` 1.8.0 nell'`ItemGroup` Android già esistente).
+- **Aderenza al piano:** fedele, nessuna deviazione.
+- **Decisioni prese:** nessuna oltre a quanto già scritto in §5.1 (pin a 1.8.0, stessa versione già tirata transitivamente da `CommunityToolkit.Maui.MediaElement`).
+- **Verifica:** `dotnet restore` + `dotnet build -f net10.0-android -c Debug` → 0 errori, solo i warning preesistenti (`SQLitePCLRaw` CVE già noto). Nessun conflitto di versione.
+
+### 3.2 — RadioPlayerFactory + estrazione probing condiviso (2026-07-01)
+- **File nuovi:** `Platforms/Android/Services/Media3/RadioPlayerFactory.cs` (costruzione `ExoPlayer` via `ExoPlayerBuilder`, `AudioAttributes` Usage=Media/ContentType=Music, `handleAudioFocus:true`, `SetHandleAudioBecomingNoisy(true)`, `SetWakeMode(C.WakeModeNetwork)`, `DefaultMediaSourceFactory` su `DefaultHttpDataSource.Factory` con timeout HTTP 8s).
+- **Aderenza al piano:** in gran parte fedele a §3.2, con una **deviazione esplicita e concordata con l'utente**: la logica di *selezione* del miglior URL candidato (probe su `OnAirStreamUrl → HlsUrl → StreamUrl → StreamUrlFallback`) **non** è stata messa dentro `RadioPlayerFactory` come suggeriva la formulazione originale del piano ("da riportare 1:1" nella factory). È stata invece **estratta in un componente condiviso** cross-piattaforma:
+  - **File nuovi:** `Services/Audio/IStreamUrlProber.cs`, `Services/Audio/StreamUrlProber.cs` (logica 1:1 spostata da `AudioService.ProbeFirstReachableAsync`/`ProbeUrlAsync`, prima privata).
+  - **File modificati:** `Services/Audio/AudioService.cs` (costruttore ora prende `IStreamUrlProber` invece di `IHttpClientFactory`; le due funzioni private rimosse, sostituite dalla chiamata a `_streamUrlProber.ProbeFirstReachableAsync`); `MauiProgram.cs` (registrato `IStreamUrlProber → StreamUrlProber` come singleton condiviso, prima di `IAudioService`).
+  - **Perché:** la Fase 3.3 (session callback Media3, in `OnSetMediaItems`/`OnAddMediaItems`) e la Fase 3.5 (`AndroidMedia3AudioService`) avranno **entrambe** bisogno della stessa logica di scelta URL; duplicarla in `RadioPlayerFactory` (o altrove) avrebbe creato due copie da mantenere sincronizzate. L'utente ha scelto esplicitamente questa opzione (helper condiviso) rispetto a "duplicare la logica in Android" quando gli è stata posta la domanda.
+  - **Impatto sul piano:** questa estrazione **non era prevista** nel testo originale di §3.2/§3.5 — va considerata un addendum architetturale. Quando si scriverà 3.3 e 3.5, entrambi dovranno iniettare/usare `IStreamUrlProber`, non richiamare `AudioService`.
+- **Scoperta tecnica utile per le fasi successive (non nota al momento della stesura del piano):** il namespace reale dei binding C# per Media3 è **`AndroidX.Media3.*`** (non `Android.Media3.*`). Punti verificati via reflection sui binding assembly effettivi (non assunti da documentazione Java):
+  - `AndroidX.Media3.ExoPlayer.ExoPlayerBuilder` è una classe **non annidata** (in Java `ExoPlayer.Builder` è nested, ma il binding la espone come top-level `ExoPlayerBuilder`), costruttore `(Context)`, fluent `SetAudioAttributes`, `SetHandleAudioBecomingNoisy`, `SetWakeMode`, `SetMediaSourceFactory`, `.Build() → IExoPlayer`.
+  - `AndroidX.Media3.ExoPlayer.IExoPlayer : AndroidX.Media3.Common.IPlayer` — quindi passabile ovunque sia richiesto `IPlayer` (es. `MediaSession.Builder`, `MediaLibrarySession.Builder` in Fase 3.3/3.4).
+  - `AndroidX.Media3.Common.C` espone costanti come campi statici `int` PascalCase: `UsageMedia=1`, `AudioContentTypeMusic=2`, `WakeModeNetwork=2`.
+  - `AndroidX.Media3.Session.MediaSession.Builder(Context, IPlayer)` e `AndroidX.Media3.Session.MediaLibraryService.MediaLibrarySession.Builder(MediaLibraryService, IPlayer, MediaLibrarySession.ICallback)` — utile già ora per anticipare la firma esatta che serviranno in 3.3/3.4.
+  - Questi dettagli evitano di dover ri-fare la stessa verifica da zero nelle fasi successive.
+- **Verifica:** build Android pulita (0 errori). Build MacCatalyst tentata per controllare che il refactoring di `AudioService.cs` (condiviso con iOS/macOS/Windows) non avesse rotto altre piattaforme: fallisce, ma per un errore **preesistente e non collegato** (`CS0246: 'Sentry' non trovato` in `ViewModels/SettingsViewModel.cs:9`, mai corretto su questo branch — verificato via `git log` che il file non è mai stato toccato qui). Non risolto in questo passaggio perché fuori scope per la Fase 3 — vedi voce seguente.
+
+### Fix collaterale — Sentry macCatalyst mai portato su questo branch (2026-07-01)
+- **Contesto:** `main` aveva già la fix per l'errore `CS0246: 'Sentry' non trovato` su MacCatalyst (guardie `#if !MACCATALYST`/`#if MACCATALYST` in `ViewModels/SettingsViewModel.cs`), ma questo branch (`Android-Auto-Fase3`) era stato creato/derivato da un punto precedente a quella fix e non l'aveva mai ricevuta — da cui l'errore osservato durante la verifica di 3.2.
+- **File modificato:** `ViewModels/SettingsViewModel.cs` — riportate identiche a `main` le tre modifiche: `using Sentry;` racchiuso in `#if !MACCATALYST`, `IsCrashReportingAvailable` che ritorna `false` su MacCatalyst, `SentrySdk.CaptureException(testException)` racchiuso in `#if !MACCATALYST`. Confermato con `git diff main -- RadioE45/ViewModels/SettingsViewModel.cs` → nessuna differenza dopo il porting.
+- **Aderenza al piano:** non è una fase del piano Media3 — è un fix di parità con `main`, eseguito su richiesta esplicita dell'utente per sbloccare la verifica cross-platform introdotta in 3.2.
+- **Verifica:** `dotnet build -f net10.0-maccatalyst -c Debug` → 0 errori (solo i warning preesistenti già noti).

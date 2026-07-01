@@ -6,7 +6,9 @@ using RadioE45.Models;
 using RadioE45.Services.CrashReporting;
 using RadioE45.Services;
 using RadioE45.Services.Data;
+#if !MACCATALYST
 using Sentry;
+#endif
 
 namespace RadioE45.ViewModels;
 
@@ -56,7 +58,11 @@ public partial class SettingsViewModel : BaseViewModel
         set => DesktopOrientation = (DesktopOrientationMode)value;
     }
 
+#if MACCATALYST
+    public bool IsCrashReportingAvailable => false;
+#else
     public bool IsCrashReportingAvailable => CrashReportingConfiguration.IsConfigured;
+#endif
 
     public SettingsViewModel(OnAirViewModel onAirViewModel, IAppSettingsRepository settingsRepo, IDatabaseService databaseService, ILogger<SettingsViewModel> logger)
     {
@@ -141,7 +147,9 @@ public partial class SettingsViewModel : BaseViewModel
         Exception testException = new InvalidOperationException(
             $"Test crash report da impostazioni ({DeviceInfo.Current.Platform}, v{AppInfo.VersionString})");
 
+#if !MACCATALYST
         SentrySdk.CaptureException(testException);
+#endif
 
 #if ANDROID || IOS
         await Snackbar.Make("Crash report di test inviato", duration: TimeSpan.FromSeconds(2)).Show();

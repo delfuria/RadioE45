@@ -106,6 +106,7 @@ public static class MauiProgram
             .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(3));
 
         // Singletons — survive navigation
+        builder.Services.AddSingleton<IStreamUrlProber, StreamUrlProber>();
         builder.Services.AddSingleton<IAudioService, AudioService>();
         builder.Services.AddSingleton<RemoteArtworkLoader>();
  #if IOS || MACCATALYST

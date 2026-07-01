@@ -9,7 +9,7 @@ namespace RadioE45.Services.Audio;
 
 public class AudioService : IAudioService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IStreamUrlProber _streamUrlProber;
     private readonly IPlatformNowPlayingService _platformNowPlayingService;
     private readonly IAudioFocusManager _audioFocusManager;
     private readonly ILogger<AudioService> _logger;
@@ -35,9 +35,9 @@ public class AudioService : IAudioService
     public event EventHandler<string?>? ErrorOccurred;
     public event EventHandler<AzuraStation>? StreamOpened;
 
-    public AudioService(IHttpClientFactory httpClientFactory, IPlatformNowPlayingService platformNowPlayingService, IAudioFocusManager audioFocusManager, ILogger<AudioService> logger)
+    public AudioService(IStreamUrlProber streamUrlProber, IPlatformNowPlayingService platformNowPlayingService, IAudioFocusManager audioFocusManager, ILogger<AudioService> logger)
     {
-        _httpClientFactory = httpClientFactory;
+        _streamUrlProber = streamUrlProber;
         _platformNowPlayingService = platformNowPlayingService;
         _audioFocusManager = audioFocusManager;
         _logger = logger;
@@ -277,7 +277,7 @@ public class AudioService : IAudioService
         if (candidates.Length == 0)
             return;
 
-        string? winner = await ProbeFirstReachableAsync(candidates, ct);
+        string? winner = await _streamUrlProber.ProbeFirstReachableAsync(candidates, ct);
 
         if (winner is null)
         {
@@ -294,63 +294,6 @@ public class AudioService : IAudioService
         });
 
         StreamOpened?.Invoke(this, station);
-    }
-
-    // Probes all candidate URLs in parallel and returns the first reachable one.
-    // Remaining probes are cancelled as soon as a winner is found.
-    private async Task<string?> ProbeFirstReachableAsync(string[] urls, CancellationToken ct)
-    {
-        using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-
-        List<Task<string?>> tasks = urls.Select(url => ProbeUrlAsync(url, probeCts.Token)).ToList();
-
-        while (tasks.Count > 0)
-        {
-            Task<string?> done = await Task.WhenAny(tasks);
-            tasks.Remove(done);
-
-            string? result = await done;
-            if (result is not null)
-            {
-                probeCts.Cancel();
-                return result;
-            }
-        }
-
-        return null;
-    }
-
-    private async Task<string?> ProbeUrlAsync(string url, CancellationToken ct)
-    {
-        try
-        {
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(3));
-
-            HttpClient client = _httpClientFactory.CreateClient("AzuraCast");
-            using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
-
-            if (response.IsSuccessStatusCode)
-            {
-                _logger.LogDebug("Stream probe OK: {Url}", url);
-                return url;
-            }
-
-            _logger.LogWarning("Stream probe: HTTP {Status} for {Url}", (int)response.StatusCode, url);
-            return null;
-        }
-        catch (OperationCanceledException)
-        {
-            if (!ct.IsCancellationRequested)
-                _logger.LogWarning("Stream probe timed out: {Url}", url);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Stream probe failed for {Url}", url);
-            return null;
-        }
     }
 
     private void StartWatchdog()
