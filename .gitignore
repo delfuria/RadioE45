@@ -20,6 +20,7 @@ packages/
 .vscode/
 .idea/
 .claude/
+.tokensave/
 *.suo
 *.user
 *.userosscache
