@@ -9,12 +9,14 @@
     x:DataType="vm:RadioListViewModel"
     Title="Radio">
 
-    <RefreshView
-        IsRefreshing="{Binding IsBusy}"
-        Command="{Binding ForceReloadStationsCommand}">
+    <Grid>
+
+        <RefreshView
+            IsRefreshing="{Binding IsBusy}"
+            Command="{Binding ForceReloadStationsCommand}">
 
         <CollectionView
-            Margin="0,50,0,0"
+            Margin="0"
             ItemsSource="{Binding Stations}"
             SelectionMode="Single"
             SelectedItem="{Binding SelectedStation, Mode=TwoWay}"
@@ -39,9 +41,28 @@
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:AzuraStation">
+                    <SwipeView Margin="16,8,16,0">
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem
+                                    Text="Elimina"
+                                    BackgroundColor="{StaticResource LiveRed}"
+                                    Command="{Binding DeleteCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
                     <Border
-                        Style="{StaticResource CardBorder}"
-                        Margin="16,8,16,0">
+                        Style="{StaticResource CardBorder}">
+                        <FlyoutBase.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem
+                                    x:DataType="models:AzuraStation"
+                                    Text="Elimina stazione"
+                                    Command="{Binding DeleteCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </MenuFlyout>
+                        </FlyoutBase.ContextFlyout>
                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
 
                             <!-- Icona stazione -->
@@ -107,6 +128,7 @@
 
                         </Grid>
                     </Border>
+                    </SwipeView>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
 
@@ -115,6 +137,27 @@
             </CollectionView.Footer>
 
         </CollectionView>
-    </RefreshView>
+        </RefreshView>
+
+        <!-- FAB -->
+        <Button
+            Text="+"
+            Command="{Binding NavigateToAddStationCommand}"
+            HorizontalOptions="End"
+            VerticalOptions="End"
+            Margin="0,0,16,16"
+            BackgroundColor="{DynamicResource Accent}"
+            TextColor="{DynamicResource PrimaryText}"
+            CornerRadius="28"
+            WidthRequest="56"
+            HeightRequest="56"
+            FontSize="26"
+            Padding="0">
+            <Button.Shadow>
+                <Shadow Brush="Black" Offset="2,4" Radius="8" Opacity="0.35" />
+            </Button.Shadow>
+        </Button>
+
+    </Grid>
 
 </ContentPage>

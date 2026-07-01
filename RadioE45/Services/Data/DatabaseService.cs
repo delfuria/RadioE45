@@ -1,14 +1,15 @@
 using RadioE45.Models;
 using SQLite;
+using Microsoft.Maui.Storage;
 
 namespace RadioE45.Services.Data;
 
 public class DatabaseService : IDatabaseService, IAsyncDisposable
 {
     // Incrementa questo valore ogni volta che i dati di default cambiano.
-    // Al prossimo avvio dell'app, le tabelle con dati di seed vengono
-    // azzerate e ripopolate automaticamente con i nuovi valori.
-    public const decimal CurrentDbVersion = 0.71m;
+    // Al prossimo avvio dell'app, le tabelle con dati di seed vengono azzerate.
+    // Le stazioni vengono ri-popolate solo su consenso esplicito dell'utente.
+    public const decimal CurrentDbVersion = 0.72m;
 
     private const string DbFileName = "radioe45.db";
     private SQLiteAsyncConnection? _connection;
@@ -87,8 +88,6 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
         await conn.DropTableAsync<DbVersion>();
         await conn.CreateTableAsync<RadioStation>();
         await conn.CreateTableAsync<DbVersion>();
-        await SeedDefaultStationsAsync(conn);
-        await SeedDefaultDbVersionAsync(conn);
 
         AppSettings? settings = await conn.Table<AppSettings>().FirstOrDefaultAsync();
         if (settings is not null)
@@ -96,6 +95,13 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
             settings.SeedVersion = CurrentDbVersion;
             await conn.UpdateAsync(settings);
         }
+    }
+
+    public async Task SeedStationsAsync()
+    {
+        SQLiteAsyncConnection conn = await GetConnectionAsync();
+        await SeedDefaultStationsAsync(conn);
+        await SeedDefaultDbVersionAsync(conn);
     }
 
     private static async Task SeedDefaultStationsAsync(SQLiteAsyncConnection conn)

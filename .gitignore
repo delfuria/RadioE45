@@ -51,3 +51,6 @@ RadioE45/store-packages/
 *.msix
 *.msixbundle
 *.msixupload
+
+# TokenSave code graph
+.tokensave/

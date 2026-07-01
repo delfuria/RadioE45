@@ -22,7 +22,7 @@ public class StationDetailService : IStationDetailService
             string baseUrl = $"https://{station.UrlBase}";
             HttpClient client = _httpClientFactory.CreateClient("AzuraCast");
             client.BaseAddress = new Uri(baseUrl);
-            client.Timeout = TimeSpan.FromSeconds(3);
+            client.Timeout = TimeSpan.FromSeconds(5);
 
             IAzuraCastStationApi api = RestService.For<IAzuraCastStationApi>(client);
             AzuraCastStationDetailResponse detail = await api.GetStationDetailAsync(station.StationId, ct);
@@ -31,6 +31,16 @@ public class StationDetailService : IStationDetailService
                 detail.Name, detail.Shortcode, detail.ListenUrl);
 
             return detail;
+        }
+        catch (Refit.ApiException ex) when ((int)ex.StatusCode == 429)
+        {
+            _logger.LogWarning("Rate limit (429) per station {StationId}", station.StationId);
+            throw new StationRateLimitedException();
+        }
+        catch (Refit.ApiException ex)
+        {
+            _logger.LogError(ex, "HTTP error fetching station detail for {StationId}", station.StationId);
+            return null;
         }
         catch (HttpRequestException ex)
         {

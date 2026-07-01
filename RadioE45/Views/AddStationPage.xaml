@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.AddStationPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels"
+    x:DataType="vm:AddStationViewModel"
+    x:Name="ThisPage"
+    Title="{Binding Title}"
+    Shell.NavBarIsVisible="True">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="0,0,0,24">
+
+        <!-- Search bar -->
+        <Grid
+            Grid.Row="0"
+            ColumnDefinitions="*,Auto"
+            ColumnSpacing="8"
+            Padding="16,16,16,0">
+            <Entry
+                Grid.Column="0"
+                Placeholder="es: radioe45.ddns.net"
+                Text="{Binding UrlBase}"
+                Keyboard="Url"
+                ReturnCommand="{Binding SearchCommand}"
+                ClearButtonVisibility="WhileEditing"
+                BackgroundColor="{DynamicResource CardElevated}"
+                TextColor="{DynamicResource PrimaryText}"
+                PlaceholderColor="{DynamicResource MutedText}" />
+            <Button
+                Grid.Column="1"
+                Text="Cerca"
+                Command="{Binding SearchCommand}"
+                IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
+                BackgroundColor="{DynamicResource Accent}"
+                TextColor="{DynamicResource PrimaryText}"
+                CornerRadius="8"
+                Padding="16,0" />
+        </Grid>
+
+        <!-- Error message -->
+        <Label
+            Grid.Row="1"
+            Text="{Binding ErrorMessage}"
+            TextColor="Red"
+            FontSize="13"
+            Margin="16,8,16,0"
+            IsVisible="{Binding ErrorMessage, Converter={toolkit:IsNotNullConverter}}" />
+
+        <!-- Main area -->
+        <Grid Grid.Row="2">
+
+            <!-- Loading / initial state overlay -->
+            <VerticalStackLayout
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                Spacing="16"
+                Margin="32,0"
+                IsVisible="{Binding HasResults, Converter={toolkit:InvertedBoolConverter}}">
+                <ActivityIndicator
+                    IsRunning="{Binding IsBusy}"
+                    IsVisible="{Binding IsBusy}"
+                    HorizontalOptions="Center" />
+                <Label
+                    Text="Inserisci l'indirizzo del server AzuraCast e premi Cerca"
+                    Style="{StaticResource CaptionLabel}"
+                    IsVisible="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
+                    HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+
+            <!-- Results list -->
+            <CollectionView
+                ItemsSource="{Binding AvailableStations}"
+                IsVisible="{Binding HasResults}"
+                Margin="0,8,0,0">
+
+                <CollectionView.EmptyView>
+                    <Label
+                        Text="Nessuna stazione trovata"
+                        FontSize="18"
+                        HorizontalTextAlignment="Center"
+                        TextColor="{DynamicResource SecondaryText}"
+                        Margin="32,48,32,0" />
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:StationSelectionItem">
+                        <Border
+                            Style="{StaticResource CardBorder}"
+                            Margin="16,4,16,4">
+                            <Grid ColumnDefinitions="*,44" ColumnSpacing="8">
+
+                                <VerticalStackLayout
+                                    Grid.Column="0"
+                                    VerticalOptions="Center"
+                                    Spacing="3">
+                                    <Label
+                                        Text="{Binding Station.Name}"
+                                        TextColor="{DynamicResource PrimaryText}"
+                                        FontSize="15"
+                                        FontAttributes="Bold" />
+                                    <Label
+                                        Text="{Binding Station.Description}"
+                                        TextColor="{DynamicResource MutedText}"
+                                        FontSize="13"
+                                        IsVisible="{Binding Station.HasDescription}" />
+                                </VerticalStackLayout>
+
+                                <!-- Checkbox for selectable stations -->
+                                <CheckBox
+                                    Grid.Column="1"
+                                    IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                    IsVisible="{Binding IsAlreadyAdded, Converter={toolkit:InvertedBoolConverter}}"
+                                    Color="{DynamicResource Accent}"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="Center" />
+
+                                <!-- Checkmark for already-added stations -->
+                                <Label
+                                    Grid.Column="1"
+                                    Text="✓"
+                                    TextColor="{DynamicResource Accent}"
+                                    FontSize="20"
+                                    FontAttributes="Bold"
+                                    IsVisible="{Binding IsAlreadyAdded}"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="Center" />
+
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="8" Color="Transparent" />
+                </CollectionView.Footer>
+
+            </CollectionView>
+        </Grid>
+
+        <!-- Save / Cancel button -->
+        <Button
+            Grid.Row="3"
+            Text="{Binding BottomButtonText}"
+            Command="{Binding BottomActionCommand}"
+            IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
+            BackgroundColor="{DynamicResource Accent}"
+            TextColor="{DynamicResource PrimaryText}"
+            CornerRadius="24"
+            HeightRequest="50"
+            Margin="32,8,32,0" />
+
+    </Grid>
+
+</ContentPage>

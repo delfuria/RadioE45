@@ -14,7 +14,9 @@ using RadioE45.Services.Radio;
 using RadioE45.ViewModels;
 using RadioE45.Views;
 using Refit;
+#if !MACCATALYST
 using Sentry;
+#endif
 #if WINDOWS
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -34,6 +36,7 @@ public static class MauiProgram
             .UseMauiCommunityToolkit()
             .UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false);
 
+#if !MACCATALYST
         if (CrashReportingConfiguration.IsConfigured
             && CrashReportingSettings.IsEnabled())
         {
@@ -56,6 +59,7 @@ public static class MauiProgram
                 });
             });
         }
+#endif
 
         builder.ConfigureLifecycleEvents(events =>
         {
@@ -113,6 +117,7 @@ public static class MauiProgram
  #endif
         builder.Services.AddSingleton<INowPlayingService, NowPlayingService>();
         builder.Services.AddSingleton<IStationDetailService, StationDetailService>();
+        builder.Services.AddTransient<IStationListService, StationListService>();
         builder.Services.AddSingleton<IAzuraStationCatalog, AzuraStationCatalog>();
         builder.Services.AddTransient<IScheduleService, ScheduleService>();
         builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
@@ -126,11 +131,13 @@ public static class MauiProgram
 
         // Other ViewModels as Transient
         builder.Services.AddTransient<RadioListViewModel>();
+        builder.Services.AddTransient<AddStationViewModel>();
         builder.Services.AddTransient<ScheduleViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
 
         // Views as Transient
         builder.Services.AddTransient<OnAirPage>();
+        builder.Services.AddTransient<AddStationPage>();
         builder.Services.AddTransient<RadioListPage>();
         builder.Services.AddTransient<SchedulePage>();
         builder.Services.AddTransient<SettingsPage>();

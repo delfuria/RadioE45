@@ -1,3 +1,7 @@
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.ApplicationModel;
+
 namespace RadioE45.Services;
 
 internal static class ThemeService

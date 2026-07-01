@@ -5,9 +5,11 @@ namespace RadioE45.Services.Radio;
 public interface IAzuraStationCatalog
 {
     IReadOnlyList<AzuraStation> Stations { get; }
+    DateTimeOffset LastLoadedAt { get; }
     event Action StationsRefreshed;
     Task LoadAsync(CancellationToken ct = default);
     Task ReloadAsync(CancellationToken ct = default);
+    void RemoveStation(int id);
     Task SetFavoriteAsync(int dbId, bool isFavorite);
     AzuraStation? GetFavorite();
     AzuraStation? GetFirst();

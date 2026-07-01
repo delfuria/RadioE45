@@ -6,4 +6,5 @@ public interface IDatabaseService
 {
     Task<SQLiteAsyncConnection> GetConnectionAsync();
     Task ResetToDefaultsAsync();
+    Task SeedStationsAsync();
 }

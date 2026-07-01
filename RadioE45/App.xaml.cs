@@ -14,11 +14,13 @@ public partial class App : Application
     internal const double LandscapeWidth = 900;
     internal const double LandscapeHeight = 500;
     private readonly IAppSettingsRepository _settingsRepo;
+    private readonly IRadioRepository _radioRepository;
 
-    public App(IAppSettingsRepository settingsRepo, ILogRepository logRepo, DatabaseLoggerProvider dbLoggerProvider, IAzuraStationCatalog stationCatalog)
+    public App(IAppSettingsRepository settingsRepo, ILogRepository logRepo, DatabaseLoggerProvider dbLoggerProvider, IAzuraStationCatalog stationCatalog, IRadioRepository radioRepository)
     {
         InitializeComponent();
         _settingsRepo = settingsRepo;
+        _radioRepository = radioRepository;
 
         var pref = Preferences.Default.Get("theme_preference", "Dark");
         ThemeService.Apply(pref);
@@ -48,7 +50,7 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        Window window = new(new AppShell());
+        Window window = new(new AppShell(_radioRepository));
 
         DevicePlatform platform = DeviceInfo.Current.Platform;
         if (platform == DevicePlatform.WinUI || platform == DevicePlatform.MacCatalyst)
@@ -79,7 +81,7 @@ public partial class App : Application
         Page? hostPage = await GetPromptHostPageAsync();
         if (hostPage is null)
             return;
-        return;
+        /*
         //TODO: Enable it when in production
         bool enabled = await hostPage.DisplayAlertAsync(
             "Segnalazione crash",
@@ -96,6 +98,7 @@ public partial class App : Application
                 "La raccolta dei crash sara' attiva dal prossimo avvio dell'app.",
                 "OK");
         }
+        */
     }
 
     private async Task SaveCrashReportingPreferenceAsync(bool enabled, bool consentRequested)

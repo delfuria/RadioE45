@@ -4,6 +4,7 @@ namespace RadioE45.Services.Data;
 
 public interface IRadioRepository
 {
+    Task<bool> HasStationsAsync();
     Task<List<RadioStation>> GetAllAsync();
     Task<RadioStation?> GetByIdAsync(int id);
     Task<int> InsertAsync(RadioStation station);

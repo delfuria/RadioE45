@@ -168,6 +168,14 @@ public partial class OnAirViewModel : BaseViewModel
         UpdateProgressDisplay();
     }
 
+    public async Task ClearStationAsync()
+    {
+        await StopAsync();
+        CurrentStation = null;
+        NowPlaying = NowPlayingInfo.Empty;
+        ArtworkUrl = null;
+    }
+
     [RelayCommand]
     private async Task RefreshNowPlayingAsync()
     {
@@ -245,8 +253,8 @@ public partial class OnAirViewModel : BaseViewModel
         _localElapsedSeconds = 0;
         _trackDurationSeconds = 0;
         UpdateProgressDisplay();
-
-        await StartPlayAndNowPollingAsync(station);
+        if (station is not null)
+            await StartPlayAndNowPollingAsync(station);
     }
 
     private async Task ResumePlayAndRefreshPollingAsync()
