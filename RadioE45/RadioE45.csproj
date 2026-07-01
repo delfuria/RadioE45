@@ -129,6 +129,14 @@
 
     <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
         <PackageReference Include="Xamarin.AndroidX.LocalBroadcastManager" Version="1.1.0.24" />
+
+        <!-- Pin espliciti Media3 (Fase 3 Android Auto): già presenti transitivamente via
+             CommunityToolkit.Maui.MediaElement 10.0.0, pinnati qui come dipendenza di
+             prima classe per RadioLibraryService/ExoPlayer (docs/carplay/Phase3-Media3-ActionPlan.md). -->
+        <PackageReference Include="Xamarin.AndroidX.Media3.Common" Version="1.8.0" />
+        <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer" Version="1.8.0" />
+        <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Hls" Version="1.8.0" />
+        <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.8.0" />
     </ItemGroup>
 
     <!--
