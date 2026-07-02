@@ -3,6 +3,7 @@ using AndroidX.Concurrent.Futures;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Session;
 using Google.Common.Util.Concurrent;
+using Java.Interop;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
@@ -244,17 +245,82 @@ internal sealed class RadioLibrarySessionCallback : Java.Lang.Object, MediaLibra
         return resolved;
     }
 
+    // Fase 3.7 (VC-1, comandi vocali Gemini/Google Assistant): Media3 non ha un
+    // OnPlayFromSearch — a differenza di quanto ipotizzato inizialmente in questo piano
+    // (§3.7 originale). Un comando vocale ("riproduci X su RadioE45") arriva qui come
+    // MediaItem con MediaId assente/non risolvibile ma con RequestMetadata.SearchQuery
+    // valorizzata: è Media3 stesso a tradurre internamente la chiamata legacy
+    // playFromSearch (quella che Assistant/Gemini invocano davvero) in questa forma, prima
+    // di passarla a OnAddMediaItems/OnSetMediaItems — cioè qui.
     private static async Task<MediaItem?> TryResolveAsync(MediaItem item)
     {
-        if (!int.TryParse(item.MediaId, out int stationId))
-            return null;
+        IAzuraStationCatalog? catalog = Catalog;
 
-        AzuraStation? station = Catalog?.Stations.FirstOrDefault(s => s.Id == stationId);
+        AzuraStation? station = null;
+        if (int.TryParse(item.MediaId, out int stationId))
+            station = catalog?.Stations.FirstOrDefault(s => s.Id == stationId);
+
+        if (station is null)
+        {
+            string? query = TryGetSearchQuery(item);
+            // query non-null significa "RequestMetadata presente" (quindi è una vera
+            // richiesta di ricerca/vocale), anche se il testo della ricerca è vuoto — vedi
+            // TryGetSearchQuery. Se RequestMetadata non c'è affatto, query è null e si
+            // mantiene la tolleranza "no-op silenzioso" già esistente (return null sotto).
+            if (query is not null)
+            {
+                if (catalog is not null && catalog.Stations.Count == 0)
+                    await catalog.LoadAsync();
+
+                if (query.Length == 0)
+                {
+                    // Query vocale generica ("riproduci qualcosa"): stessa euristica già
+                    // usata da OnPlaybackResumption/dal vecchio AutoMediaCallback.OnPlay —
+                    // preferita, altrimenti la prima disponibile.
+                    station = catalog?.GetFavorite() ?? catalog?.GetFirst();
+                }
+                else
+                {
+                    station = catalog?.Stations.FirstOrDefault(s => s.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+                    if (station is null)
+                    {
+                        Logger?.LogWarning("RadioLibrarySessionCallback: nessuna stazione corrisponde alla ricerca vocale '{Query}', uso la prima disponibile", query);
+                        station = catalog?.GetFirst();
+                    }
+                }
+            }
+        }
+
         if (station is null)
             return null;
 
         MediaItem? resolved = await ResolveStationAsync(station);
-        return resolved?.BuildUpon()!.SetMediaId(item.MediaId)!.Build();
+        return resolved?.BuildUpon()!.SetMediaId(station.Id.ToString())!.Build();
+    }
+
+    // Bug del binding (verificato con `strings` sull'assembly Xamarin.AndroidX.Media3.Common:
+    // esiste `get_MediaId`/`get_MediaMetadata` ma NESSUN `get_RequestMetadata`/
+    // `getRequestMetadata`, pur essendo presente `MediaItem.Builder.SetRequestMetadata`): il
+    // binding C# non espone un getter per il campo pubblico Java `MediaItem.requestMetadata`.
+    // Si legge quindi il campo con la riflessione Java standard (Class.GetField + Field.Get)
+    // e si effettua il cast al tipo bindato RequestMetadata, i cui accessor (incluso
+    // SearchQuery) SONO bindati correttamente. Ritorna null se RequestMetadata non è
+    // impostata (nessuna richiesta di ricerca), stringa vuota se impostata ma senza testo
+    // (ricerca generica), altrimenti il testo della ricerca.
+    private static string? TryGetSearchQuery(MediaItem item)
+    {
+        try
+        {
+            Java.Lang.Reflect.Field? field = item.Class?.GetField("requestMetadata");
+            Java.Lang.Object? raw = field?.Get(item);
+            MediaItem.RequestMetadata? metadata = raw?.JavaCast<MediaItem.RequestMetadata>();
+            return metadata?.SearchQuery;
+        }
+        catch (Exception ex)
+        {
+            Logger?.LogWarning(ex, "RadioLibrarySessionCallback: lettura di RequestMetadata.SearchQuery fallita (workaround binding)");
+            return null;
+        }
     }
 
     private static async Task<MediaItem?> ResolveStationAsync(AzuraStation station)
