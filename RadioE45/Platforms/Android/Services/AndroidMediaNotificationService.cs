@@ -162,7 +162,7 @@ public sealed class AndroidMediaNotificationService : Service
         builder
             .SetContentTitle(snapshot.Title)
             .SetContentText(string.IsNullOrWhiteSpace(snapshot.Artist) ? "RadioE45" : snapshot.Artist)
-            .SetSmallIcon(Resource.Mipmap.appicon)
+            .SetSmallIcon(Resource.Drawable.ic_notification)
             .SetContentIntent(CreateContentPendingIntent())
             .SetDeleteIntent(CreateServicePendingIntent(ActionStop, 4))
             .SetVisibility(NotificationVisibility.Public)

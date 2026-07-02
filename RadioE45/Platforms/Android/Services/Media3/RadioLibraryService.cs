@@ -34,6 +34,16 @@ public sealed class RadioLibraryService : MediaLibraryService
         _session = new MediaLibrarySession.Builder(this, _player, new RadioLibrarySessionCallback())
             .SetSessionActivity(CreateContentPendingIntent())!
             .Build();
+
+        // Fase 3.8: senza questa chiamata il DefaultMediaNotificationProvider (usato
+        // implicitamente da MediaSessionService quando non se ne configura uno) ricade
+        // sull'icona applicativa del manifest (@mipmap/appicon) — un adaptive icon a colori
+        // pieni, non una silhouette bianca: Android la renderizzerebbe come un blob indistinto
+        // nella status bar (solo il canale alpha viene usato per le small icon). Si usa quindi
+        // un'icona dedicata (Resource.Drawable.ic_notification, vedi §11/3.8 nel piano).
+        DefaultMediaNotificationProvider notificationProvider = new DefaultMediaNotificationProvider.Builder(this).Build()!;
+        notificationProvider.SetSmallIcon(Resource.Drawable.ic_notification);
+        SetMediaNotificationProvider(notificationProvider);
     }
 
     // In Java, MediaLibraryService.onGetSession(ControllerInfo) esegue un override
