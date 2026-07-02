@@ -107,7 +107,14 @@ public static class MauiProgram
 
         // Singletons — survive navigation
         builder.Services.AddSingleton<IStreamUrlProber, StreamUrlProber>();
+ #if ANDROID
+        // Fase 3 (Media3/Android Auto, §4.3 del piano): su Android il motore di playback
+        // condiviso (AudioService, basato su CommunityToolkit MediaElement) è sostituito
+        // dal bridge verso l'unica MediaLibrarySession di RadioLibraryService.
+        builder.Services.AddSingleton<IAudioService, AndroidMedia3AudioService>();
+ #else
         builder.Services.AddSingleton<IAudioService, AudioService>();
+ #endif
         builder.Services.AddSingleton<RemoteArtworkLoader>();
  #if IOS || MACCATALYST
         builder.Services.AddSingleton<IPlatformNowPlayingService, IosNowPlayingService>();

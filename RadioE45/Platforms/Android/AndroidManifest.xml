@@ -21,6 +21,24 @@
 				<action android:name="android.media.browse.MediaBrowserService" />
 			</intent-filter>
 		</service>
+		<!-- Fase 3 (Media3/Android Auto): service unico che sostituirà i tre sopra (§3.9 del
+		     piano, dopo validazione completa su device fisico). Registrato già da ora
+		     (Fase 3.5) per poter testare il bridge UI -> AndroidMedia3AudioService ->
+		     RadioLibraryService, con i service legacy ancora attivi in parallelo come rete
+		     di sicurezza. Intenzionalmente SENZA l'action android.media.browse.MediaBrowserService:
+		     quella resta di competenza esclusiva di RadioMediaBrowserService fino alla 3.9,
+		     per non creare due service concorrenti nella discovery di Android Auto (il
+		     sistema risolverebbe l'intent-filter implicito in modo non deterministico se
+		     più service lo dichiarassero). Il binding in-process del bridge non ne ha comunque
+		     bisogno: usa un ComponentName esplicito, non una risoluzione per action. -->
+		<service
+			android:name="com.radioe45.app.Media3.RadioLibraryService"
+			android:exported="true"
+			android:foregroundServiceType="mediaPlayback">
+			<intent-filter>
+				<action android:name="androidx.media3.session.MediaLibraryService" />
+			</intent-filter>
+		</service>
 	</application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />

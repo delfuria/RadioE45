@@ -42,13 +42,28 @@ internal sealed class RadioLibrarySessionCallback : Java.Lang.Object, MediaLibra
 
     public MediaSession.ConnectionResult OnConnect(MediaSession? session, MediaSession.ControllerInfo? controller)
     {
-        // I controller "trusted" (notifica di sistema, Bluetooth, lock screen) devono sempre
-        // passare: solo i client di terze parti non fidati sono soggetti all'allowlist —
-        // stesso principio di RadioMediaBrowserService.OnGetRoot, applicato qui a livello di
-        // connessione perché Media3 unifica browsing e transport control in un'unica sessione.
-        bool isAllowed = controller is not null &&
-            (controller.IsTrusted || AllowedCallers.Contains(controller.PackageName ?? string.Empty));
-        if (!isAllowed || session is null)
+        if (session is null || controller is null)
+            return MediaSession.ConnectionResult.Reject()!;
+
+        // Fix (2026-07-02, scoperto testando la 3.5 su emulatore: "Session rejected the
+        // connection request", nessun audio): il controller interno che Media3 crea per
+        // gestire la notifica (MediaNotificationManager) e il bridge della nostra stessa
+        // app (AndroidMedia3AudioService, §3.5, in-process nello stesso pacchetto) NON sono
+        // "trusted" per definizione — vanno riconosciuti esplicitamente con le API dedicate
+        // di MediaSession, altrimenti sia la notifica di sistema sia l'app stessa restano
+        // escluse dal controllo della propria riproduzione. I controller "trusted" (BT,
+        // lock screen, ecc.) e l'allowlist di pacchetti esterni (gearhead/mediasimulator)
+        // restano com'erano, stesso principio di RadioMediaBrowserService.OnGetRoot.
+        bool isSelfOrSystem = session.IsMediaNotificationController(controller) ||
+            session.IsAutomotiveController(controller) ||
+            session.IsAutoCompanionController(controller) ||
+            controller.PackageName == Android.App.Application.Context.PackageName;
+
+        bool isAllowed = isSelfOrSystem ||
+            controller.IsTrusted ||
+            AllowedCallers.Contains(controller.PackageName ?? string.Empty);
+
+        if (!isAllowed)
             return MediaSession.ConnectionResult.Reject()!;
 
         return new MediaSession.ConnectionResult.AcceptedResultBuilder(session).Build()!;
