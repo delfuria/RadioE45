@@ -1,3 +1,4 @@
+using Android.OS;
 using AndroidX.Concurrent.Futures;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Session;
@@ -22,13 +23,21 @@ internal sealed class RadioLibrarySessionCallback : Java.Lang.Object, MediaLibra
 {
     private const string RootId = "ROOT";
 
-    // Allowlist di base ereditata da RadioMediaBrowserService. L'estensione con
-    // com.google.android.carassistant/com.android.bluetooth/com.google.android.wearable.app
-    // è compito della Fase 3.6, non di questa.
+    // Allowlist ereditata da RadioMediaBrowserService, estesa in Fase 3.6 con i pacchetti
+    // richiesti da CarAppQuality.md/piano originale (Fase 2D). Restano qui come rete di
+    // sicurezza esplicita anche se IsAutomotiveController/IsAutoCompanionController
+    // (introdotti nel fix OnConnect post-3.5) e controller.IsTrusted dovrebbero già
+    // riconoscere buona parte di questi client come fidati: è la stessa prassi difensiva
+    // usata dai sample ufficiali Google (il flag "trusted" del sistema non è sempre
+    // affidabile su tutte le versioni/skin Android), quindi i due meccanismi restano
+    // complementari e non si eliminano a vicenda.
     private static readonly HashSet<string> AllowedCallers = new(StringComparer.Ordinal)
     {
         "com.google.android.projection.gearhead",
         "com.google.android.mediasimulator",
+        "com.google.android.carassistant",
+        "com.android.bluetooth",
+        "com.google.android.wearable.app",
     };
 
     private static IAzuraStationCatalog? Catalog =>
@@ -84,7 +93,36 @@ internal sealed class RadioLibrarySessionCallback : Java.Lang.Object, MediaLibra
             .SetMediaMetadata(rootMetadata)!
             .Build()!;
 
-        return Immediate(LibraryResult.OfItem(rootItem, libraryParams)!);
+        // Fase 3.6: content-style hint (equivalente Media3 delle chiavi legacy
+        // androidx.media.utils.MediaConstants — pacchetto già presente in albero come
+        // dipendenza transitiva di Media3.Session, vedi §3.1/§11). Qualificato per intero
+        // (AndroidX.Media.Utils.MediaConstants) perché Media3.Session ha una propria classe
+        // omonima MediaConstants con scopo diverso: uno using avrebbe reso l'uso ambiguo
+        // (CS0104, verificato in build). Le stazioni sono un elenco piatto (nessuna
+        // sotto-cartella), quindi si dichiara stile "lista" (icona + titolo) sia per gli
+        // eventuali figli browsable sia per quelli playable, coerente con la convenzione
+        // degli altri client media/radio su Android Auto.
+        Bundle rootExtras = new();
+        rootExtras.PutInt(
+            AndroidX.Media.Utils.MediaConstants.DescriptionExtrasKeyContentStyleBrowsable,
+            AndroidX.Media.Utils.MediaConstants.DescriptionExtrasValueContentStyleListItem);
+        rootExtras.PutInt(
+            AndroidX.Media.Utils.MediaConstants.DescriptionExtrasKeyContentStylePlayable,
+            AndroidX.Media.Utils.MediaConstants.DescriptionExtrasValueContentStyleListItem);
+
+        // Si preservano gli eventuali flag Offline/Recent/Suggested della richiesta del
+        // client (echo, come faceva il codice originale passando libraryParams invariato):
+        // qui si aggiungono solo gli extra di content-style, senza scartare il resto.
+        LibraryParams.Builder rootParamsBuilder = new LibraryParams.Builder().SetExtras(rootExtras)!;
+        if (libraryParams is not null)
+        {
+            rootParamsBuilder = rootParamsBuilder
+                .SetOffline(libraryParams.IsOffline)!
+                .SetRecent(libraryParams.IsRecent)!
+                .SetSuggested(libraryParams.IsSuggested)!;
+        }
+
+        return Immediate(LibraryResult.OfItem(rootItem, rootParamsBuilder.Build()!)!);
     }
 
     public IListenableFuture OnGetChildren(
