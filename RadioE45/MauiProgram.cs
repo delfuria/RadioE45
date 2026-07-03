@@ -9,6 +9,7 @@ using Microsoft.Maui.LifecycleEvents;
 using RadioE45.Services.Audio;
 using RadioE45.Services.CrashReporting;
 using RadioE45.Services.Data;
+using RadioE45.Services.Diagnostics;
 using RadioE45.Services.Logging;
 using RadioE45.Services.Radio;
 using RadioE45.ViewModels;
@@ -29,6 +30,8 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
+        CrashDiagnostics.Initialize();
+
         MauiAppBuilder builder = MauiApp.CreateBuilder();
 
         builder
