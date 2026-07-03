@@ -15,9 +15,7 @@ using RadioE45.Services.Radio;
 using RadioE45.ViewModels;
 using RadioE45.Views;
 using Refit;
-#if !MACCATALYST
 using Sentry;
-#endif
 #if WINDOWS
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -39,7 +37,6 @@ public static class MauiProgram
             .UseMauiCommunityToolkit()
             .UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false);
 
-#if !MACCATALYST
         if (CrashReportingConfiguration.IsConfigured
             && CrashReportingSettings.IsEnabled())
         {
@@ -62,7 +59,6 @@ public static class MauiProgram
                 });
             });
         }
-#endif
 
         builder.ConfigureLifecycleEvents(events =>
         {
