@@ -16,6 +16,10 @@ background playback work.
 |---|---|---|---|
 | 1 | Analisi tecnica del problema (stato v0.20) — *technical analysis of the problem* | [ResumeRadioE45_IT.md](ResumeRadioE45_IT.md) | [ResumeRadioE45_EN.md](ResumeRadioE45_EN.md) |
 | 2 | Report della ricostruzione — *rebuild report: what changed and why* | [RefactorReport_RadioE45_IT.md](RefactorReport_RadioE45_IT.md) | [RefactorReport_RadioE45_EN.md](RefactorReport_RadioE45_EN.md) |
+| 3 | Ambiente di sviluppo: build, esecuzione, pacchetti — *dev environment: build, run, packages* | [DEV-SETUP_IT.md](DEV-SETUP_IT.md) | [DEV-SETUP_EN.md](DEV-SETUP_EN.md) |
+
+> Per compilare ed eseguire il branch parti dal punto 3.
+> *To build and run the branch, start from item 3.*
 
 ## Note
 
