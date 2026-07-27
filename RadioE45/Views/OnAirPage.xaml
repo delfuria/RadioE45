@@ -5,14 +5,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:RadioE45.ViewModels"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
     x:DataType="vm:OnAirViewModel"
-    Title="In Onda">
+    Title="{loc:Translate Tab_OnAir}">
 
     <ContentPage.Resources>
         <toolkit:InvertedBoolConverter x:Key="InvertBool" />
         <toolkit:BoolToObjectConverter x:Key="FavoriteIconConverter" TrueObject="heart_filled.png" FalseObject="heart_outline.png" />
         <toolkit:BoolToObjectConverter x:Key="PlayPauseTextConverter" x:TypeArguments="x:String" TrueObject="⏸" FalseObject="▶" />
-        <toolkit:BoolToObjectConverter x:Key="MuteTextConverter" x:TypeArguments="x:String" TrueObject="🔇" FalseObject="🔊" />
     </ContentPage.Resources>
 
     <RefreshView
@@ -34,7 +34,7 @@
                     <!-- Artwork copertina -->
                     <Border
                         x:Name="ArtworkBorder"
-                        Margin="24,32,24,0"
+                        Margin="24,16,24,0"
                         HeightRequest="{Binding ArtworkHeight}"
                         StrokeShape="RoundRectangle 20"
                         Stroke="{DynamicResource CardElevated}"
@@ -54,7 +54,7 @@
                     </Border>
 
                     <!-- Badge stazione + indicatore LIVE -->
-                    <Grid Margin="24,20,24,0">
+                    <Grid Margin="24,14,24,0">
 
                         <HorizontalStackLayout
                             HorizontalOptions="Center"
@@ -114,7 +114,7 @@
                     <Label
                         Text="{Binding NowPlaying.Title}"
                         Style="{StaticResource HeadlineLabel}"
-                        Margin="24,16,24,0"
+                        Margin="24,12,24,0"
                         LineBreakMode="TailTruncation"
                         MaxLines="2" />
 
@@ -122,14 +122,15 @@
                     <Label
                         Text="{Binding NowPlaying.Artist}"
                         Style="{StaticResource SubtitleLabel}"
-                        Margin="24,6,24,0"
+                        FontSize="15"
+                        Margin="24,4,24,0"
                         LineBreakMode="TailTruncation" />
 
                     <!-- Progress brano -->
                     <ProgressBar
                         Progress="{Binding TrackProgress}"
                         ProgressColor="{DynamicResource Accent}"
-                        Margin="24,16,24,0" />
+                        Margin="24,12,24,0" />
                     <Grid Margin="24,4,24,0">
                         <Label
                             Text="{Binding ElapsedTimeText}"
@@ -143,13 +144,13 @@
 
                 </VerticalStackLayout>
 
-                <!-- RIGHT: prossimo brano · controlli · volume · errore -->
+                <!-- RIGHT: prossimo brano · controlli · errore -->
                 <VerticalStackLayout x:Name="RightPanel" Grid.Row="1" Grid.Column="0" Spacing="0" Padding="0,0,0,20">
 
                     <!-- Prossimo brano -->
                     <Border
-                        Margin="24,16,24,0"
-                        Padding="12"
+                        Margin="24,12,24,0"
+                        Padding="10"
                         StrokeShape="RoundRectangle 16"
                         Stroke="{DynamicResource CardElevated}"
                         StrokeThickness="1"
@@ -158,8 +159,8 @@
                         <HorizontalStackLayout Spacing="12">
 
                             <Border
-                                HeightRequest="64"
-                                WidthRequest="64"
+                                HeightRequest="52"
+                                WidthRequest="52"
                                 StrokeShape="RoundRectangle 10"
                                 Stroke="Transparent">
                                 <Grid>
@@ -176,15 +177,17 @@
 
                             <VerticalStackLayout VerticalOptions="Center" Spacing="4">
                                 <Label
-                                    Text="Prossimo"
+                                    Text="{loc:Translate OnAir_Next}"
                                     Style="{StaticResource CaptionLabel}"
                                     FontAttributes="Bold"
                                     IsVisible="{Binding NowPlaying.Next.IsJingle, Converter={StaticResource InvertBool}}" />
                                 <Label
                                     Text="{Binding NowPlaying.Next.Title}"
                                     Style="{StaticResource SubtitleLabel}"
+                                    FontSize="15"
+                                    HorizontalTextAlignment="Start"
                                     LineBreakMode="TailTruncation"
-                                    MaxLines="2" />
+                                    MaxLines="1" />
                                 <Label
                                     Text="{Binding NowPlaying.Next.Artist}"
                                     Style="{StaticResource CaptionLabel}"
@@ -199,15 +202,27 @@
                         IsRunning="{Binding IsBuffering}"
                         IsVisible="{Binding IsBuffering}"
                         HorizontalOptions="Center"
-                        Margin="0,16,0,0"
+                        Margin="0,10,0,0"
                         HeightRequest="32"
                         WidthRequest="32" />
 
-                    <!-- Controlli playback -->
+                    <!-- Controlli playback: stazione precedente · play/pausa · stazione successiva -->
                     <HorizontalStackLayout
                         HorizontalOptions="Center"
                         Spacing="24"
-                        Margin="0,24,0,0">
+                        Margin="0,16,0,0">
+
+                        <Button
+                            Text="⏮"
+                            BackgroundColor="{DynamicResource CardElevated}"
+                            TextColor="{DynamicResource MutedText}"
+                            CornerRadius="26"
+                            HeightRequest="52"
+                            WidthRequest="52"
+                            FontSize="20"
+                            Padding="0"
+                            VerticalOptions="Center"
+                            Command="{Binding PreviousStationCommand}" />
 
                         <Button
                             Text="{Binding IsPlaying, Converter={StaticResource PlayPauseTextConverter}}"
@@ -216,39 +231,18 @@
                             IsEnabled="{Binding IsBuffering, Converter={StaticResource InvertBool}}" />
 
                         <Button
-                            Text="⏹"
+                            Text="⏭"
                             BackgroundColor="{DynamicResource CardElevated}"
                             TextColor="{DynamicResource MutedText}"
-                            CornerRadius="30"
-                            HeightRequest="60"
-                            WidthRequest="60"
-                            FontSize="22"
+                            CornerRadius="26"
+                            HeightRequest="52"
+                            WidthRequest="52"
+                            FontSize="20"
                             Padding="0"
-                            Command="{Binding StopCommand}" />
+                            VerticalOptions="Center"
+                            Command="{Binding NextStationCommand}" />
 
                     </HorizontalStackLayout>
-
-                    <!-- Volume slider -->
-                    <Grid Margin="24,28,24,0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                        <Button
-                            Grid.Column="0"
-                            Text="{Binding IsMuted, Converter={StaticResource MuteTextConverter}}"
-                            Command="{Binding ToggleMuteCommand}"
-                            BackgroundColor="Transparent"
-                            TextColor="{DynamicResource MutedText}"
-                            FontSize="14"
-                            HeightRequest="22"
-                            WidthRequest="28"
-                            Padding="0"
-                            BorderWidth="0"
-                            VerticalOptions="Center" />
-                        <Slider
-                            Grid.Column="1"
-                            Minimum="0"
-                            Maximum="1"
-                            Value="{Binding Volume}"
-                            ValueChanged="OnVolumeChanged" />
-                    </Grid>
 
                     <!-- Errore -->
                     <Label

@@ -6,8 +6,9 @@
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:RadioE45.ViewModels"
     xmlns:models="clr-namespace:RadioE45.Models"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
     x:DataType="vm:RadioListViewModel"
-    Title="Radio">
+    Title="{loc:Translate RadioList_Title}">
 
     <Grid>
 
@@ -34,7 +35,7 @@
                         FontSize="48"
                         HorizontalTextAlignment="Center" />
                     <Label
-                        Text="Nessuna stazione disponibile"
+                        Text="{loc:Translate RadioList_Empty}"
                         Style="{StaticResource SubtitleLabel}" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
@@ -45,7 +46,7 @@
                         <SwipeView.RightItems>
                             <SwipeItems>
                                 <SwipeItem
-                                    Text="Elimina"
+                                    Text="{loc:Translate Common_Delete}"
                                     BackgroundColor="{StaticResource LiveRed}"
                                     Command="{Binding DeleteCommand}"
                                     CommandParameter="{Binding .}" />
@@ -58,7 +59,7 @@
                             <MenuFlyout>
                                 <MenuFlyoutItem
                                     x:DataType="models:AzuraStation"
-                                    Text="Elimina stazione"
+                                    Text="{loc:Translate RadioList_DeleteStation}"
                                     Command="{Binding DeleteCommand}"
                                     CommandParameter="{Binding .}" />
                             </MenuFlyout>
@@ -110,7 +111,7 @@
                                     FontSize="13"
                                     IsVisible="{Binding IsOnline}" />
                                 <Label
-                                    Text="● Off Line"
+                                    Text="{loc:Translate RadioList_Offline}"
                                     TextColor="{DynamicResource MutedText}"
                                     FontSize="12"
                                     FontAttributes="Italic"

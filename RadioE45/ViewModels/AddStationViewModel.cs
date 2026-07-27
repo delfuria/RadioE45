@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
 using RadioE45.Services.Data;
+using RadioE45.Services.Localization;
 using RadioE45.Services.Radio;
 
 namespace RadioE45.ViewModels;
@@ -31,8 +32,8 @@ public partial class AddStationViewModel : BaseViewModel
 
     public bool HasSelections => SelectedCount > 0;
     public string BottomButtonText => HasSelections
-        ? $"Aggiungi selezionate ({SelectedCount})"
-        : "Annulla";
+        ? LocalizationResourceManager.Instance.Format("AddStation_AddSelected", SelectedCount)
+        : LocalizationResourceManager.Instance["Common_Cancel"];
 
     public AddStationViewModel(
         IStationListService stationListService,
@@ -44,7 +45,7 @@ public partial class AddStationViewModel : BaseViewModel
         _stationListService = stationListService;
         _radioRepository = radioRepository;
         _catalog = catalog;
-        Title = "Aggiungi stazione";
+        Title = LocalizationResourceManager.Instance["AddStation_Title"];
     }
 
     [RelayCommand]
@@ -66,7 +67,7 @@ public partial class AddStationViewModel : BaseViewModel
             List<AzuraCastStationListItem>? stations = await _stationListService.FetchAsync(urlBase);
             if (stations == null)
             {
-                ErrorMessage = "Impossibile raggiungere il server. Controlla l'indirizzo.";
+                ErrorMessage = LocalizationResourceManager.Instance["AddStation_ServerError"];
                 return;
             }
 
@@ -87,7 +88,7 @@ public partial class AddStationViewModel : BaseViewModel
             AvailableStations = new ObservableCollection<StationSelectionItem>(items);
             HasResults = true;
             UpdateSelectedCount();
-        }, "Ricerca stazioni");
+        }, LocalizationResourceManager.Instance["Err_SearchStations"]);
     }
 
     [RelayCommand]
@@ -130,7 +131,7 @@ public partial class AddStationViewModel : BaseViewModel
 
             _ = _catalog.ReloadAsync();
             await Shell.Current.GoToAsync("..");
-        }, "Salvataggio stazioni");
+        }, LocalizationResourceManager.Instance["Err_SaveStations"]);
     }
 
     private void OnItemSelectionChanged(object? sender, PropertyChangedEventArgs e)

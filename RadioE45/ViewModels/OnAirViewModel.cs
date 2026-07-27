@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using RadioE45.Models;
 using RadioE45.Services.Audio;
 using RadioE45.Services.Data;
+using RadioE45.Services.Localization;
 using RadioE45.Services.Radio;
 using RadioE45.Services;
 
@@ -28,14 +29,6 @@ public partial class OnAirViewModel : BaseViewModel
 
     [ObservableProperty]
     public partial bool IsBuffering { get; set; }
-
-    [ObservableProperty]
-    public partial double Volume { get; set; }
-
-    [ObservableProperty]
-    public partial bool IsMuted { get; set; }
-
-    private double _preMuteVolume = 1.0;
 
     [ObservableProperty]
     public partial string? ArtworkUrl { get; set; }
@@ -78,12 +71,12 @@ public partial class OnAirViewModel : BaseViewModel
         _catalog = catalog;
         _settingsRepo = settingsRepo;
 
-        Volume = Preferences.Default.Get("player_volume", 1.0);
-        Title = "In Onda";
+        Title = LocalizationResourceManager.Instance["Tab_OnAir"];
 
         _audioService.PlaybackStateChanged += OnPlaybackStateChanged;
         _audioService.ErrorOccurred += OnErrorOccurred;
         _audioService.StreamOpened += OnStreamOpened;
+        _audioService.StationChanged += OnAudioStationChanged;
         _nowPlayingService.NowPlayingUpdated += OnNowPlayingUpdated;
         _catalog.StationsRefreshed += OnStationsRefreshed;
     }
@@ -109,7 +102,7 @@ public partial class OnAirViewModel : BaseViewModel
                 CurrentStation = station;
                 await StartPlayAndNowPollingAsync(station);
             }
-        }, "Inizializzazione");
+        }, LocalizationResourceManager.Instance["Err_Init"]);
     }
 
     public async Task RestartAsync()
@@ -134,7 +127,7 @@ public partial class OnAirViewModel : BaseViewModel
                 CurrentStation = station;
                 await StartPlayAndNowPollingAsync(station);
             }
-        }, "Ripristino dopo connessione");
+        }, LocalizationResourceManager.Instance["Err_Reconnect"]);
     }
 
     [RelayCommand]
@@ -168,6 +161,37 @@ public partial class OnAirViewModel : BaseViewModel
         UpdateProgressDisplay();
     }
 
+    [RelayCommand]
+    private Task NextStationAsync() => SwitchStationAsync(+1);
+
+    [RelayCommand]
+    private Task PreviousStationAsync() => SwitchStationAsync(-1);
+
+    // Moves to the adjacent station in the catalog (wrapping around) and plays it — same behaviour
+    // as Seek-to-Next/Previous from Android Auto / the car, kept in sync with the phone UI.
+    private Task SwitchStationAsync(int direction)
+    {
+        IReadOnlyList<AzuraStation> stations = _catalog.Stations;
+        if (stations.Count == 0)
+            return Task.CompletedTask;
+
+        int currentIndex = CurrentStation is null ? -1 : IndexOfStation(stations, CurrentStation.Id);
+        int count = stations.Count;
+        int nextIndex = currentIndex < 0 ? 0 : (((currentIndex + direction) % count) + count) % count;
+
+        return SelectStationAsync(stations[nextIndex]);
+    }
+
+    private static int IndexOfStation(IReadOnlyList<AzuraStation> stations, int id)
+    {
+        for (int i = 0; i < stations.Count; i++)
+        {
+            if (stations[i].Id == id)
+                return i;
+        }
+        return -1;
+    }
+
     public async Task ClearStationAsync()
     {
         await StopAsync();
@@ -181,7 +205,7 @@ public partial class OnAirViewModel : BaseViewModel
     {
         if (CurrentStation is null)
         {
-            ErrorMessage = "Nessuna stazione selezionata.";
+            ErrorMessage = LocalizationResourceManager.Instance["OnAir_NoStationSelected"];
             return;
         }
 
@@ -190,37 +214,7 @@ public partial class OnAirViewModel : BaseViewModel
         {
             NowPlayingInfo info = await _nowPlayingService.FetchOnceAsync(CurrentStation);
             ApplyNowPlayingInfo(info);
-        }, "Aggiornamento now playing");
-    }
-
-    [RelayCommand]
-    private void SetVolume(double volume)
-    {
-        Volume = volume;
-        _audioService.SetVolume(volume);
-        Preferences.Default.Set("player_volume", volume);
-        if (volume > 0 && IsMuted)
-            IsMuted = false;
-    }
-
-    [RelayCommand]
-    private void ToggleMute()
-    {
-        if (IsMuted)
-        {
-            IsMuted = false;
-            double restore = _preMuteVolume > 0 ? _preMuteVolume : 1.0;
-            Volume = restore;
-            _audioService.SetVolume(restore);
-            Preferences.Default.Set("player_volume", restore);
-        }
-        else
-        {
-            _preMuteVolume = Volume > 0 ? Volume : 1.0;
-            IsMuted = true;
-            Volume = 0;
-            _audioService.SetVolume(0);
-        }
+        }, LocalizationResourceManager.Instance["Err_NowPlaying"]);
     }
 
     [RelayCommand]
@@ -288,6 +282,33 @@ public partial class OnAirViewModel : BaseViewModel
         await _nowPlayingService.StopPollingAsync();
     }
 
+    // Raised when the station is switched from outside the phone UI (Android Auto / car / steering
+    // wheel). The player already moved to the new station, so we only re-point the display and the
+    // now-playing polling — we must NOT call PlayAsync (that would restart the session in a loop).
+    private void OnAudioStationChanged(object? sender, AzuraStation station)
+    {
+        if (CurrentStation?.Id == station.Id)
+            return;
+
+        RunOnMainThreadIfActive(() => _ = SyncToExternalStationAsync(station));
+    }
+
+    private async Task SyncToExternalStationAsync(AzuraStation station)
+    {
+        if (CurrentStation?.Id == station.Id)
+            return;
+
+        CurrentStation = station;
+        NowPlaying = NowPlayingInfo.Empty;
+        ArtworkUrl = null;
+        StopProgressTimer();
+        _localElapsedSeconds = 0;
+        _trackDurationSeconds = 0;
+        UpdateProgressDisplay();
+
+        await StartNowPlayingPollingAsync(station);
+    }
+
     private async void OnStreamOpened(object? sender, AzuraStation station)
     {
         NowPlayingInfo info = await _nowPlayingService.FetchOnceAsync(station);
@@ -345,7 +366,7 @@ public partial class OnAirViewModel : BaseViewModel
     private void ApplyStationMetadata(AzuraStation station)
     {
         string artist = string.IsNullOrWhiteSpace(station.Description) ? station.Name : station.Description;
-        string title = string.IsNullOrWhiteSpace(station.Name) ? "In attesa..." : station.Name;
+        string title = string.IsNullOrWhiteSpace(station.Name) ? LocalizationResourceManager.Instance["OnAir_Waiting"] : station.Name;
         string? artworkUrl = string.IsNullOrWhiteSpace(station.LogoUrl) ? null : station.LogoUrl;
 
         _audioService.UpdateMetadata(artist, title, artworkUrl);
@@ -423,6 +444,7 @@ public partial class OnAirViewModel : BaseViewModel
         _audioService.PlaybackStateChanged -= OnPlaybackStateChanged;
         _audioService.ErrorOccurred -= OnErrorOccurred;
         _audioService.StreamOpened -= OnStreamOpened;
+        _audioService.StationChanged -= OnAudioStationChanged;
         _nowPlayingService.NowPlayingUpdated -= OnNowPlayingUpdated;
 
         StopProgressTimer();

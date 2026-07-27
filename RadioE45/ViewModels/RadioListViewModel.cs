@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
 using RadioE45.Services.Data;
+using RadioE45.Services.Localization;
 using RadioE45.Services.Radio;
 
 namespace RadioE45.ViewModels;
@@ -35,7 +36,7 @@ public partial class RadioListViewModel : BaseViewModel
         _onAirViewModel = onAirViewModel;
         _radioRepository = radioRepository;
         _databaseService = databaseService;
-        Title = "Canali Radio";
+        Title = LocalizationResourceManager.Instance["Tab_Radio"];
 
         _catalog.StationsRefreshed += OnStationsRefreshed;
     }
@@ -50,9 +51,9 @@ public partial class RadioListViewModel : BaseViewModel
             {
                 bool accepted = await Shell.Current.DisplayAlertAsync(
                     "Radio E45",
-                    "Nessuna stazione selezionata. Vuoi aggiungerne qualcuna di prova ?",
-                    "Si",
-                    "No");
+                    LocalizationResourceManager.Instance["RadioList_SeedPrompt"],
+                    LocalizationResourceManager.Instance["Common_Yes"],
+                    LocalizationResourceManager.Instance["Common_No"]);
 
                 if (!accepted)
                 {
@@ -74,7 +75,7 @@ public partial class RadioListViewModel : BaseViewModel
                 await _catalog.ReloadAsync();
 
             RefreshStationsFromCatalog();
-        }, "Caricamento stazioni");
+        }, LocalizationResourceManager.Instance["Err_LoadStations"]);
     }
 
     [RelayCommand]
@@ -84,7 +85,7 @@ public partial class RadioListViewModel : BaseViewModel
         {
             await _catalog.ReloadAsync();
             RefreshStationsFromCatalog();
-        }, "Aggiornamento stazioni");
+        }, LocalizationResourceManager.Instance["Err_RefreshStations"]);
     }
 
     private void OnStationsRefreshed()
@@ -108,10 +109,10 @@ public partial class RadioListViewModel : BaseViewModel
     private async Task DeleteStationAsync(AzuraStation station)
     {
         bool confirmed = await Shell.Current.DisplayAlertAsync(
-            "Elimina stazione",
-            $"Vuoi eliminare \"{station.Name}\"?",
-            "Elimina",
-            "Annulla");
+            LocalizationResourceManager.Instance["RadioList_DeleteStation"],
+            LocalizationResourceManager.Instance.Format("RadioList_ConfirmDeleteMessage", station.Name),
+            LocalizationResourceManager.Instance["Common_Delete"],
+            LocalizationResourceManager.Instance["Common_Cancel"]);
 
         if (!confirmed)
             return;
@@ -127,7 +128,7 @@ public partial class RadioListViewModel : BaseViewModel
         catch (Exception ex)
         {
             Logger.LogError(ex, "[RadioListViewModel] Eliminazione stazione: {Message}", ex.Message);
-            ErrorMessage = $"Eliminazione stazione: {ex.Message}";
+            ErrorMessage = $"{LocalizationResourceManager.Instance["Err_DeleteStation"]}: {ex.Message}";
             return;
         }
 

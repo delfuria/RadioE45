@@ -6,8 +6,9 @@
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:RadioE45.ViewModels"
     xmlns:models="clr-namespace:RadioE45.Models"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
     x:DataType="vm:ScheduleViewModel"
-    Title="Palinsesto">
+    Title="{loc:Translate Tab_Schedule}">
 
     <RefreshView
         IsRefreshing="{Binding IsBusy}"
@@ -30,7 +31,7 @@
                         FontSize="48"
                         HorizontalTextAlignment="Center" />
                     <Label
-                        Text="Nessun palinsesto disponibile"
+                        Text="{loc:Translate Schedule_Empty}"
                         Style="{StaticResource SubtitleLabel}" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
@@ -66,7 +67,7 @@
                                     Padding="8,3"
                                     IsVisible="{Binding IsNow}">
                                     <Label
-                                        Text="● ORA"
+                                        Text="{loc:Translate Schedule_Now}"
                                         TextColor="{DynamicResource PrimaryText}"
                                         FontSize="11"
                                         FontAttributes="Bold"

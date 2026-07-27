@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:RadioE45.ViewModels"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
     x:DataType="vm:AddStationViewModel"
     x:Name="ThisPage"
     Title="{Binding Title}"
@@ -20,7 +21,7 @@
             Padding="16,16,16,0">
             <Entry
                 Grid.Column="0"
-                Placeholder="es: radioe45.ddns.net"
+                Placeholder="{loc:Translate AddStation_UrlPlaceholder}"
                 Text="{Binding UrlBase}"
                 Keyboard="Url"
                 ReturnCommand="{Binding SearchCommand}"
@@ -30,7 +31,7 @@
                 PlaceholderColor="{DynamicResource MutedText}" />
             <Button
                 Grid.Column="1"
-                Text="Cerca"
+                Text="{loc:Translate AddStation_Search}"
                 Command="{Binding SearchCommand}"
                 IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
                 BackgroundColor="{DynamicResource Accent}"
@@ -63,7 +64,7 @@
                     IsVisible="{Binding IsBusy}"
                     HorizontalOptions="Center" />
                 <Label
-                    Text="Inserisci l'indirizzo del server AzuraCast e premi Cerca"
+                    Text="{loc:Translate AddStation_Prompt}"
                     Style="{StaticResource CaptionLabel}"
                     IsVisible="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
                     HorizontalTextAlignment="Center" />
@@ -77,7 +78,7 @@
 
                 <CollectionView.EmptyView>
                     <Label
-                        Text="Nessuna stazione trovata"
+                        Text="{loc:Translate AddStation_NoResults}"
                         FontSize="18"
                         HorizontalTextAlignment="Center"
                         TextColor="{DynamicResource SecondaryText}"

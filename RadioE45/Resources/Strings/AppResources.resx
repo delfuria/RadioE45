@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Tab bar / page titles -->
+  <data name="Tab_OnAir" xml:space="preserve"><value>In Onda</value></data>
+  <data name="Tab_Radio" xml:space="preserve"><value>Canali Radio</value></data>
+  <data name="Tab_Schedule" xml:space="preserve"><value>Palinsesto</value></data>
+  <data name="Tab_Settings" xml:space="preserve"><value>Impostazioni</value></data>
+  <data name="RadioList_Title" xml:space="preserve"><value>Radio</value></data>
+
+  <!-- On Air -->
+  <data name="OnAir_Next" xml:space="preserve"><value>Prossimo</value></data>
+  <data name="OnAir_Waiting" xml:space="preserve"><value>In attesa...</value></data>
+  <data name="OnAir_NoStationSelected" xml:space="preserve"><value>Nessuna stazione selezionata.</value></data>
+
+  <!-- Radio list -->
+  <data name="RadioList_Empty" xml:space="preserve"><value>Nessuna stazione disponibile</value></data>
+  <data name="RadioList_Offline" xml:space="preserve"><value>● Off Line</value></data>
+  <data name="RadioList_DeleteStation" xml:space="preserve"><value>Elimina stazione</value></data>
+  <data name="RadioList_ConfirmDeleteMessage" xml:space="preserve"><value>Vuoi eliminare "{0}"?</value></data>
+  <data name="RadioList_SeedPrompt" xml:space="preserve"><value>Nessuna stazione selezionata. Vuoi aggiungerne qualcuna di prova?</value></data>
+
+  <!-- Schedule -->
+  <data name="Schedule_Empty" xml:space="preserve"><value>Nessun palinsesto disponibile</value></data>
+  <data name="Schedule_Now" xml:space="preserve"><value>● ORA</value></data>
+
+  <!-- Settings -->
+  <data name="Settings_Section_Playback" xml:space="preserve"><value>RIPRODUZIONE</value></data>
+  <data name="Settings_StartWithFavorite" xml:space="preserve"><value>Avvia con la stazione preferita</value></data>
+  <data name="Settings_StartWithFavorite_Hint" xml:space="preserve"><value>Se non c'è una stazione preferita viene caricata la prima della lista</value></data>
+  <data name="Settings_Section_Theme" xml:space="preserve"><value>TEMA</value></data>
+  <data name="Settings_ThemePreference" xml:space="preserve"><value>Preferenza tema</value></data>
+  <data name="Settings_Save" xml:space="preserve"><value>Salva impostazioni</value></data>
+  <data name="Settings_Section_Diagnostics" xml:space="preserve"><value>DIAGNOSTICA</value></data>
+  <data name="Settings_ResetData" xml:space="preserve"><value>Ripristina dati di default</value></data>
+  <data name="Settings_ResetData_Hint" xml:space="preserve"><value>Cancella tutte le stazioni e i dati di seed, poi li reinserisce con i valori definiti nel codice.</value></data>
+  <data name="Settings_ResetDatabase" xml:space="preserve"><value>Reset database</value></data>
+  <data name="Settings_SendCrashes" xml:space="preserve"><value>Invia i crash allo sviluppatore</value></data>
+  <data name="Settings_SendCrashes_Hint" xml:space="preserve"><value>Se attivo, i crash dell'app vengono inviati automaticamente per aiutare la diagnosi. La modifica richiede il riavvio dell'app.</value></data>
+  <data name="Settings_SendTestCrash" xml:space="preserve"><value>Invia crash report di test</value></data>
+  <data name="Settings_Section_Info" xml:space="preserve"><value>INFO</value></data>
+  <data name="Settings_AppVersion" xml:space="preserve"><value>Versione app</value></data>
+  <data name="Settings_DbVersion" xml:space="preserve"><value>Versione DB</value></data>
+  <data name="Settings_UpdateRequired" xml:space="preserve"><value>Aggiornamento richiesto</value></data>
+  <data name="Settings_VisitSite" xml:space="preserve"><value>Visita il sito</value></data>
+  <data name="Settings_Copyright" xml:space="preserve"><value>© RadioE45 — Tutti i diritti riservati</value></data>
+  <data name="Settings_Msg_DbReset" xml:space="preserve"><value>Database ripristinato ai valori di default</value></data>
+  <data name="Settings_Msg_SettingsSaved" xml:space="preserve"><value>Impostazioni salvate</value></data>
+  <data name="Settings_Msg_TestCrashSent" xml:space="preserve"><value>Crash report di test inviato</value></data>
+  <data name="Settings_Alert_CrashInactive_Title" xml:space="preserve"><value>Crash report non attivo</value></data>
+  <data name="Settings_Alert_CrashInactive_Message" xml:space="preserve"><value>Attiva il crash reporting, salva le impostazioni e riavvia l'app prima di inviare un test.</value></data>
+  <data name="Settings_Alert_Restart_Title" xml:space="preserve"><value>Riavvio richiesto</value></data>
+  <data name="Settings_Alert_Restart_Message" xml:space="preserve"><value>La modifica all'invio dei crash verrà applicata al prossimo avvio dell'app.</value></data>
+
+  <!-- Add station -->
+  <data name="AddStation_Title" xml:space="preserve"><value>Aggiungi stazione</value></data>
+  <data name="AddStation_UrlPlaceholder" xml:space="preserve"><value>es: radioe45.ddns.net</value></data>
+  <data name="AddStation_Search" xml:space="preserve"><value>Cerca</value></data>
+  <data name="AddStation_Prompt" xml:space="preserve"><value>Inserisci l'indirizzo del server AzuraCast e premi Cerca</value></data>
+  <data name="AddStation_NoResults" xml:space="preserve"><value>Nessuna stazione trovata</value></data>
+  <data name="AddStation_AddSelected" xml:space="preserve"><value>Aggiungi selezionate ({0})</value></data>
+  <data name="AddStation_ServerError" xml:space="preserve"><value>Impossibile raggiungere il server. Controlla l'indirizzo.</value></data>
+
+  <!-- Common -->
+  <data name="Common_Yes" xml:space="preserve"><value>Sì</value></data>
+  <data name="Common_No" xml:space="preserve"><value>No</value></data>
+  <data name="Common_Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>Elimina</value></data>
+  <data name="Common_Cancel" xml:space="preserve"><value>Annulla</value></data>
+
+  <!-- Error prefixes (shown as "prefix: message") -->
+  <data name="Err_Init" xml:space="preserve"><value>Inizializzazione</value></data>
+  <data name="Err_Reconnect" xml:space="preserve"><value>Ripristino dopo connessione</value></data>
+  <data name="Err_NowPlaying" xml:space="preserve"><value>Aggiornamento now playing</value></data>
+  <data name="Err_LoadStations" xml:space="preserve"><value>Caricamento stazioni</value></data>
+  <data name="Err_RefreshStations" xml:space="preserve"><value>Aggiornamento stazioni</value></data>
+  <data name="Err_SearchStations" xml:space="preserve"><value>Ricerca stazioni</value></data>
+  <data name="Err_SaveStations" xml:space="preserve"><value>Salvataggio stazioni</value></data>
+  <data name="Err_LoadSchedule" xml:space="preserve"><value>Caricamento palinsesto</value></data>
+  <data name="Err_ResetDatabase" xml:space="preserve"><value>Reset database</value></data>
+  <data name="Err_DeleteStation" xml:space="preserve"><value>Eliminazione stazione</value></data>
+</root>

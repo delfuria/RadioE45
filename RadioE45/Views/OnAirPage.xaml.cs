@@ -10,10 +10,6 @@ public partial class OnAirPage : ContentPage
     private readonly IAudioService _audioService;
     private bool _isInitialized;
     private bool _isWideLayout = false;
-    private const double WideBreakpoint = 640;
-    private static bool IsDesktop =>
-        DeviceInfo.Current.Platform is { } p &&
-        (p == DevicePlatform.WinUI || p == DevicePlatform.MacCatalyst);
 
     public OnAirPage(OnAirViewModel viewModel, IAudioService audioService)
     {
@@ -21,6 +17,13 @@ public partial class OnAirPage : ContentPage
         _viewModel = viewModel;
         _audioService = audioService;
         BindingContext = viewModel;
+
+#if ANDROID
+        // On Android playback runs in the Media3 service (single session). Detach the hidden
+        // MediaElement before it's rendered so its handler never spins up a second, competing
+        // MediaSession — removing it here (pre-render) prevents the handler from being created.
+        (AudioPlayer.Parent as Microsoft.Maui.Controls.Layout)?.Remove(AudioPlayer);
+#endif
     }
 
     protected override async void OnAppearing()
@@ -31,7 +34,6 @@ public partial class OnAirPage : ContentPage
         {
             _isInitialized = true;
             _audioService.Initialize(AudioPlayer);
-            _audioService.SetVolume(_viewModel.Volume);
             await _viewModel.InitializeAsync();
         }
 
@@ -46,11 +48,17 @@ public partial class OnAirPage : ContentPage
     protected override void OnSizeAllocated(double width, double height)
     {
         base.OnSizeAllocated(width, height);
-        if (width <= 0) return;
+        if (width <= 0 || height <= 0) return;
 
-        _viewModel.ArtworkHeight = (width > height && height <= 600) ? 150 : 300;
+        // Size the cover from the space actually available so the whole player (cover, track info,
+        // next-track card and the playback controls) fits on screen without scrolling. In portrait
+        // the cover gets whatever height is left after the fixed elements below it; in landscape the
+        // two-column layout puts the cover beside the controls, so it's bound to the shorter side.
+        _viewModel.ArtworkHeight = width > height
+            ? Math.Clamp(height - 220, 140, 300)
+            : Math.Clamp(height - 410, 150, 300);
 
-        bool shouldBeWide = IsDesktop ? width >= WideBreakpoint : width > height;
+        bool shouldBeWide = width > height;
         if (shouldBeWide == _isWideLayout) return;
         _isWideLayout = shouldBeWide;
 
@@ -71,10 +79,5 @@ public partial class OnAirPage : ContentPage
             Grid.SetColumn(RightPanel, 0);
         }
 
-    }
-
-    private void OnVolumeChanged(object sender, ValueChangedEventArgs e)
-    {
-        _viewModel.SetVolumeCommand.Execute(e.NewValue);
     }
 }

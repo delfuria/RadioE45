@@ -106,12 +106,16 @@ public static class MauiProgram
             .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(3));
 
         // Singletons — survive navigation
+ #if ANDROID
+        // Android playback runs entirely in the Media3 MediaLibraryService (RadioPlaybackService);
+        // the UI drives it via a MediaController. No UI MediaElement, no separate now-playing service.
+        builder.Services.AddSingleton<IAudioService, Media3AudioService>();
+ #else
         builder.Services.AddSingleton<IAudioService, AudioService>();
+ #endif
         builder.Services.AddSingleton<RemoteArtworkLoader>();
  #if IOS || MACCATALYST
         builder.Services.AddSingleton<IPlatformNowPlayingService, IosNowPlayingService>();
- #elif ANDROID
-        builder.Services.AddSingleton<IPlatformNowPlayingService, AndroidNowPlayingService>();
  #else
         builder.Services.AddSingleton<IPlatformNowPlayingService, NullPlatformNowPlayingService>();
  #endif

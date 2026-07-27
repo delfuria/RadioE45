@@ -20,7 +20,7 @@ public sealed class DatabaseLoggerProvider : ILoggerProvider
     }
 
     public ILogger CreateLogger(string categoryName) =>
-        new DatabaseLogger(categoryName, this);
+        new DatabaseLogger(this);
 
     internal void TryEnqueue(Log log)
     {
@@ -40,7 +40,7 @@ public sealed class DatabaseLoggerProvider : ILoggerProvider
     public void Dispose() => _channel.Writer.TryComplete();
 }
 
-internal sealed class DatabaseLogger(string categoryName, DatabaseLoggerProvider provider) : ILogger
+internal sealed class DatabaseLogger(DatabaseLoggerProvider provider) : ILogger
 {
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
     public bool IsEnabled(LogLevel logLevel) => logLevel != LogLevel.None;

@@ -8,19 +8,9 @@
 		<meta-data
 			android:name="com.google.android.gms.car.application"
 			android:resource="@xml/automotive_app_desc" />
-		<service android:name="com.radioe45.app.AudioLifecycleService" android:stopWithTask="false" />
-		<service
-			android:name="com.radioe45.app.AndroidMediaNotificationService"
-			android:enabled="true"
-			android:exported="false"
-			android:foregroundServiceType="mediaPlayback" />
-		<service
-			android:name="com.radioe45.app.RadioMediaBrowserService"
-			android:exported="true">
-			<intent-filter>
-				<action android:name="android.media.browse.MediaBrowserService" />
-			</intent-filter>
-		</service>
+		<!-- RadioPlaybackService (Media3 MediaLibraryService) is declared via [Service]/[IntentFilter]
+		     attributes on the class; it serves Android Auto, the media notification and legacy
+		     MediaBrowser clients from a single ExoPlayer session. -->
 	</application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />

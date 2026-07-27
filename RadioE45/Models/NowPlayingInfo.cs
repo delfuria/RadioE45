@@ -1,3 +1,5 @@
+using RadioE45.Services.Localization;
+
 namespace RadioE45.Models;
 
 public class NowPlayingInfo : IEquatable<NowPlayingInfo>, IComparable<NowPlayingInfo>
@@ -18,7 +20,7 @@ public class NowPlayingInfo : IEquatable<NowPlayingInfo>, IComparable<NowPlaying
     public static NowPlayingInfo Empty => new()
     {
         Artist = "—",
-        Title = "In attesa...",
+        Title = LocalizationResourceManager.Instance["OnAir_Waiting"],
         LastUpdated = DateTime.MinValue
     };
 

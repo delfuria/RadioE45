@@ -32,6 +32,9 @@ public class AudioService : IAudioService
     public event EventHandler<bool>? PlaybackStateChanged;
     public event EventHandler<string?>? ErrorOccurred;
     public event EventHandler<AzuraStation>? StreamOpened;
+    // Station changes on iOS/Windows always originate in the phone UI, so this fires in lock-step with
+    // PlayAsync; it exists to satisfy IAudioService uniformly (Android raises it for car-driven changes).
+    public event EventHandler<AzuraStation>? StationChanged;
 
     public AudioService(IHttpClientFactory httpClientFactory, IPlatformNowPlayingService platformNowPlayingService, ILogger<AudioService> logger)
     {
@@ -91,6 +94,7 @@ public class AudioService : IAudioService
         _currentStation = station;
         _shouldBePlaying = true;
         _bufferingStartedAt = DateTime.MinValue;
+        StationChanged?.Invoke(this, station);
         RenewReconnectCts();
         Interlocked.Exchange(ref _reconnectGuard, 0);
         TryQueueReconnect();

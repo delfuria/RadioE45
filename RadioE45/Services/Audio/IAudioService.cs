@@ -14,6 +14,12 @@ public interface IAudioService
     event EventHandler<AzuraStation> StreamOpened;
 
     /// <summary>
+    /// Raised when the current station changes from outside the phone UI — e.g. Seek-to-Next/Previous
+    /// from Android Auto, the car display or a steering-wheel button. Lets the UI mirror the selection.
+    /// </summary>
+    event EventHandler<AzuraStation> StationChanged;
+
+    /// <summary>
     /// Called once from OnAirPage to attach the MediaElement from the visual tree.
     /// </summary>
     void Initialize(MediaElement mediaElement);

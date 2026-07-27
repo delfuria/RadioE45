@@ -1,15 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">net10.0-windows10.0.19041.0</TargetFrameworks>
-
-        <!-- Note for MacCatalyst:
-        The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
-        When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
-        The Mac App Store will NOT accept apps with ONLY maccatalyst-arm64 indicated;
-        either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
-        <!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
+        <!-- ANDROID-ONLY BRANCH (android-auto-media3)
+             This head ships to Google Play with Android Auto + Bluetooth MediaSession (Media3).
+             iOS / MacCatalyst / Windows targets were removed on purpose — their platform code under
+             Platforms/{iOS,MacCatalyst,Windows} simply isn't compiled while the only TFM is Android. -->
+        <TargetFrameworks>net10.0-android</TargetFrameworks>
 
         <OutputType>Exe</OutputType>
         <RootNamespace>RadioE45</RootNamespace>
@@ -18,66 +14,41 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
-        <MtouchLink>None</MtouchLink>
         <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
-        
+
         <!-- Display name -->
         <ApplicationTitle>Radio E45</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.radioe45.app</ApplicationId>
-        <!-- Microsoft Store requires the Partner Center package identity name -->
-        <ApplicationId Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">42646Delfo.RadioE45</ApplicationId>
 
-        <!-- Versions -->
-        <!-- Android versionCode must be >= 1; Windows Store requires revision = 0, so we split by platform -->
+        <!-- Versions — Android versionCode must be >= 1 -->
         <ApplicationDisplayVersion>0.23</ApplicationDisplayVersion>
-        <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">0</ApplicationVersion>
-        <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">23</ApplicationVersion>
+        <ApplicationVersion>23</ApplicationVersion>
 
-        <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
-        <WindowsPackageType>None</WindowsPackageType>
-
-        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
-        <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+        <SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
     </PropertyGroup>
-
-    <!--
-        CARPLAY ENTITLEMENT — DISABILITATO (nessun certificato Apple CarPlay disponibile)
-        ══════════════════════════════════════════════════════════════════════════════════
-        Questo entitlement causa il fallimento del code signing su device fisico se il
-        provisioning profile non include "com.apple.developer.carplay-audio".
-
-        COME RIPRISTINARE (una volta ottenuto il certificato Apple CarPlay):
-          1. Richiedere l'entitlement CarPlay su https://developer.apple.com/contact/carplay/
-          2. Dopo l'approvazione, rigenerare il provisioning profile su developer.apple.com
-             includendo la capability "CarPlay Audio".
-          3. Scaricare il nuovo profilo e installarlo in Xcode (o tramite dotnet).
-          4. Decommentare il blocco <ItemGroup> qui sotto.
-          5. Decommentare anche i target InjectCarPlaySceneManifest e ResignAppBundle più in basso.
-          6. Decommentare UIApplicationSceneManifest in Platforms/iOS/Info.plist.
-    <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
-        <CustomEntitlements Include="com.apple.developer.carplay-audio"
-                            Type="Boolean"
-                            Value="true"
-                            Visible="false" />
-    </ItemGroup>
-    -->
 
     <ItemGroup>
         <!-- Escludi il template dei segreti dalla compilazione -->
         <Compile Remove="AppSecrets.template.cs" />
     </ItemGroup>
 
+    <!-- Localization RESX: neutral = Italian, plus .en / .pl satellites. Declared explicitly so the
+         MAUI SDK's Resources/ handling doesn't skip them; logical name resolves to
+         RadioE45.Resources.Strings.AppResources, matching LocalizationResourceManager. -->
+    <ItemGroup>
+        <EmbeddedResource Update="Resources\Strings\*.resx">
+            <Generator></Generator>
+        </EmbeddedResource>
+    </ItemGroup>
+
     <ItemGroup>
         <!-- App Icon -->
-        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg1.svg" Color="#ffffff" />
 
         <!-- Splash Screen -->
-        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#ffffff" BaseSize="128,128" />
 
         <!-- Images -->
         <MauiImage Include="Resources\Images\*" />
@@ -94,83 +65,67 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.70" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.80" />
         <PackageReference Include="CommunityToolkit.Maui" Version="14.2.0" />
         <PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="10.0.0" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-        <PackageReference Include="Microsoft.Maui.Core" Version="10.0.70" />
-        <PackageReference Include="Refit" Version="11.0.1" />
-        <PackageReference Include="Refit.HttpClientFactory" Version="11.0.1" />
-        <PackageReference Include="Sentry.Maui" Version="6.6.0"
-                          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'" />
-        <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
-        <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.11" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.8" />
+        <PackageReference Include="Microsoft.Maui.Core" Version="10.0.80" />
+        <PackageReference Include="Refit" Version="13.1.0" />
+        <PackageReference Include="Refit.HttpClientFactory" Version="13.1.0" />
+        <PackageReference Include="Sentry.Maui" Version="6.6.0" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.9" />
+
+        <!-- SQLite — sqlite-net-pcl 1.11.x rides the SQLitePCLRaw 3.x stack whose native lib is
+             SourceGear.sqlite3 3.53.3 (SQLite 3.53.3). The old 2.1.x stack (bundle_green +
+             lib.e_sqlite3.android 2.1.11) was flagged by GHSA-2m69-gcr7-jv3q (NU1903); the 3.x line
+             has no vulnerable .android RID package, which clears the advisory. -->
+        <PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.4" />
     </ItemGroup>
 
-    <!-- iOS App Store signing -->
-    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
-        <CodesignKey>Apple Distribution: Stefano Del Furia (VZWMBQL256)</CodesignKey>
-        <CodesignProvision>Radio E45 AppStore</CodesignProvision>
-        <CodesignEntitlements>Platforms/iOS/Entitlements.plist</CodesignEntitlements>
-    </PropertyGroup>
-
-    <!-- Mac App Store signing — create the provisioning profile on developer.apple.com first -->
-    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
-        <CodesignKey>Apple Distribution: Stefano Del Furia (VZWMBQL256)</CodesignKey>
-        <CodesignProvision>Radio E45 Mac AppStore</CodesignProvision>
-        <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.plist</CodesignEntitlements>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' AND '$(Configuration)' == 'Debug'">
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     </PropertyGroup>
 
-    <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <ItemGroup>
         <PackageReference Include="Xamarin.AndroidX.LocalBroadcastManager" Version="1.1.0.24" />
+
+        <!-- AndroidX Media3 / ExoPlayer — single MediaLibraryService for Android Auto / Bluetooth (keep 1.10.x family in sync) -->
+        <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.10.1.2" />
+        <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer" Version="1.10.1.1" />
+        <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Hls" Version="1.10.1.1" />
+        <PackageReference Include="Xamarin.AndroidX.Media3.Common" Version="1.10.1.1" />
+
+        <!-- Media3 pulls Xamarin.AndroidX.Core up to 1.19.0.1 (core-ktx classes merged into core);
+             pin Core.Ktx to the matching version so it's an empty stub, else R8 dexing fails with
+             duplicate androidx.core.animation.AnimatorKt (core 1.19 vs core-ktx 1.16). -->
+        <PackageReference Include="Xamarin.AndroidX.Core.Core.Ktx" Version="1.19.0.1" />
+
+        <!-- ═══════════════════════════════════════════════════════════════════════════════
+             HARD-PINNED TRANSITIVE ANDROIDX VERSIONS (fixes NU1608 dependency conflicts)
+             ───────────────────────────────────────────────────────────────────────────────
+             Media3 pulls Lifecycle.Common/Runtime up to 2.11.0.1 and Collection.Jvm up to
+             1.6.0.1, but the MAUI stack still references the 2.9.2.1 / 1.5.x Lifecycle & Collection
+             satellite packages, whose version ranges (< 2.9.3 / < 1.5.1) then clash. NuGet emits
+             NU1608 for every mismatched satellite. Pin the ENTIRE Lifecycle + Collection family to
+             the same resolved versions so the graph is internally consistent. Keep these in lock-step
+             with the Media3 family above whenever bumping versions. -->
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.Common" Version="2.11.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.Common.Java8" Version="2.11.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.11.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" Version="2.11.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.11.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core" Version="2.11.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" Version="2.11.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.11.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" Version="2.11.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.11.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.Process" Version="2.11.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.Collection.Jvm" Version="1.6.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.Collection.Ktx" Version="1.6.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.SavedState" Version="1.5.0.1" />
+        <PackageReference Include="Xamarin.AndroidX.SavedState.SavedState.Ktx" Version="1.5.0.1" />
     </ItemGroup>
 
-    <!--
-        CARPLAY POST-BUILD TARGETS — DISABILITATI (nessun certificato Apple CarPlay disponibile)
-        ══════════════════════════════════════════════════════════════════════════════════════════
-        Questi due target servono SOLO per il simulatore iOS, dove la firma è ad-hoc e può
-        essere alterata dopo il build. Su device fisico con certificato reale NON vanno usati:
-        modificare Info.plist dopo il codesign del certificato Distribution/Development
-        invaliderebbe la firma e impedirebbe l'installazione.
-
-        InjectCarPlaySceneManifest: MAUI rimuove UIApplicationSceneManifest durante il merge
-        dei plist; lo script lo re-inietta nel bundle compilato dopo ogni build iOS.
-
-        ResignAppBundle: il simulatore iOS 26 verifica la firma del bundle prima di creare
-        sessioni CarPlay; re-firma ad-hoc il bundle dopo l'iniezione.
-
-        COME RIPRISTINARE (solo per test su simulatore, dopo aver ottenuto il certificato):
-          1. Completare prima i passi 1-4 descritti nel blocco CustomEntitlements qui sopra.
-          2. Decommentare entrambi i target qui sotto.
-          3. Verificare che scripts/inject-carplay-manifest.sh e scripts/resign-app-bundle.sh
-             siano presenti e abbiano i permessi di esecuzione (chmod +x).
-          4. Su device fisico i target non servono: la firma del certificato Distribution
-             viene applicata da MAUI in fase di build e non va alterata post-build.
-
-    <Target Name="InjectCarPlaySceneManifest"
-            AfterTargets="Build"
-            Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
-        <Exec Command="bash &quot;$(MSBuildProjectDirectory)/../scripts/inject-carplay-manifest.sh&quot; &quot;$(OutputPath)&quot; &quot;$(MSBuildProjectName)&quot;" />
-    </Target>
-
-    <Target Name="ResignAppBundle"
-            AfterTargets="InjectCarPlaySceneManifest"
-            Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
-        <Exec Command="bash &quot;$(MSBuildProjectDirectory)/../scripts/resign-app-bundle.sh&quot; &quot;$(OutputPath)&quot; &quot;$(MSBuildProjectName)&quot;" />
-    </Target>
-    -->
-
-    <!-- Rider looks for $(AssemblyName).app but MAUI names the bundle after ApplicationTitle.
-         This symlink bridges the gap without changing either name. -->
-    <Target Name="CreateRiderBundleAlias" AfterTargets="Build"
-            Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
-        <Exec Command="ln -sfn &quot;Radio E45.app&quot; &quot;$(OutputPath)RadioE45.app&quot;" />
-    </Target>
-    
 </Project>

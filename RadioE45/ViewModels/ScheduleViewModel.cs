@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
+using RadioE45.Services.Localization;
 using RadioE45.Services.Radio;
 
 namespace RadioE45.ViewModels;
@@ -20,7 +21,7 @@ public partial class ScheduleViewModel : BaseViewModel
         Logger = logger;
         _scheduleService = scheduleService;
         _onAirViewModel = onAirViewModel;
-        Title = "Palinsesto";
+        Title = LocalizationResourceManager.Instance["Tab_Schedule"];
     }
 
     [RelayCommand]
@@ -37,6 +38,6 @@ public partial class ScheduleViewModel : BaseViewModel
         {
             List<PlaylistSchedule> items = await _scheduleService.GetScheduleAsync(station);
             ScheduleItems = new ObservableCollection<PlaylistSchedule>(items);
-        }, "Caricamento palinsesto");
+        }, LocalizationResourceManager.Instance["Err_LoadSchedule"]);
     }
 }
