@@ -181,7 +181,11 @@ Alongside the rebuild, some general improvements were made:
 
 In short: the three problems that motivated the rebuild — no controls in AA, no cover art, no next/prev — are resolved in the field, not just on the emulator.
 
-**⚠️ One crash observed during in-car testing — cause not yet identified.** It happened once; diagnosis is under way. Until it is understood, **this branch must not be published to Google Play**: treat it as ready for review and testing, not for release.
+**⚠️ One crash observed during in-car testing — mitigated, not yet proven fixed.** The system record (`adb shell dumpsys activity exit-info com.radioe45.app`) places it at **2026-07-21, 07:08:21**, with `reason=5 APP CRASH(NATIVE)` and `status=11` (SIGSEGV): the app had sat idle overnight and died the next morning, on getting into the car. The stack trace is no longer retrievable (the tombstone rotated out of dropbox after ~3 days); Sentry remains as a source.
+
+A native SIGSEGV in a MAUI app after hours of idling is the signature of a **JNI peer collected by the GC** while only the Java side still holds a reference. Three `Java.Lang.Object` instances were being created inline and handed to Java with no managed root — among them the session's `LibraryCallback`, which is precisely the object Android Auto calls `OnGetLibraryRoot` on **when it connects to the car**. All three are now rooted (a dedicated field, or a `GCHandle` for the lifetime of the future).
+
+**To be honest: without a reproduction this cannot be proven to have been the cause** — what has been removed is a class of causes consistent with every observed fact. Until there is confirmation in the field, **this branch must not be published to Google Play**: treat it as ready for review and testing, not for release.
 
 **Still to confirm:**
 - audio focus in interruption scenarios: navigation prompt (ducking) and incoming call (pause + auto-resume) — see §8.1;

@@ -7,10 +7,24 @@ namespace RadioE45.Services.Logging;
 
 public sealed class DatabaseLoggerProvider : ILoggerProvider
 {
-    private readonly Channel<Log> _channel = Channel.CreateUnbounded<Log>(
-        new UnboundedChannelOptions { SingleReader = true });
+    // Rows kept in the Logs table, and how often the consumer prunes down to that. Trimming used to
+    // happen only at startup, so a long-running session (radio in a car easily runs for hours) grew
+    // the table without bound. The channel is bounded for the same reason: if the writer ever
+    // outruns SQLite, drop the oldest lines rather than the process' memory.
+    private const int MaxRows = 1000;
+    private const int TrimEveryInserts = 250;
+    private const int QueueCapacity = 5000;
+
+    private readonly Channel<Log> _channel = Channel.CreateBounded<Log>(
+        new BoundedChannelOptions(QueueCapacity)
+        {
+            SingleReader = true,
+            FullMode = BoundedChannelFullMode.DropOldest,
+        });
+
     private volatile bool _enabled;
     private ILogRepository? _repository;
+    private int _insertsSinceTrim;
 
     public void Enable(ILogRepository repository)
     {
@@ -32,7 +46,16 @@ public sealed class DatabaseLoggerProvider : ILoggerProvider
     {
         await foreach (Log log in _channel.Reader.ReadAllAsync())
         {
-            try { await _repository!.InsertAsync(log); }
+            try
+            {
+                await _repository!.InsertAsync(log);
+
+                if (++_insertsSinceTrim >= TrimEveryInserts)
+                {
+                    _insertsSinceTrim = 0;
+                    await _repository.TrimToLastAsync(MaxRows);
+                }
+            }
             catch { }
         }
     }

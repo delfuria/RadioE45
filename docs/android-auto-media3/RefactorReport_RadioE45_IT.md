@@ -181,7 +181,11 @@ Insieme alla ricostruzione sono stati introdotti alcuni miglioramenti generali:
 
 In sintesi: i tre problemi che hanno motivato la ricostruzione — nessun controllo in AA, niente copertine, next/prev assenti — risultano risolti sul campo, non solo in emulatore.
 
-**⚠️ Un crash osservato durante i test in auto — causa non ancora individuata.** Si è verificato una volta; la diagnosi è in corso. Finché non è chiarito, **il branch non va pubblicato su Google Play**: va considerato pronto per la valutazione e per i test, non per il rilascio.
+**⚠️ Un crash osservato durante i test in auto — mitigato, non ancora dimostrato risolto.** Il registro di sistema (`adb shell dumpsys activity exit-info com.radioe45.app`) lo colloca il **2026-07-21 alle 07:08:21**, con `reason=5 APP CRASH(NATIVE)` e `status=11` (SIGSEGV): app rimasta inattiva tutta la notte, crash la mattina, al momento di salire in auto. Lo stack trace non è più recuperabile (il tombstone è ruotato fuori dal dropbox dopo ~3 giorni); resta Sentry come fonte.
+
+Un SIGSEGV nativo in un'app MAUI dopo ore di inattività è la firma tipica di un **peer JNI raccolto dal GC** mentre solo il lato Java ne conserva il riferimento. Tre oggetti `Java.Lang.Object` venivano creati inline e passati a Java senza alcuna radice gestita — fra questi il `LibraryCallback` della sessione, cioè proprio l'oggetto su cui Android Auto chiama `OnGetLibraryRoot` **al momento della connessione all'auto**. Ora tutti e tre sono ancorati (campo dedicato o `GCHandle` per la durata della future).
+
+**Onestamente: senza una riproduzione non è dimostrabile che questa fosse la causa** — è stata eliminata una classe di cause compatibile con tutti i fatti osservati. Finché non c'è una conferma sul campo, **il branch non va pubblicato su Google Play**: va considerato pronto per la valutazione e per i test, non per il rilascio.
 
 **Ancora da confermare:**
 - audio focus negli scenari di interruzione: prompt di navigazione (ducking) e chiamata in arrivo (pausa + ripresa automatica) — vedi §8.1;

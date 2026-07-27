@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
 using RadioE45.Services.Radio;
+using System.Runtime.InteropServices;
 
 namespace RadioE45;
 
@@ -36,6 +37,12 @@ public sealed class RadioPlaybackService : MediaLibraryService
     private MediaLibrarySession? _session;
     private ILogger<RadioPlaybackService>? _logger;
     private PlayerListener? _playerListener;
+
+    // Held on purpose: once handed to the session builder, the callback is referenced only from Java.
+    // Without a managed root its peer can be collected while the session is idle, and the next call
+    // from a controller (Android Auto binding on connect, for one) lands on a dead peer — a native
+    // SIGSEGV rather than a managed exception.
+    private LibraryCallback? _libraryCallback;
 
     // Per-station stream-URL fallback: mediaId → index into the ordered candidate list. Advanced when
     // ExoPlayer errors on the current URL, reset to 0 once a URL plays (see PlayerListener). Concurrent
@@ -68,7 +75,8 @@ public sealed class RadioPlaybackService : MediaLibraryService
             _playerListener = new PlayerListener(this);
             _player?.AddListener(_playerListener);
 
-            MediaLibrarySession.Builder builder = new MediaLibrarySession.Builder(this, _player, new LibraryCallback(this))!;
+            _libraryCallback = new LibraryCallback(this);
+            MediaLibrarySession.Builder builder = new MediaLibrarySession.Builder(this, _player, _libraryCallback)!;
 
             // Tapping the media notification, lock-screen or the Android Auto card should open the app.
             PendingIntent? sessionActivity = BuildSessionActivity();
@@ -110,6 +118,9 @@ public sealed class RadioPlaybackService : MediaLibraryService
 
         _player?.Release();
         _player = null;
+
+        // Safe to drop only now: the session that held it from Java is gone.
+        _libraryCallback = null;
 
         base.OnDestroy();
     }
@@ -290,10 +301,15 @@ public sealed class RadioPlaybackService : MediaLibraryService
     {
         private readonly Func<Task<Java.Lang.Object?>> _work;
 
+        // While the future is pending, the adapter holds this resolver from Java only. Pin the peer
+        // for exactly that window so a GC mid-flight can't pull the ground out from under it.
+        private GCHandle _root;
+
         public TaskResolver(Func<Task<Java.Lang.Object?>> work) => _work = work;
 
         public Java.Lang.Object? AttachCompleter(CallbackToFutureAdapter.Completer? completer)
         {
+            _root = GCHandle.Alloc(this);
             _ = CompleteAsync(completer!);
             return "RadioE45-future";
         }
@@ -308,6 +324,11 @@ public sealed class RadioPlaybackService : MediaLibraryService
             catch (Exception ex)
             {
                 completer.SetException(Java.Lang.Throwable.FromException(ex));
+            }
+            finally
+            {
+                if (_root.IsAllocated)
+                    _root.Free();
             }
         }
     }

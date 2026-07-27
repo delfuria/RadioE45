@@ -24,6 +24,10 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IPlaye
     private AzuraStation? _currentStation;
     private bool _streamOpenedRaised;
 
+    // The connect callback is handed to a Guava future and referenced from Java only. This service is
+    // a DI singleton, so parking it in a field keeps the peer alive until the future has fired.
+    private Java.Lang.Runnable? _connectCallback;
+
     // Last metadata pushed to the session, to skip redundant ReplaceMediaItem calls (the now-playing
     // poll fires every ~10s and the progress path more often, but the song rarely changes).
     private string? _lastArtist;
@@ -91,10 +95,21 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IPlaye
         if (c is null)
             return;
 
+        // Unlike the async paths this doesn't go through WithControllerAsync, so it has to guard
+        // itself: the controller may already be released, and an unhandled throw here would take
+        // the app down rather than just fail the command.
         void Stop()
         {
-            c.Stop();
-            c.ClearMediaItems();
+            try
+            {
+                c.Stop();
+                c.ClearMediaItems();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Media3AudioService: StopImmediate on a dead controller");
+                InvalidateController();
+            }
         }
 
         if (MainThread.IsMainThread)
@@ -156,14 +171,24 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IPlaye
         MediaController? c = _controller;
         _controller = null;
         _connectTask = null;
+        _connectCallback = null;
 
         if (c is null)
             return;
 
+        // Runs during teardown (OnAirViewModel), by which point the session may be long gone —
+        // and a throw on the way out is the worst possible time for one.
         void Release()
         {
-            c.RemoveListener(this);
-            c.Release();
+            try
+            {
+                c.RemoveListener(this);
+                c.Release();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Media3AudioService: controller release during shutdown failed");
+            }
         }
 
         if (MainThread.IsMainThread)
@@ -234,7 +259,7 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IPlaye
             var future = new MediaController.Builder(_context, token).BuildAsync()!;
             TaskCompletionSource<MediaController> tcs = new();
 
-            future.AddListener(new Java.Lang.Runnable(() =>
+            _connectCallback = new Java.Lang.Runnable(() =>
             {
                 try
                 {
@@ -247,7 +272,9 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IPlaye
                     _logger.LogError(ex, "Media3AudioService: failed to connect MediaController");
                     tcs.TrySetException(ex);
                 }
-            }), ContextCompat.GetMainExecutor(_context)!);
+            });
+
+            future.AddListener(_connectCallback, ContextCompat.GetMainExecutor(_context)!);
 
             return tcs.Task;
         });
@@ -256,17 +283,69 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IPlaye
         return controller;
     }
 
+    // The session dies with RadioPlaybackService (see its OnTaskRemoved), which can happen while this
+    // service is still holding a controller — typically after a long idle spell with playback stopped.
+    // A cached controller is therefore not proof of a live session: check, and rebuild once if it went
+    // away, so the first command after the app has been sitting around still reaches the player.
     private async Task WithControllerAsync(Action<MediaController> action)
     {
-        try
+        for (int attempt = 0; attempt < 2; attempt++)
         {
-            MediaController controller = await ConnectAsync();
-            await MainThread.InvokeOnMainThreadAsync(() => action(controller));
+            try
+            {
+                MediaController controller = await ConnectAsync();
+
+                if (!controller.IsConnected)
+                {
+                    InvalidateController();
+                    continue;
+                }
+
+                await MainThread.InvokeOnMainThreadAsync(() => action(controller));
+                return;
+            }
+            catch (Exception ex)
+            {
+                InvalidateController();
+                if (attempt == 1)
+                {
+                    _logger.LogError(ex, "Media3AudioService: controller command failed");
+                    return;
+                }
+            }
         }
-        catch (Exception ex)
+
+        _logger.LogWarning("Media3AudioService: controller unavailable, command dropped");
+    }
+
+    // Drop the cached controller so the next command reconnects from scratch. Releasing the stale one
+    // is best-effort: it is already half-dead, and throwing here would defeat the point.
+    private void InvalidateController()
+    {
+        MediaController? stale = _controller;
+        _controller = null;
+        _connectTask = null;
+
+        if (stale is null)
+            return;
+
+        void Release()
         {
-            _logger.LogError(ex, "Media3AudioService: controller command failed");
+            try
+            {
+                stale.RemoveListener(this);
+                stale.Release();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Media3AudioService: releasing a stale controller failed");
+            }
         }
+
+        if (MainThread.IsMainThread)
+            Release();
+        else
+            MainThread.BeginInvokeOnMainThread(Release);
     }
 
     private MediaItem StationItem(AzuraStation station, MediaMetadata? metadata)

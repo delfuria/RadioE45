@@ -151,18 +151,44 @@ public class AzuraStationCatalog : IAzuraStationCatalog
         _offlineTimerCts?.Cancel();
     }
 
+    // Backoff schedule. A station that is briefly unreachable comes back within the first few ticks;
+    // one that stays down would otherwise have us polling every 15 s forever, waking the device and
+    // burning data for hours. After the last tick we stop entirely — OnConnectivityChanged restarts
+    // the check when the network actually changes, which is the only moment worth retrying anyway.
+    private const int OfflineFastTicks = 4;      // 15 s apart  → first minute
+    private const int OfflineMediumTicks = 6;    // 60 s apart  → next six minutes
+    private const int OfflineMaxTicks = 20;      // then 5 min apart, ~1 h in total
+
     private async Task RunOfflineCheckLoopAsync(PeriodicTimer timer, CancellationToken ct)
     {
         try
         {
+            int tick = 0;
             while (await timer.WaitForNextTickAsync(ct))
             {
+                tick++;
                 await RefreshOfflineStationsAsync(ct);
+
                 if (_stations.All(s => s.IsOnline))
                 {
                     _logger.LogInformation("All stations online — stopping offline check timer");
                     break;
                 }
+
+                if (tick >= OfflineMaxTicks)
+                {
+                    _logger.LogInformation(
+                        "Stations still offline after {Ticks} checks — stopping the timer, will retry on connectivity change",
+                        tick);
+                    break;
+                }
+
+                timer.Period = tick switch
+                {
+                    < OfflineFastTicks => TimeSpan.FromSeconds(15),
+                    < OfflineFastTicks + OfflineMediumTicks => TimeSpan.FromSeconds(60),
+                    _ => TimeSpan.FromMinutes(5),
+                };
             }
         }
         catch (OperationCanceledException) { }
