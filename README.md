@@ -21,6 +21,19 @@ Cross-platform .NET MAUI 10 app for AzuraCast webradio streaming.
 - Apple CarPlay support (iOS)
 - Android Auto support
 
+## Documentation
+All documentation lives in [`docs/`](docs/):
+
+| Topic | Path |
+|-------|------|
+| Android Auto / Bluetooth → Media3 rebuild (IT + EN) | [`docs/android-auto-media3/`](docs/android-auto-media3/README.md) |
+| CarPlay / Android Auto — original implementation | [`docs/carplay/`](docs/carplay/android-auto-carplay-implementation.md) |
+| UI localization (`.resx`) | [`docs/LOCALIZATION.md`](docs/LOCALIZATION.md) |
+| Store distribution | [`docs/STORE-DISTRIBUTION.md`](docs/STORE-DISTRIBUTION.md) · [`docs/store-descriptions.md`](docs/store-descriptions.md) |
+| Version bump procedure | [`docs/VERSION-BUMP.md`](docs/VERSION-BUMP.md) |
+| Windows build notes | [`docs/WINDOWS-README.md`](docs/WINDOWS-README.md) |
+| Tester distribution | [`docs/tester/distribuzione-tester.md`](docs/tester/distribuzione-tester.md) |
+
 ## Configured stations
 | Name | Stream |
 |------|--------|
