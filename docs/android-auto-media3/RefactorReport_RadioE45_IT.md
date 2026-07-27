@@ -181,6 +181,8 @@ Insieme alla ricostruzione sono stati introdotti alcuni miglioramenti generali:
 
 In sintesi: i tre problemi che hanno motivato la ricostruzione — nessun controllo in AA, niente copertine, next/prev assenti — risultano risolti sul campo, non solo in emulatore.
 
+**⚠️ Un crash osservato durante i test in auto — causa non ancora individuata.** Si è verificato una volta; la diagnosi è in corso. Finché non è chiarito, **il branch non va pubblicato su Google Play**: va considerato pronto per la valutazione e per i test, non per il rilascio.
+
 **Ancora da confermare:**
 - audio focus negli scenari di interruzione: prompt di navigazione (ducking) e chiamata in arrivo (pausa + ripresa automatica) — vedi §8.1;
 - comportamento su unità di bordo di marche/modelli diversi da quella provata.
@@ -224,8 +226,9 @@ Netto rispetto a `HEAD`: circa +372 / −1166 righe (una semplificazione netta d
 
 ## 10. Prossimi passi consigliati
 
-1. **Audio focus negli scenari di interruzione** — l'unica area di test rimasta aperta: prompt di navigazione (ducking) e chiamata in arrivo (pausa + ripresa automatica), in auto e via BT.
-2. **Ripulire i dati delle stazioni** — URL di stream pubblici (evitare indirizzi LAN in `ListenUrl`).
+1. **Individuare la causa del crash visto in auto** (§7) — prerequisito a qualsiasi pubblicazione. Sentry è già integrato nell'app: il primo posto dove guardare è l'evento corrispondente, con lo stack trace.
+2. **Audio focus negli scenari di interruzione** — prompt di navigazione (ducking) e chiamata in arrivo (pausa + ripresa automatica), in auto e via BT.
+3. **Ripulire i dati delle stazioni** — URL di stream pubblici (evitare indirizzi LAN in `ListenUrl`).
 4. **Percorso di produzione AA:** rilascio su Google Play + domanda ad Android for Cars (categoria media).
 5. Opzionale: content style per AA, completamento della localizzazione IT.
 

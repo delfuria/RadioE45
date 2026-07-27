@@ -181,6 +181,8 @@ Alongside the rebuild, some general improvements were made:
 
 In short: the three problems that motivated the rebuild — no controls in AA, no cover art, no next/prev — are resolved in the field, not just on the emulator.
 
+**⚠️ One crash observed during in-car testing — cause not yet identified.** It happened once; diagnosis is under way. Until it is understood, **this branch must not be published to Google Play**: treat it as ready for review and testing, not for release.
+
 **Still to confirm:**
 - audio focus in interruption scenarios: navigation prompt (ducking) and incoming call (pause + auto-resume) — see §8.1;
 - behaviour on head units from makes/models other than the one tested.
@@ -224,8 +226,9 @@ Net vs `HEAD`: roughly +372 / −1166 lines (a net simplification of the Android
 
 ## 10. Recommended next steps
 
-1. **Audio focus in interruption scenarios** — the only test area still open: navigation prompt (ducking) and incoming call (pause + auto-resume), in the car and over BT.
-2. **Clean up station data** — public stream URLs (avoid LAN addresses in `ListenUrl`).
+1. **Track down the cause of the crash seen in the car** (§7) — a prerequisite to any publication. Sentry is already wired into the app: the matching event, with its stack trace, is the first place to look.
+2. **Audio focus in interruption scenarios** — navigation prompt (ducking) and incoming call (pause + auto-resume), in the car and over BT.
+3. **Clean up station data** — public stream URLs (avoid LAN addresses in `ListenUrl`).
 4. **Production AA path:** release on Google Play + apply to Android for Cars (media category).
 5. Optional: content style for AA, finishing the IT localization.
 
