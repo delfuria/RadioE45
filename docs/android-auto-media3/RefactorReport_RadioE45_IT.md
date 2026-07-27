@@ -173,13 +173,19 @@ Insieme alla ricostruzione sono stati introdotti alcuni miglioramenti generali:
 - notifica Media3 con le azioni "Seek to previous / Pause / Seek to next" (foreground, categoria transport);
 - il livello AVRCP/BT registra il player (`MediaPlayerList: Adding wrapped media player`).
 
-**Non validato (richiede uno stream raggiungibile e/o un AVD Automotive):**
-- audio reale end-to-end e metadati live del brano (`ReplaceMediaItem`) su uno stream pubblico;
-- l'effettivo cambio next/prev all'ascolto;
-- l'intera UI di Android Auto su un **AVD Automotive** (`Automotive_1408p_landscape_with_Google_Play` / `Automotive_Ultrawide`);
-- Bluetooth in un'auto reale (AVRCP + audio focus durante navigazione/chiamate).
+**Validato in auto reale — telefono fisico + Android Auto sull'unità di bordo (aggiornamento 2026-07-27):**
+- **interfaccia Android Auto sullo schermo dell'auto**: navigazione della lista stazioni, avvio della riproduzione dal browse, copertine e metadati, comandi play/pausa;
+- **next/prev dall'auto** con la UI del telefono che resta sincronizzata (nessuna sovrascrittura dei metadati da parte della stazione precedente);
+- **Bluetooth / AVRCP**: display dell'unità di bordo e pulsanti al volante;
+- **riproduzione in background** e prosecuzione dopo la chiusura dell'app.
 
-> Nota di test: l'`ListenUrl` di default dall'API è l'indirizzo LAN `192.168.1.100:8000` — irraggiungibile dall'emulatore, quindi per un test completo serve un URL di stream pubblico (da cui la priorità di `StreamUrlFallback`).
+In sintesi: i tre problemi che hanno motivato la ricostruzione — nessun controllo in AA, niente copertine, next/prev assenti — risultano risolti sul campo, non solo in emulatore.
+
+**Ancora da confermare:**
+- audio focus negli scenari di interruzione: prompt di navigazione (ducking) e chiamata in arrivo (pausa + ripresa automatica) — vedi §8.1;
+- comportamento su unità di bordo di marche/modelli diversi da quella provata.
+
+> Nota di test: l'`ListenUrl` di default dall'API è l'indirizzo LAN `192.168.1.100:8000` — irraggiungibile dall'emulatore, quindi per i test serve un URL di stream pubblico (da cui la priorità di `StreamUrlFallback`).
 
 ---
 
@@ -218,9 +224,8 @@ Netto rispetto a `HEAD`: circa +372 / −1166 righe (una semplificazione netta d
 
 ## 10. Prossimi passi consigliati
 
-1. **Test su AVD Automotive** (Android Auto): browse root → stazioni, Play dal browse, metadati + copertina, next/prev dall'auto.
-2. **Test su dispositivo reale in auto/BT** con uno stream pubblico: audio focus (navigazione, chiamate), pulsanti al volante, display della head unit.
-3. **Ripulire i dati delle stazioni** — URL di stream pubblici (evitare indirizzi LAN in `ListenUrl`).
+1. **Audio focus negli scenari di interruzione** — l'unica area di test rimasta aperta: prompt di navigazione (ducking) e chiamata in arrivo (pausa + ripresa automatica), in auto e via BT.
+2. **Ripulire i dati delle stazioni** — URL di stream pubblici (evitare indirizzi LAN in `ListenUrl`).
 4. **Percorso di produzione AA:** rilascio su Google Play + domanda ad Android for Cars (categoria media).
 5. Opzionale: content style per AA, completamento della localizzazione IT.
 

@@ -173,13 +173,19 @@ Alongside the rebuild, some general improvements were made:
 - Media3 notification with "Seek to previous / Pause / Seek to next" actions (foreground, transport category);
 - the AVRCP/BT layer registers the player (`MediaPlayerList: Adding wrapped media player`).
 
-**Not validated (requires a reachable stream and/or an Automotive AVD):**
-- real end-to-end audio and live song metadata (`ReplaceMediaItem`) on a public stream;
-- actual next/prev switching by ear;
-- the full Android Auto UI on an **Automotive AVD** (`Automotive_1408p_landscape_with_Google_Play` / `Automotive_Ultrawide`);
-- Bluetooth in a real car (AVRCP + audio focus during navigation/calls).
+**Validated in a real car — physical phone + Android Auto on the head unit (update 2026-07-27):**
+- **Android Auto interface on the car screen**: station list browsing, starting playback from the browse tree, cover art and metadata, play/pause commands;
+- **next/prev from the car**, with the phone UI staying in sync (no metadata overwrite from the previous station);
+- **Bluetooth / AVRCP**: head unit display and steering-wheel buttons;
+- **background playback**, continuing after the app is closed.
 
-> Test note: the default `ListenUrl` from the API is the LAN address `192.168.1.100:8000` — unreachable from the emulator, so a public stream URL is needed for a full test (hence the priority of `StreamUrlFallback`).
+In short: the three problems that motivated the rebuild — no controls in AA, no cover art, no next/prev — are resolved in the field, not just on the emulator.
+
+**Still to confirm:**
+- audio focus in interruption scenarios: navigation prompt (ducking) and incoming call (pause + auto-resume) — see §8.1;
+- behaviour on head units from makes/models other than the one tested.
+
+> Test note: the default `ListenUrl` from the API is the LAN address `192.168.1.100:8000` — unreachable from the emulator, so a public stream URL is needed for testing (hence the priority of `StreamUrlFallback`).
 
 ---
 
@@ -218,9 +224,8 @@ Net vs `HEAD`: roughly +372 / −1166 lines (a net simplification of the Android
 
 ## 10. Recommended next steps
 
-1. **Test on an Automotive AVD** (Android Auto): browse root → stations, Play from browse, metadata + artwork, next/prev from the car.
-2. **Test on a real device in a car/BT** with a public stream: audio focus (navigation, calls), steering-wheel buttons, head-unit display.
-3. **Clean up station data** — public stream URLs (avoid LAN addresses in `ListenUrl`).
+1. **Audio focus in interruption scenarios** — the only test area still open: navigation prompt (ducking) and incoming call (pause + auto-resume), in the car and over BT.
+2. **Clean up station data** — public stream URLs (avoid LAN addresses in `ListenUrl`).
 4. **Production AA path:** release on Google Play + apply to Android for Cars (media category).
 5. Optional: content style for AA, finishing the IT localization.
 
