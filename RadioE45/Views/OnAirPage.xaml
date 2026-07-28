@@ -13,6 +13,7 @@
         <toolkit:InvertedBoolConverter x:Key="InvertBool" />
         <toolkit:BoolToObjectConverter x:Key="FavoriteIconConverter" TrueObject="heart_filled.png" FalseObject="heart_outline.png" />
         <toolkit:BoolToObjectConverter x:Key="PlayPauseTextConverter" x:TypeArguments="x:String" TrueObject="⏸" FalseObject="▶" />
+        <toolkit:BoolToObjectConverter x:Key="MuteTextConverter" x:TypeArguments="x:String" TrueObject="🔇" FalseObject="🔊" />
     </ContentPage.Resources>
 
     <RefreshView
@@ -243,6 +244,28 @@
                             Command="{Binding NextStationCommand}" />
 
                     </HorizontalStackLayout>
+
+                    <!-- Volume -->
+                    <Grid Margin="24,18,24,0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <Button
+                            Grid.Column="0"
+                            Text="{Binding IsMuted, Converter={StaticResource MuteTextConverter}}"
+                            Command="{Binding ToggleMuteCommand}"
+                            BackgroundColor="Transparent"
+                            TextColor="{DynamicResource MutedText}"
+                            FontSize="14"
+                            HeightRequest="22"
+                            WidthRequest="28"
+                            Padding="0"
+                            BorderWidth="0"
+                            VerticalOptions="Center" />
+                        <Slider
+                            Grid.Column="1"
+                            Minimum="0"
+                            Maximum="1"
+                            Value="{Binding Volume}"
+                            ValueChanged="OnVolumeChanged" />
+                    </Grid>
 
                     <!-- Errore -->
                     <Label

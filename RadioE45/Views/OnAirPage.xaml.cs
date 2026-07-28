@@ -34,6 +34,7 @@ public partial class OnAirPage : ContentPage
         {
             _isInitialized = true;
             _audioService.Initialize(AudioPlayer);
+            _audioService.SetVolume(_viewModel.Volume);
             await _viewModel.InitializeAsync();
         }
 
@@ -51,12 +52,13 @@ public partial class OnAirPage : ContentPage
         if (width <= 0 || height <= 0) return;
 
         // Size the cover from the space actually available so the whole player (cover, track info,
-        // next-track card and the playback controls) fits on screen without scrolling. In portrait
-        // the cover gets whatever height is left after the fixed elements below it; in landscape the
-        // two-column layout puts the cover beside the controls, so it's bound to the shorter side.
+        // next-track card, the playback controls and the volume row) fits on screen without
+        // scrolling. In portrait the cover gets whatever height is left after the fixed elements
+        // below it; in landscape the two-column layout puts the cover beside the controls, so it's
+        // bound to the shorter side and the volume row costs it nothing.
         _viewModel.ArtworkHeight = width > height
             ? Math.Clamp(height - 220, 140, 300)
-            : Math.Clamp(height - 410, 150, 300);
+            : Math.Clamp(height - 458, 150, 300);
 
         bool shouldBeWide = width > height;
         if (shouldBeWide == _isWideLayout) return;
@@ -79,5 +81,10 @@ public partial class OnAirPage : ContentPage
             Grid.SetColumn(RightPanel, 0);
         }
 
+    }
+
+    private void OnVolumeChanged(object sender, ValueChangedEventArgs e)
+    {
+        _viewModel.SetVolumeCommand.Execute(e.NewValue);
     }
 }

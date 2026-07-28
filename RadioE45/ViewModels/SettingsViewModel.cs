@@ -15,6 +15,7 @@ namespace RadioE45.ViewModels;
 
 public partial class SettingsViewModel : BaseViewModel
 {
+    private readonly OnAirViewModel _onAirViewModel;
     private readonly IAppSettingsRepository _settingsRepo;
     private readonly IDatabaseService _databaseService;
     private AppSettings? _currentSettings;
@@ -25,6 +26,9 @@ public partial class SettingsViewModel : BaseViewModel
 #else
     public bool IsDebugBuild => false;
 #endif
+
+    [ObservableProperty]
+    public partial double Volume { get; set; } = 1.0;
 
     [ObservableProperty]
     public partial string ThemePreference { get; set; } = "Dark";
@@ -50,9 +54,10 @@ public partial class SettingsViewModel : BaseViewModel
     public bool IsCrashReportingAvailable => CrashReportingConfiguration.IsConfigured;
 #endif
 
-    public SettingsViewModel(IAppSettingsRepository settingsRepo, IDatabaseService databaseService, ILogger<SettingsViewModel> logger)
+    public SettingsViewModel(OnAirViewModel onAirViewModel, IAppSettingsRepository settingsRepo, IDatabaseService databaseService, ILogger<SettingsViewModel> logger)
     {
         Logger = logger;
+        _onAirViewModel = onAirViewModel;
         _settingsRepo = settingsRepo;
         _databaseService = databaseService;
         Title = "Impostazioni";
@@ -63,6 +68,9 @@ public partial class SettingsViewModel : BaseViewModel
     private async Task LoadSettingsAsync()
     {
         _currentSettings = await _settingsRepo.GetAsync();
+        // Volume: Preferences is the live value, kept up to date by the OnAir slider; the row stored
+        // in settings is only the last saved one and can be behind.
+        Volume = Preferences.Default.Get("player_volume", _currentSettings.Volume);
         ThemePreference = _currentSettings.ThemePreference;
         SeedVersion = (float) _currentSettings.SeedVersion;
         MustUpdate = _currentSettings.MustUpdate;
@@ -78,6 +86,14 @@ public partial class SettingsViewModel : BaseViewModel
         MarkChanged();
     }
     
+    // Route through the OnAir command so the slider on the player, the audio service and Preferences
+    // all move together — the two pages share one singleton view-model.
+    partial void OnVolumeChanged(double value)
+    {
+        _onAirViewModel.SetVolumeCommand.Execute(value);
+        MarkChanged();
+    }
+
     partial void OnStartWithFavoriteChanged(bool value) => MarkChanged();
 
     partial void OnCrashReportingEnabledChanged(bool value) => MarkChanged();
@@ -133,11 +149,13 @@ public partial class SettingsViewModel : BaseViewModel
         _currentSettings ??= new AppSettings();
         bool crashReportingChanged = _currentSettings.CrashReportingEnabled != CrashReportingEnabled;
 
+        _currentSettings.Volume = Volume;
         _currentSettings.ThemePreference = ThemePreference;
         _currentSettings.StartWithFavorite = StartWithFavorite;
         CrashReportingSettings.ApplyTo(_currentSettings, CrashReportingEnabled, consentRequested: true);
         await _settingsRepo.SaveAsync(_currentSettings);
         Preferences.Default.Set("theme_preference", ThemePreference);
+        Preferences.Default.Set("player_volume", Volume);
         CrashReportingSettings.SaveToPreferences(CrashReportingEnabled, consentRequested: true);
         _hasChanges = false;
         SaveSettingsCommand.NotifyCanExecuteChanged();

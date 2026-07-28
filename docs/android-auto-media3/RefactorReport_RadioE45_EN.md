@@ -77,7 +77,7 @@ The core of the rebuild. A `MediaLibraryService` containing:
 - **Next/Prev.** `OnSetMediaItems` expands a single station selection into the **full queue of all stations** positioned on the chosen one → Seek-to-Next/Previous from the car or steering wheel moves between stations.
 - **URI resolution.** Media3 strips the URI when media items cross the binder, so `OnAddMediaItems` re-resolves it from the catalog while **preserving** the "now playing" metadata sent by the controller.
 - **Stream-URL fallback.** Candidate list in the order `OnAirStreamUrl → StreamUrlFallback → HlsUrl → StreamUrl`. The public `StreamUrlFallback` (`https://{UrlBase}{StreamUrl}`) takes priority over the API's `ListenUrl`, which returns a LAN address (`192.168.1.100`) reachable only inside the station's network. On a playback error the service advances to the next candidate and retries; on success (`StateReady`) it resets the counter.
-- **Background playback.** `OnTaskRemoved`: when the user swipes the app off recents while playback is ongoing — **it keeps playing**; the service stops only when nothing is playing.
+- **Background playback.** Playing while the app is in the background (home button, screen off, another app in front) is the whole point of the service. Removing the app from recents, on the other hand, tears everything down — `OnTaskRemoved` stops the player and the service unconditionally; see **§4.9**, which also explains why the earlier "keeps playing after a swipe" behaviour was dropped.
 
 ### 4.2 `Media3AudioService` — the `IAudioService` implementation for the UI *(new file)*
 `Platforms/Android/Services/Media3AudioService.cs`
@@ -127,6 +127,8 @@ The entire old integration layer was removed — Media3 took over its role:
 - Control row: **⏮ previous · play/pause · ⏭ next** (the Stop button was removed).
 - `NextStationCommand` / `PreviousStationCommand` walk through `_catalog.Stations` (via `SelectStationAsync`).
 - The leftover `MediaElement` is removed from the visual tree on Android in the `OnAirPage` constructor (`#if ANDROID`), so it doesn't create a second, empty session.
+- **Volume control restored (2026-07-28)** in both of its original places: the mute button + slider row under the transport controls on `OnAirPage`, and the Volume card in `SettingsPage`. Both bind to the same singleton `OnAirViewModel`, so they stay in sync. On Android the value goes to `MediaController.Volume`, which scales the player output and is independent of the system stream volume — the same role the `MediaElement` volume plays on the other heads.
+- Mute is deliberately a **within-session** toggle: `SetVolume` never persists `0`. Muting moves the slider, whose `ValueChanged` reaches the very same command, so storing it would bring the app back **silent** after a restart while showing the "sound on" icon, with no obvious way out. The stored value is always the last audible one, which is also what unmute restores to.
 
 ### 4.8 NuGet packages / build *(change)*
 `RadioE45.csproj`
@@ -134,6 +136,30 @@ The entire old integration layer was removed — Media3 took over its role:
 - Added the Media3 family (consistent 1.10.x line): `Xamarin.AndroidX.Media3.Session` 1.10.1.2, `…Media3.ExoPlayer` / `…ExoPlayer.Hls` / `…Media3.Common` 1.10.1.1.
 - Media3 bumps `Xamarin.AndroidX.Core` to 1.19.x → a pin of `Xamarin.AndroidX.Core.Core.Ktx` = 1.19.0.1 is required (otherwise R8 reports a duplicate `androidx.core.animation.AnimatorKt`).
 - **Build note (Windows):** the branch is single-TFM (Android only) — do **not** pass `-p:TargetFrameworks` on `restore`/`build`.
+
+### 4.9 Closing the app closes playback *(change, 2026-07-28)*
+`Platforms/Android/Services/RadioPlaybackService.cs`, `Platforms/Android/MainActivity.cs`
+
+Until this change the foreground service outlived the UI: swiping the app off the recents list left the radio playing. That is an **Android-only** capability — iOS kills the audio session when the app is force-quit from the app switcher, and a Windows `MediaElement` dies with its window; neither platform can be made to behave otherwise. Closing the app now stops playback on Android too, so all three heads work the same way.
+
+- `OnTaskRemoved` stops the player, clears the queue and calls `StopSelf()` **unconditionally** (it previously did so only when nothing was playing).
+- `MainActivity.OnDestroy` covers the other exit — backing out of the app, or `Finish()` — guarded by `IsFinishing` so a rotation or process restart doesn't trigger it. It releases the `MediaController` **first**, then calls `StopService`. The order matters: the controller *is* the binding, and a bound service is not destroyed by `StopSelf`/`StopService`. Without releasing it the process stayed resident with the ExoPlayer still allocated — the opposite of what closing the app is supposed to do.
+
+**What you gain**
+
+- One behaviour across Android / iOS / Windows: one mental model, nothing to explain per platform.
+- No orphan notification, and no radio playing on from a phone the user believes they closed.
+- After closing, the process drops to `cch-empty` (verified with `dumpsys activity oom`) — first in line for reclamation, instead of a player sitting in RAM for hours.
+
+**What you lose**
+
+- Playback stops mid-drive if the app is swiped away on the phone.
+- Resuming with a Bluetooth / steering-wheel button after the app was closed no longer works: there is no session left to resume.
+- **Android Auto is unaffected** — AA binds the service itself through its intent filter and will start it independently of the phone UI.
+
+**Not affected: backgrounding.** Home button, screen off, switching to another app — the radio keeps playing exactly as before. Only *removing* the app stops it, which is precisely the complaint this change answers.
+
+Worth noting: this restores the original app's own behaviour. `AudioLifecycleService` with `stopWithTask="false"` stopped the stream in `OnTaskRemoved` — the initial analysis (`ResumeRadioE45`, §"what already worked well") called it "a good, mature solution". The Media3 rebuild had changed it; this brings it back.
 
 ---
 
@@ -158,7 +184,7 @@ Alongside the rebuild, some general improvements were made:
 | next/prev, artwork | Absent in AA | **Fixed** — full queue + `ArtworkUri` |
 | #1 / #2 | Fragile `startForeground` / FGS start from background | **Structurally resolved** — Media3 manages foreground and the notification itself |
 | #10 | No reaction to BT disconnect | **Fixed** — `SetHandleAudioBecomingNoisy(true)` |
-| #3 | Background audio continuity tied to the UI | **Fixed** — `OnTaskRemoved` + player in the service |
+| #3 | Background audio continuity tied to the UI | **Fixed** — player in the service; backgrounding keeps playing, while *closing* the app deliberately stops it (see §4.9) |
 | #9 | Audio focus (ducking/pause for navigation/calls) | **Partial** — Media3 handles audio focus via `AudioAttributes`, but **needs in-car verification** (see §8) |
 
 ---
@@ -177,9 +203,16 @@ Alongside the rebuild, some general improvements were made:
 - **Android Auto interface on the car screen**: station list browsing, starting playback from the browse tree, cover art and metadata, play/pause commands;
 - **next/prev from the car**, with the phone UI staying in sync (no metadata overwrite from the previous station);
 - **Bluetooth / AVRCP**: head unit display and steering-wheel buttons;
-- **background playback**, continuing after the app is closed.
+- **background playback** — and, at the time of that test, continuation after the app was closed. That last part was **deliberately removed on 2026-07-28**; see §4.9.
 
 In short: the three problems that motivated the rebuild — no controls in AA, no cover art, no next/prev — are resolved in the field, not just on the emulator.
+
+**Validated on `emulator-5554` (phone AVD, API 37) — closing behaviour and volume (2026-07-28):**
+- swiping the app off recents while playing → the media session disappears, `dumpsys activity services` reports **no service records**, the media notification is gone, and the process drops to `cch-empty`;
+- backing out of the app → identical teardown, through `MainActivity.OnDestroy`;
+- **home button → still `PLAYING(3)`** with the foreground notification intact: background playback is untouched;
+- the volume sliders on `OnAirPage` and in `SettingsPage` move together and reach the player; the value survives a process restart (`player_volume` in shared preferences);
+- a mute → unmute round-trip leaves the stored volume at the last audible value, and the app comes back at that volume after a restart.
 
 **⚠️ One crash observed during in-car testing — mitigated, not yet proven fixed.** The system record (`adb shell dumpsys activity exit-info com.radioe45.app`) places it at **2026-07-21, 07:08:21**, with `reason=5 APP CRASH(NATIVE)` and `status=11` (SIGSEGV): the app had sat idle overnight and died the next morning, on getting into the car. The stack trace is no longer retrievable (the tombstone rotated out of dropbox after ~3 days); Sentry remains as a source.
 

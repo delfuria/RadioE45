@@ -95,16 +95,26 @@ public sealed class RadioPlaybackService : MediaLibraryService
 
     public override MediaSession? OnGetSession(MediaSession.ControllerInfo? controllerInfo) => _session;
 
-    // When the user swipes the app off the recents list, keep playing in the background (radio /
-    // Android Auto UX — audio must survive the phone UI closing). Only tear down the foreground
-    // service + notification if playback isn't ongoing.
+    // Closing the app closes playback. Swiping the task off the recents list tears down the player,
+    // the session and the foreground service unconditionally — playback does not outlive the UI.
+    //
+    // This deliberately gives up Android's ability to keep a foreground service alive past task
+    // removal, so that all three heads behave the same: iOS force-quit kills the audio session and
+    // a Windows MediaElement dies with its window, neither platform being able to do otherwise.
+    // Backgrounding (home button, screen off, another app) is untouched and still plays.
     public override void OnTaskRemoved(Intent? rootIntent)
     {
         IExoPlayer? player = _player;
-        if (player is null || !player.PlayWhenReady || player.MediaItemCount == 0)
+        if (player is not null)
         {
-            StopSelf();
+            // Stop before StopSelf so audio and the notification go away in the same frame; leaving
+            // it to OnDestroy lets the stream run on for as long as the service takes to unwind.
+            player.PlayWhenReady = false;
+            player.Stop();
+            player.ClearMediaItems();
         }
+
+        StopSelf();
     }
 
     public override void OnDestroy()

@@ -31,6 +31,14 @@ public partial class OnAirViewModel : BaseViewModel
     public partial bool IsBuffering { get; set; }
 
     [ObservableProperty]
+    public partial double Volume { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsMuted { get; set; }
+
+    private double _preMuteVolume = 1.0;
+
+    [ObservableProperty]
     public partial string? ArtworkUrl { get; set; }
 
     [ObservableProperty]
@@ -71,6 +79,7 @@ public partial class OnAirViewModel : BaseViewModel
         _catalog = catalog;
         _settingsRepo = settingsRepo;
 
+        Volume = Preferences.Default.Get("player_volume", 1.0);
         Title = LocalizationResourceManager.Instance["Tab_OnAir"];
 
         _audioService.PlaybackStateChanged += OnPlaybackStateChanged;
@@ -215,6 +224,47 @@ public partial class OnAirViewModel : BaseViewModel
             NowPlayingInfo info = await _nowPlayingService.FetchOnceAsync(CurrentStation);
             ApplyNowPlayingInfo(info);
         }, LocalizationResourceManager.Instance["Err_NowPlaying"]);
+    }
+
+    // On Android the volume rides on the Media3 controller (MediaController.Volume), which scales the
+    // player output — it is independent of the system stream volume, exactly as the MediaElement
+    // volume was on the other heads. Preferences is the live source, read back by SettingsViewModel.
+    [RelayCommand]
+    private void SetVolume(double volume)
+    {
+        Volume = volume;
+        _audioService.SetVolume(volume);
+
+        // Zero is never persisted. Muting moves the slider, whose ValueChanged lands right here, so
+        // storing it would make mute survive a restart — the app would come back silent with the
+        // "sound on" icon and no obvious way out. Mute stays a within-session toggle; the stored
+        // volume is the last audible one, which is also what an unmute restores to.
+        if (volume <= 0)
+            return;
+
+        Preferences.Default.Set("player_volume", volume);
+        if (IsMuted)
+            IsMuted = false;
+    }
+
+    [RelayCommand]
+    private void ToggleMute()
+    {
+        if (IsMuted)
+        {
+            IsMuted = false;
+            double restore = _preMuteVolume > 0 ? _preMuteVolume : 1.0;
+            Volume = restore;
+            _audioService.SetVolume(restore);
+            Preferences.Default.Set("player_volume", restore);
+        }
+        else
+        {
+            _preMuteVolume = Volume > 0 ? Volume : 1.0;
+            IsMuted = true;
+            Volume = 0;
+            _audioService.SetVolume(0);
+        }
     }
 
     [RelayCommand]

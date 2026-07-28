@@ -81,6 +81,7 @@
   <data name="Settings_Section_Playback" xml:space="preserve"><value>PLAYBACK</value></data>
   <data name="Settings_StartWithFavorite" xml:space="preserve"><value>Start with favorite station</value></data>
   <data name="Settings_StartWithFavorite_Hint" xml:space="preserve"><value>If there is no favorite station, the first one in the list is loaded</value></data>
+  <data name="Settings_Volume" xml:space="preserve"><value>Volume</value></data>
   <data name="Settings_Section_Theme" xml:space="preserve"><value>THEME</value></data>
   <data name="Settings_ThemePreference" xml:space="preserve"><value>Theme preference</value></data>
   <data name="Settings_Save" xml:space="preserve"><value>Save settings</value></data>
