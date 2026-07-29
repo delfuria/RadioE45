@@ -207,10 +207,10 @@
                         HeightRequest="32"
                         WidthRequest="32" />
 
-                    <!-- Controlli playback: stazione precedente · play/pausa · stazione successiva -->
+                    <!-- Controlli playback: stazione precedente · play/pausa · stazione successiva · mute (solo mobile) -->
                     <HorizontalStackLayout
                         HorizontalOptions="Center"
-                        Spacing="24"
+                        Spacing="18"
                         Margin="0,16,0,0">
 
                         <Button
@@ -243,19 +243,36 @@
                             VerticalOptions="Center"
                             Command="{Binding NextStationCommand}" />
 
+                        <Button
+                            IsVisible="{OnPlatform Default=False, iOS=True, Android=True}"
+                            Text="{Binding IsMuted, Converter={StaticResource MuteTextConverter}}"
+                            Command="{Binding ToggleMuteCommand}"
+                            BackgroundColor="{DynamicResource CardElevated}"
+                            TextColor="{DynamicResource MutedText}"
+                            CornerRadius="26"
+                            HeightRequest="52"
+                            WidthRequest="52"
+                            FontSize="20"
+                            Padding="0"
+                            VerticalOptions="Center" />
+
                     </HorizontalStackLayout>
 
-                    <!-- Volume -->
-                    <Grid Margin="24,18,24,0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <!-- Volume (solo desktop: MacCatalyst/Windows) -->
+                    <Grid
+                        IsVisible="{OnPlatform Default=True, iOS=False, Android=False}"
+                        Margin="24,18,24,0"
+                        ColumnDefinitions="Auto,*"
+                        ColumnSpacing="8">
                         <Button
                             Grid.Column="0"
                             Text="{Binding IsMuted, Converter={StaticResource MuteTextConverter}}"
                             Command="{Binding ToggleMuteCommand}"
                             BackgroundColor="Transparent"
                             TextColor="{DynamicResource MutedText}"
-                            FontSize="14"
-                            HeightRequest="22"
-                            WidthRequest="28"
+                            FontSize="22"
+                            HeightRequest="36"
+                            WidthRequest="36"
                             Padding="0"
                             BorderWidth="0"
                             VerticalOptions="Center" />

@@ -36,7 +36,9 @@ public partial class OnAirViewModel : BaseViewModel
     [ObservableProperty]
     public partial bool IsMuted { get; set; }
 
+#if !ANDROID && !IOS
     private double _preMuteVolume = 1.0;
+#endif
 
     [ObservableProperty]
     public partial string? ArtworkUrl { get; set; }
@@ -79,7 +81,14 @@ public partial class OnAirViewModel : BaseViewModel
         _catalog = catalog;
         _settingsRepo = settingsRepo;
 
+        // Su telefono (iOS/Android) niente slider: i tasti fisici pilotano il volume reale via
+        // stream di sistema, il gain player resta sempre a piena scala tranne che in mute (vedi
+        // ToggleMute). Su MacCatalyst/Windows il gain applicativo resta indipendente, da slider.
+#if ANDROID || IOS
+        Volume = 1.0;
+#else
         Volume = Preferences.Default.Get("player_volume", 1.0);
+#endif
         Title = LocalizationResourceManager.Instance["Tab_OnAir"];
 
         _audioService.PlaybackStateChanged += OnPlaybackStateChanged;
@@ -253,14 +262,22 @@ public partial class OnAirViewModel : BaseViewModel
         if (IsMuted)
         {
             IsMuted = false;
+#if ANDROID || IOS
+            double restore = 1.0;
+#else
             double restore = _preMuteVolume > 0 ? _preMuteVolume : 1.0;
+#endif
             Volume = restore;
             _audioService.SetVolume(restore);
+#if !ANDROID && !IOS
             Preferences.Default.Set("player_volume", restore);
+#endif
         }
         else
         {
+#if !ANDROID && !IOS
             _preMuteVolume = Volume > 0 ? Volume : 1.0;
+#endif
             IsMuted = true;
             Volume = 0;
             _audioService.SetVolume(0);
