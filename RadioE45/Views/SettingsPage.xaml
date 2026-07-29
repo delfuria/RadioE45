@@ -39,23 +39,6 @@
                 </Grid>
             </Border>
 
-            <Border Style="{StaticResource CardBorder}" Margin="16,12,16,0">
-                <VerticalStackLayout Spacing="12">
-                    <Label
-                        Text="{loc:Translate Settings_Volume}"
-                        TextColor="{DynamicResource PrimaryText}"
-                        FontSize="15" />
-                    <Slider
-                        Minimum="0"
-                        Maximum="1"
-                        Value="{Binding Volume}" />
-                    <Label
-                        Text="{Binding Volume, StringFormat='{0:P0}'}"
-                        Style="{StaticResource CaptionLabel}"
-                        HorizontalTextAlignment="End" />
-                </VerticalStackLayout>
-            </Border>
-
             <!-- Sezione Tema -->
             <Label
                 Text="{loc:Translate Settings_Section_Theme}"

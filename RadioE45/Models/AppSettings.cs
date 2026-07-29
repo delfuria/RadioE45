@@ -7,7 +7,6 @@ public class AppSettings
 {
     [PrimaryKey]
     public int Id { get; set; } = 1;
-    public double Volume { get; set; } = 1.0;
     public string ThemePreference { get; set; } = "Dark";
     public bool MustUpdate { get; set; }
     public decimal SeedVersion { get; set; }
