@@ -2,6 +2,7 @@ using RadioE45.Models;
 using RadioE45.Services.CrashReporting;
 using RadioE45.Services;
 using RadioE45.Services.Data;
+using RadioE45.Services.Diagnostics;
 using RadioE45.Services.Logging;
 using RadioE45.Services.Radio;
 
@@ -26,7 +27,7 @@ public partial class App : Application
         ThemeService.Apply(pref);
 
         _ = InitializeDbLoggingAsync(settingsRepo, logRepo, dbLoggerProvider);
-        _ = stationCatalog.LoadAsync();
+        _ = LoadStationCatalogSafeAsync(stationCatalog);
 
         RequestedThemeChanged += (_, _) =>
         {
@@ -40,12 +41,34 @@ public partial class App : Application
         ILogRepository logRepo,
         DatabaseLoggerProvider dbLoggerProvider)
     {
-        AppSettings settings = await settingsRepo.GetAsync();
-        if (!settings.CrashReportingEnabled)
-            return;
+        try
+        {
+            AppSettings settings = await settingsRepo.GetAsync();
+            if (!settings.CrashReportingEnabled)
+                return;
 
-        await logRepo.TrimToLastAsync(1000);
-        dbLoggerProvider.Enable(logRepo);
+            await logRepo.TrimToLastAsync(1000);
+            dbLoggerProvider.Enable(logRepo);
+        }
+        catch (Exception ex)
+        {
+            // Task fire-and-forget (vedi costruttore): senza questo try/catch, un'eccezione
+            // qui (es. accesso al DB) resterebbe non osservata e abortirebbe l'intero processo
+            // al momento della garbage collection del Task fallito.
+            CrashDiagnostics.LogHandledException(nameof(InitializeDbLoggingAsync), ex);
+        }
+    }
+
+    private static async Task LoadStationCatalogSafeAsync(IAzuraStationCatalog stationCatalog)
+    {
+        try
+        {
+            await stationCatalog.LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            CrashDiagnostics.LogHandledException(nameof(LoadStationCatalogSafeAsync), ex);
+        }
     }
 
     protected override Window CreateWindow(IActivationState? activationState)

@@ -17,5 +17,14 @@
     <!-- Hardened Runtime: il runtime .NET scrive in memoria eseguibile -->
     <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
     <true/>
+
+    <!-- Hardened Runtime: senza questa entitlement dyld rifiuta di caricare dylib di terze
+         parti bundlate nell'app (es. libe_sqlite3.dylib da SQLitePCLRaw, o il crash-handler
+         nativo di Sentry) sotto alcuni profili di provisioning del Mac App Store/TestFlight,
+         con l'errore "security policy does not allow @ path expansion" — causa del crash
+         all'avvio su MacCatalyst. Vedi:
+         https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.security.cs.disable-library-validation -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
 </dict>
 </plist>

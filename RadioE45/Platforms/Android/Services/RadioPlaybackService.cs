@@ -7,9 +7,11 @@ using AndroidX.Media3.Common;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
 using Google.Common.Util.Concurrent;
+using Java.Interop;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
+using RadioE45.Services.Audio;
 using RadioE45.Services.Radio;
 using System.Runtime.InteropServices;
 
@@ -52,6 +54,8 @@ public sealed class RadioPlaybackService : MediaLibraryService
     private static IServiceProvider? Services => IPlatformApplication.Current?.Services;
 
     private static IAzuraStationCatalog? Catalog => Services?.GetService<IAzuraStationCatalog>();
+
+    private static IStreamUrlProber? Prober => Services?.GetService<IStreamUrlProber>();
 
     public override void OnCreate()
     {
@@ -206,6 +210,44 @@ public sealed class RadioPlaybackService : MediaLibraryService
 
     private static bool HasTitle(MediaMetadata? metadata)
         => metadata?.Title is { } title && !string.IsNullOrEmpty(title.ToString());
+
+    // Proactive resolution: probes every candidate URL and uses the first one that actually
+    // answers, instead of waiting for playback to fail (OnStreamError) before trying the next.
+    // Falls back to the first candidate if none of them answer — playback is still attempted
+    // rather than blocked, and OnStreamError keeps advancing from there on further failures.
+    // Only called for the station about to play right now (selection / voice search), not for
+    // the rest of the Android Auto queue, so a station tap doesn't wait on every other station.
+    private async Task<MediaItem> BuildStationItemProbedAsync(AzuraStation station, MediaMetadata? metadataOverride)
+    {
+        MediaMetadata metadata = HasTitle(metadataOverride) ? metadataOverride! : BuildStationMetadata(station);
+
+        IReadOnlyList<string> candidates = GetStreamCandidates(station);
+        string? winner = candidates.Count > 0 && Prober is { } prober
+            ? await prober.ProbeFirstReachableAsync(candidates.ToArray(), CancellationToken.None)
+            : null;
+
+        MediaItem.Builder item = new MediaItem.Builder()!
+            .SetMediaId(station.Id.ToString())!
+            .SetMediaMetadata(metadata)!;
+
+        string? url = winner ?? candidates.FirstOrDefault();
+        if (!string.IsNullOrEmpty(url))
+            item.SetUri(url);
+
+        // Remember which candidate actually won so a later playback error (OnStreamError) resumes
+        // the fallback chain from there instead of restarting at candidate 0.
+        int wonIndex = 0;
+        if (winner is not null)
+        {
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                if (candidates[i] == winner) { wonIndex = i; break; }
+            }
+        }
+        _streamAttempts[station.Id.ToString()] = wonIndex;
+
+        return item.Build()!;
+    }
 
     // ExoPlayer plays HLS and ICY/MP3 streams directly. StreamUrlFallback is built from the DB
     // (https://{UrlBase}{StreamUrl}, e.g. https://radioe45.ddns.net:8060/radio.mp3) and is the
@@ -386,7 +428,7 @@ public sealed class RadioPlaybackService : MediaLibraryService
             => FutureFromTask(async () =>
             {
                 IList<AzuraStation> stations = await GetStationsAsync();
-                List<MediaItem> resolved = ResolveItems(mediaItems!, stations);
+                List<MediaItem> resolved = await ResolveItemsAsync(mediaItems ?? new List<MediaItem>(), stations);
                 return JavaList(resolved);
             });
 
@@ -401,34 +443,96 @@ public sealed class RadioPlaybackService : MediaLibraryService
                 // A fresh station selection — start every station from its best URL again.
                 _service._streamAttempts.Clear();
 
-                string? selectedId = mediaItems.Count > 0
-                    ? (startIndex >= 0 && startIndex < mediaItems.Count ? mediaItems[startIndex] : mediaItems[0]).MediaId
+                MediaItem? requested = mediaItems.Count > 0
+                    ? (startIndex >= 0 && startIndex < mediaItems.Count ? mediaItems[startIndex] : mediaItems[0])
                     : null;
+                string? selectedId = requested?.MediaId;
+
+                // Voice search (Gemini / Google Assistant): Media3 has no OnPlayFromSearch — Assistant's
+                // legacy playFromSearch call arrives here as a MediaItem with no resolvable MediaId but a
+                // populated RequestMetadata.SearchQuery, translated internally by Media3 before reaching us.
+                if (requested is not null && (selectedId is null || stations.All(s => s.Id.ToString() != selectedId)))
+                {
+                    string? query = TryGetSearchQuery(requested);
+                    if (query is not null)
+                        selectedId = ResolveSearchStation(query, stations)?.Id.ToString() ?? selectedId;
+                }
 
                 List<MediaItem> queue = stations.Select(s => _service.BuildStationItem(s, playable: true)).ToList();
                 if (queue.Count == 0)
                 {
-                    queue = ResolveItems(mediaItems, stations);
+                    queue = await ResolveItemsAsync(mediaItems, stations);
                     return new MediaSession.MediaItemsWithStartPosition(queue, 0, startPositionMs);
                 }
 
                 int index = selectedId is null ? 0 : queue.FindIndex(i => i.MediaId == selectedId);
                 if (index < 0) index = 0;
 
+                // Proactively probe only the station about to play — probing the whole queue up
+                // front would add latency to every station tap. The rest of the queue keeps its
+                // lazily-resolved (candidate 0) URI and only gets probed reactively via OnStreamError.
+                AzuraStation? selectedStation = stations.FirstOrDefault(s => s.Id.ToString() == queue[index].MediaId);
+                if (selectedStation is not null)
+                    queue[index] = await _service.BuildStationItemProbedAsync(selectedStation, queue[index].MediaMetadata);
+
                 return new MediaSession.MediaItemsWithStartPosition(queue, index, startPositionMs);
             });
 
-        private List<MediaItem> ResolveItems(IList<MediaItem> mediaItems, IList<AzuraStation> stations)
+        private async Task<List<MediaItem>> ResolveItemsAsync(IList<MediaItem> mediaItems, IList<AzuraStation> stations)
         {
             List<MediaItem> resolved = new(mediaItems.Count);
             foreach (MediaItem item in mediaItems)
             {
                 AzuraStation? station = stations.FirstOrDefault(s => s.Id.ToString() == item.MediaId);
+
+                if (station is null)
+                {
+                    string? query = TryGetSearchQuery(item);
+                    if (query is not null)
+                        station = ResolveSearchStation(query, stations);
+                }
+
                 resolved.Add(station is not null
-                    ? _service.BuildStationItem(station, playable: true, metadataOverride: item.MediaMetadata)
+                    ? await _service.BuildStationItemProbedAsync(station, item.MediaMetadata)
                     : item);
             }
             return resolved;
+        }
+
+        // query.Length == 0 means a generic voice command ("play something"): prefer the
+        // favorite station, else the first one. A non-empty query matches by name, falling
+        // back to the first station if nothing matches, same tolerance as the generic case.
+        private AzuraStation? ResolveSearchStation(string query, IList<AzuraStation> stations)
+        {
+            IAzuraStationCatalog? catalog = Catalog;
+
+            if (query.Length == 0)
+                return catalog?.GetFavorite() ?? catalog?.GetFirst();
+
+            AzuraStation? match = stations.FirstOrDefault(s => s.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+            if (match is null)
+                _service._logger?.LogWarning("RadioPlaybackService: no station matches voice search '{Query}', using the first available", query);
+
+            return match ?? catalog?.GetFirst();
+        }
+
+        // Binding gap: MediaItem.Builder.SetRequestMetadata exists but there is no bound getter for
+        // the Java field MediaItem.requestMetadata, so it is read via Java reflection instead. Returns
+        // null when RequestMetadata isn't set (not a search request at all), empty string for a
+        // generic voice command, otherwise the search text.
+        private static string? TryGetSearchQuery(MediaItem item)
+        {
+            try
+            {
+                Java.Lang.Reflect.Field? field = item.Class?.GetField("requestMetadata");
+                Java.Lang.Object? raw = field?.Get(item);
+                MediaItem.RequestMetadata? metadata = raw?.JavaCast<MediaItem.RequestMetadata>();
+                return metadata?.SearchQuery;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         private static Java.Util.ArrayList JavaList(List<MediaItem> items)

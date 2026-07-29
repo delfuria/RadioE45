@@ -9,14 +9,13 @@ using Microsoft.Maui.LifecycleEvents;
 using RadioE45.Services.Audio;
 using RadioE45.Services.CrashReporting;
 using RadioE45.Services.Data;
+using RadioE45.Services.Diagnostics;
 using RadioE45.Services.Logging;
 using RadioE45.Services.Radio;
 using RadioE45.ViewModels;
 using RadioE45.Views;
 using Refit;
-#if !MACCATALYST
 using Sentry;
-#endif
 #if WINDOWS
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -29,6 +28,8 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
+        CrashDiagnostics.Initialize();
+
         MauiAppBuilder builder = MauiApp.CreateBuilder();
 
         builder
@@ -36,7 +37,6 @@ public static class MauiProgram
             .UseMauiCommunityToolkit()
             .UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false);
 
-#if !MACCATALYST
         if (CrashReportingConfiguration.IsConfigured
             && CrashReportingSettings.IsEnabled())
         {
@@ -59,7 +59,6 @@ public static class MauiProgram
                 });
             });
         }
-#endif
 
         builder.ConfigureLifecycleEvents(events =>
         {
@@ -106,6 +105,7 @@ public static class MauiProgram
             .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(3));
 
         // Singletons — survive navigation
+        builder.Services.AddSingleton<IStreamUrlProber, StreamUrlProber>();
  #if ANDROID
         // Android playback runs entirely in the Media3 MediaLibraryService (RadioPlaybackService);
         // the UI drives it via a MediaController. No UI MediaElement, no separate now-playing service.
@@ -118,6 +118,14 @@ public static class MauiProgram
         builder.Services.AddSingleton<IPlatformNowPlayingService, IosNowPlayingService>();
  #else
         builder.Services.AddSingleton<IPlatformNowPlayingService, NullPlatformNowPlayingService>();
+ #endif
+ #if ANDROID
+        // Not currently consumed on Android (RadioPlaybackService/ExoPlayer owns audio focus), but
+        // AudioService — the iOS/macOS/Windows engine — needs a real IAudioFocusManager wherever it
+        // is the active IAudioService; kept in lock-step with the Android implementation for parity.
+        builder.Services.AddSingleton<IAudioFocusManager, AudioFocusManager>();
+ #else
+        builder.Services.AddSingleton<IAudioFocusManager, NullAudioFocusManager>();
  #endif
         builder.Services.AddSingleton<INowPlayingService, NowPlayingService>();
         builder.Services.AddSingleton<IStationDetailService, StationDetailService>();

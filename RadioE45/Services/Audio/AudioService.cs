@@ -9,8 +9,9 @@ namespace RadioE45.Services.Audio;
 
 public class AudioService : IAudioService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IStreamUrlProber _streamUrlProber;
     private readonly IPlatformNowPlayingService _platformNowPlayingService;
+    private readonly IAudioFocusManager _audioFocusManager;
     private readonly ILogger<AudioService> _logger;
     private MediaElement? _mediaElement;
     private AzuraStation? _currentStation;
@@ -24,6 +25,7 @@ public class AudioService : IAudioService
     private bool _isShuttingDown;
     private bool _isConnectivitySubscribed;
     private CancellationTokenSource _reconnectCts = new();
+    private readonly object _ctsLock = new();
 
     public bool IsPlaying { get; private set; }
     public bool IsBuffering { get; private set; }
@@ -36,10 +38,11 @@ public class AudioService : IAudioService
     // PlayAsync; it exists to satisfy IAudioService uniformly (Android raises it for car-driven changes).
     public event EventHandler<AzuraStation>? StationChanged;
 
-    public AudioService(IHttpClientFactory httpClientFactory, IPlatformNowPlayingService platformNowPlayingService, ILogger<AudioService> logger)
+    public AudioService(IStreamUrlProber streamUrlProber, IPlatformNowPlayingService platformNowPlayingService, IAudioFocusManager audioFocusManager, ILogger<AudioService> logger)
     {
-        _httpClientFactory = httpClientFactory;
+        _streamUrlProber = streamUrlProber;
         _platformNowPlayingService = platformNowPlayingService;
+        _audioFocusManager = audioFocusManager;
         _logger = logger;
     }
     
@@ -89,6 +92,12 @@ public class AudioService : IAudioService
         if (_mediaElement is null)
             return;
 
+        if (!_audioFocusManager.RequestFocus())
+        {
+            _logger.LogWarning("Audio focus denied — playback blocked");
+            return;
+        }
+
         _logger.LogDebug("Start radio streaming...");
 
         _currentStation = station;
@@ -113,7 +122,7 @@ public class AudioService : IAudioService
         _logger.LogDebug("Pause station streaming...");
 
         _shouldBePlaying = false;
-        _reconnectCts.Cancel();
+        CancelReconnect();
         Interlocked.Exchange(ref _reconnectGuard, 0);
         StopWatchdog();
 
@@ -132,6 +141,12 @@ public class AudioService : IAudioService
     {
         if (_mediaElement is null || _currentStation is null)
             return Task.CompletedTask;
+
+        if (!_audioFocusManager.RequestFocus())
+        {
+            _logger.LogWarning("Audio focus denied — resume blocked");
+            return Task.CompletedTask;
+        }
 
         _logger.LogDebug("Resume station streaming...");
 
@@ -153,7 +168,7 @@ public class AudioService : IAudioService
         _logger.LogDebug("Stop station streaming...");
 
         _shouldBePlaying = false;
-        _reconnectCts.Cancel();
+        CancelReconnect();
         Interlocked.Exchange(ref _reconnectGuard, 0);
         _currentStation = null;
         StopWatchdog();
@@ -167,6 +182,7 @@ public class AudioService : IAudioService
             mediaElement.MetadataArtworkUrl = string.Empty;
         });
 
+        _audioFocusManager.AbandonFocus();
         _platformNowPlayingService.Clear();
     }
 
@@ -176,10 +192,11 @@ public class AudioService : IAudioService
     public void StopImmediate()
     {
         _shouldBePlaying = false;
-        _reconnectCts.Cancel();
+        CancelReconnect();
         Interlocked.Exchange(ref _reconnectGuard, 0);
         _currentStation = null;
         StopWatchdog();
+        _audioFocusManager.AbandonFocus();
 
         _logger.LogDebug("Stop immediate station streaming...");
 
@@ -217,6 +234,7 @@ public class AudioService : IAudioService
             return;
 
         double clamped = Math.Clamp(volume, 0.0, 1.0);
+        _audioFocusManager.NotifyVolumeChanged(clamped);
         MainThread.BeginInvokeOnMainThread(() => mediaElement.Volume = clamped);
     }
 
@@ -263,7 +281,7 @@ public class AudioService : IAudioService
         if (candidates.Length == 0)
             return;
 
-        string? winner = await ProbeFirstReachableAsync(candidates, ct);
+        string? winner = await _streamUrlProber.ProbeFirstReachableAsync(candidates, ct);
 
         if (winner is null)
         {
@@ -280,63 +298,6 @@ public class AudioService : IAudioService
         });
 
         StreamOpened?.Invoke(this, station);
-    }
-
-    // Probes all candidate URLs in parallel and returns the first reachable one.
-    // Remaining probes are cancelled as soon as a winner is found.
-    private async Task<string?> ProbeFirstReachableAsync(string[] urls, CancellationToken ct)
-    {
-        using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-
-        List<Task<string?>> tasks = urls.Select(url => ProbeUrlAsync(url, probeCts.Token)).ToList();
-
-        while (tasks.Count > 0)
-        {
-            Task<string?> done = await Task.WhenAny(tasks);
-            tasks.Remove(done);
-
-            string? result = await done;
-            if (result is not null)
-            {
-                probeCts.Cancel();
-                return result;
-            }
-        }
-
-        return null;
-    }
-
-    private async Task<string?> ProbeUrlAsync(string url, CancellationToken ct)
-    {
-        try
-        {
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(3));
-
-            HttpClient client = _httpClientFactory.CreateClient("AzuraCast");
-            using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
-
-            if (response.IsSuccessStatusCode)
-            {
-                _logger.LogDebug("Stream probe OK: {Url}", url);
-                return url;
-            }
-
-            _logger.LogWarning("Stream probe: HTTP {Status} for {Url}", (int)response.StatusCode, url);
-            return null;
-        }
-        catch (OperationCanceledException)
-        {
-            if (!ct.IsCancellationRequested)
-                _logger.LogWarning("Stream probe timed out: {Url}", url);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Stream probe failed for {Url}", url);
-            return null;
-        }
     }
 
     private void StartWatchdog()
@@ -404,7 +365,7 @@ public class AudioService : IAudioService
             return;
         }
 
-        var ct = _reconnectCts.Token;
+        var ct = CurrentReconnectToken();
         _logger.LogDebug("Try reconnect...");
 
         await TryOpenStreamAsync(_currentStation, _mediaElement, ct);
@@ -461,9 +422,22 @@ public class AudioService : IAudioService
 
     private void RenewReconnectCts()
     {
-        _reconnectCts.Cancel();
-        _reconnectCts.Dispose();
-        _reconnectCts = new CancellationTokenSource();
+        lock (_ctsLock)
+        {
+            _reconnectCts.Cancel();
+            _reconnectCts.Dispose();
+            _reconnectCts = new CancellationTokenSource();
+        }
+    }
+
+    private void CancelReconnect()
+    {
+        lock (_ctsLock) { _reconnectCts.Cancel(); }
+    }
+
+    private CancellationToken CurrentReconnectToken()
+    {
+        lock (_ctsLock) { return _reconnectCts.Token; }
     }
 
     private bool TryQueueReconnect()
@@ -485,8 +459,11 @@ public class AudioService : IAudioService
 
         _isShuttingDown = true;
         _shouldBePlaying = false;
-        _reconnectCts.Cancel();
-        _reconnectCts.Dispose();
+        lock (_ctsLock)
+        {
+            _reconnectCts.Cancel();
+            _reconnectCts.Dispose();
+        }
         _currentStation = null;
         _bufferingStartedAt = DateTime.MinValue;
         IsPlaying = false;
@@ -521,6 +498,7 @@ public class AudioService : IAudioService
             mediaElement.MetadataArtworkUrl = string.Empty;
         }
 
+        _audioFocusManager.AbandonFocus();
         _platformNowPlayingService.Clear();
     }
 }
