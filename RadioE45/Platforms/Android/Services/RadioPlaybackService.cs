@@ -76,6 +76,15 @@ public sealed class RadioPlaybackService : MediaLibraryService
                 .SetWakeMode(C.WakeModeNetwork)!
                 .Build();
 
+            // Wrap around the station list instead of stopping at its ends. With the default
+            // REPEAT_MODE_OFF the player drops SKIP_TO_PREVIOUS from the session actions on the
+            // first station and SKIP_TO_NEXT on the last, so Android Auto and the steering-wheel
+            // buttons grey out one direction — with two stations that means one of the two is
+            // always dead. REPEAT_MODE_ALL makes ExoPlayer wrap on its own and keeps both actions
+            // advertised at every position; nothing else has to track indices.
+            if (_player is not null)
+                _player.RepeatMode = BasePlayer.InterfaceConsts.RepeatModeAll;
+
             _playerListener = new PlayerListener(this);
             _player?.AddListener(_playerListener);
 
