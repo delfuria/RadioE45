@@ -76,7 +76,7 @@
   <data name="RadioList_SeedPrompt" xml:space="preserve"><value>No stations selected. Do you want to add some sample ones?</value></data>
 
   <data name="Schedule_Empty" xml:space="preserve"><value>No schedule available</value></data>
-  <data name="Schedule_Now" xml:space="preserve"><value>● NOW</value></data>
+  <data name="Schedule_Now" xml:space="preserve"><value>● On Air</value></data>
 
   <data name="Settings_Section_Playback" xml:space="preserve"><value>PLAYBACK</value></data>
   <data name="Settings_StartWithFavorite" xml:space="preserve"><value>Start with favorite station</value></data>

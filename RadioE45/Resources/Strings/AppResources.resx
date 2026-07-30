@@ -80,7 +80,7 @@
 
   <!-- Schedule -->
   <data name="Schedule_Empty" xml:space="preserve"><value>Nessun palinsesto disponibile</value></data>
-  <data name="Schedule_Now" xml:space="preserve"><value>● ORA</value></data>
+  <data name="Schedule_Now" xml:space="preserve"><value>● In Onda</value></data>
 
   <!-- Settings -->
   <data name="Settings_Section_Playback" xml:space="preserve"><value>RIPRODUZIONE</value></data>
