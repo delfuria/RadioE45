@@ -110,10 +110,13 @@
         <PackageReference Include="Microsoft.Maui.Core" Version="10.0.80" />
         <PackageReference Include="Refit" Version="13.1.0" />
         <PackageReference Include="Refit.HttpClientFactory" Version="13.1.0" />
-        <!-- Sentry.Maui runs on MacCatalyst too: the hardened-runtime crash at startup (dyld rejecting
-             its bundled native crash-handler dylib) is fixed via the disable-library-validation
-             entitlement below (Platforms/MacCatalyst/Entitlements.plist), not by excluding the package. -->
-        <PackageReference Include="Sentry.Maui" Version="6.6.0" />
+        <!-- Escluso da MacCatalyst: il framework Cocoa nativo di Sentry causa il crash al lancio
+             "Library not loaded ... security policy does not allow @ path expansion" su TestFlight/
+             Mac App Store (già riscontrato e risolto il 30 giugno in 35c4fa8, poi ripristinato per
+             errore in due sessioni successive credendo che disable-library-validation bastasse —
+             non è così, vedi commento in Entitlements.plist). -->
+        <PackageReference Include="Sentry.Maui" Version="6.6.0"
+                          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.9" />
 
