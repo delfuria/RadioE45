@@ -13,4 +13,5 @@ public interface IRadioRepository
     Task<RadioStation?> GetFirstAsync();
     Task<RadioStation?> GetFavoriteAsync();
     Task SetFavoriteAsync(int stationId, bool isFavorite);
+    Task ReorderAsync(IReadOnlyList<int> orderedStationIds);
 }

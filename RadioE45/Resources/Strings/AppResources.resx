@@ -137,4 +137,5 @@
   <data name="Err_LoadSchedule" xml:space="preserve"><value>Caricamento palinsesto</value></data>
   <data name="Err_ResetDatabase" xml:space="preserve"><value>Reset database</value></data>
   <data name="Err_DeleteStation" xml:space="preserve"><value>Eliminazione stazione</value></data>
+  <data name="Err_ReorderStations" xml:space="preserve"><value>Riordino stazioni</value></data>
 </root>

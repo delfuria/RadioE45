@@ -129,4 +129,5 @@
   <data name="Err_LoadSchedule" xml:space="preserve"><value>Ładowanie ramówki</value></data>
   <data name="Err_ResetDatabase" xml:space="preserve"><value>Resetowanie bazy danych</value></data>
   <data name="Err_DeleteStation" xml:space="preserve"><value>Usuwanie stacji</value></data>
+  <data name="Err_ReorderStations" xml:space="preserve"><value>Zmiana kolejności stacji</value></data>
 </root>

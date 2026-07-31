@@ -90,4 +90,16 @@ public class RadioRepository : IRadioRepository
         return await conn.Table<RadioStation>().Where(s => !s.IsTest).OrderBy(s => s.SortOrder).FirstOrDefaultAsync();
 #endif
     }
+
+    public async Task ReorderAsync(IReadOnlyList<int> orderedStationIds)
+    {
+        SQLiteAsyncConnection conn = await _db.GetConnectionAsync();
+        await conn.RunInTransactionAsync(tran =>
+        {
+            for (int i = 0; i < orderedStationIds.Count; i++)
+            {
+                tran.Execute("UPDATE RadioStations SET SortOrder = ? WHERE Id = ?", i, orderedStationIds[i]);
+            }
+        });
+    }
 }

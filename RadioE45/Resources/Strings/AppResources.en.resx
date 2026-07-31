@@ -129,4 +129,5 @@
   <data name="Err_LoadSchedule" xml:space="preserve"><value>Loading schedule</value></data>
   <data name="Err_ResetDatabase" xml:space="preserve"><value>Database reset</value></data>
   <data name="Err_DeleteStation" xml:space="preserve"><value>Deleting station</value></data>
+  <data name="Err_ReorderStations" xml:space="preserve"><value>Reordering stations</value></data>
 </root>

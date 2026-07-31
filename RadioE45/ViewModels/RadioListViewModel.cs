@@ -135,6 +135,34 @@ public partial class RadioListViewModel : BaseViewModel
         await MainThread.InvokeOnMainThreadAsync(RefreshStationsFromCatalog);
     }
 
+    public async Task MoveStationToEndAsync(AzuraStation dragged)
+    {
+        if (Stations.Count == 0)
+            return;
+
+        await MoveStationAsync(dragged, Stations[^1]);
+    }
+
+    public async Task MoveStationAsync(AzuraStation dragged, AzuraStation target)
+    {
+        int oldIndex = Stations.IndexOf(dragged);
+        int newIndex = Stations.IndexOf(target);
+        if (oldIndex < 0 || newIndex < 0 || oldIndex == newIndex)
+            return;
+
+        Stations.Move(oldIndex, newIndex);
+
+        try
+        {
+            await _catalog.ReorderAsync(Stations.Select(s => s.Id).ToList());
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[RadioListViewModel] Riordino stazioni: {Message}", ex.Message);
+            ErrorMessage = $"{LocalizationResourceManager.Instance["Err_ReorderStations"]}: {ex.Message}";
+        }
+    }
+
     [RelayCommand]
     private async Task NavigateToAddStationAsync()
     {

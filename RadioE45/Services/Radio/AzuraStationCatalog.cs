@@ -269,6 +269,22 @@ public class AzuraStationCatalog : IAzuraStationCatalog
         _stations = _stations.Where(s => s.Id != id).ToList();
     }
 
+    public async Task ReorderAsync(IReadOnlyList<int> orderedIds)
+    {
+        var byId = _stations.ToDictionary(s => s.Id);
+        var reordered = new List<AzuraStation>(orderedIds.Count);
+        for (int i = 0; i < orderedIds.Count; i++)
+        {
+            if (!byId.TryGetValue(orderedIds[i], out AzuraStation? s))
+                continue;
+            s.SortOrder = i;
+            reordered.Add(s);
+        }
+        _stations = reordered;
+
+        await _radioRepository.ReorderAsync(orderedIds);
+    }
+
     public async Task SetFavoriteAsync(int dbId, bool isFavorite)
     {
         await _radioRepository.SetFavoriteAsync(dbId, isFavorite);

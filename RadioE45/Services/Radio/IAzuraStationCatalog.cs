@@ -10,6 +10,7 @@ public interface IAzuraStationCatalog
     Task LoadAsync(CancellationToken ct = default);
     Task ReloadAsync(CancellationToken ct = default);
     void RemoveStation(int id);
+    Task ReorderAsync(IReadOnlyList<int> orderedIds);
     Task SetFavoriteAsync(int dbId, bool isFavorite);
     AzuraStation? GetFavorite();
     AzuraStation? GetFirst();

@@ -12,10 +12,6 @@
 
     <Grid>
 
-        <RefreshView
-            IsRefreshing="{Binding IsBusy}"
-            Command="{Binding ForceReloadStationsCommand}">
-
         <CollectionView
             Margin="0"
             ItemsSource="{Binding Stations}"
@@ -42,7 +38,11 @@
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:AzuraStation">
-                    <SwipeView Margin="16,8,16,0">
+                    <Grid Padding="16,8,16,0">
+                        <Grid.GestureRecognizers>
+                            <DropGestureRecognizer AllowDrop="True" Drop="OnStationDrop" />
+                        </Grid.GestureRecognizers>
+                    <SwipeView>
                         <SwipeView.RightItems>
                             <SwipeItems>
                                 <SwipeItem
@@ -55,6 +55,9 @@
 
                     <Border
                         Style="{StaticResource CardBorder}">
+                        <Border.GestureRecognizers>
+                            <DragGestureRecognizer CanDrag="True" DragStarting="OnStationDragStarting" />
+                        </Border.GestureRecognizers>
                         <FlyoutBase.ContextFlyout>
                             <MenuFlyout>
                                 <MenuFlyoutItem
@@ -64,7 +67,7 @@
                                     CommandParameter="{Binding .}" />
                             </MenuFlyout>
                         </FlyoutBase.ContextFlyout>
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
 
                             <!-- Icona stazione -->
                             <Border
@@ -127,18 +130,62 @@
                                 VerticalOptions="Center"
                                 IsVisible="{Binding IsActive}" />
 
+                            <!-- Maniglia di trascinamento per riordino (solo visuale, il drag parte da tutta la riga) -->
+                            <Label
+                                Grid.Column="3"
+                                Text="☰"
+                                FontSize="20"
+                                TextColor="{DynamicResource MutedText}"
+                                WidthRequest="44"
+                                HeightRequest="44"
+                                HorizontalTextAlignment="Center"
+                                VerticalTextAlignment="Center"
+                                VerticalOptions="Center" />
+
                         </Grid>
                     </Border>
                     </SwipeView>
+                    </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
 
             <CollectionView.Footer>
-                <BoxView HeightRequest="20" Color="Transparent" />
+                <BoxView HeightRequest="60" Color="Transparent">
+                    <BoxView.GestureRecognizers>
+                        <DropGestureRecognizer AllowDrop="True" Drop="OnDropAtEnd" />
+                    </BoxView.GestureRecognizers>
+                </BoxView>
             </CollectionView.Footer>
 
         </CollectionView>
-        </RefreshView>
+
+        <!-- Refresh -->
+        <Button
+            Text="⟳"
+            Command="{Binding ForceReloadStationsCommand}"
+            IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
+            HorizontalOptions="Start"
+            VerticalOptions="End"
+            Margin="16,0,0,16"
+            BackgroundColor="{DynamicResource Accent}"
+            TextColor="{DynamicResource PrimaryText}"
+            CornerRadius="28"
+            WidthRequest="56"
+            HeightRequest="56"
+            FontSize="26"
+            Padding="0">
+            <Button.Shadow>
+                <Shadow Brush="Black" Offset="2,4" Radius="8" Opacity="0.35" />
+            </Button.Shadow>
+        </Button>
+
+        <ActivityIndicator
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            HorizontalOptions="Center"
+            VerticalOptions="Start"
+            Margin="0,12,0,0"
+            Color="{DynamicResource Accent}" />
 
         <!-- FAB -->
         <Button
