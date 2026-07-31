@@ -21,6 +21,14 @@ Cross-platform .NET MAUI 10 app for AzuraCast webradio streaming.
 - Apple CarPlay support (iOS)
 - Android Auto support
 
+## Android Auto
+
+Android Auto is now implemented. The Android audio layer was rebuilt: playback moved from
+`CommunityToolkit.Maui.MediaElement` to **AndroidX Media3 / ExoPlayer** with a single
+`MediaLibraryService`, enabling Android Auto, Bluetooth/AVRCP controls, and reliable
+background playback. Full details (technical analysis, rebuild report, dev setup, in
+Italian and English) are in [`docs/android-auto-media3/`](docs/android-auto-media3/README.md).
+
 ## Documentation
 All documentation lives in [`docs/`](docs/):
 
