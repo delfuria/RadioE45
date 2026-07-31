@@ -9,7 +9,7 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
     // Incrementa questo valore ogni volta che i dati di default cambiano.
     // Al prossimo avvio dell'app, le tabelle con dati di seed vengono azzerate.
     // Le stazioni vengono ri-popolate solo su consenso esplicito dell'utente.
-    public const decimal CurrentDbVersion = 0.72m;
+    public const decimal CurrentDbVersion = 0.73m;
 
     private const string DbFileName = "radioe45.db";
     private SQLiteAsyncConnection? _connection;
@@ -133,6 +133,19 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
                 ShortName = "Radio_Antani",
                 IsTest = false,
                 SortOrder = 1
+            },
+            new()
+            {
+                StationId = 1,
+                Name = "Muse",
+                Description = "TestStation",
+                StreamUrl = "/radio.mp3",
+                UrlBase = "hear.moe",
+                LogoUrl = "",
+                WebsocketUrl = "",
+                ShortName = "muse",
+                IsTest = false,
+                SortOrder = 2
             }
             /*,
             new()
