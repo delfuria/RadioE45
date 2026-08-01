@@ -69,7 +69,9 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IPlaye
         });
     }
 
-    public Task PauseAsync() => WithControllerAsync(c => c.Pause());
+    // Pause "vero" (c.Pause()) lascerebbe connessione e buffer attivi come su iOS/Windows —
+    // Stop() forza STATE_IDLE e chiude la ricezione; ResumeAsync riprepara da capo (live edge).
+    public Task PauseAsync() => WithControllerAsync(c => c.Stop());
 
     public Task ResumeAsync() => WithControllerAsync(c =>
     {
