@@ -31,9 +31,9 @@
 
         <!-- Versions -->
         <!-- Android versionCode must be >= 1; Windows Store requires revision = 0, so we split by platform -->
-        <ApplicationDisplayVersion>0.28</ApplicationDisplayVersion>
+        <ApplicationDisplayVersion>0.29</ApplicationDisplayVersion>
         <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">0</ApplicationVersion>
-        <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">28</ApplicationVersion>
+        <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">29</ApplicationVersion>
 
         <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
         <WindowsPackageType>None</WindowsPackageType>
@@ -124,8 +124,59 @@
              SourceGear.sqlite3 3.53.3 (SQLite 3.53.3). The old 2.1.x stack (bundle_green +
              lib.e_sqlite3.android 2.1.11) was flagged by GHSA-2m69-gcr7-jv3q (NU1903); the 3.x line
              has no vulnerable .android RID package, which clears the advisory. -->
-        <PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
-        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.4" />
+        <PackageReference Include="sqlite-net-pcl" Version="1.11.285"
+                          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'" />
+        <!-- sqlite-net-pcl's nuspec has no net8.0-maccatalyst group, and NuGet's framework reducer
+             resolves net10.0-maccatalyst against its plain net8.0 group rather than net8.0-ios18.0
+             (confirmed via build output: lib/net8.0/SQLite-net.dll gets picked, not lib/net8.0-ios18.0/).
+             That net8.0 build of SQLite-net.dll is compiled with a hard AssemblyRef to
+             SQLitePCLRaw.provider.e_sqlite3 — excluding that package's assets (see below) doesn't
+             change which SQLite-net.dll got selected, it just makes THAT dll's static ctor throw
+             FileNotFoundException instead of DllNotFoundException (confirmed by crash log, Aug 1 2026:
+             "Could not load file or assembly 'SQLitePCLRaw.provider.e_sqlite3' ... at
+             SQLite.SQLiteConnection..cctor()"). The actual fix: force-reference the
+             lib/net8.0-ios18.0/SQLite-net.dll variant instead, which is compiled against
+             provider.sqlite3 (matching Program.cs's SetProvider call). ExcludeAssets="compile;runtime"
+             stops the wrong net8.0 SQLite-net.dll from also being referenced (would collide);
+             GeneratePathProperty exposes $(Pkgsqlite_net_pcl) to locate the package's install folder. -->
+        <PackageReference Include="sqlite-net-pcl" Version="1.11.285" ExcludeAssets="compile;runtime" GeneratePathProperty="true"
+                          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
+        <Reference Include="SQLite-net" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+            <HintPath>$(Pkgsqlite-net-pcl)\lib\net8.0-ios18.0\SQLite-net.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
+        <!-- bundle_e_sqlite3 (SourceGear.sqlite3) ships a bundled libe_sqlite3.dylib loaded via
+             @executable_path/../../Contents/MonoBundle/libe_sqlite3.dylib. Under the Mac App Store's
+             enforced Hardened Runtime, dyld blocks that @-path expansion at launch — confirmed by
+             TestFlight crash reports on 0.28 (Aug 1 2026): "Library not loaded ... security policy
+             does not allow @ path expansion". Same failure class as the Sentry.framework crash fixed
+             by excluding it from MacCatalyst (see comment above) — the fix here is analogous: don't
+             bundle a native dylib for MacCatalyst, route SQLite through the system libsqlite3.dylib
+             instead (see SQLitePCLRaw.provider.sqlite3 below + SetProvider call in
+             Platforms/MacCatalyst/Program.cs). DO NOT re-add disable-library-validation as "the" fix
+             for this — that entitlement was tried twice (Jul 2, Jul 3) and reverted (Jul 31) because
+             it actively breaks Sentry's framework loading under Hardened Runtime (Apple DTS/Quinn
+             confirmed). Excluding the bundled dylib avoids needing that entitlement at all. -->
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.4"
+                          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'" />
+        <PackageReference Include="SQLitePCLRaw.provider.sqlite3" Version="3.0.3"
+                          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
+        <!-- sqlite-net-pcl's nuspec has no net8.0-maccatalyst group; NuGet falls back to its plain
+             net8.0 group, which drags in SQLitePCLRaw.provider.e_sqlite3 + SourceGear.sqlite3 (the
+             correct net8.0-ios18.0 group would have pulled provider.sqlite3 instead, which is what
+             we actually want — see PackageReference above). Confirmed by crash log (Aug 1 2026, Rider
+             run): SQLiteConnection's static ctor calls SQLitePCL.Batteries_V2.Init(), which — because
+             provider.e_sqlite3 is present in the build — resets the provider to SQLite3Provider_e_sqlite3,
+             clobbering the SetProvider(SQLite3Provider_sqlite3) call in Program.cs, then throws
+             DllNotFoundException("e_sqlite3") since that native dylib is excluded from the bundle
+             (see comment above). ExcludeAssets="native" alone (previous attempt) was not enough — the
+             managed provider.e_sqlite3 assembly and its Batteries_V2 override were still being built
+             in and still won. Both packages must be excluded from ALL assets (not just native) so
+             provider.sqlite3 is the only provider present and Batteries_V2 has nothing else to pick. -->
+        <PackageReference Include="SourceGear.sqlite3" Version="3.53.3" ExcludeAssets="all"
+                          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
+        <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="3.0.3" ExcludeAssets="all"
+                          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
     </ItemGroup>
 
     <!-- iOS App Store signing -->
