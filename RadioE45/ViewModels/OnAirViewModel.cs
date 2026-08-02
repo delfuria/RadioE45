@@ -65,6 +65,7 @@ public partial class OnAirViewModel : BaseViewModel
 
     private IDispatcherTimer? _progressTimer;
     private int _localElapsedSeconds;
+    private DateTime _elapsedAnchorUtc;
     private int _trackDurationSeconds;
     private volatile bool _isShuttingDown;
 
@@ -174,7 +175,7 @@ public partial class OnAirViewModel : BaseViewModel
     {
         await _audioService.StopAsync();
         StopProgressTimer();
-        _localElapsedSeconds = 0;
+        SetLocalElapsed(0);
         _trackDurationSeconds = 0;
         UpdateProgressDisplay();
     }
@@ -311,7 +312,7 @@ public partial class OnAirViewModel : BaseViewModel
         NowPlaying = NowPlayingInfo.Empty;
         ArtworkUrl = null;
         StopProgressTimer();
-        _localElapsedSeconds = 0;
+        SetLocalElapsed(0);
         _trackDurationSeconds = 0;
         UpdateProgressDisplay();
         if (station is not null)
@@ -369,7 +370,7 @@ public partial class OnAirViewModel : BaseViewModel
         NowPlaying = NowPlayingInfo.Empty;
         ArtworkUrl = null;
         StopProgressTimer();
-        _localElapsedSeconds = 0;
+        SetLocalElapsed(0);
         _trackDurationSeconds = 0;
         UpdateProgressDisplay();
 
@@ -420,7 +421,7 @@ public partial class OnAirViewModel : BaseViewModel
         _audioService.UpdateMetadata(info.Artist, info.Title, info.ArtworkUrl, info.TrackElapsedSeconds, info.TrackDurationSeconds);
 
         if (info.TrackElapsedSeconds >= _localElapsedSeconds || (_localElapsedSeconds - info.TrackElapsedSeconds) > 15)
-            _localElapsedSeconds = info.TrackElapsedSeconds;
+            SetLocalElapsed(info.TrackElapsedSeconds, info.LastUpdated);
         _trackDurationSeconds = info.TrackDurationSeconds;
         UpdateProgressDisplay();
 
@@ -469,7 +470,8 @@ public partial class OnAirViewModel : BaseViewModel
         if (_trackDurationSeconds <= 0)
             return;
 
-        _localElapsedSeconds = Math.Min(_localElapsedSeconds + 1, _trackDurationSeconds);
+        int realElapsed = (int)(DateTime.UtcNow - _elapsedAnchorUtc).TotalSeconds;
+        _localElapsedSeconds = Math.Min(realElapsed, _trackDurationSeconds);
         UpdateProgressDisplay();
 
         if (_localElapsedSeconds >= _trackDurationSeconds)
@@ -505,7 +507,7 @@ public partial class OnAirViewModel : BaseViewModel
         };
         ArtworkUrl = NowPlaying.ArtworkUrl;
 
-        _localElapsedSeconds = 0;
+        SetLocalElapsed(0);
         _trackDurationSeconds = next.DurationSeconds;
         _audioService.UpdateMetadata(NowPlaying.Artist, NowPlaying.Title, NowPlaying.ArtworkUrl, 0, _trackDurationSeconds);
         UpdateProgressDisplay();
@@ -518,6 +520,16 @@ public partial class OnAirViewModel : BaseViewModel
         TrackProgress = _trackDurationSeconds > 0
             ? Math.Clamp((double)_localElapsedSeconds / _trackDurationSeconds, 0.0, 1.0)
             : 0.0;
+    }
+
+    // Anchors elapsed time to a wall-clock timestamp instead of a tick count. The 1s dispatcher
+    // timer is not guaranteed to fire exactly every 1000ms (main-thread load, OS timer throttling,
+    // battery optimizations — all vary per device), so counting "+1 per tick" drifts over time by an
+    // amount that differs from device to device. Recomputing from elapsed real time removes the drift.
+    private void SetLocalElapsed(int seconds, DateTime? referenceUtc = null)
+    {
+        _localElapsedSeconds = Math.Max(0, seconds);
+        _elapsedAnchorUtc = (referenceUtc ?? DateTime.UtcNow) - TimeSpan.FromSeconds(_localElapsedSeconds);
     }
 
     private static string FormatTime(int totalSeconds)
