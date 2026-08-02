@@ -19,9 +19,6 @@ public partial class RadioListViewModel : BaseViewModel
     [ObservableProperty]
     public partial ObservableCollection<AzuraStation> Stations { get; set; } = [];
 
-    [ObservableProperty]
-    public partial AzuraStation? SelectedStation { get; set; }
-
     public OnAirViewModel OnAirViewModel => _onAirViewModel;
 
     public RadioListViewModel(
@@ -101,6 +98,8 @@ public partial class RadioListViewModel : BaseViewModel
         {
             s.IsActive = s.Id == currentId;
             s.DeleteCommand = DeleteStationCommand;
+            s.EditCommand = EditStationCommand;
+            s.PlayCommand = SelectAndPlayCommand;
         }
         Stations = updated;
     }
@@ -170,13 +169,16 @@ public partial class RadioListViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private async Task SelectAndPlayAsync()
+    private async Task EditStationAsync(AzuraStation station)
     {
-        var station = SelectedStation;
+        await Shell.Current.GoToAsync($"EditStationPage?id={station.Id}");
+    }
+
+    [RelayCommand]
+    private async Task SelectAndPlayAsync(AzuraStation station)
+    {
         if (station == null || !station.IsOnline)
             return;
-
-        SelectedStation = null;
 
         foreach (AzuraStation s in Stations)
             s.IsActive = s.Id == station.Id;

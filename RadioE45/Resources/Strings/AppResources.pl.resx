@@ -72,7 +72,7 @@
   <data name="RadioList_Empty" xml:space="preserve"><value>Brak dostępnych stacji</value></data>
   <data name="RadioList_Offline" xml:space="preserve"><value>● Offline</value></data>
   <data name="RadioList_DeleteStation" xml:space="preserve"><value>Usuń stację</value></data>
-  <data name="RadioList_ConfirmDeleteMessage" xml:space="preserve"><value>Czy chcesz usunąć „{0}”?</value></data>
+  <data name="RadioList_EditStation" xml:space="preserve"><value>Edytuj stację</value></data>  <data name="RadioList_ConfirmDeleteMessage" xml:space="preserve"><value>Czy chcesz usunąć „{0}”?</value></data>
   <data name="RadioList_SeedPrompt" xml:space="preserve"><value>Nie wybrano żadnej stacji. Czy chcesz dodać kilka przykładowych?</value></data>
 
   <data name="Schedule_Empty" xml:space="preserve"><value>Brak dostępnej ramówki</value></data>
@@ -106,6 +106,11 @@
   <data name="Settings_Alert_Restart_Message" xml:space="preserve"><value>Zmiana raportowania awarii zostanie zastosowana przy następnym uruchomieniu aplikacji.</value></data>
 
   <data name="AddStation_Title" xml:space="preserve"><value>Dodaj stację</value></data>
+  <data name="EditStation_Title" xml:space="preserve"><value>Edytuj stację</value></data>
+  <data name="EditStation_Name" xml:space="preserve"><value>Nazwa</value></data>
+  <data name="EditStation_ShortName" xml:space="preserve"><value>Krótka nazwa</value></data>
+  <data name="EditStation_Description" xml:space="preserve"><value>Opis</value></data>
+  <data name="EditStation_UseCustomInfo" xml:space="preserve"><value>Użyj niestandardowych informacji</value></data>
   <data name="AddStation_UrlPlaceholder" xml:space="preserve"><value>np. radioe45.ddns.net</value></data>
   <data name="AddStation_Search" xml:space="preserve"><value>Szukaj</value></data>
   <data name="AddStation_Prompt" xml:space="preserve"><value>Wpisz adres serwera AzuraCast i naciśnij Szukaj</value></data>
@@ -118,6 +123,7 @@
   <data name="Common_Ok" xml:space="preserve"><value>OK</value></data>
   <data name="Common_Delete" xml:space="preserve"><value>Usuń</value></data>
   <data name="Common_Cancel" xml:space="preserve"><value>Anuluj</value></data>
+  <data name="Common_Save" xml:space="preserve"><value>Zapisz</value></data>
 
   <data name="Err_Init" xml:space="preserve"><value>Inicjalizacja</value></data>
   <data name="Err_Reconnect" xml:space="preserve"><value>Przywracanie po ponownym połączeniu</value></data>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.EditStationPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    x:DataType="vm:EditStationViewModel"
+    Title="{Binding Title}"
+    Shell.NavBarIsVisible="True">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="0,0,0,24">
+
+        <!-- Error message -->
+        <Label
+            Grid.Row="0"
+            Text="{Binding ErrorMessage}"
+            TextColor="Red"
+            FontSize="13"
+            Margin="16,16,16,0"
+            IsVisible="{Binding ErrorMessage, Converter={toolkit:IsNotNullConverter}}" />
+
+        <!-- Form -->
+        <VerticalStackLayout Grid.Row="1" Spacing="16" Padding="16">
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Text="{loc:Translate EditStation_Name}"
+                    Style="{StaticResource CaptionLabel}" />
+                <Entry
+                    Text="{Binding Name}"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    TextColor="{DynamicResource PrimaryText}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Text="{loc:Translate EditStation_ShortName}"
+                    Style="{StaticResource CaptionLabel}" />
+                <Entry
+                    Text="{Binding ShortName}"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    TextColor="{DynamicResource PrimaryText}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Text="{loc:Translate EditStation_Description}"
+                    Style="{StaticResource CaptionLabel}" />
+                <Editor
+                    Text="{Binding Description}"
+                    AutoSize="TextChanges"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    TextColor="{DynamicResource PrimaryText}" />
+            </VerticalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <CheckBox
+                    IsChecked="{Binding HasCustomInfo}"
+                    Color="{DynamicResource Accent}"
+                    VerticalOptions="Center" />
+                <Label
+                    Text="{loc:Translate EditStation_UseCustomInfo}"
+                    TextColor="{DynamicResource PrimaryText}"
+                    VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+
+        <!-- Save / Cancel -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16" Margin="32,8,32,0">
+            <Button
+                Grid.Column="0"
+                Text="{loc:Translate Common_Cancel}"
+                Command="{Binding CancelCommand}"
+                IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
+                BackgroundColor="{DynamicResource CardElevated}"
+                TextColor="{DynamicResource PrimaryText}"
+                CornerRadius="24"
+                HeightRequest="50" />
+            <Button
+                Grid.Column="1"
+                Text="{loc:Translate Common_Save}"
+                Command="{Binding SaveCommand}"
+                IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
+                BackgroundColor="{DynamicResource Accent}"
+                TextColor="{DynamicResource PrimaryText}"
+                CornerRadius="24"
+                HeightRequest="50" />
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

@@ -113,9 +113,12 @@ public class AzuraStationCatalog : IAzuraStationCatalog
             if (detail is null)
                 return;
 
-            station.Name = detail.Name;
-            station.ShortName = detail.Shortcode;
-            station.Description = detail.Description;
+            if (!db.HasCustomInfo)
+            {
+                station.Name = detail.Name;
+                station.ShortName = detail.Shortcode;
+                station.Description = detail.Description;
+            }
             station.PublicUrl = detail.Url;
             station.StreamUrl = detail.ListenUrl;
             station.StreamUrlFallback = $"https://{db.UrlBase}{db.StreamUrl}";
@@ -226,9 +229,9 @@ public class AzuraStationCatalog : IAzuraStationCatalog
             SortOrder = db.SortOrder,
             IsTest = db.IsTest,
             WebsocketUrl = db.WebsocketUrl,
-            Name = detail.Name,
-            ShortName = detail.Shortcode,
-            Description = detail.Description,
+            Name = db.HasCustomInfo ? db.Name : detail.Name,
+            ShortName = db.HasCustomInfo ? db.ShortName : detail.Shortcode,
+            Description = db.HasCustomInfo ? db.Description : detail.Description,
             PublicUrl = detail.Url,
             //TODO: sostituire con detail.ListenUrl quando l'URL base restituito dall'API sarà corretto
             StreamUrl = detail.ListenUrl,

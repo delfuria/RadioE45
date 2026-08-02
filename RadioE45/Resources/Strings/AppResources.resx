@@ -74,8 +74,8 @@
   <!-- Radio list -->
   <data name="RadioList_Empty" xml:space="preserve"><value>Nessuna stazione disponibile</value></data>
   <data name="RadioList_Offline" xml:space="preserve"><value>● Off Line</value></data>
-  <data name="RadioList_DeleteStation" xml:space="preserve"><value>Elimina stazione</value></data>
-  <data name="RadioList_ConfirmDeleteMessage" xml:space="preserve"><value>Vuoi eliminare "{0}"?</value></data>
+  <data name="RadioList_DeleteStation" xml:space="preserve"><value>Elimina</value></data>
+  <data name="RadioList_EditStation" xml:space="preserve"><value>Modifica</value></data>  <data name="RadioList_ConfirmDeleteMessage" xml:space="preserve"><value>Vuoi eliminare "{0}"?</value></data>
   <data name="RadioList_SeedPrompt" xml:space="preserve"><value>Nessuna stazione selezionata. Vuoi aggiungerne qualcuna di prova?</value></data>
 
   <!-- Schedule -->
@@ -112,6 +112,11 @@
 
   <!-- Add station -->
   <data name="AddStation_Title" xml:space="preserve"><value>Aggiungi stazione</value></data>
+  <data name="EditStation_Title" xml:space="preserve"><value>Modifica stazione</value></data>
+  <data name="EditStation_Name" xml:space="preserve"><value>Nome</value></data>
+  <data name="EditStation_ShortName" xml:space="preserve"><value>Nome breve</value></data>
+  <data name="EditStation_Description" xml:space="preserve"><value>Descrizione</value></data>
+  <data name="EditStation_UseCustomInfo" xml:space="preserve"><value>Usa info personalizzate</value></data>
   <data name="AddStation_UrlPlaceholder" xml:space="preserve"><value>es: radioe45.ddns.net</value></data>
   <data name="AddStation_Search" xml:space="preserve"><value>Cerca</value></data>
   <data name="AddStation_Prompt" xml:space="preserve"><value>Inserisci l'indirizzo del server AzuraCast e premi Cerca</value></data>
@@ -125,6 +130,7 @@
   <data name="Common_Ok" xml:space="preserve"><value>OK</value></data>
   <data name="Common_Delete" xml:space="preserve"><value>Elimina</value></data>
   <data name="Common_Cancel" xml:space="preserve"><value>Annulla</value></data>
+  <data name="Common_Save" xml:space="preserve"><value>Salva</value></data>
 
   <!-- Error prefixes (shown as "prefix: message") -->
   <data name="Err_Init" xml:space="preserve"><value>Inizializzazione</value></data>

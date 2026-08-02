@@ -37,4 +37,6 @@ public partial class AzuraStation : ObservableObject
     public partial bool IsActive { get; set; }
 
     public ICommand? DeleteCommand { get; set; }
+    public ICommand? EditCommand { get; set; }
+    public ICommand? PlayCommand { get; set; }
 }

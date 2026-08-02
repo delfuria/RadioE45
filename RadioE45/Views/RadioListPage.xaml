@@ -15,9 +15,7 @@
         <CollectionView
             Margin="0"
             ItemsSource="{Binding Stations}"
-            SelectionMode="Single"
-            SelectedItem="{Binding SelectedStation, Mode=TwoWay}"
-            SelectionChangedCommand="{Binding SelectAndPlayCommand}"
+            SelectionMode="None"
             BackgroundColor="Transparent">
 
             <CollectionView.EmptyView>
@@ -46,6 +44,11 @@
                         <SwipeView.RightItems>
                             <SwipeItems>
                                 <SwipeItem
+                                    Text="{loc:Translate RadioList_EditStation}"
+                                    BackgroundColor="{DynamicResource Accent}"
+                                    Command="{Binding EditCommand}"
+                                    CommandParameter="{Binding .}" />
+                                <SwipeItem
                                     Text="{loc:Translate Common_Delete}"
                                     BackgroundColor="{StaticResource LiveRed}"
                                     Command="{Binding DeleteCommand}"
@@ -57,9 +60,15 @@
                         Style="{StaticResource CardBorder}">
                         <Border.GestureRecognizers>
                             <DragGestureRecognizer CanDrag="True" DragStarting="OnStationDragStarting" />
+                            <TapGestureRecognizer Command="{Binding PlayCommand}" CommandParameter="{Binding .}" />
                         </Border.GestureRecognizers>
                         <FlyoutBase.ContextFlyout>
                             <MenuFlyout>
+                                <MenuFlyoutItem
+                                    x:DataType="models:AzuraStation"
+                                    Text="{loc:Translate RadioList_EditStation}"
+                                    Command="{Binding EditCommand}"
+                                    CommandParameter="{Binding .}" />
                                 <MenuFlyoutItem
                                     x:DataType="models:AzuraStation"
                                     Text="{loc:Translate RadioList_DeleteStation}"
@@ -150,11 +159,11 @@
             </CollectionView.ItemTemplate>
 
             <CollectionView.Footer>
-                <BoxView HeightRequest="60" Color="Transparent">
-                    <BoxView.GestureRecognizers>
+                <Grid HeightRequest="60" BackgroundColor="Transparent">
+                    <Grid.GestureRecognizers>
                         <DropGestureRecognizer AllowDrop="True" Drop="OnDropAtEnd" />
-                    </BoxView.GestureRecognizers>
-                </BoxView>
+                    </Grid.GestureRecognizers>
+                </Grid>
             </CollectionView.Footer>
 
         </CollectionView>

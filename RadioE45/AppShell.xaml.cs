@@ -13,6 +13,7 @@ public partial class AppShell : Shell
         _radioRepository = radioRepository;
         InitializeComponent();
         Routing.RegisterRoute("AddStationPage", typeof(AddStationPage));
+        Routing.RegisterRoute("EditStationPage", typeof(EditStationPage));
         Navigated += OnNavigated;
     }
 

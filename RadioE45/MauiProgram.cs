@@ -148,12 +148,14 @@ public static class MauiProgram
         // Other ViewModels as Transient
         builder.Services.AddTransient<RadioListViewModel>();
         builder.Services.AddTransient<AddStationViewModel>();
+        builder.Services.AddTransient<EditStationViewModel>();
         builder.Services.AddTransient<ScheduleViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
 
         // Views as Transient
         builder.Services.AddTransient<OnAirPage>();
         builder.Services.AddTransient<AddStationPage>();
+        builder.Services.AddTransient<EditStationPage>();
         builder.Services.AddTransient<RadioListPage>();
         builder.Services.AddTransient<SchedulePage>();
         builder.Services.AddTransient<SettingsPage>();

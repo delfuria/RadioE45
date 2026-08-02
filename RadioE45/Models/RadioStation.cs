@@ -18,4 +18,5 @@ public class RadioStation
     public string WebsocketUrl { get; set; } = string.Empty;
     public string ShortName { get; set; } = string.Empty;
     public bool IsTest { get; set; }
+    public bool HasCustomInfo { get; set; }
 }
