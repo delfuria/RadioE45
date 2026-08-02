@@ -471,6 +471,44 @@ public partial class OnAirViewModel : BaseViewModel
 
         _localElapsedSeconds = Math.Min(_localElapsedSeconds + 1, _trackDurationSeconds);
         UpdateProgressDisplay();
+
+        if (_localElapsedSeconds >= _trackDurationSeconds)
+            AdvanceToNextTrackLocally();
+    }
+
+    // Il now-playing di AzuraCast è polled ogni 10s e può restare disallineato rispetto allo stream
+    // reale. Quando la barra locale raggiunge la fine della traccia corrente, non aspettiamo il poll:
+    // promuoviamo subito i dati di "Next" (già ricevuti in anticipo) a traccia corrente, azzerando il
+    // timer. Il prossimo poll reale sovrascriverà comunque tutto tramite ApplyNowPlayingInfo.
+    private void AdvanceToNextTrackLocally()
+    {
+        NextPlayingInfo? next = NowPlaying.Next;
+        if (next is null || next.DurationSeconds <= 0)
+        {
+            StopProgressTimer();
+            return;
+        }
+
+        NowPlaying = new NowPlayingInfo
+        {
+            Artist = next.Artist,
+            Title = next.Title,
+            ArtworkUrl = next.ArtworkUrl,
+            IsJingle = next.IsJingle,
+            IsLive = NowPlaying.IsLive,
+            StreamerName = NowPlaying.StreamerName,
+            ListenerCount = NowPlaying.ListenerCount,
+            TrackDurationSeconds = next.DurationSeconds,
+            TrackElapsedSeconds = 0,
+            LastUpdated = DateTime.UtcNow,
+            Next = null
+        };
+        ArtworkUrl = NowPlaying.ArtworkUrl;
+
+        _localElapsedSeconds = 0;
+        _trackDurationSeconds = next.DurationSeconds;
+        _audioService.UpdateMetadata(NowPlaying.Artist, NowPlaying.Title, NowPlaying.ArtworkUrl, 0, _trackDurationSeconds);
+        UpdateProgressDisplay();
     }
 
     private void UpdateProgressDisplay()

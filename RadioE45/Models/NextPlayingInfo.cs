@@ -6,4 +6,5 @@ public class NextPlayingInfo
     public string Title { get; set; } = string.Empty;
     public string? ArtworkUrl { get; set; }
     public bool IsJingle { get; set; }
+    public int DurationSeconds { get; set; }
 }

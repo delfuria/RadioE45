@@ -135,7 +135,8 @@ public class NowPlayingService : INowPlayingService, IDisposable
                 Artist = nextSong.Artist,
                 Title = nextSong.Title,
                 ArtworkUrl = nextSong.ArtworkUrl,
-                IsJingle = nextSong.IsJingle
+                IsJingle = nextSong.IsJingle,
+                DurationSeconds = (int)response.PlayingNext.Duration
             };
         }
 
