@@ -116,6 +116,19 @@
                                         WidthRequest="14"
                                         VerticalOptions="Center"
                                         IsVisible="{Binding IsFavorite}" />
+                                    <Border
+                                        BackgroundColor="{DynamicResource Accent}"
+                                        StrokeShape="RoundRectangle 6"
+                                        Stroke="Transparent"
+                                        Padding="5,1"
+                                        VerticalOptions="Center"
+                                        IsVisible="{Binding HlsEnabled}">
+                                        <Label
+                                            Text="HLS"
+                                            TextColor="{DynamicResource PrimaryText}"
+                                            FontSize="10"
+                                            FontAttributes="Bold" />
+                                    </Border>
                                 </HorizontalStackLayout>
                                 <Label
                                     Text="{Binding Description}"

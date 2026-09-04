@@ -76,6 +76,19 @@
                             </Border>
 
                             <Border
+                                BackgroundColor="{StaticResource HlsGreen}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="Transparent"
+                                Padding="10,4"
+                                IsVisible="{Binding CurrentStation.HlsEnabled}">
+                                <Label
+                                    Text="HLS"
+                                    TextColor="{DynamicResource PrimaryText}"
+                                    FontSize="11"
+                                    FontAttributes="Bold" />
+                            </Border>
+
+                            <Border
                                 BackgroundColor="{StaticResource LiveRed}"
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="Transparent"
