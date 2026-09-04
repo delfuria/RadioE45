@@ -19,7 +19,7 @@ public class StationDetailService : IStationDetailService
     {
         try
         {
-            string baseUrl = $"https://{station.UrlBase}";
+            string baseUrl = UrlBaseHelper.EnsureScheme(station.UrlBase);
             HttpClient client = _httpClientFactory.CreateClient("AzuraCast");
             client.BaseAddress = new Uri(baseUrl);
             client.Timeout = TimeSpan.FromSeconds(5);

@@ -21,7 +21,7 @@ public class StationListService : IStationListService
         try
         {
             HttpClient client = _httpClientFactory.CreateClient("AzuraCast");
-            client.BaseAddress = new Uri($"https://{urlBase}");
+            client.BaseAddress = new Uri(UrlBaseHelper.EnsureScheme(urlBase));
             client.Timeout = TimeSpan.FromSeconds(5);
 
             IAzuraCastStationApi api = RestService.For<IAzuraCastStationApi>(client);

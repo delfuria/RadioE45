@@ -78,7 +78,7 @@ public class NowPlayingService : INowPlayingService, IDisposable
     {
         try
         {
-            string baseUrl = $"https://{station.UrlBase}{_nowPlayingApi}";
+            string baseUrl = $"{UrlBaseHelper.EnsureScheme(station.UrlBase)}{_nowPlayingApi}";
 
             HttpClient client = _httpClientFactory.CreateClient("AzuraCast");
             client.BaseAddress = new Uri(baseUrl);

@@ -20,7 +20,7 @@ public class ScheduleService : IScheduleService
         try
         {
             HttpClient client = _httpClientFactory.CreateClient("AzuraCast");
-            client.BaseAddress = new Uri($"https://{station.UrlBase}/api/station");
+            client.BaseAddress = new Uri($"{UrlBaseHelper.EnsureScheme(station.UrlBase)}/api/station");
 
             IAzuraCastScheduleApi api = RestService.For<IAzuraCastScheduleApi>(client);
             List<PlaylistSchedule> items = await api.GetScheduleAsync(station.StationId, ct);

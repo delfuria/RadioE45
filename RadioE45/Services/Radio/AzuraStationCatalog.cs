@@ -121,7 +121,7 @@ public class AzuraStationCatalog : IAzuraStationCatalog
             }
             station.PublicUrl = detail.Url;
             station.StreamUrl = detail.ListenUrl;
-            station.StreamUrlFallback = $"https://{db.UrlBase}{db.StreamUrl}";
+            station.StreamUrlFallback = $"{UrlBaseHelper.EnsureScheme(db.UrlBase)}{db.StreamUrl}";
             station.HlsEnabled = detail.HlsEnabled;
             station.HlsIsDefault = detail.HlsIsDefault;
             station.HlsUrl = detail.HlsUrl;
@@ -235,7 +235,7 @@ public class AzuraStationCatalog : IAzuraStationCatalog
             PublicUrl = detail.Url,
             //TODO: sostituire con detail.ListenUrl quando l'URL base restituito dall'API sarà corretto
             StreamUrl = detail.ListenUrl,
-            StreamUrlFallback = $"https://{db.UrlBase}{db.StreamUrl}",
+            StreamUrlFallback = $"{UrlBaseHelper.EnsureScheme(db.UrlBase)}{db.StreamUrl}",
             HlsEnabled = detail.HlsEnabled,
             HlsIsDefault = detail.HlsIsDefault,
             HlsUrl = detail.HlsUrl,
@@ -257,7 +257,7 @@ public class AzuraStationCatalog : IAzuraStationCatalog
             ShortName = db.ShortName,
             Description = db.Description,
             StreamUrl = "",
-            StreamUrlFallback = $"https://{db.UrlBase}{db.StreamUrl}",
+            StreamUrlFallback = $"{UrlBaseHelper.EnsureScheme(db.UrlBase)}{db.StreamUrl}",
             IsOnline = false
         };
 

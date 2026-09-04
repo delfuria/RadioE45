@@ -60,8 +60,8 @@ public partial class AddStationViewModel : BaseViewModel
             ErrorMessage = null;
 
             string urlBase = UrlBase.Trim()
-                .Replace("https://", "", StringComparison.OrdinalIgnoreCase)
-                .Replace("http://", "", StringComparison.OrdinalIgnoreCase)
+                //.Replace("https://", "", StringComparison.OrdinalIgnoreCase)
+                // .Replace("http://", "", StringComparison.OrdinalIgnoreCase)
                 .TrimEnd('/');
 
             List<AzuraCastStationListItem>? stations = await _stationListService.FetchAsync(urlBase);
