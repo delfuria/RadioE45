@@ -76,19 +76,6 @@
                             </Border>
 
                             <Border
-                                BackgroundColor="{StaticResource HlsGreen}"
-                                StrokeShape="RoundRectangle 12"
-                                Stroke="Transparent"
-                                Padding="10,4"
-                                IsVisible="{Binding CurrentStation.HlsEnabled}">
-                                <Label
-                                    Text="HLS"
-                                    TextColor="{DynamicResource PrimaryText}"
-                                    FontSize="11"
-                                    FontAttributes="Bold" />
-                            </Border>
-
-                            <Border
                                 BackgroundColor="{StaticResource LiveRed}"
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="Transparent"
@@ -123,12 +110,30 @@
                                 VerticalOptions="Center" />
                         </HorizontalStackLayout>
 
-                        <controls:VuMeterView
+                        <HorizontalStackLayout
                             HorizontalOptions="End"
                             VerticalOptions="Center"
-                            WidthRequest="32"
-                            HeightRequest="28"
-                            IsActive="{Binding IsPlaying}" />
+                            Spacing="8">
+
+                            <Border
+                                BackgroundColor="{StaticResource HlsGreen}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="Transparent"
+                                Padding="10,4"
+                                IsVisible="{Binding CurrentStation.HlsEnabled}">
+                                <Label
+                                    Text="HLS"
+                                    TextColor="{DynamicResource PrimaryText}"
+                                    FontSize="11"
+                                    FontAttributes="Bold" />
+                            </Border>
+
+                            <controls:VuMeterView
+                                WidthRequest="32"
+                                HeightRequest="28"
+                                IsActive="{Binding IsPlaying}" />
+
+                        </HorizontalStackLayout>
 
                     </Grid>
 

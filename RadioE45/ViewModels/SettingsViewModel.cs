@@ -44,6 +44,9 @@ public partial class SettingsViewModel : BaseViewModel
     [ObservableProperty]
     public partial bool CrashReportingEnabled { get; set; }
 
+    [ObservableProperty]
+    public partial int PlaybackLatencyOffsetSeconds { get; set; }
+
 #if MACCATALYST
     public bool IsCrashReportingAvailable => false;
 #else
@@ -68,6 +71,7 @@ public partial class SettingsViewModel : BaseViewModel
         MustUpdate = _currentSettings.MustUpdate;
         StartWithFavorite = _currentSettings.StartWithFavorite;
         CrashReportingEnabled = _currentSettings.CrashReportingEnabled;
+        PlaybackLatencyOffsetSeconds = _currentSettings.PlaybackLatencyOffsetSeconds;
         _hasChanges = false;
         SaveSettingsCommand.NotifyCanExecuteChanged();
     }
@@ -81,6 +85,8 @@ public partial class SettingsViewModel : BaseViewModel
     partial void OnStartWithFavoriteChanged(bool value) => MarkChanged();
 
     partial void OnCrashReportingEnabledChanged(bool value) => MarkChanged();
+
+    partial void OnPlaybackLatencyOffsetSecondsChanged(int value) => MarkChanged();
 
     private void MarkChanged()
     {
@@ -135,6 +141,7 @@ public partial class SettingsViewModel : BaseViewModel
 
         _currentSettings.ThemePreference = ThemePreference;
         _currentSettings.StartWithFavorite = StartWithFavorite;
+        _currentSettings.PlaybackLatencyOffsetSeconds = PlaybackLatencyOffsetSeconds;
         CrashReportingSettings.ApplyTo(_currentSettings, CrashReportingEnabled, consentRequested: true);
         await _settingsRepo.SaveAsync(_currentSettings);
         Preferences.Default.Set("theme_preference", ThemePreference);

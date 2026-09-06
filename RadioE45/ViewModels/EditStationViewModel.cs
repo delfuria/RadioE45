@@ -30,6 +30,12 @@ public partial class EditStationViewModel : BaseViewModel
     [ObservableProperty]
     public partial bool HasCustomInfo { get; set; }
 
+    [ObservableProperty]
+    public partial bool OverrideLatencyOffset { get; set; }
+
+    [ObservableProperty]
+    public partial int LatencyOffsetSeconds { get; set; } = 3;
+
     public EditStationViewModel(
         IRadioRepository radioRepository,
         IAzuraStationCatalog catalog,
@@ -58,6 +64,8 @@ public partial class EditStationViewModel : BaseViewModel
             ShortName = _station.ShortName;
             Description = _station.Description;
             HasCustomInfo = _station.HasCustomInfo;
+            OverrideLatencyOffset = _station.PlaybackLatencyOffsetSeconds.HasValue;
+            LatencyOffsetSeconds = _station.PlaybackLatencyOffsetSeconds ?? 3;
         }, LocalizationResourceManager.Instance["Err_LoadStations"]);
     }
 
@@ -73,6 +81,7 @@ public partial class EditStationViewModel : BaseViewModel
             _station.ShortName = ShortName;
             _station.Description = Description;
             _station.HasCustomInfo = HasCustomInfo;
+            _station.PlaybackLatencyOffsetSeconds = OverrideLatencyOffset ? LatencyOffsetSeconds : null;
 
             await _radioRepository.UpdateAsync(_station);
             _ = _catalog.ReloadAsync();

@@ -64,9 +64,8 @@ public partial class OnAirViewModel : BaseViewModel
     public partial string TotalTimeText { get; set; } = "0:00";
 
     private IDispatcherTimer? _progressTimer;
-    private int _localElapsedSeconds;
+    private int _elapsedAnchorSeconds;
     private DateTime _elapsedAnchorUtc;
-    private int _trackDurationSeconds;
     private volatile bool _isShuttingDown;
 
     public OnAirViewModel(
@@ -175,8 +174,7 @@ public partial class OnAirViewModel : BaseViewModel
     {
         await _audioService.StopAsync();
         StopProgressTimer();
-        SetLocalElapsed(0);
-        _trackDurationSeconds = 0;
+        NowPlaying = NowPlayingInfo.Empty;
         UpdateProgressDisplay();
     }
 
@@ -232,7 +230,7 @@ public partial class OnAirViewModel : BaseViewModel
         await SafeExecuteAsync(async () =>
         {
             NowPlayingInfo info = await _nowPlayingService.FetchOnceAsync(CurrentStation);
-            ApplyNowPlayingInfo(info);
+            await ApplyNowPlayingInfoAsync(info);
         }, LocalizationResourceManager.Instance["Err_NowPlaying"]);
     }
 
@@ -312,8 +310,6 @@ public partial class OnAirViewModel : BaseViewModel
         NowPlaying = NowPlayingInfo.Empty;
         ArtworkUrl = null;
         StopProgressTimer();
-        SetLocalElapsed(0);
-        _trackDurationSeconds = 0;
         UpdateProgressDisplay();
         if (station is not null)
             await StartPlayAndNowPollingAsync(station);
@@ -370,8 +366,6 @@ public partial class OnAirViewModel : BaseViewModel
         NowPlaying = NowPlayingInfo.Empty;
         ArtworkUrl = null;
         StopProgressTimer();
-        SetLocalElapsed(0);
-        _trackDurationSeconds = 0;
         UpdateProgressDisplay();
 
         await StartNowPlayingPollingAsync(station);
@@ -380,7 +374,7 @@ public partial class OnAirViewModel : BaseViewModel
     private async void OnStreamOpened(object? sender, AzuraStation station)
     {
         NowPlayingInfo info = await _nowPlayingService.FetchOnceAsync(station);
-        RunOnMainThreadIfActive(() => ApplyNowPlayingInfo(info));
+        RunOnMainThreadIfActive(() => _ = ApplyNowPlayingInfoAsync(info));
     }
 
     private void OnPlaybackStateChanged(object? sender, bool isPlaying)
@@ -407,28 +401,37 @@ public partial class OnAirViewModel : BaseViewModel
 
     private void OnNowPlayingUpdated(object? sender, NowPlayingInfo info)
     {
-        RunOnMainThreadIfActive(() =>
-        {
-            ApplyNowPlayingInfo(info);
-        });
+        RunOnMainThreadIfActive(() => _ = ApplyNowPlayingInfoAsync(info));
     }
 
-    private void ApplyNowPlayingInfo(NowPlayingInfo info)
+    private async Task ApplyNowPlayingInfoAsync(NowPlayingInfo info)
     {
         ErrorMessage = "";
         NowPlaying = info;
         ArtworkUrl = info.ArtworkUrl;
         _audioService.UpdateMetadata(info.Artist, info.Title, info.ArtworkUrl, info.TrackElapsedSeconds, info.TrackDurationSeconds);
 
-        if (info.TrackElapsedSeconds >= _localElapsedSeconds || (_localElapsedSeconds - info.TrackElapsedSeconds) > 15)
-            SetLocalElapsed(info.TrackElapsedSeconds, info.LastUpdated);
-        _trackDurationSeconds = info.TrackDurationSeconds;
+        // Ogni poll è ormai dato fresco (cache-busting sull'endpoint AzuraCast), quindi l'ancora
+        // viene riallineata al valore reale ricevuto (corretto dell'offset di latenza, personalizzato
+        // per stazione o generale) — il timer sotto interpola solo visivamente tra un poll e il successivo.
+        int latencyOffsetSeconds = await ResolveLatencyOffsetSecondsAsync();
+        _elapsedAnchorSeconds = Math.Max(0, info.TrackElapsedSeconds - latencyOffsetSeconds);
+        _elapsedAnchorUtc = info.LastUpdated;
         UpdateProgressDisplay();
 
-        if (_trackDurationSeconds > 0)
+        if (info.TrackDurationSeconds > 0)
             EnsureProgressTimerRunning();
         else
             StopProgressTimer();
+    }
+
+    private async Task<int> ResolveLatencyOffsetSecondsAsync()
+    {
+        if (CurrentStation?.PlaybackLatencyOffsetSeconds is int stationOffset)
+            return stationOffset;
+
+        AppSettings settings = await _settingsRepo.GetAsync();
+        return settings.PlaybackLatencyOffsetSeconds;
     }
 
     private void ApplyStationMetadata(AzuraStation station)
@@ -467,14 +470,13 @@ public partial class OnAirViewModel : BaseViewModel
 
     private void OnProgressTimerTick(object? sender, EventArgs e)
     {
-        if (_trackDurationSeconds <= 0)
+        int duration = NowPlaying.TrackDurationSeconds;
+        if (duration <= 0)
             return;
 
-        int realElapsed = (int)(DateTime.UtcNow - _elapsedAnchorUtc).TotalSeconds;
-        _localElapsedSeconds = Math.Min(realElapsed, _trackDurationSeconds);
         UpdateProgressDisplay();
 
-        if (_localElapsedSeconds >= _trackDurationSeconds)
+        if (ComputeElapsedSeconds() >= duration)
             AdvanceToNextTrackLocally();
     }
 
@@ -507,29 +509,30 @@ public partial class OnAirViewModel : BaseViewModel
         };
         ArtworkUrl = NowPlaying.ArtworkUrl;
 
-        SetLocalElapsed(0);
-        _trackDurationSeconds = next.DurationSeconds;
-        _audioService.UpdateMetadata(NowPlaying.Artist, NowPlaying.Title, NowPlaying.ArtworkUrl, 0, _trackDurationSeconds);
+        _elapsedAnchorSeconds = 0;
+        _elapsedAnchorUtc = DateTime.UtcNow;
+        _audioService.UpdateMetadata(NowPlaying.Artist, NowPlaying.Title, NowPlaying.ArtworkUrl, 0, next.DurationSeconds);
         UpdateProgressDisplay();
+    }
+
+    private int ComputeElapsedSeconds()
+    {
+        int duration = NowPlaying.TrackDurationSeconds;
+        return duration > 0
+            ? Math.Min(_elapsedAnchorSeconds + (int)(DateTime.UtcNow - _elapsedAnchorUtc).TotalSeconds, duration)
+            : 0;
     }
 
     private void UpdateProgressDisplay()
     {
-        ElapsedTimeText = FormatTime(_localElapsedSeconds);
-        TotalTimeText = FormatTime(_trackDurationSeconds);
-        TrackProgress = _trackDurationSeconds > 0
-            ? Math.Clamp((double)_localElapsedSeconds / _trackDurationSeconds, 0.0, 1.0)
-            : 0.0;
-    }
+        int duration = NowPlaying.TrackDurationSeconds;
+        int elapsed = ComputeElapsedSeconds();
 
-    // Anchors elapsed time to a wall-clock timestamp instead of a tick count. The 1s dispatcher
-    // timer is not guaranteed to fire exactly every 1000ms (main-thread load, OS timer throttling,
-    // battery optimizations — all vary per device), so counting "+1 per tick" drifts over time by an
-    // amount that differs from device to device. Recomputing from elapsed real time removes the drift.
-    private void SetLocalElapsed(int seconds, DateTime? referenceUtc = null)
-    {
-        _localElapsedSeconds = Math.Max(0, seconds);
-        _elapsedAnchorUtc = (referenceUtc ?? DateTime.UtcNow) - TimeSpan.FromSeconds(_localElapsedSeconds);
+        ElapsedTimeText = FormatTime(elapsed);
+        TotalTimeText = FormatTime(duration);
+        TrackProgress = duration > 0
+            ? Math.Clamp((double)elapsed / duration, 0.0, 1.0)
+            : 0.0;
     }
 
     private static string FormatTime(int totalSeconds)

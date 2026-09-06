@@ -14,6 +14,7 @@ public partial class AzuraStation : ObservableObject
     public int SortOrder { get; set; }
     public bool IsTest { get; set; }
     public string WebsocketUrl { get; set; } = "";
+    public int? PlaybackLatencyOffsetSeconds { get; set; }
 
     // API — live data (fallback to DB values if API unavailable)
     public string Name { get; set; } = "";

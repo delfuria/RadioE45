@@ -21,22 +21,50 @@
                 FontAttributes="Bold" />
 
             <Border Style="{StaticResource CardBorder}" Margin="16,0">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                    <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
+                            <Label
+                                Text="{loc:Translate Settings_StartWithFavorite}"
+                                TextColor="{DynamicResource PrimaryText}"
+                                FontSize="15" />
+                            <Label
+                                Text="{loc:Translate Settings_StartWithFavorite_Hint}"
+                                HorizontalTextAlignment = "Start"
+                                Style="{StaticResource CaptionLabel}" />
+                        </VerticalStackLayout>
+                        <CheckBox
+                            Grid.Column="1"
+                            IsChecked="{Binding StartWithFavorite}"
+                            VerticalOptions="Center" />
+                    </Grid>
+
+                    <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" />
+
+                    <VerticalStackLayout Spacing="4">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label
+                                Grid.Column="0"
+                                Text="{loc:Translate Settings_LatencyOffset}"
+                                TextColor="{DynamicResource PrimaryText}"
+                                FontSize="15" />
+                            <Label
+                                Grid.Column="1"
+                                Text="{Binding PlaybackLatencyOffsetSeconds, StringFormat='{}{0} s'}"
+                                Style="{StaticResource CaptionLabel}" />
+                        </Grid>
                         <Label
-                            Text="{loc:Translate Settings_StartWithFavorite}"
-                            TextColor="{DynamicResource PrimaryText}"
-                            FontSize="15" />
-                        <Label
-                            Text="{loc:Translate Settings_StartWithFavorite_Hint}"
-                            HorizontalTextAlignment = "Start"
+                            Text="{loc:Translate Settings_LatencyOffset_Hint}"
+                            HorizontalTextAlignment="Start"
                             Style="{StaticResource CaptionLabel}" />
+                        <Slider
+                            Minimum="0"
+                            Maximum="10"
+                            Value="{Binding PlaybackLatencyOffsetSeconds}"
+                            ThumbColor="{DynamicResource Accent}"
+                            MinimumTrackColor="{DynamicResource Accent}" />
                     </VerticalStackLayout>
-                    <CheckBox
-                        Grid.Column="1"
-                        IsChecked="{Binding StartWithFavorite}"
-                        VerticalOptions="Center" />
-                </Grid>
+                </VerticalStackLayout>
             </Border>
 
             <!-- Sezione Tema -->

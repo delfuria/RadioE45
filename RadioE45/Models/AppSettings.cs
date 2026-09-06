@@ -14,4 +14,5 @@ public class AppSettings
     public bool CrashReportingEnabled { get; set; }
     public bool CrashReportingConsentRequested { get; set; }
     public string DesktopOrientation { get; set; } = "Portrait";
+    public int PlaybackLatencyOffsetSeconds { get; set; } = 3;
 }

@@ -66,6 +66,34 @@
                     VerticalOptions="Center" />
             </HorizontalStackLayout>
 
+            <VerticalStackLayout Spacing="4">
+                <HorizontalStackLayout Spacing="8">
+                    <CheckBox
+                        IsChecked="{Binding OverrideLatencyOffset}"
+                        Color="{DynamicResource Accent}"
+                        VerticalOptions="Center" />
+                    <Label
+                        Text="{loc:Translate EditStation_OverrideLatencyOffset}"
+                        TextColor="{DynamicResource PrimaryText}"
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding OverrideLatencyOffset}">
+                    <Slider
+                        Grid.Column="0"
+                        Minimum="0"
+                        Maximum="10"
+                        Value="{Binding LatencyOffsetSeconds}"
+                        ThumbColor="{DynamicResource Accent}"
+                        MinimumTrackColor="{DynamicResource Accent}" />
+                    <Label
+                        Grid.Column="1"
+                        Text="{Binding LatencyOffsetSeconds, StringFormat='{}{0} s'}"
+                        Style="{StaticResource CaptionLabel}"
+                        VerticalOptions="Center"
+                        Margin="8,0,0,0" />
+                </Grid>
+            </VerticalStackLayout>
+
         </VerticalStackLayout>
 
         <!-- Save / Cancel -->

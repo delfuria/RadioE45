@@ -85,7 +85,7 @@ public class NowPlayingService : INowPlayingService, IDisposable
             client.Timeout = TimeSpan.FromSeconds(3);
 
             IAzuraCastApi api = RestService.For<IAzuraCastApi>(client);
-            AzuraCastNowPlayingResponse response = await api.GetNowPlayingAsync(station.StationId);
+            AzuraCastNowPlayingResponse response = await api.GetNowPlayingAsync(station.StationId, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
             NowPlayingInfo np = Map(response, station);
             _logger.LogInformation(
                 "▶ {Artist} - {Title} |  {Elapsed}/{Duration}s  |  👥 {Listeners}  |  Next: {NextArtist} - {NextTitle}",

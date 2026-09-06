@@ -19,4 +19,5 @@ public class RadioStation
     public string ShortName { get; set; } = string.Empty;
     public bool IsTest { get; set; }
     public bool HasCustomInfo { get; set; }
+    public int? PlaybackLatencyOffsetSeconds { get; set; }
 }

@@ -9,7 +9,7 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
     // Incrementa questo valore ogni volta che i dati di default cambiano.
     // Al prossimo avvio dell'app, le tabelle con dati di seed vengono azzerate.
     // Le stazioni vengono ri-popolate solo su consenso esplicito dell'utente.
-    public const decimal CurrentDbVersion = 0.73m;
+    public const decimal CurrentDbVersion = 0.31m;
 
     private const string DbFileName = "radioe45.db";
     private SQLiteAsyncConnection? _connection;
@@ -43,6 +43,7 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
         await conn.CreateTableAsync<AppSettings>();
         await conn.CreateTableAsync<Log>();
         await MigrateAppSettingsSchemaAsync(conn);
+        await MigrateRadioStationsSchemaAsync(conn);
         await SeedDefaultAppSettingsAsync(conn);
         await RunSeedMigrationIfNeededAsync(conn);
     }
@@ -64,6 +65,26 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
         {
             await conn.ExecuteAsync(
                 $"ALTER TABLE AppSettings ADD COLUMN {nameof(AppSettings.CrashReportingConsentRequested)} INTEGER NOT NULL DEFAULT 0");
+        }
+
+        if (!columnNames.Contains(nameof(AppSettings.PlaybackLatencyOffsetSeconds)))
+        {
+            await conn.ExecuteAsync(
+                $"ALTER TABLE AppSettings ADD COLUMN {nameof(AppSettings.PlaybackLatencyOffsetSeconds)} INTEGER NOT NULL DEFAULT 3");
+        }
+    }
+
+    private static async Task MigrateRadioStationsSchemaAsync(SQLiteAsyncConnection conn)
+    {
+        var columns = await conn.GetTableInfoAsync("RadioStations");
+        HashSet<string> columnNames = columns
+            .Select(static column => column.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (!columnNames.Contains(nameof(RadioStation.PlaybackLatencyOffsetSeconds)))
+        {
+            await conn.ExecuteAsync(
+                $"ALTER TABLE RadioStations ADD COLUMN {nameof(RadioStation.PlaybackLatencyOffsetSeconds)} INTEGER NULL");
         }
     }
 

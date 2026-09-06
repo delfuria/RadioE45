@@ -81,6 +81,8 @@
   <data name="Settings_Section_Playback" xml:space="preserve"><value>ODTWARZANIE</value></data>
   <data name="Settings_StartWithFavorite" xml:space="preserve"><value>Uruchamiaj z ulubioną stacją</value></data>
   <data name="Settings_StartWithFavorite_Hint" xml:space="preserve"><value>Jeśli nie ma ulubionej stacji, ładowana jest pierwsza z listy</value></data>
+  <data name="Settings_LatencyOffset" xml:space="preserve"><value>Korekta opóźnienia NowPlaying</value></data>
+  <data name="Settings_LatencyOffset_Hint" xml:space="preserve"><value>Sekundy odejmowane od pozycji zgłoszonej przez serwer, aby dopasować ją do rzeczywistego dźwięku</value></data>
   <data name="Settings_Section_Theme" xml:space="preserve"><value>MOTYW</value></data>
   <data name="Settings_ThemePreference" xml:space="preserve"><value>Preferencja motywu</value></data>
   <data name="Settings_Save" xml:space="preserve"><value>Zapisz ustawienia</value></data>
@@ -111,6 +113,7 @@
   <data name="EditStation_ShortName" xml:space="preserve"><value>Krótka nazwa</value></data>
   <data name="EditStation_Description" xml:space="preserve"><value>Opis</value></data>
   <data name="EditStation_UseCustomInfo" xml:space="preserve"><value>Użyj niestandardowych informacji</value></data>
+  <data name="EditStation_OverrideLatencyOffset" xml:space="preserve"><value>Niestandardowa korekta opóźnienia</value></data>
   <data name="AddStation_UrlPlaceholder" xml:space="preserve"><value>np. radioe45.ddns.net</value></data>
   <data name="AddStation_Search" xml:space="preserve"><value>Szukaj</value></data>
   <data name="AddStation_Prompt" xml:space="preserve"><value>Wpisz adres serwera AzuraCast i naciśnij Szukaj</value></data>
