@@ -17,6 +17,10 @@ public class PodcastPlayerService : IPodcastPlayerService
     private MediaElement? _mediaElement;
     private AzuraStation? _station;
     private TimeSpan? _pendingResumePosition;
+    // Vero tra "seek di ripresa avviato" e "seek completato": i campioni di posizione che arrivano
+    // in questa finestra sono pre-seek (vicini a 0) e vanno soppressi, altrimenti la UI mostra un
+    // flash a 0 prima che il campione post-seek corretto arrivi.
+    private bool _resumeSeekInFlight;
     // Incrementato a ogni PlayAsync: un evento StateChanged "Playing" tardivo riferito a un
     // episodio ormai sostituito (utente ha cliccato un altro episodio nel frattempo) non deve
     // consumare/eseguire il seek con il target del nuovo episodio già impostato in _pendingResumePosition.
@@ -89,6 +93,7 @@ public class PodcastPlayerService : IPodcastPlayerService
         _lastProgressSaveAt = DateTime.MinValue;
         _pendingResumePosition = startPositionSeconds > 0 ? TimeSpan.FromSeconds(startPositionSeconds) : null;
         _pendingResumeToken = token;
+        _resumeSeekInFlight = false;
 
         _lastFailureMessage = null;
         await OpenAndPlayWithRetryAsync(episode.MediaUrl);
@@ -198,8 +203,6 @@ public class PodcastPlayerService : IPodcastPlayerService
 
     private void OnMediaPositionChanged(object? sender, MediaPositionChangedEventArgs e)
     {
-        PositionChanged?.Invoke(this, e.Position);
-
         // Primo campione di posizione reale dopo Play(): qui il player sta davvero decodificando,
         // non più solo "aperto" — il SeekTo ha effetto reale solo a questo punto (vedi commento
         // su OpenAndPlayWithRetryAsync). Token-guard: ignora se nel frattempo è stato selezionato
@@ -207,8 +210,15 @@ public class PodcastPlayerService : IPodcastPlayerService
         if (_pendingResumePosition is { } resume && _pendingResumeToken == _playToken)
         {
             _pendingResumePosition = null;
+            _resumeSeekInFlight = true;
             _ = SeekToResumeAsync(resume, _pendingResumeToken);
+            return; // campione pre-seek (vicino a 0): non propagarlo alla UI, provocherebbe un flash
         }
+
+        if (_resumeSeekInFlight)
+            return; // seek ancora in corso: eventuali altri campioni pre-seek restano soppressi
+
+        PositionChanged?.Invoke(this, e.Position);
 
         if (DateTime.UtcNow - _lastProgressSaveAt > ProgressSaveInterval)
             _ = SaveProgressAsync();
@@ -227,6 +237,11 @@ public class PodcastPlayerService : IPodcastPlayerService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to resume episode from saved position");
+        }
+        finally
+        {
+            if (token == _playToken)
+                _resumeSeekInFlight = false;
         }
     }
 
