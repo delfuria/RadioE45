@@ -5,6 +5,7 @@ using RadioE45.Services.Data;
 using RadioE45.Services.Diagnostics;
 using RadioE45.Services.Logging;
 using RadioE45.Services.Radio;
+using RadioE45.ViewModels;
 
 namespace RadioE45;
 
@@ -16,12 +17,14 @@ public partial class App : Application
     internal const double LandscapeHeight = 500;
     private readonly IAppSettingsRepository _settingsRepo;
     private readonly IRadioRepository _radioRepository;
+    private readonly OnAirViewModel _onAirViewModel;
 
-    public App(IAppSettingsRepository settingsRepo, ILogRepository logRepo, DatabaseLoggerProvider dbLoggerProvider, IAzuraStationCatalog stationCatalog, IRadioRepository radioRepository)
+    public App(IAppSettingsRepository settingsRepo, ILogRepository logRepo, DatabaseLoggerProvider dbLoggerProvider, IAzuraStationCatalog stationCatalog, IRadioRepository radioRepository, OnAirViewModel onAirViewModel)
     {
         InitializeComponent();
         _settingsRepo = settingsRepo;
         _radioRepository = radioRepository;
+        _onAirViewModel = onAirViewModel;
 
         var pref = Preferences.Default.Get("theme_preference", "Dark");
         ThemeService.Apply(pref);
@@ -73,7 +76,7 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        Window window = new(new AppShell(_radioRepository));
+        Window window = new(new AppShell(_radioRepository, _onAirViewModel));
 
         DevicePlatform platform = DeviceInfo.Current.Platform;
         if (platform == DevicePlatform.WinUI || platform == DevicePlatform.MacCatalyst)

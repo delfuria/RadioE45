@@ -63,6 +63,7 @@
   <data name="Tab_OnAir" xml:space="preserve"><value>In Onda</value></data>
   <data name="Tab_Radio" xml:space="preserve"><value>Canali Radio</value></data>
   <data name="Tab_Schedule" xml:space="preserve"><value>Palinsesto</value></data>
+  <data name="Tab_Podcasts" xml:space="preserve"><value>Podcast</value></data>
   <data name="Tab_Settings" xml:space="preserve"><value>Impostazioni</value></data>
   <data name="RadioList_Title" xml:space="preserve"><value>Radio</value></data>
 
@@ -81,6 +82,9 @@
   <!-- Schedule -->
   <data name="Schedule_Empty" xml:space="preserve"><value>Nessun palinsesto disponibile</value></data>
   <data name="Schedule_Now" xml:space="preserve"><value>● In Onda</value></data>
+  <data name="Podcast_Empty" xml:space="preserve"><value>Nessun podcast disponibile</value></data>
+  <data name="Podcast_Episodes" xml:space="preserve"><value>episodi</value></data>
+  <data name="Podcast_NoEpisodes" xml:space="preserve"><value>Nessun episodio disponibile</value></data>
 
   <!-- Settings -->
   <data name="Settings_Section_Playback" xml:space="preserve"><value>RIPRODUZIONE</value></data>
@@ -144,6 +148,9 @@
   <data name="Err_SearchStations" xml:space="preserve"><value>Ricerca stazioni</value></data>
   <data name="Err_SaveStations" xml:space="preserve"><value>Salvataggio stazioni</value></data>
   <data name="Err_LoadSchedule" xml:space="preserve"><value>Caricamento palinsesto</value></data>
+  <data name="Err_LoadPodcasts" xml:space="preserve"><value>Caricamento podcast</value></data>
+  <data name="Err_LoadEpisodes" xml:space="preserve"><value>Caricamento episodi</value></data>
+  <data name="Err_PodcastPlayback" xml:space="preserve"><value>Impossibile avviare la riproduzione dell'episodio</value></data>
   <data name="Err_ResetDatabase" xml:space="preserve"><value>Reset database</value></data>
   <data name="Err_DeleteStation" xml:space="preserve"><value>Eliminazione stazione</value></data>
   <data name="Err_ReorderStations" xml:space="preserve"><value>Riordino stazioni</value></data>

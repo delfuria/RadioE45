@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.PodcastEpisodesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels"
+    xmlns:models="clr-namespace:RadioE45.Models"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    x:DataType="vm:PodcastEpisodesViewModel"
+    Title="{Binding PodcastTitle}"
+    Shell.NavBarIsVisible="True">
+
+    <ContentPage.Resources>
+        <toolkit:BoolToObjectConverter x:Key="PlayPauseTextConverter" x:TypeArguments="x:String" TrueObject="⏸" FalseObject="▶" />
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="*,Auto">
+
+        <!-- MediaElement dedicata al podcast — separata dal player radio, invisibile -->
+        <toolkit:MediaElement x:Name="PodcastPlayer" IsVisible="False" HeightRequest="0" />
+
+        <RefreshView
+            Grid.Row="0"
+            IsRefreshing="{Binding IsBusy}"
+            Command="{Binding LoadEpisodesCommand}">
+
+            <CollectionView
+                Margin="0,12,0,0"
+                ItemsSource="{Binding Episodes}"
+                SelectionMode="None"
+                BackgroundColor="Transparent">
+
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center"
+                        Spacing="12"
+                        Padding="32">
+                        <Label
+                            Text="🎧"
+                            FontSize="48"
+                            HorizontalTextAlignment="Center" />
+                        <Label
+                            Text="{loc:Translate Podcast_NoEpisodes}"
+                            Style="{StaticResource SubtitleLabel}" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.Header>
+                    <Label
+                        Text="{Binding ErrorMessage}"
+                        IsVisible="{Binding ErrorMessage, Converter={toolkit:IsNotNullConverter}}"
+                        TextColor="{StaticResource LiveRed}"
+                        FontSize="13"
+                        HorizontalTextAlignment="Center"
+                        Margin="16,8,16,0" />
+                </CollectionView.Header>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:AzuraCastPodcastEpisode">
+                        <Border
+                            Style="{StaticResource CardBorder}"
+                            Margin="16,8,16,0">
+
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding PlayCommand}" CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+
+                                <Border
+                                    Grid.Column="0"
+                                    WidthRequest="56"
+                                    HeightRequest="56"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="Transparent"
+                                    Padding="0">
+                                    <Image
+                                        Source="{Binding ArtworkUrl}"
+                                        Aspect="AspectFill"
+                                        IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNotNullConverter}}" />
+                                </Border>
+
+                                <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+
+                                <Label
+                                    Grid.Row="0"
+                                    Text="{Binding Title}"
+                                    TextColor="{DynamicResource PrimaryText}"
+                                    FontSize="16"
+                                    FontAttributes="Bold"
+                                    LineBreakMode="TailTruncation"
+                                    MaxLines="2" />
+
+                                <Label
+                                    Grid.Row="1"
+                                    Text="{Binding Description}"
+                                    TextColor="{DynamicResource TextSecondary}"
+                                    FontSize="13"
+                                    LineBreakMode="TailTruncation"
+                                    MaxLines="2" />
+
+                                <Label
+                                    Grid.Row="2"
+                                    TextColor="{DynamicResource MutedText}"
+                                    FontSize="12">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding PublishedAt, StringFormat='{0:dd MMM yyyy}'}" />
+                                            <Span Text="  ·  " />
+                                            <Span Text="{Binding Duration, StringFormat='{0:mm\\:ss}'}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="90" Color="Transparent" />
+                </CollectionView.Footer>
+
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Mini player episodio corrente -->
+        <Border
+            Grid.Row="1"
+            IsVisible="{Binding CurrentEpisode, Converter={toolkit:IsNotNullConverter}}"
+            Style="{StaticResource CardBorder}"
+            Margin="12,0,12,12"
+            Padding="12,8">
+
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <Button
+                        Grid.Column="0"
+                        Text="{Binding IsPlaying, Converter={StaticResource PlayPauseTextConverter}}"
+                        Command="{Binding PlayPauseCommand}"
+                        WidthRequest="44"
+                        HeightRequest="44"
+                        CornerRadius="22"
+                        Padding="0"
+                        FontSize="18" />
+
+                    <Label
+                        Grid.Column="1"
+                        Text="{Binding CurrentEpisode.Title}"
+                        TextColor="{DynamicResource PrimaryText}"
+                        FontSize="14"
+                        FontAttributes="Bold"
+                        VerticalOptions="Center"
+                        LineBreakMode="TailTruncation"
+                        MaxLines="1" />
+                </Grid>
+
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <Label
+                        Grid.Column="0"
+                        Text="{Binding ElapsedTimeText}"
+                        TextColor="{DynamicResource TextSecondary}"
+                        FontSize="11"
+                        VerticalOptions="Center" />
+
+                    <Slider
+                        Grid.Column="1"
+                        Minimum="0"
+                        Maximum="1"
+                        Value="{Binding PlaybackProgress, Mode=OneWay}"
+                        DragCompleted="OnSeekDragCompleted" />
+
+                    <Label
+                        Grid.Column="2"
+                        Text="{Binding TotalTimeText}"
+                        TextColor="{DynamicResource TextSecondary}"
+                        FontSize="11"
+                        VerticalOptions="Center" />
+                </Grid>
+
+            </Grid>
+        </Border>
+
+    </Grid>
+
+</ContentPage>

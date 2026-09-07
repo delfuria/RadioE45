@@ -42,6 +42,7 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
         await conn.CreateTableAsync<DbVersion>();
         await conn.CreateTableAsync<AppSettings>();
         await conn.CreateTableAsync<Log>();
+        await conn.CreateTableAsync<PodcastEpisodeProgress>();
         await MigrateAppSettingsSchemaAsync(conn);
         await MigrateRadioStationsSchemaAsync(conn);
         await SeedDefaultAppSettingsAsync(conn);

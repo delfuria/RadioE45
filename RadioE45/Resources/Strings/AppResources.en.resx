@@ -62,6 +62,7 @@
   <data name="Tab_OnAir" xml:space="preserve"><value>On Air</value></data>
   <data name="Tab_Radio" xml:space="preserve"><value>Radio Channels</value></data>
   <data name="Tab_Schedule" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Tab_Podcasts" xml:space="preserve"><value>Podcasts</value></data>
   <data name="Tab_Settings" xml:space="preserve"><value>Settings</value></data>
   <data name="RadioList_Title" xml:space="preserve"><value>Radio</value></data>
 
@@ -77,6 +78,9 @@
 
   <data name="Schedule_Empty" xml:space="preserve"><value>No schedule available</value></data>
   <data name="Schedule_Now" xml:space="preserve"><value>● On Air</value></data>
+  <data name="Podcast_Empty" xml:space="preserve"><value>No podcasts available</value></data>
+  <data name="Podcast_Episodes" xml:space="preserve"><value>episodes</value></data>
+  <data name="Podcast_NoEpisodes" xml:space="preserve"><value>No episodes available</value></data>
 
   <data name="Settings_Section_Playback" xml:space="preserve"><value>PLAYBACK</value></data>
   <data name="Settings_StartWithFavorite" xml:space="preserve"><value>Start with favorite station</value></data>
@@ -136,6 +140,9 @@
   <data name="Err_SearchStations" xml:space="preserve"><value>Station search</value></data>
   <data name="Err_SaveStations" xml:space="preserve"><value>Saving stations</value></data>
   <data name="Err_LoadSchedule" xml:space="preserve"><value>Loading schedule</value></data>
+  <data name="Err_LoadPodcasts" xml:space="preserve"><value>Loading podcasts</value></data>
+  <data name="Err_LoadEpisodes" xml:space="preserve"><value>Loading episodes</value></data>
+  <data name="Err_PodcastPlayback" xml:space="preserve"><value>Could not start episode playback</value></data>
   <data name="Err_ResetDatabase" xml:space="preserve"><value>Database reset</value></data>
   <data name="Err_DeleteStation" xml:space="preserve"><value>Deleting station</value></data>
   <data name="Err_ReorderStations" xml:space="preserve"><value>Reordering stations</value></data>

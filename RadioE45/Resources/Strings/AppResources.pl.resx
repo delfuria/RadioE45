@@ -62,6 +62,7 @@
   <data name="Tab_OnAir" xml:space="preserve"><value>Na antenie</value></data>
   <data name="Tab_Radio" xml:space="preserve"><value>Kanały radiowe</value></data>
   <data name="Tab_Schedule" xml:space="preserve"><value>Ramówka</value></data>
+  <data name="Tab_Podcasts" xml:space="preserve"><value>Podcasty</value></data>
   <data name="Tab_Settings" xml:space="preserve"><value>Ustawienia</value></data>
   <data name="RadioList_Title" xml:space="preserve"><value>Radio</value></data>
 
@@ -77,6 +78,9 @@
 
   <data name="Schedule_Empty" xml:space="preserve"><value>Brak dostępnej ramówki</value></data>
   <data name="Schedule_Now" xml:space="preserve"><value>● TERAZ</value></data>
+  <data name="Podcast_Empty" xml:space="preserve"><value>Brak dostępnych podcastów</value></data>
+  <data name="Podcast_Episodes" xml:space="preserve"><value>odcinków</value></data>
+  <data name="Podcast_NoEpisodes" xml:space="preserve"><value>Brak dostępnych odcinków</value></data>
 
   <data name="Settings_Section_Playback" xml:space="preserve"><value>ODTWARZANIE</value></data>
   <data name="Settings_StartWithFavorite" xml:space="preserve"><value>Uruchamiaj z ulubioną stacją</value></data>
@@ -136,6 +140,9 @@
   <data name="Err_SearchStations" xml:space="preserve"><value>Wyszukiwanie stacji</value></data>
   <data name="Err_SaveStations" xml:space="preserve"><value>Zapisywanie stacji</value></data>
   <data name="Err_LoadSchedule" xml:space="preserve"><value>Ładowanie ramówki</value></data>
+  <data name="Err_LoadPodcasts" xml:space="preserve"><value>Ładowanie podcastów</value></data>
+  <data name="Err_LoadEpisodes" xml:space="preserve"><value>Ładowanie odcinków</value></data>
+  <data name="Err_PodcastPlayback" xml:space="preserve"><value>Nie można rozpocząć odtwarzania odcinka</value></data>
   <data name="Err_ResetDatabase" xml:space="preserve"><value>Resetowanie bazy danych</value></data>
   <data name="Err_DeleteStation" xml:space="preserve"><value>Usuwanie stacji</value></data>
   <data name="Err_ReorderStations" xml:space="preserve"><value>Zmiana kolejności stacji</value></data>

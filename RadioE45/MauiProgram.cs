@@ -118,6 +118,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAudioService, AudioService>();
  #endif
         builder.Services.AddSingleton<RemoteArtworkLoader>();
+        builder.Services.AddSingleton<IPodcastPlayerService, PodcastPlayerService>();
  #if IOS || MACCATALYST
         builder.Services.AddSingleton<IPlatformNowPlayingService, IosNowPlayingService>();
  #else
@@ -136,11 +137,13 @@ public static class MauiProgram
         builder.Services.AddTransient<IStationListService, StationListService>();
         builder.Services.AddSingleton<IAzuraStationCatalog, AzuraStationCatalog>();
         builder.Services.AddTransient<IScheduleService, ScheduleService>();
+        builder.Services.AddTransient<IPodcastService, PodcastService>();
         builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
         builder.Services.AddSingleton<IRadioRepository, RadioRepository>();
         builder.Services.AddSingleton<IDbVersionRepository, DbVersionRepository>();
         builder.Services.AddSingleton<IAppSettingsRepository, AppSettingsRepository>();
         builder.Services.AddSingleton<ILogRepository, LogRepository>();
+        builder.Services.AddSingleton<IPodcastProgressRepository, PodcastProgressRepository>();
 
         // OnAirViewModel is Singleton so RadioListViewModel can reference it and share state
         builder.Services.AddSingleton<OnAirViewModel>();
@@ -151,6 +154,8 @@ public static class MauiProgram
         builder.Services.AddTransient<EditStationViewModel>();
         builder.Services.AddTransient<ScheduleViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
+        builder.Services.AddTransient<PodcastListViewModel>();
+        builder.Services.AddTransient<PodcastEpisodesViewModel>();
 
         // Views as Transient
         builder.Services.AddTransient<OnAirPage>();
@@ -159,6 +164,8 @@ public static class MauiProgram
         builder.Services.AddTransient<RadioListPage>();
         builder.Services.AddTransient<SchedulePage>();
         builder.Services.AddTransient<SettingsPage>();
+        builder.Services.AddTransient<PodcastListPage>();
+        builder.Services.AddTransient<PodcastEpisodesPage>();
 
         DatabaseLoggerProvider dbLoggerProvider = new();
         builder.Services.AddSingleton(dbLoggerProvider);

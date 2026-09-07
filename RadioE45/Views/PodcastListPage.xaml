@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.PodcastListPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels"
+    xmlns:models="clr-namespace:RadioE45.Models"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    x:DataType="vm:PodcastListViewModel"
+    Title="{loc:Translate Tab_Podcasts}">
+
+    <RefreshView
+        IsRefreshing="{Binding IsBusy}"
+        Command="{Binding LoadPodcastsCommand}">
+
+        <CollectionView
+            Margin="0,50,0,0"
+            ItemsSource="{Binding Podcasts}"
+            SelectionMode="None"
+            BackgroundColor="Transparent">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    Spacing="12"
+                    Padding="32">
+                    <Label
+                        Text="🎙️"
+                        FontSize="48"
+                        HorizontalTextAlignment="Center" />
+                    <Label
+                        Text="{loc:Translate Podcast_Empty}"
+                        Style="{StaticResource SubtitleLabel}" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:AzuraCastPodcast">
+                    <Border
+                        Style="{StaticResource CardBorder}"
+                        Margin="16,8,16,0">
+
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectCommand}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+
+                            <Border
+                                Grid.Column="0"
+                                WidthRequest="56"
+                                HeightRequest="56"
+                                StrokeShape="RoundRectangle 8"
+                                Stroke="Transparent"
+                                Padding="0">
+                                <Image
+                                    Source="{Binding ArtworkUrl}"
+                                    Aspect="AspectFill"
+                                    IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNotNullConverter}}" />
+                            </Border>
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                                <Label
+                                    Text="{Binding Title}"
+                                    TextColor="{DynamicResource PrimaryText}"
+                                    FontSize="16"
+                                    FontAttributes="Bold"
+                                    LineBreakMode="TailTruncation"
+                                    MaxLines="1" />
+                                <Label
+                                    Text="{Binding Description}"
+                                    TextColor="{DynamicResource TextSecondary}"
+                                    FontSize="13"
+                                    LineBreakMode="TailTruncation"
+                                    MaxLines="2" />
+                                <Label
+                                    TextColor="{DynamicResource MutedText}"
+                                    FontSize="12">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding EpisodeCount}" />
+                                            <Span Text=" " />
+                                            <Span Text="{loc:Translate Podcast_Episodes}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </VerticalStackLayout>
+
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.Footer>
+                <BoxView HeightRequest="20" Color="Transparent" />
+            </CollectionView.Footer>
+
+        </CollectionView>
+    </RefreshView>
+
+</ContentPage>

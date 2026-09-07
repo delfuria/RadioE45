@@ -13,6 +13,8 @@ namespace RadioE45.ViewModels;
 public partial class OnAirViewModel : BaseViewModel
 {
     private readonly IAudioService _audioService;
+    private readonly IPodcastPlayerService _podcastPlayerService;
+    private readonly IPodcastService _podcastService;
     private readonly INowPlayingService _nowPlayingService;
     private readonly IAzuraStationCatalog _catalog;
     private readonly IAppSettingsRepository _settingsRepo;
@@ -49,9 +51,73 @@ public partial class OnAirViewModel : BaseViewModel
     [ObservableProperty]
     public partial bool IsFavorite { get; set; }
 
+    [ObservableProperty]
+    public partial bool HasPodcasts { get; set; }
+
+    private int _hasPodcastsRequestId;
+
     partial void OnCurrentStationChanged(AzuraStation? value)
     {
         IsFavorite = value?.IsFavorite ?? false;
+        _ = RefreshHasPodcastsAsync(value);
+        ResetPodcastTabToRoot();
+    }
+
+    // Il tab Podcast resta vivo con il proprio stack di navigazione anche quando non è quello
+    // attivo — se la stazione cambia mentre si era navigati dentro la lista episodi, quello stack
+    // punta ormai a dati non pertinenti. Si opera direttamente sulla ShellSection del tab (per
+    // Route, non su Shell.Current "corrente") così funziona indipendentemente dal tab attivo in quel
+    // momento — GoToAsync("..") relativo sarebbe stato ambiguo/rischioso da qui.
+    private static void ResetPodcastTabToRoot()
+    {
+        Shell? shell = Shell.Current;
+        if (shell is null)
+            return;
+
+        foreach (ShellItem item in shell.Items)
+        {
+            foreach (ShellSection section in item.Items)
+            {
+                foreach (ShellContent content in section.Items)
+                {
+                    if (content.Route != "PodcastListPage")
+                        continue;
+
+                    if (section.Navigation.NavigationStack.Count > 1)
+                        _ = section.Navigation.PopToRootAsync(false);
+
+                    return;
+                }
+            }
+        }
+    }
+
+    // Probe silenziosa: determina se mostrare il tab Podcast per la stazione corrente. Non
+    // deve mai propagare errori in UI — un server AzuraCast senza feature podcast è normale.
+    private async Task RefreshHasPodcastsAsync(AzuraStation? station)
+    {
+        int requestId = ++_hasPodcastsRequestId;
+
+        if (station is null)
+        {
+            HasPodcasts = false;
+            return;
+        }
+
+        bool hasPodcasts;
+        try
+        {
+            List<AzuraCastPodcast> podcasts = await _podcastService.GetPodcastsAsync(station);
+            hasPodcasts = podcasts.Count > 0;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug(ex, "Podcast probe failed for station {StationId}", station.StationId);
+            hasPodcasts = false;
+        }
+
+        if (requestId == _hasPodcastsRequestId)
+            HasPodcasts = hasPodcasts;
     }
 
     [ObservableProperty]
@@ -70,6 +136,8 @@ public partial class OnAirViewModel : BaseViewModel
 
     public OnAirViewModel(
         IAudioService audioService,
+        IPodcastPlayerService podcastPlayerService,
+        IPodcastService podcastService,
         INowPlayingService nowPlayingService,
         IAzuraStationCatalog catalog,
         IAppSettingsRepository settingsRepo,
@@ -77,6 +145,8 @@ public partial class OnAirViewModel : BaseViewModel
     {
         Logger = logger;
         _audioService = audioService;
+        _podcastPlayerService = podcastPlayerService;
+        _podcastService = podcastService;
         _nowPlayingService = nowPlayingService;
         _catalog = catalog;
         _settingsRepo = settingsRepo;
@@ -323,6 +393,10 @@ public partial class OnAirViewModel : BaseViewModel
 
     private async Task StartPlayAndNowPollingAsync(AzuraStation station)
     {
+        // Un solo player attivo alla volta: avviare la radio live ferma un eventuale episodio podcast.
+        if (_podcastPlayerService.CurrentEpisode is not null)
+            await _podcastPlayerService.StopAsync();
+
         ApplyStationMetadata(station);
         await _audioService.PlayAsync(station);
         await StartNowPlayingPollingAsync(station);
