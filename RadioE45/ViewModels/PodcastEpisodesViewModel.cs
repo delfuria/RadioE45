@@ -105,7 +105,16 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
         }
 
         CurrentEpisode = episode;
-        await _podcastPlayerService.PlayAsync(station, episode);
+
+        int startPositionSeconds = await _podcastPlayerService.GetResumePositionSecondsAsync(station, episode);
+        TimeSpan duration = episode.Duration;
+        ElapsedTimeText = FormatTime(TimeSpan.FromSeconds(startPositionSeconds));
+        TotalTimeText = FormatTime(duration);
+        PlaybackProgress = duration > TimeSpan.Zero
+            ? Math.Clamp(startPositionSeconds / duration.TotalSeconds, 0.0, 1.0)
+            : 0.0;
+
+        await _podcastPlayerService.PlayAsync(station, episode, startPositionSeconds);
     }
 
     [RelayCommand]

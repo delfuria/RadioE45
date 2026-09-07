@@ -20,7 +20,13 @@ public interface IPodcastPlayerService
     /// </summary>
     void Initialize(MediaElement mediaElement);
 
-    Task PlayAsync(AzuraStation station, AzuraCastPodcastEpisode episode);
+    /// <summary>
+    /// Legge il progresso salvato per l'episodio senza avviare la riproduzione — da usare per
+    /// sincronizzare la UI (barra/testo) con lo stesso valore poi passato a PlayAsync.
+    /// </summary>
+    Task<int> GetResumePositionSecondsAsync(AzuraStation station, AzuraCastPodcastEpisode episode);
+
+    Task PlayAsync(AzuraStation station, AzuraCastPodcastEpisode episode, int startPositionSeconds);
     Task PauseAsync();
     Task ResumeAsync();
     Task StopAsync();

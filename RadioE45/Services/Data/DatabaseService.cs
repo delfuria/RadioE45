@@ -45,6 +45,7 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
         await conn.CreateTableAsync<PodcastEpisodeProgress>();
         await MigrateAppSettingsSchemaAsync(conn);
         await MigrateRadioStationsSchemaAsync(conn);
+        await MigratePodcastEpisodeProgressSchemaAsync(conn);
         await SeedDefaultAppSettingsAsync(conn);
         await RunSeedMigrationIfNeededAsync(conn);
     }
@@ -86,6 +87,20 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
         {
             await conn.ExecuteAsync(
                 $"ALTER TABLE RadioStations ADD COLUMN {nameof(RadioStation.PlaybackLatencyOffsetSeconds)} INTEGER NULL");
+        }
+    }
+
+    private static async Task MigratePodcastEpisodeProgressSchemaAsync(SQLiteAsyncConnection conn)
+    {
+        var columns = await conn.GetTableInfoAsync("PodcastEpisodeProgress");
+        HashSet<string> columnNames = columns
+            .Select(static column => column.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (!columnNames.Contains(nameof(PodcastEpisodeProgress.RadioStationId)))
+        {
+            await conn.ExecuteAsync(
+                $"ALTER TABLE PodcastEpisodeProgress ADD COLUMN {nameof(PodcastEpisodeProgress.RadioStationId)} INTEGER NOT NULL DEFAULT 0");
         }
     }
 

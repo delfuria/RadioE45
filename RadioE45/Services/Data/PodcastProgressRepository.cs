@@ -20,13 +20,14 @@ public class PodcastProgressRepository : IPodcastProgressRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task SaveAsync(int stationId, string podcastId, string episodeId, int positionSeconds, bool isCompleted)
+    public async Task SaveAsync(int stationId, int radioStationId, string podcastId, string episodeId, int positionSeconds, bool isCompleted)
     {
         SQLiteAsyncConnection conn = await _db.GetConnectionAsync();
         PodcastEpisodeProgress? existing = await GetAsync(stationId, episodeId);
 
         if (existing is not null)
         {
+            existing.RadioStationId = radioStationId;
             existing.PositionSeconds = positionSeconds;
             existing.IsCompleted = isCompleted;
             existing.LastPlayedAt = DateTime.UtcNow;
@@ -37,6 +38,7 @@ public class PodcastProgressRepository : IPodcastProgressRepository
             await conn.InsertAsync(new PodcastEpisodeProgress
             {
                 StationId = stationId,
+                RadioStationId = radioStationId,
                 PodcastId = podcastId,
                 EpisodeId = episodeId,
                 PositionSeconds = positionSeconds,

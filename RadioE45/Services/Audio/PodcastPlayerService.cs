@@ -17,6 +17,11 @@ public class PodcastPlayerService : IPodcastPlayerService
     private MediaElement? _mediaElement;
     private AzuraStation? _station;
     private TimeSpan? _pendingResumePosition;
+    // Incrementato a ogni PlayAsync: un evento StateChanged "Playing" tardivo riferito a un
+    // episodio ormai sostituito (utente ha cliccato un altro episodio nel frattempo) non deve
+    // consumare/eseguire il seek con il target del nuovo episodio già impostato in _pendingResumePosition.
+    private int _playToken;
+    private int _pendingResumeToken;
     private DateTime _lastProgressSaveAt = DateTime.MinValue;
     private static readonly TimeSpan ProgressSaveInterval = TimeSpan.FromSeconds(10);
 
@@ -60,10 +65,21 @@ public class PodcastPlayerService : IPodcastPlayerService
         _mediaElement.MediaFailed += OnMediaFailed;
     }
 
-    public async Task PlayAsync(AzuraStation station, AzuraCastPodcastEpisode episode)
+    // Lettura rapida e senza effetti collaterali del progresso salvato — usata dal ViewModel per
+    // valorizzare la barra di avanzamento PRIMA di avviare la riproduzione, cosicché barra e punto
+    // di ripresa effettivo derivino dallo stesso identico valore (vedi PlayAsync sotto).
+    public async Task<int> GetResumePositionSecondsAsync(AzuraStation station, AzuraCastPodcastEpisode episode)
+    {
+        PodcastEpisodeProgress? saved = await _progressRepository.GetAsync(station.StationId, episode.Id);
+        return saved is { IsCompleted: false } && saved.PositionSeconds > 3 ? saved.PositionSeconds : 0;
+    }
+
+    public async Task PlayAsync(AzuraStation station, AzuraCastPodcastEpisode episode, int startPositionSeconds)
     {
         if (_mediaElement is null)
             return;
+
+        int token = ++_playToken;
 
         // Un solo player attivo alla volta: avviare un episodio ferma la radio live.
         await _audioService.StopAsync();
@@ -71,11 +87,8 @@ public class PodcastPlayerService : IPodcastPlayerService
         _station = station;
         CurrentEpisode = episode;
         _lastProgressSaveAt = DateTime.MinValue;
-
-        PodcastEpisodeProgress? saved = await _progressRepository.GetAsync(station.StationId, episode.Id);
-        _pendingResumePosition = saved is { IsCompleted: false } && saved.PositionSeconds > 3
-            ? TimeSpan.FromSeconds(saved.PositionSeconds)
-            : null;
+        _pendingResumePosition = startPositionSeconds > 0 ? TimeSpan.FromSeconds(startPositionSeconds) : null;
+        _pendingResumeToken = token;
 
         _lastFailureMessage = null;
         await OpenAndPlayWithRetryAsync(episode.MediaUrl);
@@ -87,6 +100,12 @@ public class PodcastPlayerService : IPodcastPlayerService
     // con un watchdog continuo (vedi AudioService); qui basta un breve retry limitato all'avvio.
     // Un errore reale (es. 403 dal server) arriva invece via MediaFailed — in quel caso niente
     // retry, l'errore viene propagato subito tramite PlaybackFailed.
+    //
+    // Il seek di ripresa NON va fatto qui né su MediaOpened/StateChanged=Playing: in entrambi i
+    // casi il player nativo non è ancora davvero "seekable" (metadata caricati ma decodifica non
+    // partita) e il SeekTo fallisce in silenzio (Task completa, posizione resta 0). Il seek va
+    // fatto sul primo campione REALE di OnMediaPositionChanged — a quel punto il player sta
+    // decodificando per davvero e il seek ha effetto. Vedi OnMediaPositionChanged.
     private async Task OpenAndPlayWithRetryAsync(string url)
     {
         MediaElement? mediaElement = _mediaElement;
@@ -171,31 +190,44 @@ public class PodcastPlayerService : IPodcastPlayerService
         await _mediaElement.SeekTo(position, CancellationToken.None);
     }
 
-    private async void OnStateChanged(object? sender, MediaStateChangedEventArgs e)
+    private void OnStateChanged(object? sender, MediaStateChangedEventArgs e)
     {
         IsPlaying = e.NewState == MediaElementState.Playing;
         PlaybackStateChanged?.Invoke(this, IsPlaying);
-
-        if (e.NewState == MediaElementState.Playing && _pendingResumePosition is { } resume && _mediaElement is not null)
-        {
-            _pendingResumePosition = null;
-            try
-            {
-                await _mediaElement.SeekTo(resume, CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to resume episode from saved position");
-            }
-        }
     }
 
     private void OnMediaPositionChanged(object? sender, MediaPositionChangedEventArgs e)
     {
         PositionChanged?.Invoke(this, e.Position);
 
+        // Primo campione di posizione reale dopo Play(): qui il player sta davvero decodificando,
+        // non più solo "aperto" — il SeekTo ha effetto reale solo a questo punto (vedi commento
+        // su OpenAndPlayWithRetryAsync). Token-guard: ignora se nel frattempo è stato selezionato
+        // un altro episodio (_playToken avanzato).
+        if (_pendingResumePosition is { } resume && _pendingResumeToken == _playToken)
+        {
+            _pendingResumePosition = null;
+            _ = SeekToResumeAsync(resume, _pendingResumeToken);
+        }
+
         if (DateTime.UtcNow - _lastProgressSaveAt > ProgressSaveInterval)
             _ = SaveProgressAsync();
+    }
+
+    private async Task SeekToResumeAsync(TimeSpan target, int token)
+    {
+        MediaElement? mediaElement = _mediaElement;
+        if (mediaElement is null || token != _playToken)
+            return;
+
+        try
+        {
+            await mediaElement.SeekTo(target, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to resume episode from saved position");
+        }
     }
 
     private async void OnMediaEnded(object? sender, EventArgs e)
@@ -219,7 +251,7 @@ public class PodcastPlayerService : IPodcastPlayerService
 
         try
         {
-            await _progressRepository.SaveAsync(station.StationId, episode.PodcastId, episode.Id,
+            await _progressRepository.SaveAsync(station.StationId, station.Id, episode.PodcastId, episode.Id,
                 (int)mediaElement.Position.TotalSeconds, completed);
         }
         catch (Exception ex)
