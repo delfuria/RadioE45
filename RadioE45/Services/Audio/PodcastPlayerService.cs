@@ -121,6 +121,11 @@ public class PodcastPlayerService : IPodcastPlayerService
         {
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
+                // Se c'è un resume pendente, Play() parte comunque subito (il seek ha effetto solo
+                // dopo il primo campione reale di posizione, vedi commento sopra) — silenziare
+                // l'audio evita che l'utente senta l'inizio dell'episodio dal secondo 0 prima che
+                // lo scatti verso la posizione salvata. Ripristinato in SeekToResumeAsync.
+                mediaElement.Volume = _pendingResumePosition is not null ? 0 : 1;
                 mediaElement.ShouldAutoPlay = true;
                 mediaElement.Source = MediaSource.FromUri(url);
                 mediaElement.Play();
@@ -241,7 +246,10 @@ public class PodcastPlayerService : IPodcastPlayerService
         finally
         {
             if (token == _playToken)
+            {
                 _resumeSeekInFlight = false;
+                await MainThread.InvokeOnMainThreadAsync(() => mediaElement.Volume = 1);
+            }
         }
     }
 

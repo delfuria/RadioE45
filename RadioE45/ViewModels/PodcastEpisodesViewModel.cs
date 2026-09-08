@@ -107,12 +107,8 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
         CurrentEpisode = episode;
 
         int startPositionSeconds = await _podcastPlayerService.GetResumePositionSecondsAsync(station, episode);
-        TimeSpan duration = episode.Duration;
-        ElapsedTimeText = FormatTime(TimeSpan.FromSeconds(startPositionSeconds));
-        TotalTimeText = FormatTime(duration);
-        PlaybackProgress = duration > TimeSpan.Zero
-            ? Math.Clamp(startPositionSeconds / duration.TotalSeconds, 0.0, 1.0)
-            : 0.0;
+        TotalTimeText = FormatTime(episode.Duration);
+        UpdatePlaybackPosition(TimeSpan.FromSeconds(startPositionSeconds));
 
         await _podcastPlayerService.PlayAsync(station, episode, startPositionSeconds);
     }
@@ -157,16 +153,22 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
 
     private void OnPositionChanged(object? sender, TimeSpan position)
     {
-        TimeSpan duration = _podcastPlayerService.Duration;
+        MainThread.BeginInvokeOnMainThread(() => UpdatePlaybackPosition(position));
+    }
 
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            ElapsedTimeText = FormatTime(position);
-            TotalTimeText = FormatTime(duration);
-            PlaybackProgress = duration > TimeSpan.Zero
-                ? Math.Clamp(position.TotalSeconds / duration.TotalSeconds, 0.0, 1.0)
-                : 0.0;
-        });
+    // Unico punto che valorizza label ed elapsed e progress bar: entrambi derivano dalla STESSA
+    // coppia (position, durata episodio da feed). La durata del player nativo
+    // (_podcastPlayerService.Duration) non va usata qui — per stream HTTP può restare a zero per
+    // un po' o oscillare durante il download, e usarla avrebbe fatto disallineare la barra
+    // rispetto alla label (che dipende solo da position) ogni volta che la fonte cambiava.
+    private void UpdatePlaybackPosition(TimeSpan position)
+    {
+        TimeSpan duration = CurrentEpisode?.Duration ?? TimeSpan.Zero;
+
+        ElapsedTimeText = FormatTime(position);
+        PlaybackProgress = duration > TimeSpan.Zero
+            ? Math.Clamp(position.TotalSeconds / duration.TotalSeconds, 0.0, 1.0)
+            : 0.0;
     }
 
     private void OnEpisodeCompleted(object? sender, EventArgs e)
