@@ -126,10 +126,14 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
         }
 
         CurrentEpisode = episode;
+        Logger.LogWarning("PODCAST_DEBUG PlayEpisodeAsync: switching to episode {EpisodeId} ({Title}) thread={ThreadId}",
+            episode.Id, episode.Title, Environment.CurrentManagedThreadId);
 
         int startPositionSeconds = await _podcastPlayerService.GetResumePositionSecondsAsync(station, episode);
+        Logger.LogWarning("PODCAST_DEBUG PlayEpisodeAsync: got startPositionSeconds={Start} for {EpisodeId} thread={ThreadId}",
+            startPositionSeconds, episode.Id, Environment.CurrentManagedThreadId);
         TotalTimeText = FormatTime(episode.Duration);
-        UpdatePlaybackPosition(TimeSpan.FromSeconds(startPositionSeconds));
+        UpdatePlaybackPosition(TimeSpan.FromSeconds(startPositionSeconds), "PlayEpisodeAsync-reset");
 
         await _podcastPlayerService.PlayAsync(station, episode, startPositionSeconds);
     }
@@ -174,7 +178,9 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
 
     private void OnPositionChanged(object? sender, TimeSpan position)
     {
-        MainThread.BeginInvokeOnMainThread(() => UpdatePlaybackPosition(position));
+        Logger.LogWarning("PODCAST_DEBUG OnPositionChanged raw: position={Position} currentEpisode={EpisodeId} thread={ThreadId}",
+            position, CurrentEpisode?.Id, Environment.CurrentManagedThreadId);
+        MainThread.BeginInvokeOnMainThread(() => UpdatePlaybackPosition(position, "OnPositionChanged"));
     }
 
     // Unico punto che valorizza label ed elapsed e progress bar: entrambi derivano dalla STESSA
@@ -182,14 +188,19 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
     // (_podcastPlayerService.Duration) non va usata qui — per stream HTTP può restare a zero per
     // un po' o oscillare durante il download, e usarla avrebbe fatto disallineare la barra
     // rispetto alla label (che dipende solo da position) ogni volta che la fonte cambiava.
-    private void UpdatePlaybackPosition(TimeSpan position)
+    private void UpdatePlaybackPosition(TimeSpan position, string source)
     {
         TimeSpan duration = CurrentEpisode?.Duration ?? TimeSpan.Zero;
+        double oldProgress = PlaybackProgress;
 
         ElapsedTimeText = FormatTime(position);
         PlaybackProgress = duration > TimeSpan.Zero
             ? Math.Clamp(position.TotalSeconds / duration.TotalSeconds, 0.0, 1.0)
             : 0.0;
+
+        Logger.LogWarning(
+            "PODCAST_DEBUG UpdatePlaybackPosition[{Source}]: episode={EpisodeId} position={Position} duration={Duration} oldProgress={OldProgress} newProgress={NewProgress} thread={ThreadId}",
+            source, CurrentEpisode?.Id, position, duration, oldProgress, PlaybackProgress, Environment.CurrentManagedThreadId);
     }
 
     private void OnEpisodeCompleted(object? sender, EventArgs e)

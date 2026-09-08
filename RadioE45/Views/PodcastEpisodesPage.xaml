@@ -184,10 +184,10 @@
                         VerticalOptions="Center" />
 
                     <Slider
+                        x:Name="ProgressSlider"
                         Grid.Column="1"
                         Minimum="0"
                         Maximum="1"
-                        Value="{Binding PlaybackProgress, Mode=OneWay}"
                         DragCompleted="OnSeekDragCompleted" />
 
                     <Label

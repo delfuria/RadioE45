@@ -15,6 +15,18 @@ public partial class PodcastEpisodesPage : ContentPage
         _viewModel = viewModel;
         _podcastPlayerService = podcastPlayerService;
         BindingContext = viewModel;
+
+        // Lo Slider NON è bindato a PlaybackProgress via XAML: sul controllo nativo, un salto a un
+        // valore più basso di quello corrente (es. da 0.43 a 0, cambiando episodio) a volte non
+        // viene ridisegnato — il valore C# è corretto ma il widget resta fermo al vecchio punto.
+        // L'assegnazione diretta qui bypassa qualunque batching interno del binding XAML.
+        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PodcastEpisodesViewModel.PlaybackProgress))
+            ProgressSlider.Value = _viewModel.PlaybackProgress;
     }
 
     protected override async void OnAppearing()
