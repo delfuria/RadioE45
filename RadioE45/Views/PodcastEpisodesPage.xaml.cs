@@ -8,6 +8,11 @@ public partial class PodcastEpisodesPage : ContentPage
     private readonly PodcastEpisodesViewModel _viewModel;
     private readonly IPodcastPlayerService _podcastPlayerService;
     private bool _isInitialized;
+    // Vero mentre l'utente sta trascinando lo Slider: i campioni di posizione live continuano ad
+    // arrivare durante il drag (ogni ~200ms) e, se non sospesi qui, sovrascrivono continuamente
+    // ProgressSlider.Value con la posizione reale (non ancora spostata), annullando visivamente
+    // il trascinamento prima ancora che l'utente rilasci il dito.
+    private bool _isDragging;
 
     public PodcastEpisodesPage(PodcastEpisodesViewModel viewModel, IPodcastPlayerService podcastPlayerService)
     {
@@ -25,7 +30,7 @@ public partial class PodcastEpisodesPage : ContentPage
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(PodcastEpisodesViewModel.PlaybackProgress))
+        if (e.PropertyName == nameof(PodcastEpisodesViewModel.PlaybackProgress) && !_isDragging)
             ProgressSlider.Value = _viewModel.PlaybackProgress;
     }
 
@@ -60,9 +65,16 @@ public partial class PodcastEpisodesPage : ContentPage
         _viewModel.Cleanup();
     }
 
-    private void OnSeekDragCompleted(object? sender, EventArgs e)
+    private void OnSeekDragStarted(object? sender, EventArgs e)
+    {
+        _isDragging = true;
+    }
+
+    private async void OnSeekDragCompleted(object? sender, EventArgs e)
     {
         if (sender is Slider slider)
-            _viewModel.SeekCommand.Execute(slider.Value);
+            await _viewModel.SeekCommand.ExecuteAsync(slider.Value);
+
+        _isDragging = false;
     }
 }

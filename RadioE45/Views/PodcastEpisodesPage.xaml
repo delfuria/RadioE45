@@ -188,6 +188,7 @@
                         Grid.Column="1"
                         Minimum="0"
                         Maximum="1"
+                        DragStarted="OnSeekDragStarted"
                         DragCompleted="OnSeekDragCompleted" />
 
                     <Label

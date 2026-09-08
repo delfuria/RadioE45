@@ -27,7 +27,7 @@ public class PodcastPlayerService : IPodcastPlayerService
     private int _playToken;
     private int _pendingResumeToken;
     private DateTime _lastProgressSaveAt = DateTime.MinValue;
-    private static readonly TimeSpan ProgressSaveInterval = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan ProgressSaveInterval = TimeSpan.FromSeconds(5);
 
     public bool IsPlaying { get; private set; }
     public AzuraCastPodcastEpisode? CurrentEpisode { get; private set; }
@@ -84,8 +84,6 @@ public class PodcastPlayerService : IPodcastPlayerService
             return;
 
         int token = ++_playToken;
-        _logger.LogWarning("PODCAST_DEBUG PlayAsync: start episode={EpisodeId} startPositionSeconds={Start} token={Token} thread={ThreadId}",
-            episode.Id, startPositionSeconds, token, Environment.CurrentManagedThreadId);
 
         // Un solo player attivo alla volta: avviare un episodio ferma la radio live.
         await _audioService.StopAsync();
@@ -93,14 +91,7 @@ public class PodcastPlayerService : IPodcastPlayerService
         _station = station;
         CurrentEpisode = episode;
         _lastProgressSaveAt = DateTime.MinValue;
-        // Sempre valorizzato, anche a zero: un episodio mai ascoltato è trattato come un resume a
-        // posizione 0. Questo fa passare OGNI avvio (non solo i resume veri) dalla stessa identica
-        // pipeline di soppressione in OnMediaPositionChanged — quella che sopprime ogni campione
-        // finché il seek non è confermato completato, non per una finestra a tempo fisso. Prima
-        // gli episodi mai ascoltati (startPositionSeconds == 0) saltavano questa pipeline del
-        // tutto: un campione residuo del vecchio episodio, ancora in coda sul thread UI dopo lo
-        // Stop(), passava senza alcuna guardia e disallineava la progress bar rispetto alla label.
-        _pendingResumePosition = TimeSpan.FromSeconds(startPositionSeconds);
+        _pendingResumePosition = startPositionSeconds > 0 ? TimeSpan.FromSeconds(startPositionSeconds) : null;
         _pendingResumeToken = token;
         _resumeSeekInFlight = false;
 
@@ -126,31 +117,19 @@ public class PodcastPlayerService : IPodcastPlayerService
         if (mediaElement is null)
             return;
 
-        // Cambiare Source senza fermare prima il player lascia il vecchio episodio ancora
-        // "vivo" per una finestra residua: i suoi ultimi campioni di PositionChanged arrivano
-        // dopo che CurrentEpisode è già stato aggiornato al nuovo episodio, disallineando la
-        // progress bar (che riceve quei campioni stale) rispetto alla label. Stop() esplicito
-        // prima dello switch elimina la finestra in cui questi eventi incrociati sono possibili.
-        _logger.LogWarning("PODCAST_DEBUG OpenAndPlayWithRetryAsync: about to Stop() old MediaElement, position before stop={Position} thread={ThreadId}",
-            mediaElement.Position, Environment.CurrentManagedThreadId);
-        await MainThread.InvokeOnMainThreadAsync(mediaElement.Stop);
-        _logger.LogWarning("PODCAST_DEBUG OpenAndPlayWithRetryAsync: Stop() done, position after stop={Position}", mediaElement.Position);
-
         for (int attempt = 0; attempt < 5; attempt++)
         {
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                // Play() parte comunque subito (il seek — anche a posizione 0 per un episodio mai
-                // ascoltato, vedi PlayAsync — ha effetto solo dopo il primo campione reale di
-                // posizione, vedi commento sopra) — silenziare l'audio evita che l'utente senta un
-                // istante dal secondo 0 prima che scatti il seek verso la posizione target.
-                // Ripristinato in SeekToResumeAsync una volta confermato il seek.
-                mediaElement.Volume = 0;
+                // Se c'è un resume pendente, Play() parte comunque subito (il seek ha effetto solo
+                // dopo il primo campione reale di posizione, vedi commento sopra) — silenziare
+                // l'audio evita che l'utente senta l'inizio dell'episodio dal secondo 0 prima che
+                // lo scatti verso la posizione salvata. Ripristinato in SeekToResumeAsync.
+                mediaElement.Volume = _pendingResumePosition is not null ? 0 : 1;
                 mediaElement.ShouldAutoPlay = true;
                 mediaElement.Source = MediaSource.FromUri(url);
                 mediaElement.Play();
             });
-            _logger.LogWarning("PODCAST_DEBUG OpenAndPlayWithRetryAsync: Source assigned + Play() called, attempt={Attempt} url={Url}", attempt, url);
 
             await Task.Delay(1500);
 
@@ -229,17 +208,10 @@ public class PodcastPlayerService : IPodcastPlayerService
 
     private void OnMediaPositionChanged(object? sender, MediaPositionChangedEventArgs e)
     {
-        _logger.LogWarning(
-            "PODCAST_DEBUG OnMediaPositionChanged raw: position={Position} currentEpisode={EpisodeId} pendingResume={PendingResume} resumeSeekInFlight={ResumeSeekInFlight} playToken={PlayToken} thread={ThreadId}",
-            e.Position, CurrentEpisode?.Id, _pendingResumePosition, _resumeSeekInFlight, _playToken, Environment.CurrentManagedThreadId);
-
         // Primo campione di posizione reale dopo Play(): qui il player sta davvero decodificando,
         // non più solo "aperto" — il SeekTo ha effetto reale solo a questo punto (vedi commento
         // su OpenAndPlayWithRetryAsync). Token-guard: ignora se nel frattempo è stato selezionato
-        // un altro episodio (_playToken avanzato). _pendingResumePosition è SEMPRE valorizzato
-        // (anche a zero, vedi PlayAsync), quindi questo branch scatta per OGNI avvio episodio, non
-        // solo per i resume — è la soppressione stessa a fare da schermo contro campioni residui
-        // del player precedente, non un timer a tempo fisso.
+        // un altro episodio (_playToken avanzato).
         if (_pendingResumePosition is { } resume && _pendingResumeToken == _playToken)
         {
             _pendingResumePosition = null;

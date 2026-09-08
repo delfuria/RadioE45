@@ -85,7 +85,7 @@
   <data name="Podcast_Empty" xml:space="preserve"><value>Nessun podcast disponibile</value></data>
   <data name="Podcast_Episodes" xml:space="preserve"><value>episodi</value></data>
   <data name="Podcast_NoEpisodes" xml:space="preserve"><value>Nessun episodio disponibile</value></data>
-  <data name="Podcast_SeasonEpisode" xml:space="preserve"><value>Stag: {0} - Ep. {1} </value></data>
+  <data name="Podcast_SeasonEpisode" xml:space="preserve"><value>Stagione: {0} - Ep. {1} </value></data>
 
   <!-- Settings -->
   <data name="Settings_Section_Playback" xml:space="preserve"><value>RIPRODUZIONE</value></data>
