@@ -14,6 +14,7 @@
     <Color x:Key="TextMuted">#6B7280</Color>
     <Color x:Key="LiveRed">#FF3B30</Color>
     <Color x:Key="HlsGreen">#34C759</Color>
+    <Color x:Key="AmberYellow">#FFC107</Color>
 
     <!-- Light theme raw colors -->
     <Color x:Key="BackgroundLight">#F8F9FA</Color>

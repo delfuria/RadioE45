@@ -1,9 +1,11 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
 using RadioE45.Services.Audio;
+using RadioE45.Services.Data;
 using RadioE45.Services.Localization;
 using RadioE45.Services.Radio;
 
@@ -15,6 +17,7 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
 {
     private readonly IPodcastService _podcastService;
     private readonly IPodcastPlayerService _podcastPlayerService;
+    private readonly IPodcastProgressRepository _progressRepository;
     private readonly OnAirViewModel _onAirViewModel;
     private int? _loadedStationId;
 
@@ -47,12 +50,14 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
     public PodcastEpisodesViewModel(
         IPodcastService podcastService,
         IPodcastPlayerService podcastPlayerService,
+        IPodcastProgressRepository progressRepository,
         OnAirViewModel onAirViewModel,
         ILogger<PodcastEpisodesViewModel> logger)
     {
         Logger = logger;
         _podcastService = podcastService;
         _podcastPlayerService = podcastPlayerService;
+        _progressRepository = progressRepository;
         _onAirViewModel = onAirViewModel;
 
         _podcastPlayerService.PlaybackStateChanged += OnPlaybackStateChanged;
@@ -84,8 +89,24 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
         {
             AzuraCastPodcast podcast = new() { Id = PodcastId, Title = PodcastTitle };
             List<AzuraCastPodcastEpisode> items = await _podcastService.GetEpisodesAsync(station, podcast);
+
+            List<PodcastEpisodeProgress> progress = await _progressRepository.GetForPodcastAsync(station.StationId, PodcastId);
+            Dictionary<string, PodcastEpisodeProgress> progressByEpisodeId = progress.ToDictionary(p => p.EpisodeId);
+
             foreach (AzuraCastPodcastEpisode episode in items)
+            {
                 episode.PlayCommand = PlayEpisodeCommand;
+
+                if (progressByEpisodeId.TryGetValue(episode.Id, out PodcastEpisodeProgress? saved))
+                {
+                    episode.ResumePositionSeconds = saved.PositionSeconds;
+                    episode.ProgressState = saved.IsCompleted
+                        ? PodcastEpisodeProgressState.Completed
+                        : saved.PositionSeconds > 3
+                            ? PodcastEpisodeProgressState.InProgress
+                            : PodcastEpisodeProgressState.NotStarted;
+                }
+            }
 
             Episodes = new ObservableCollection<AzuraCastPodcastEpisode>(items);
         }, LocalizationResourceManager.Instance["Err_LoadEpisodes"]);

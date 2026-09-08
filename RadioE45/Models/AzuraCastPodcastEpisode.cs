@@ -1,7 +1,15 @@
 using System.Text.Json.Serialization;
 using System.Windows.Input;
+using RadioE45.Services.Localization;
 
 namespace RadioE45.Models;
+
+public enum PodcastEpisodeProgressState
+{
+    NotStarted,
+    InProgress,
+    Completed,
+}
 
 public class AzuraCastPodcastEpisode
 {
@@ -13,6 +21,12 @@ public class AzuraCastPodcastEpisode
 
     [JsonPropertyName("description")]
     public string Description { get; set; } = string.Empty;
+
+    [JsonPropertyName("season_number")]
+    public int? SeasonNumber { get; set; }
+
+    [JsonPropertyName("episode_number")]
+    public int? EpisodeNumber { get; set; }
 
     [JsonPropertyName("publish_at")]
     public long PublishAtUnix { get; set; }
@@ -49,6 +63,30 @@ public class AzuraCastPodcastEpisode
 
     [JsonIgnore]
     public ICommand? PlayCommand { get; set; }
+
+    // Valorizzati da PodcastEpisodesViewModel dopo il fetch, leggendo PodcastEpisodeProgress —
+    // non fanno parte del JSON dell'episodio. L'episodio non è un ObservableObject: questi valori
+    // riflettono lo stato al momento del caricamento della lista, non si aggiornano in diretta
+    // durante la riproduzione (la pagina si ricarica comunque a ogni OnAppearing).
+    [JsonIgnore]
+    public int ResumePositionSeconds { get; set; }
+
+    [JsonIgnore]
+    public PodcastEpisodeProgressState ProgressState { get; set; } = PodcastEpisodeProgressState.NotStarted;
+
+    [JsonIgnore]
+    public string SeasonEpisodeText => SeasonNumber is { } season && EpisodeNumber is { } number
+        ? LocalizationResourceManager.Instance.Format("Podcast_SeasonEpisode", season, number)
+        : string.Empty;
+
+    [JsonIgnore]
+    public string DurationText => FormatTime(Duration);
+
+    [JsonIgnore]
+    public string ResumePositionText => FormatTime(TimeSpan.FromSeconds(ResumePositionSeconds));
+
+    private static string FormatTime(TimeSpan ts) =>
+        ts.Hours > 0 ? ts.ToString(@"h\:mm\:ss") : ts.ToString(@"m\:ss");
 }
 
 public class AzuraCastPodcastMedia

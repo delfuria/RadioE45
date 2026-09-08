@@ -81,6 +81,7 @@
   <data name="Podcast_Empty" xml:space="preserve"><value>No podcasts available</value></data>
   <data name="Podcast_Episodes" xml:space="preserve"><value>episodes</value></data>
   <data name="Podcast_NoEpisodes" xml:space="preserve"><value>No episodes available</value></data>
+  <data name="Podcast_SeasonEpisode" xml:space="preserve"><value>Season {0} - Ep. {1} </value></data>
 
   <data name="Settings_Section_Playback" xml:space="preserve"><value>PLAYBACK</value></data>
   <data name="Settings_StartWithFavorite" xml:space="preserve"><value>Start with favorite station</value></data>

@@ -7,12 +7,14 @@
     xmlns:vm="clr-namespace:RadioE45.ViewModels"
     xmlns:models="clr-namespace:RadioE45.Models"
     xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    xmlns:converters="clr-namespace:RadioE45.Converters"
     x:DataType="vm:PodcastEpisodesViewModel"
     Title="{Binding PodcastTitle}"
     Shell.NavBarIsVisible="True">
 
     <ContentPage.Resources>
         <toolkit:BoolToObjectConverter x:Key="PlayPauseTextConverter" x:TypeArguments="x:String" TrueObject="⏸" FalseObject="▶" />
+        <converters:PodcastProgressStateToColorConverter x:Key="ProgressStateToColorConverter" />
     </ContentPage.Resources>
 
     <Grid RowDefinitions="*,Auto">
@@ -101,18 +103,32 @@
                                     LineBreakMode="TailTruncation"
                                     MaxLines="2" />
 
-                                <Label
-                                    Grid.Row="2"
-                                    TextColor="{DynamicResource MutedText}"
-                                    FontSize="12">
-                                    <Label.FormattedText>
-                                        <FormattedString>
-                                            <Span Text="{Binding PublishedAt, StringFormat='{0:dd MMM yyyy}'}" />
-                                            <Span Text="  ·  " />
-                                            <Span Text="{Binding Duration, StringFormat='{0:mm\\:ss}'}" />
-                                        </FormattedString>
-                                    </Label.FormattedText>
-                                </Label>
+                                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <Label
+                                        Grid.Column="0"
+                                        TextColor="{DynamicResource MutedText}"
+                                        FontSize="12"
+                                        LineBreakMode="TailTruncation">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding SeasonEpisodeText}" />
+                                                <Span Text="{Binding PublishedAt, StringFormat='{0:dd MMM yyyy}'}" />
+                                                <Span Text=" - " />
+                                                <Span Text="{Binding ResumePositionText}" />
+                                                <Span Text=" - " />
+                                                <Span Text="{Binding DurationText}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+
+                                    <BoxView
+                                        Grid.Column="1"
+                                        WidthRequest="10"
+                                        HeightRequest="10"
+                                        CornerRadius="5"
+                                        VerticalOptions="Center"
+                                        Color="{Binding ProgressState, Converter={StaticResource ProgressStateToColorConverter}}" />
+                                </Grid>
 
                                 </Grid>
                             </Grid>

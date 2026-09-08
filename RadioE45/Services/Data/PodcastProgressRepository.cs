@@ -20,6 +20,14 @@ public class PodcastProgressRepository : IPodcastProgressRepository
             .FirstOrDefaultAsync();
     }
 
+    public async Task<List<PodcastEpisodeProgress>> GetForPodcastAsync(int stationId, string podcastId)
+    {
+        SQLiteAsyncConnection conn = await _db.GetConnectionAsync();
+        return await conn.Table<PodcastEpisodeProgress>()
+            .Where(p => p.StationId == stationId && p.PodcastId == podcastId)
+            .ToListAsync();
+    }
+
     public async Task SaveAsync(int stationId, int radioStationId, string podcastId, string episodeId, int positionSeconds, bool isCompleted)
     {
         SQLiteAsyncConnection conn = await _db.GetConnectionAsync();
