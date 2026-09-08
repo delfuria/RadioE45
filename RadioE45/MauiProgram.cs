@@ -39,6 +39,14 @@ public static class MauiProgram
             .UseMauiCommunityToolkit()
             .UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false);
 
+#if ANDROID
+        // Fixes the Podcast tab title not rendering: BottomNavigationView picks its
+        // label visibility mode from the tab count at menu-build time, and the Podcast
+        // tab is added later at runtime (IsVisible bound to HasPodcasts).
+        builder.ConfigureMauiHandlers(handlers =>
+            handlers.AddHandler<Shell, RadioE45.Platforms.Android.CustomShellRenderer>());
+#endif
+
 #if !MACCATALYST
         if (CrashReportingConfiguration.IsConfigured
             && CrashReportingSettings.IsEnabled())
