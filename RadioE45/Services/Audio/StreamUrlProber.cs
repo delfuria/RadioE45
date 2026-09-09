@@ -16,23 +16,18 @@ public class StreamUrlProber : IStreamUrlProber
         _logger = logger;
     }
 
+    // Tried strictly in order, one at a time — callers build `urls` as a priority list (e.g. HLS vs.
+    // direct Icecast/MP3 depending on AppSettings.PreferHlsStream) and rely on the first REACHABLE
+    // candidate winning, not the fastest responder. Racing them all in parallel (the previous
+    // implementation) silently ignored that order — whichever URL's server answered quicker won,
+    // regardless of position, which is what let HLS keep winning even with the setting off.
     public async Task<string?> ProbeFirstReachableAsync(string[] urls, CancellationToken ct)
     {
-        using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-
-        List<Task<string?>> tasks = urls.Select(url => ProbeUrlAsync(url, probeCts.Token)).ToList();
-
-        while (tasks.Count > 0)
+        foreach (string url in urls)
         {
-            Task<string?> done = await Task.WhenAny(tasks);
-            tasks.Remove(done);
-
-            string? result = await done;
+            string? result = await ProbeUrlAsync(url, ct);
             if (result is not null)
-            {
-                probeCts.Cancel();
                 return result;
-            }
         }
 
         return null;

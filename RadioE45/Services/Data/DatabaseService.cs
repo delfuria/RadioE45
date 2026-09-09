@@ -74,6 +74,12 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
             await conn.ExecuteAsync(
                 $"ALTER TABLE AppSettings ADD COLUMN {nameof(AppSettings.PlaybackLatencyOffsetSeconds)} INTEGER NOT NULL DEFAULT 3");
         }
+
+        if (!columnNames.Contains(nameof(AppSettings.PreferHlsStream)))
+        {
+            await conn.ExecuteAsync(
+                $"ALTER TABLE AppSettings ADD COLUMN {nameof(AppSettings.PreferHlsStream)} INTEGER NOT NULL DEFAULT 0");
+        }
     }
 
     private static async Task MigrateRadioStationsSchemaAsync(SQLiteAsyncConnection conn)

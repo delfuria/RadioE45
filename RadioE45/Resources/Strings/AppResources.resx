@@ -93,6 +93,8 @@
   <data name="Settings_StartWithFavorite_Hint" xml:space="preserve"><value>Se non c'è una stazione preferita viene caricata la prima della lista</value></data>
   <data name="Settings_LatencyOffset" xml:space="preserve"><value>Correzione ritardo NowPlaying</value></data>
   <data name="Settings_LatencyOffset_Hint" xml:space="preserve"><value>Secondi da sottrarre alla posizione riportata dal server per allinearla all'audio reale</value></data>
+  <data name="Settings_PreferHls" xml:space="preserve"><value>Preferisci flusso HLS come principale</value></data>
+  <data name="Settings_PreferHls_Hint" xml:space="preserve"><value>Attenzione: l'HLS può introdurre alcuni secondi di ritardo rispetto al flusso diretto. Attivalo solo se necessario.</value></data>
   <data name="Settings_Section_Theme" xml:space="preserve"><value>TEMA</value></data>
   <data name="Settings_ThemePreference" xml:space="preserve"><value>Preferenza tema</value></data>
   <data name="Settings_Save" xml:space="preserve"><value>Salva impostazioni</value></data>

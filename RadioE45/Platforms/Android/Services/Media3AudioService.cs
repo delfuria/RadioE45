@@ -37,6 +37,7 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IPlaye
     public bool IsPlaying { get; private set; }
     public bool IsBuffering { get; private set; }
     public AzuraStation? CurrentStation => _currentStation;
+    public bool IsHlsActive { get; private set; }
 
     public event EventHandler<bool>? PlaybackStateChanged;
     public event EventHandler<string?>? ErrorOccurred;
@@ -235,6 +236,13 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IPlaye
         _streamOpenedRaised = false;
         if (mediaItem?.MediaId is not { } id || !int.TryParse(id, out int stationId))
             return;
+
+        // The MediaItem's URI itself isn't mirrored to the controller (Media3 strips it across the
+        // session — see RadioPlaybackService), so this extras flag is the only way to know whether
+        // what's actually playing is the station's HLS stream or a non-HLS fallback. Updated on every
+        // transition, including a same-station metadata refresh, so it can't go stale mid-play if a
+        // fallback kicks in (see RadioPlaybackService.OnStreamError).
+        IsHlsActive = mediaItem.MediaMetadata?.Extras?.GetBoolean(RadioPlaybackService.HlsExtraKey, false) ?? false;
 
         AzuraStation? station = _catalog.Stations.FirstOrDefault(s => s.Id == stationId);
         if (station is null || station.Id == _currentStation?.Id)

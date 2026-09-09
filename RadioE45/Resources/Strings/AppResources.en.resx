@@ -88,6 +88,8 @@
   <data name="Settings_StartWithFavorite_Hint" xml:space="preserve"><value>If there is no favorite station, the first one in the list is loaded</value></data>
   <data name="Settings_LatencyOffset" xml:space="preserve"><value>NowPlaying delay correction</value></data>
   <data name="Settings_LatencyOffset_Hint" xml:space="preserve"><value>Seconds subtracted from the server-reported position to align it with the real audio</value></data>
+  <data name="Settings_PreferHls" xml:space="preserve"><value>Prefer HLS stream as primary</value></data>
+  <data name="Settings_PreferHls_Hint" xml:space="preserve"><value>Warning: HLS can introduce a few seconds of delay compared to the direct stream. Enable only if needed.</value></data>
   <data name="Settings_Section_Theme" xml:space="preserve"><value>THEME</value></data>
   <data name="Settings_ThemePreference" xml:space="preserve"><value>Theme preference</value></data>
   <data name="Settings_Save" xml:space="preserve"><value>Save settings</value></data>

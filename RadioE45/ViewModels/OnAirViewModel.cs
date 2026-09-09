@@ -32,6 +32,12 @@ public partial class OnAirViewModel : BaseViewModel
     [ObservableProperty]
     public partial bool IsBuffering { get; set; }
 
+    // Reflects the stream actually playing right now (see IAudioService.IsHlsActive), not just
+    // whether the station supports HLS (CurrentStation.HlsEnabled) — the badge in XAML binds to
+    // this instead of the station-level flag.
+    [ObservableProperty]
+    public partial bool IsHlsActive { get; set; }
+
     [ObservableProperty]
     public partial double Volume { get; set; }
 
@@ -274,6 +280,7 @@ public partial class OnAirViewModel : BaseViewModel
     {
         await StopAsync();
         CurrentStation = null;
+        IsHlsActive = false;
         NowPlaying = NowPlayingInfo.Empty;
         ArtworkUrl = null;
     }
@@ -428,6 +435,7 @@ public partial class OnAirViewModel : BaseViewModel
             return;
 
         CurrentStation = station;
+        IsHlsActive = _audioService.IsHlsActive;
         NowPlaying = NowPlayingInfo.Empty;
         ArtworkUrl = null;
         StopProgressTimer();
@@ -438,6 +446,8 @@ public partial class OnAirViewModel : BaseViewModel
 
     private async void OnStreamOpened(object? sender, AzuraStation station)
     {
+        RunOnMainThreadIfActive(() => IsHlsActive = _audioService.IsHlsActive);
+
         NowPlayingInfo info = await _nowPlayingService.FetchOnceAsync(station);
         RunOnMainThreadIfActive(() => _ = ApplyNowPlayingInfoAsync(info));
     }

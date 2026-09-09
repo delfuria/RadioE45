@@ -120,7 +120,7 @@
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="Transparent"
                                 Padding="10,4"
-                                IsVisible="{Binding CurrentStation.HlsEnabled}">
+                                IsVisible="{Binding IsHlsActive}">
                                 <Label
                                     Text="HLS"
                                     TextColor="{DynamicResource PrimaryText}"

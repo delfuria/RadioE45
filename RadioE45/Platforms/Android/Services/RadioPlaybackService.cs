@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
 using RadioE45.Services.Audio;
+using RadioE45.Services.Data;
 using RadioE45.Services.Radio;
 using System.Runtime.InteropServices;
 
@@ -35,6 +36,13 @@ public sealed class RadioPlaybackService : MediaLibraryService
 {
     private const string RootId = "ROOT";
 
+    // Metadata extras key carrying whether the resolved URL is actually the station's HLS stream —
+    // read client-side by Media3AudioService.OnMediaItemTransition. The MediaItem's URI itself is NOT
+    // mirrored to the controller (Media3 strips it across the session), so this is the only channel
+    // for the client to know which stream format is really playing, as opposed to just what the
+    // station supports (AzuraStation.HlsEnabled).
+    internal const string HlsExtraKey = "radioe45.is_hls";
+
     private IExoPlayer? _player;
     private MediaLibrarySession? _session;
     private ILogger<RadioPlaybackService>? _logger;
@@ -57,6 +65,13 @@ public sealed class RadioPlaybackService : MediaLibraryService
 
     private static IStreamUrlProber? Prober => Services?.GetService<IStreamUrlProber>();
 
+    private static IAppSettingsRepository? SettingsRepo => Services?.GetService<IAppSettingsRepository>();
+
+    // Refreshed on every proactive selection (BuildStationItemProbedAsync — the only place that reads
+    // AppSettings, since GetStreamCandidates itself is also called from synchronous paths). A stale
+    // read for the rest of that session is fine: the setting rarely changes mid-play.
+    private bool _preferHls;
+
     public override void OnCreate()
     {
         base.OnCreate();
@@ -70,10 +85,23 @@ public sealed class RadioPlaybackService : MediaLibraryService
                 .SetContentType(C.AudioContentTypeMusic)!
                 .Build()!;
 
+            // The stream that actually plays (StreamUrlFallback, see GetStreamCandidates — the
+            // first candidate, OnAirStreamUrl, is never populated) is a plain Icecast/MP3 URL, not
+            // HLS/DASH: ExoPlayer has no "live edge" concept for it and, left on the default
+            // DefaultLoadControl (up to ~50s of buffer), happily buffers tens of seconds ahead of
+            // real time on a good connection. That buffered lag is what makes a track change sound
+            // like it's repeating the previous song — the audio is just minutes-old relative to
+            // what other clients (iOS/macOS) are hearing live. Capping the buffer window keeps
+            // ExoPlayer close to the live edge instead of racing ahead to fill a generous default.
+            ILoadControl loadControl = new DefaultLoadControl.Builder()!
+                .SetBufferDurationsMs(3000, 8000, 1000, 2000)!
+                .Build()!;
+
             _player = new ExoPlayerBuilder(this)!
                 .SetAudioAttributes(audioAttributes, true)!
                 .SetHandleAudioBecomingNoisy(true)!
                 .SetWakeMode(C.WakeModeNetwork)!
+                .SetLoadControl(loadControl)!
                 .Build();
 
             // Wrap around the station list instead of stopping at its ends. With the default
@@ -128,6 +156,13 @@ public sealed class RadioPlaybackService : MediaLibraryService
         }
 
         StopSelf();
+
+        // Android may keep the .NET process cached after the task is swiped away, ready to fast-relaunch
+        // it on the next tap — but this app's whole singleton graph (OnAirViewModel included) lives in
+        // that process, so a "relaunch" reusing it briefly shows the last screen and stale state instead
+        // of a clean start. Killing the process here makes swipe-away a real exit on Android too, matching
+        // iOS force-quit and closing the Windows window.
+        Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
     }
 
     public override void OnDestroy()
@@ -204,21 +239,48 @@ public sealed class RadioPlaybackService : MediaLibraryService
         MediaMetadata metadata = HasTitle(metadataOverride) ? metadataOverride! : BuildStationMetadata(station);
 
         MediaItem.Builder item = new MediaItem.Builder()!
-            .SetMediaId(station.Id.ToString())!
-            .SetMediaMetadata(metadata)!;
+            .SetMediaId(station.Id.ToString())!;
 
         if (playable)
         {
             string? url = ResolveStreamUrl(station);
             if (!string.IsNullOrEmpty(url))
+            {
                 item.SetUri(url);
+                item.SetLiveConfiguration(BuildLiveConfiguration());
+                metadata = WithHlsFlag(metadata, IsHlsUrl(station, url));
+            }
         }
 
-        return item.Build()!;
+        return item.SetMediaMetadata(metadata)!.Build()!;
     }
 
     private static bool HasTitle(MediaMetadata? metadata)
         => metadata?.Title is { } title && !string.IsNullOrEmpty(title.ToString());
+
+    private static bool IsHlsUrl(AzuraStation station, string url)
+        => !string.IsNullOrEmpty(station.HlsUrl) && url == station.HlsUrl;
+
+    // Re-attached on every rebuild (including the metadataOverride/song-poll path — see
+    // BuildStationItemProbedAsync) so the flag can never go stale by being silently dropped when
+    // metadata gets replaced for an unrelated reason (a title update, say).
+    private static MediaMetadata WithHlsFlag(MediaMetadata metadata, bool isHls)
+    {
+        Android.OS.Bundle extras = new();
+        extras.PutBoolean(HlsExtraKey, isHls);
+        return metadata.BuildUpon()!.SetExtras(extras)!.Build()!;
+    }
+
+    // Unset, ExoPlayer's HLS default target offset is derived from the segment duration and commonly
+    // lands well past 10s — the live audio then trails the AzuraCast now-playing metadata (which comes
+    // from a separate, near-real-time API poll) by the same amount, so a track change is heard several
+    // seconds after the UI has already announced it: sounds like the previous track "repeating" into
+    // the new one. Pinning a low target offset keeps ExoPlayer's small built-in speed-up/slow-down
+    // (~3%, inaudible) converging toward the live edge instead of parking wherever the default lands.
+    private static MediaItem.LiveConfiguration BuildLiveConfiguration()
+        => new MediaItem.LiveConfiguration.Builder()!
+            .SetTargetOffsetMs(3000)!
+            .Build()!;
 
     // Proactive resolution: probes every candidate URL and uses the first one that actually
     // answers, instead of waiting for playback to fail (OnStreamError) before trying the next.
@@ -230,18 +292,26 @@ public sealed class RadioPlaybackService : MediaLibraryService
     {
         MediaMetadata metadata = HasTitle(metadataOverride) ? metadataOverride! : BuildStationMetadata(station);
 
+        if (SettingsRepo is { } settingsRepo)
+            _preferHls = (await settingsRepo.GetAsync()).PreferHlsStream;
+
         IReadOnlyList<string> candidates = GetStreamCandidates(station);
         string? winner = candidates.Count > 0 && Prober is { } prober
             ? await prober.ProbeFirstReachableAsync(candidates.ToArray(), CancellationToken.None)
             : null;
 
         MediaItem.Builder item = new MediaItem.Builder()!
-            .SetMediaId(station.Id.ToString())!
-            .SetMediaMetadata(metadata)!;
+            .SetMediaId(station.Id.ToString())!;
 
         string? url = winner ?? candidates.FirstOrDefault();
         if (!string.IsNullOrEmpty(url))
+        {
             item.SetUri(url);
+            item.SetLiveConfiguration(BuildLiveConfiguration());
+            metadata = WithHlsFlag(metadata, IsHlsUrl(station, url));
+        }
+
+        item.SetMediaMetadata(metadata);
 
         // Remember which candidate actually won so a later playback error (OnStreamError) resumes
         // the fallback chain from there instead of restarting at candidate 0.
@@ -258,16 +328,27 @@ public sealed class RadioPlaybackService : MediaLibraryService
         return item.Build()!;
     }
 
-    // ExoPlayer plays HLS and ICY/MP3 streams directly. StreamUrlFallback is built from the DB
-    // (https://{UrlBase}{StreamUrl}, e.g. https://radioe45.ddns.net:8060/radio.mp3) and is the
-    // reliable PUBLIC url; the API's ListenUrl (StreamUrl) currently returns a LAN address
-    // (192.168.1.100) that only resolves inside the station's own network — see the TODO in
-    // AzuraStationCatalog.Map. So prefer the public fallback, then the API urls as last resort.
-    private static IReadOnlyList<string> GetStreamCandidates(AzuraStation station)
-        => new[] { station.OnAirStreamUrl, station.StreamUrlFallback, station.HlsUrl, station.StreamUrl }
+    // ExoPlayer plays HLS and ICY/MP3 streams directly. Default is the direct Icecast/MP3 fallback
+    // first: even a low-latency AzuraCast HLS config (short segments) has a structural floor of
+    // ~segment_length × segments_in_playlist behind the live edge (standard HLS forbids starting
+    // closer than ~3 segments from the end), which the direct stream doesn't have — see the
+    // AppSettings.PreferHlsStream doc comment. HLS is offered as an opt-in (Settings) for its other
+    // benefits (adaptive bitrate, cleaner reconnects) when the delay is an acceptable trade-off.
+    // StreamUrlFallback is built from the DB (https://{UrlBase}{StreamUrl}, e.g.
+    // https://radioe45.ddns.net:8060/radio.mp3) and is the reliable PUBLIC url; the API's ListenUrl
+    // (StreamUrl) currently returns a LAN address (192.168.1.100) that only resolves inside the
+    // station's own network — see the TODO in AzuraStationCatalog.Map, so it stays last either way.
+    private IReadOnlyList<string> GetStreamCandidates(AzuraStation station)
+    {
+        string?[] ordered = _preferHls
+            ? new[] { station.OnAirStreamUrl, station.HlsUrl, station.StreamUrlFallback, station.StreamUrl }
+            : new[] { station.OnAirStreamUrl, station.StreamUrlFallback, station.StreamUrl, station.HlsUrl };
+
+        return ordered
             .Where(u => !string.IsNullOrEmpty(u))
             .Distinct()
             .ToArray()!;
+    }
 
     // The URL for the current fallback attempt on this station (clamped to the last candidate).
     private string? ResolveStreamUrl(AzuraStation station)

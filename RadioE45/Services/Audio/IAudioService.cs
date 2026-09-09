@@ -9,6 +9,13 @@ public interface IAudioService
     bool IsBuffering { get; }
     AzuraStation? CurrentStation { get; }
 
+    /// <summary>
+    /// Whether the stream currently open is actually the station's HLS URL, as opposed to a
+    /// non-HLS fallback (e.g. the direct Icecast/MP3 URL). Reflects what is really playing, not
+    /// just whether the station has HLS available — see AzuraStation.HlsEnabled for that.
+    /// </summary>
+    bool IsHlsActive { get; }
+
     event EventHandler<bool> PlaybackStateChanged;
     event EventHandler<string?> ErrorOccurred;
     event EventHandler<AzuraStation> StreamOpened;

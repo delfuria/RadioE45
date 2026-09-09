@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Networking;
 using Microsoft.Maui.ApplicationModel;
 using RadioE45.Models;
+using RadioE45.Services.Data;
 
 namespace RadioE45.Services.Audio;
 
@@ -12,6 +13,7 @@ public class AudioService : IAudioService
     private readonly IStreamUrlProber _streamUrlProber;
     private readonly IPlatformNowPlayingService _platformNowPlayingService;
     private readonly IAudioFocusManager _audioFocusManager;
+    private readonly IAppSettingsRepository _settingsRepo;
     private readonly ILogger<AudioService> _logger;
     private MediaElement? _mediaElement;
     private AzuraStation? _currentStation;
@@ -30,6 +32,7 @@ public class AudioService : IAudioService
     public bool IsPlaying { get; private set; }
     public bool IsBuffering { get; private set; }
     public AzuraStation? CurrentStation => _currentStation;
+    public bool IsHlsActive { get; private set; }
 
     public event EventHandler<bool>? PlaybackStateChanged;
     public event EventHandler<string?>? ErrorOccurred;
@@ -38,11 +41,12 @@ public class AudioService : IAudioService
     // PlayAsync; it exists to satisfy IAudioService uniformly (Android raises it for car-driven changes).
     public event EventHandler<AzuraStation>? StationChanged;
 
-    public AudioService(IStreamUrlProber streamUrlProber, IPlatformNowPlayingService platformNowPlayingService, IAudioFocusManager audioFocusManager, ILogger<AudioService> logger)
+    public AudioService(IStreamUrlProber streamUrlProber, IPlatformNowPlayingService platformNowPlayingService, IAudioFocusManager audioFocusManager, IAppSettingsRepository settingsRepo, ILogger<AudioService> logger)
     {
         _streamUrlProber = streamUrlProber;
         _platformNowPlayingService = platformNowPlayingService;
         _audioFocusManager = audioFocusManager;
+        _settingsRepo = settingsRepo;
         _logger = logger;
     }
     
@@ -272,8 +276,14 @@ public class AudioService : IAudioService
         if (_watchdog is null)
             StartWatchdog();
 
-        // Priority: last known working URL → primary → fallback
-        string[] candidates = new[] { station.OnAirStreamUrl, station.HlsUrl, station.StreamUrl, station.StreamUrlFallback }
+        // Priority: last known working URL → primary → fallback. Default is the direct Icecast/MP3
+        // stream first — even a tuned AzuraCast HLS config has a structural floor of a few seconds
+        // behind the live edge (standard HLS forbids starting closer than ~3 segments from the end),
+        // which the direct stream doesn't have. See AppSettings.PreferHlsStream doc comment.
+        bool preferHls = (await _settingsRepo.GetAsync()).PreferHlsStream;
+        string[] candidates = (preferHls
+                ? new[] { station.OnAirStreamUrl, station.HlsUrl, station.StreamUrl, station.StreamUrlFallback }
+                : new[] { station.OnAirStreamUrl, station.StreamUrl, station.StreamUrlFallback, station.HlsUrl })
             .Where(u => !string.IsNullOrEmpty(u))
             .Distinct()
             .ToArray()!;
@@ -290,6 +300,7 @@ public class AudioService : IAudioService
         }
 
         station.OnAirStreamUrl = winner;
+        IsHlsActive = !string.IsNullOrEmpty(station.HlsUrl) && winner == station.HlsUrl;
 
         await MainThread.InvokeOnMainThreadAsync(() =>
         {
