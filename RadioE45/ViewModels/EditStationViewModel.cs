@@ -19,6 +19,12 @@ public partial class EditStationViewModel : BaseViewModel
     public partial int StationId { get; set; }
 
     [ObservableProperty]
+    public partial string UrlBase { get; set; } = "";
+
+    [ObservableProperty]
+    public partial int AzuraStationId { get; set; }
+
+    [ObservableProperty]
     public partial string Name { get; set; } = "";
 
     [ObservableProperty]
@@ -60,6 +66,8 @@ public partial class EditStationViewModel : BaseViewModel
             if (_station is null)
                 return;
 
+            UrlBase = _station.UrlBase;
+            AzuraStationId = _station.StationId;
             Name = _station.Name;
             ShortName = _station.ShortName;
             Description = _station.Description;

@@ -177,19 +177,7 @@ public partial class OnAirViewModel : BaseViewModel
         await SafeExecuteAsync(async () =>
         {
             await _catalog.LoadAsync();
-            AppSettings settings = await _settingsRepo.GetAsync();
-            AzuraStation? station = null;
-
-            if (settings.StartWithFavorite)
-                station = _catalog.GetFavorite();
-
-            station ??= _catalog.GetFirst();
-
-            if (station is not null)
-            {
-                CurrentStation = station;
-                await StartPlayAndNowPollingAsync(station);
-            }
+            await SelectDefaultStationAsync();
         }, LocalizationResourceManager.Instance["Err_Init"]);
     }
 
@@ -201,21 +189,24 @@ public partial class OnAirViewModel : BaseViewModel
         await StartPlayAndNowPollingAsync(CurrentStation);
     }
 
+    private async Task SelectDefaultStationAsync()
+    {
+        AppSettings settings = await _settingsRepo.GetAsync();
+        AzuraStation? station = settings.StartWithFavorite ? _catalog.GetFavorite() : null;
+        station ??= _catalog.GetFirst();
+
+        if (station is not null)
+        {
+            CurrentStation = station;
+            await StartPlayAndNowPollingAsync(station);
+        }
+    }
+
     private async void OnStationsRefreshed()
     {
         if (CurrentStation is not null) return;
 
-        await SafeExecuteAsync(async () =>
-        {
-            AppSettings settings = await _settingsRepo.GetAsync();
-            AzuraStation? station = settings.StartWithFavorite ? _catalog.GetFavorite() : null;
-            station ??= _catalog.GetFirst();
-            if (station is not null)
-            {
-                CurrentStation = station;
-                await StartPlayAndNowPollingAsync(station);
-            }
-        }, LocalizationResourceManager.Instance["Err_Reconnect"]);
+        await SafeExecuteAsync(SelectDefaultStationAsync, LocalizationResourceManager.Instance["Err_Reconnect"]);
     }
 
     [RelayCommand]

@@ -39,9 +39,12 @@ public partial class OnAirPage : ContentPage
         }
 
         // Questo check corre sia al primo avvio (dopo InitializeAsync) sia ai ritorni
-        // sulla pagina. Copre il caso in cui OnAirPage è una nuova istanza (transient)
-        // ma OnAirViewModel è il singleton sopravvissuto: InitializeAsync ritorna subito
-        // perché CurrentStation != null, ma AudioService è stato azzerato dallo swipe.
+        // sulla pagina (es. da Podcast, che ferma la radio live per riprodurre l'episodio —
+        // vedi PodcastPlayerService.PlayAsync). Copre il caso in cui OnAirPage è una nuova
+        // istanza (transient) ma OnAirViewModel è il singleton sopravvissuto: InitializeAsync
+        // ritorna subito perché CurrentStation != null, ma AudioService è stato azzerato.
+        // Riprende sempre la stessa stazione che era in streaming — la selezione preferita/prima
+        // si applica solo al vero avvio dell'app (vedi App.CreateWindow).
         if (_audioService.CurrentStation is null && _viewModel.CurrentStation is not null)
             await _viewModel.RestartAsync();
     }

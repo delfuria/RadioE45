@@ -76,6 +76,15 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
+        // CreateWindow gira una volta per ogni (ri)creazione della Window/Activity — su Android
+        // questo include il caso in cui il processo .NET e' sopravvissuto a uno swipe-away o a una
+        // chiusura da tasto back (OnAirViewModel resta il singleton vivo con l'ultima stazione
+        // ascoltata), ma NON gira per la normale navigazione tra le tab dell'app (stessa Activity).
+        // E' quindi il punto giusto per applicare "preferita/prima solo al vero avvio dell'app":
+        // azzerare CurrentStation qui fa si' che InitializeAsync (che altrimenti ritornerebbe
+        // subito vedendo CurrentStation valorizzato) selezioni di nuovo preferita/prima.
+        _onAirViewModel.CurrentStation = null;
+
         Window window = new(new AppShell(_radioRepository, _onAirViewModel));
 
         DevicePlatform platform = DeviceInfo.Current.Platform;

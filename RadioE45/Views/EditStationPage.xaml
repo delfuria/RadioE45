@@ -26,6 +26,28 @@
 
             <VerticalStackLayout Spacing="4">
                 <Label
+                    Text="{loc:Translate EditStation_UrlBase}"
+                    Style="{StaticResource CaptionLabel}" />
+                <Label
+                    Text="{Binding UrlBase}"
+                    TextColor="{DynamicResource PrimaryText}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Text="{loc:Translate EditStation_StationId}"
+                    Style="{StaticResource CaptionLabel}" />
+                <Label
+                    Text="{Binding AzuraStationId}"
+                    TextColor="{DynamicResource PrimaryText}" />
+            </VerticalStackLayout>
+
+            <BoxView
+                HeightRequest="2"
+                Color="{DynamicResource CardElevated}" />
+
+            <VerticalStackLayout Spacing="4">
+                <Label
                     Text="{loc:Translate EditStation_Name}"
                     Style="{StaticResource CaptionLabel}" />
                 <Entry
