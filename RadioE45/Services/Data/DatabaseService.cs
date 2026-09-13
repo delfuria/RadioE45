@@ -167,13 +167,13 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
             new()
             {
                 StationId = 1,
-                Name = "Radio Antani",
-                Description = "Il canale alternativo",
-                StreamUrl = ":8000/radio.mp3",
-                UrlBase = "radioe45.ddns.net",
+                Name = "AzuraTest Radio",
+                Description = "A test radio station.",
+                StreamUrl = "/radio.mp3",
+                UrlBase = "demo.azuracast.com",
                 LogoUrl = "",
                 WebsocketUrl = "/api/live/nowplaying/websocket",
-                ShortName = "Radio_Antani",
+                ShortName = "azuratest_radio",
                 IsTest = false,
                 SortOrder = 1
             },
