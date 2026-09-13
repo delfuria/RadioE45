@@ -178,15 +178,16 @@
                     <!-- Prossimo brano -->
                     <Border
                         Margin="24,12,24,0"
-                        Padding="10"
+                        Padding="8"
                         StrokeShape="RoundRectangle 16"
                         Stroke="{DynamicResource CardElevated}"
                         StrokeThickness="1"
                         BackgroundColor="{DynamicResource CardBackground}"
                         IsVisible="{Binding NowPlaying.Next, Converter={toolkit:IsNotNullConverter}}">
-                        <HorizontalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="52,*" ColumnSpacing="12">
 
                             <Border
+                                Grid.Column="0"
                                 HeightRequest="52"
                                 WidthRequest="52"
                                 StrokeShape="RoundRectangle 10"
@@ -203,22 +204,25 @@
                                 </Grid>
                             </Border>
 
-                            <VerticalStackLayout VerticalOptions="Center" Spacing="4">
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
                                 <Label
                                     Text="{Binding NowPlaying.Next.Title}"
                                     Style="{StaticResource SubtitleLabel}"
-                                    FontSize="15"
-                                    HorizontalTextAlignment="Start"
+                                    FontSize="18"
+                                    HorizontalOptions="Fill"
+                                    HorizontalTextAlignment="Center"
                                     LineBreakMode="TailTruncation"
                                     MaxLines="1" />
                                 <Label
                                     Text="{Binding NowPlaying.Next.Artist}"
                                     Style="{StaticResource CaptionLabel}"
-                                    HorizontalTextAlignment="Start"
+                                    FontSize="15"
+                                    HorizontalOptions="Fill"
+                                    HorizontalTextAlignment="Center"
                                     LineBreakMode="TailTruncation" />
                             </VerticalStackLayout>
 
-                        </HorizontalStackLayout>
+                        </Grid>
                     </Border>
 
                     <!-- Buffering indicator -->
