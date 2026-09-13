@@ -61,14 +61,13 @@
 
   <!-- Tab bar / page titles -->
   <data name="Tab_OnAir" xml:space="preserve"><value>In Onda</value></data>
-  <data name="Tab_Radio" xml:space="preserve"><value>Canali Radio</value></data>
+  <data name="Tab_Radio" xml:space="preserve"><value>Canali</value></data>
   <data name="Tab_Schedule" xml:space="preserve"><value>Palinsesto</value></data>
   <data name="Tab_Podcasts" xml:space="preserve"><value>Podcast</value></data>
   <data name="Tab_Settings" xml:space="preserve"><value>Impostazioni</value></data>
   <data name="RadioList_Title" xml:space="preserve"><value>Radio</value></data>
 
   <!-- On Air -->
-  <data name="OnAir_Next" xml:space="preserve"><value>Prossimo</value></data>
   <data name="OnAir_Waiting" xml:space="preserve"><value>In attesa...</value></data>
   <data name="OnAir_NoStationSelected" xml:space="preserve"><value>Nessuna stazione selezionata.</value></data>
 

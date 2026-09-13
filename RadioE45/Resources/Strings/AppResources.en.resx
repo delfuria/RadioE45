@@ -60,13 +60,12 @@
   </resheader>
 
   <data name="Tab_OnAir" xml:space="preserve"><value>On Air</value></data>
-  <data name="Tab_Radio" xml:space="preserve"><value>Radio Channels</value></data>
+  <data name="Tab_Radio" xml:space="preserve"><value>Channels</value></data>
   <data name="Tab_Schedule" xml:space="preserve"><value>Schedule</value></data>
   <data name="Tab_Podcasts" xml:space="preserve"><value>Podcasts</value></data>
   <data name="Tab_Settings" xml:space="preserve"><value>Settings</value></data>
   <data name="RadioList_Title" xml:space="preserve"><value>Radio</value></data>
 
-  <data name="OnAir_Next" xml:space="preserve"><value>Up next</value></data>
   <data name="OnAir_Waiting" xml:space="preserve"><value>Waiting...</value></data>
   <data name="OnAir_NoStationSelected" xml:space="preserve"><value>No station selected.</value></data>
 

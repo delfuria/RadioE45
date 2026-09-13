@@ -67,11 +67,11 @@
                                 BackgroundColor="{DynamicResource Accent}"
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="Transparent"
-                                Padding="10,4">
+                                Padding="8,2">
                                 <Label
                                     Text="{Binding CurrentStation.Name}"
                                     TextColor="{DynamicResource PrimaryText}"
-                                    FontSize="13"
+                                    FontSize="11"
                                     FontAttributes="Bold" />
                             </Border>
 
@@ -205,11 +205,6 @@
 
                             <VerticalStackLayout VerticalOptions="Center" Spacing="4">
                                 <Label
-                                    Text="{loc:Translate OnAir_Next}"
-                                    Style="{StaticResource CaptionLabel}"
-                                    FontAttributes="Bold"
-                                    IsVisible="{Binding NowPlaying.Next.IsJingle, Converter={StaticResource InvertBool}}" />
-                                <Label
                                     Text="{Binding NowPlaying.Next.Title}"
                                     Style="{StaticResource SubtitleLabel}"
                                     FontSize="15"
@@ -219,6 +214,7 @@
                                 <Label
                                     Text="{Binding NowPlaying.Next.Artist}"
                                     Style="{StaticResource CaptionLabel}"
+                                    HorizontalTextAlignment="Start"
                                     LineBreakMode="TailTruncation" />
                             </VerticalStackLayout>
 

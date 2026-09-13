@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Reference – RadioE45</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --primary: #0071e3;
+    --primary-light: #e8f1fd;
+    --success: #34c759;
+    --success-light: #e9f9ef;
+    --warning: #ff9500;
+    --warning-light: #fff5e6;
+    --danger: #ff3b30;
+    --danger-light: #fff0ef;
+    --text: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --code-bg: #f1f3f5;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --mono: "SF Mono", "Cascadia Code", Consolas, Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+  header {
+    background: linear-gradient(135deg, #1d1d1f 0%, #2d2d30 100%);
+    color: white;
+    padding: 48px 40px 40px;
+    border-bottom: 3px solid var(--primary);
+  }
+  header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+  header p { color: #c7c7cc; margin-top: 8px; font-size: 0.95rem; max-width: 760px; }
+  main { max-width: 960px; margin: 0 auto; padding: 32px 40px 80px; }
+  nav.toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+  }
+  nav.toc h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 10px; }
+  nav.toc ol { padding-left: 20px; }
+  nav.toc li { margin-bottom: 4px; }
+  nav.toc a { color: var(--primary); text-decoration: none; font-size: 0.95rem; }
+  nav.toc a:hover { text-decoration: underline; }
+  section.intro {
+    background: var(--primary-light);
+    border: 1px solid #c9e2fb;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    font-size: 0.95rem;
+  }
+  section.intro code { background: rgba(255,255,255,0.6); }
+  h2.section-title {
+    font-size: 1.4rem;
+    margin: 48px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+  }
+  .endpoint {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .endpoint-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: #fbfbfc;
+    flex-wrap: wrap;
+  }
+  .method {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: var(--success-light);
+    color: #1c7a37;
+    letter-spacing: 0.5px;
+  }
+  .path {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--text);
+    word-break: break-all;
+  }
+  .endpoint-title { font-weight: 600; font-size: 1.05rem; margin-right: auto; }
+  .endpoint-body { padding: 20px; }
+  .endpoint-body p { margin-bottom: 12px; }
+  .kv-table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 0.9rem; }
+  .kv-table th, .kv-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  .kv-table th { color: var(--text-secondary); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.3px; }
+  .kv-table code { font-family: var(--mono); font-size: 0.85rem; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+  pre {
+    background: #1d1d1f;
+    color: #f2f2f7;
+    padding: 16px 18px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.55;
+    margin: 10px 0 6px;
+  }
+  .label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-secondary); font-weight: 600; margin: 18px 0 4px; }
+  .src { font-family: var(--mono); font-size: 0.82rem; color: var(--text-secondary); background: var(--code-bg); padding: 2px 8px; border-radius: 6px; display: inline-block; }
+  .badge-note {
+    background: var(--warning-light);
+    border: 1px solid #ffe0b3;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    color: #8a5a00;
+    margin-top: 12px;
+  }
+  .badge-note strong { color: #8a5a00; }
+  .badge-danger {
+    background: var(--danger-light);
+    border: 1px solid #ffd0cc;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    color: #a3241c;
+    margin-top: 12px;
+  }
+  .doclinks {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px 24px;
+    margin-top: 12px;
+  }
+  .doclinks ul { padding-left: 20px; }
+  .doclinks li { margin-bottom: 8px; font-size: 0.92rem; }
+  .doclinks a { color: var(--primary); }
+  footer { text-align: center; color: var(--text-secondary); font-size: 0.8rem; padding: 24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>API Reference — RadioE45</h1>
+  <p>Elenco completo delle chiamate REST verso il backend AzuraCast usate dall'app .NET MAUI, con schema delle risposte JSON, riferimento al codice sorgente e link alla documentazione ufficiale. Documento di supporto per la riscrittura in HTML + JavaScript.</p>
+</header>
+<main>
+
+  <section class="intro">
+    <strong>Backend:</strong> tutte le API sono esposte dall'istanza <a href="https://github.com/AzuraCast/AzuraCast" target="_blank" rel="noopener">AzuraCast</a> di ciascuna stazione radio, non da un server proprio di RadioE45. Non è richiesta autenticazione: sono tutti endpoint pubblici in <code>GET</code>. L'URL base di ogni chiamata è ricavato dal campo <code>UrlBase</code> della stazione (es. <code>192.168.1.68</code>), a cui viene anteposto <code>https://</code> se lo schema non è già presente (<code>UrlBaseHelper.EnsureScheme</code>). Gli esempi di questo documento sono presi da una chiamata reale all'istanza AzuraCast di test <strong>Radio CyberFranchetti</strong> (<code>http://192.168.1.68</code>, <code>stationId = 1</code>).
+  </section>
+
+  <nav class="toc">
+    <h2>Indice</h2>
+    <ol>
+      <li><a href="#station-list">Elenco stazioni</a></li>
+      <li><a href="#now-playing">Now Playing (stato in diretta)</a></li>
+      <li><a href="#station-detail">Dettaglio stazione</a></li>
+      <li><a href="#podcasts">Elenco podcast</a></li>
+      <li><a href="#episodes">Episodi di un podcast</a></li>
+      <li><a href="#schedule">Palinsesto (schedule)</a></li>
+      <li><a href="#streaming">Contesto: stream audio diretto (non-JSON)</a></li>
+      <li><a href="#websocket">Contesto: campo WebSocket (non attivo)</a></li>
+      <li><a href="#docs">Riferimenti alla documentazione</a></li>
+    </ol>
+  </nav>
+
+  <h2 class="section-title">Endpoint REST</h2>
+
+  <article class="endpoint" id="station-list">
+    <div class="endpoint-head">
+      <span class="method">GET</span>
+      <span class="path">/api/stations</span>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-title">Elenco stazioni dell'istanza AzuraCast</p>
+      <p>Usato per la scoperta dinamica delle stazioni disponibili su un dato URL base (es. quando l'utente aggiunge un nuovo server AzuraCast nell'app).</p>
+
+      <p class="label">Esempio URL completo</p>
+      <pre>GET http://192.168.1.68/api/stations</pre>
+
+      <p class="label">Risposta JSON reale (array, campi usati dall'app)</p>
+      <pre>[
+  {
+    "id": 1,
+    "name": "Radio CyberFranchetti",
+    "shortcode": "radio_cyberfranchetti",
+    "description": "I più grandi successi Rock e Pop",
+    "hls_enabled": true,
+    "hls_is_default": false,
+    "hls_url": "http://192.168.1.68/hls/radio_cyberfranchetti/live.m3u8",
+    "mounts": [
+      {
+        "path": "/radio.mp3",
+        "is_default": true
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Radio Delfo",
+    "shortcode": "radio_delfo",
+    "description": "Per chi ha nostalgia dei Cartoni animati degli anni '80",
+    "hls_enabled": false,
+    "hls_is_default": false,
+    "hls_url": null,
+    "mounts": [
+      { "path": "/radio.mp3", "is_default": true }
+    ]
+  }
+]</pre>
+
+      <p class="label">Sorgenti nel repo</p>
+      <span class="src">Services/IAzuraCastStationApi.cs</span>
+      <span class="src">Services/Radio/StationListService.cs</span>
+      <span class="src">Models/AzuraCastStationListItem.cs</span>
+      <span class="src">Models/AzuraCastMountPoint.cs</span>
+    </div>
+  </article>
+
+  <article class="endpoint" id="now-playing">
+    <div class="endpoint-head">
+      <span class="method">GET</span>
+      <span class="path">/api/nowplaying/{stationId}?_={cacheBust}</span>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-title">Now Playing — brano corrente, prossimo, ascoltatori, stato live</p>
+      <p>Interrogato ogni 10 secondi mentre l'utente ascolta una stazione, per aggiornare titolo/artista/copertina, conteggio ascoltatori e stato "in diretta con DJ".</p>
+
+      <table class="kv-table">
+        <tr><th>Parametro</th><th>Tipo</th><th>Note</th></tr>
+        <tr><td><code>stationId</code></td><td>int (path)</td><td>ID numerico della stazione su AzuraCast</td></tr>
+        <tr><td><code>_</code></td><td>long (query)</td><td>Timestamp Unix in millisecondi, usato solo per invalidare la cache HTTP/CDN (cache-busting), non ha effetto sul contenuto</td></tr>
+      </table>
+
+      <p class="label">Esempio URL completo</p>
+      <pre>GET http://192.168.1.68/api/nowplaying/1?_=1789221471000</pre>
+
+      <p class="label">Risposta JSON reale (campi usati dall'app)</p>
+      <pre>{
+  "station": {
+    "id": 1,
+    "name": "Radio CyberFranchetti",
+    "listen_url": "http://192.168.1.68/listen/radio_cyberfranchetti/radio.mp3"
+  },
+  "now_playing": {
+    "song": {
+      "id": "c983f6da8bee266f0613e3a564d8e88f",
+      "text": "Bruce Springsteen - I'm Goin' Down",
+      "artist": "Bruce Springsteen",
+      "title": "I'm Goin' Down",
+      "art": "http://192.168.1.68/api/station/radio_cyberfranchetti/art/969616fb0f6f233086f88805-1788546255.jpg"
+    },
+    "played_at": 1789221471,
+    "duration": 258,
+    "elapsed": 11
+  },
+  "playing_next": {
+    "song": {
+      "id": "25b0db2b165ac4f84ca41055806c6885",
+      "text": "The Wallflowers - One Headlight",
+      "artist": "The Wallflowers",
+      "title": "One Headlight",
+      "art": "http://192.168.1.68/api/station/radio_cyberfranchetti/art/1f0d0174c7c719a461c5325a-1788546368.jpg"
+    },
+    "played_at": 1789221724,
+    "duration": 276.912
+  },
+  "listeners": { "current": 0 },
+  "live": { "is_live": false, "streamer_name": "" }
+}</pre>
+
+      <div class="badge-note"><strong>Nota:</strong> la risposta reale di AzuraCast contiene molti altri campi (<code>sh_id</code>, <code>playlist</code>, <code>song_history</code>, <code>album</code>, <code>genre</code>, <code>isrc</code>, <code>lyrics</code>, ecc.) — sopra sono riportati solo quelli effettivamente letti dal modello <code>AzuraCastNowPlayingResponse</code>.</div>
+
+      <div class="badge-note"><strong>Nota:</strong> se <code>now_playing.song.title</code> contiene "jingle" (case-insensitive), l'app tratta il brano come jingle e mostra nome/logo della stazione al posto di artista/titolo/copertina.</div>
+
+      <p class="label">Sorgenti nel repo</p>
+      <span class="src">Services/IAzuraCastApi.cs</span>
+      <span class="src">Services/Radio/NowPlayingService.cs</span>
+      <span class="src">Models/AzuraCastNowPlayingResponse.cs</span>
+    </div>
+  </article>
+
+  <article class="endpoint" id="station-detail">
+    <div class="endpoint-head">
+      <span class="method">GET</span>
+      <span class="path">/api/station/{stationId}</span>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-title">Dettaglio stazione</p>
+      <p>Usato nella schermata di dettaglio stazione, per leggere nome, descrizione, URL di stream e disponibilità HLS.</p>
+
+      <table class="kv-table">
+        <tr><th>Parametro</th><th>Tipo</th><th>Note</th></tr>
+        <tr><td><code>stationId</code></td><td>int (path)</td><td>ID numerico della stazione</td></tr>
+      </table>
+
+      <p class="label">Esempio URL completo</p>
+      <pre>GET http://192.168.1.68/api/station/1</pre>
+
+      <p class="label">Risposta JSON reale (campi usati dall'app)</p>
+      <pre>{
+  "id": 1,
+  "name": "Radio CyberFranchetti",
+  "shortcode": "radio_cyberfranchetti",
+  "description": "I più grandi successi Rock e Pop",
+  "listen_url": "http://192.168.1.68/listen/radio_cyberfranchetti/radio.mp3",
+  "url": "",
+  "hls_enabled": true,
+  "hls_is_default": false,
+  "hls_url": "http://192.168.1.68/hls/radio_cyberfranchetti/live.m3u8"
+}</pre>
+
+      <div class="badge-note"><strong>Timeout applicato dall'app:</strong> 5 secondi. Un <code>429</code> (rate limit) viene gestito come caso a parte e propagato come eccezione dedicata (<code>StationRateLimitedException</code>).</div>
+
+      <p class="label">Sorgenti nel repo</p>
+      <span class="src">Services/IAzuraCastStationApi.cs</span>
+      <span class="src">Services/Radio/StationDetailService.cs</span>
+      <span class="src">Models/AzuraCastStationDetailResponse.cs</span>
+    </div>
+  </article>
+
+  <article class="endpoint" id="podcasts">
+    <div class="endpoint-head">
+      <span class="method">GET</span>
+      <span class="path">/api/station/{stationId}/public/podcasts</span>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-title">Elenco podcast pubblicati sulla stazione</p>
+      <p>Popola la lista podcast nella sezione "Podcast" dell'app.</p>
+
+      <table class="kv-table">
+        <tr><th>Parametro</th><th>Tipo</th><th>Note</th></tr>
+        <tr><td><code>stationId</code></td><td>int (path)</td><td>ID numerico della stazione</td></tr>
+      </table>
+
+      <p class="label">Esempio URL completo</p>
+      <pre>GET http://192.168.1.68/api/station/1/public/podcasts</pre>
+
+      <p class="label">Risposta JSON reale (array, campi usati dall'app)</p>
+      <pre>[
+  {
+    "id": "1f1aaa41-2d73-6fc6-881f-fd584083348f",
+    "title": "Informatica — \"Caffè 2.0\"",
+    "description": "Pillole di Informatica",
+    "author": "",
+    "art": "http://192.168.1.68/api/station/1/public/podcast/1f1aaa41-2d73-6fc6-881f-fd584083348f/art",
+    "episodes": 2
+  },
+  {
+    "id": "1f1aaa4f-a572-6fa0-9b1c-4d2dda077d19",
+    "title": "Storie dell'Arte (Artribune, Mosè Previti)",
+    "description": "La bellazza si fa materia",
+    "author": "",
+    "art": "http://192.168.1.68/api/station/1/public/podcast/1f1aaa4f-a572-6fa0-9b1c-4d2dda077d19/art",
+    "episodes": 2
+  }
+]</pre>
+
+      <p class="label">Sorgenti nel repo</p>
+      <span class="src">Services/IAzuraCastPodcastApi.cs</span>
+      <span class="src">Services/Radio/PodcastService.cs</span>
+      <span class="src">Models/AzuraCastPodcast.cs</span>
+    </div>
+  </article>
+
+  <article class="endpoint" id="episodes">
+    <div class="endpoint-head">
+      <span class="method">GET</span>
+      <span class="path">/api/station/{stationId}/public/podcast/{podcastId}/episodes</span>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-title">Episodi di un podcast</p>
+      <p>Usato quando l'utente apre un podcast per vedere/riprodurre i singoli episodi.</p>
+
+      <table class="kv-table">
+        <tr><th>Parametro</th><th>Tipo</th><th>Note</th></tr>
+        <tr><td><code>stationId</code></td><td>int (path)</td><td>ID numerico della stazione</td></tr>
+        <tr><td><code>podcastId</code></td><td>string (path)</td><td>ID alfanumerico del podcast (campo <code>id</code> della risposta podcast)</td></tr>
+      </table>
+
+      <p class="label">Esempio URL completo</p>
+      <pre>GET http://192.168.1.68/api/station/1/public/podcast/1f1aaa41-2d73-6fc6-881f-fd584083348f/episodes</pre>
+
+      <p class="label">Risposta JSON reale (array, campi usati dall'app)</p>
+      <pre>[
+  {
+    "id": "1f1ab796-7900-6b26-91dc-cd6b110968ff",
+    "title": "Da 4.000 a 74.000 attacchi esplorativi in pochi giorni",
+    "description": "Cybersecurity",
+    "season_number": 1,
+    "episode_number": 2,
+    "publish_at": 1788867334,
+    "art": "http://192.168.1.68/api/station/radio_cyberfranchetti/public/podcast/1f1aaa41-2d73-6fc6-881f-fd584083348f/episode/1f1ab796-7900-6b26-91dc-cd6b110968ff/art",
+    "has_media": true,
+    "media": {
+      "length": 835,
+      "length_text": "13:55"
+    },
+    "links": {
+      "download": "http://192.168.1.68/api/station/radio_cyberfranchetti/public/podcast/1f1aaa41-2d73-6fc6-881f-fd584083348f/episode/1f1ab796-7900-6b26-91dc-cd6b110968ff/download.mp3"
+    }
+  }
+]</pre>
+
+      <div class="badge-danger">
+        <strong>Attenzione, importante per chi riscrive il client:</strong> l'URL di streaming/download reale dell'episodio va sempre preso da <code>links.download</code> (già assoluto e risolto correttamente dal server). Non va mai ricostruito a mano — un path come <code>/podcast/{id}/episode/{id}/media</code> non coincide con quello pubblico reale (<code>/public/podcast/{id}/episode/{id}/download.mp3</code>) e viene rifiutato dal server. Vedi commento in <code>AzuraCastPodcastEpisode.cs</code>.
+      </div>
+
+      <p>Il client filtra e ordina lato app: tiene solo gli episodi con <code>has_media: true</code> e <code>links.download</code> non vuoto, poi ordina per <code>publish_at</code> decrescente (più recenti prima).</p>
+
+      <p class="label">Sorgenti nel repo</p>
+      <span class="src">Services/IAzuraCastPodcastApi.cs</span>
+      <span class="src">Services/Radio/PodcastService.cs</span>
+      <span class="src">Models/AzuraCastPodcastEpisode.cs</span>
+    </div>
+  </article>
+
+  <article class="endpoint" id="schedule">
+    <div class="endpoint-head">
+      <span class="method">GET</span>
+      <span class="path">/api/station/{stationId}/schedule</span>
+    </div>
+    <div class="endpoint-body">
+      <p class="endpoint-title">Palinsesto della stazione</p>
+      <p>Usato per mostrare cosa è/sarà in onda (playlist, programmi) sulla timeline del palinsesto.</p>
+
+      <table class="kv-table">
+        <tr><th>Parametro</th><th>Tipo</th><th>Note</th></tr>
+        <tr><td><code>stationId</code></td><td>int (path)</td><td>ID numerico della stazione</td></tr>
+      </table>
+
+      <p class="label">Esempio URL completo</p>
+      <pre>GET http://192.168.1.68/api/station/1/schedule</pre>
+
+      <p class="label">Risposta JSON reale (array, campi usati dall'app)</p>
+      <pre>[
+  {
+    "id": 7,
+    "type": "playlist",
+    "name": "Evoque",
+    "title": "Evoque",
+    "description": "Playlist: Evoque",
+    "start_timestamp": 1789210800,
+    "start": "2026-09-12T13:00:00+02:00",
+    "end_timestamp": 1789232400,
+    "end": "2026-09-12T19:00:00+02:00",
+    "is_now": true
+  },
+  {
+    "id": 3,
+    "type": "playlist",
+    "name": "Panda",
+    "title": "Panda",
+    "description": "Playlist: Panda",
+    "start_timestamp": 1789236000,
+    "start": "2026-09-12T20:00:00+02:00",
+    "end_timestamp": 1789239600,
+    "end": "2026-09-12T21:00:00+02:00",
+    "is_now": false
+  }
+]</pre>
+
+      <p>L'app scarta lato client le voci il cui <code>title</code> contiene "jingle" (case-insensitive), per non mostrarle nel palinsesto visibile all'utente.</p>
+
+      <p class="label">Sorgenti nel repo</p>
+      <span class="src">Services/IAzuraCastScheduleApi.cs</span>
+      <span class="src">Services/Radio/ScheduleService.cs</span>
+      <span class="src">Models/PlaylistSchedule.cs</span>
+    </div>
+  </article>
+
+  <h2 class="section-title" id="streaming">Contesto: stream audio diretto (non-JSON)</h2>
+  <div class="endpoint">
+    <div class="endpoint-body">
+      <p>Oltre alle API JSON sopra, l'app riproduce l'audio collegandosi <strong>direttamente</strong> allo stream della stazione — non è una chiamata REST che restituisce JSON, ma una connessione HTTP persistente al player (MediaElement / ExoPlayer / AVPlayer a seconda della piattaforma):</p>
+      <table class="kv-table">
+        <tr><th>Formato</th><th>Sorgente URL</th><th>Note</th></tr>
+        <tr><td>Diretto (Icecast/MP3)</td><td><code>{UrlBase}{StreamUrl}</code>, es. <code>http://192.168.1.68/listen/radio_cyberfranchetti/radio.mp3</code></td><td>Preferito di default (<code>PreferHlsStream = false</code>); nessun concetto di "live edge", buffer fino a ~50s</td></tr>
+        <tr><td>HLS</td><td>campo <code>hls_url</code> restituito da <a href="#station-detail">dettaglio stazione</a> / <a href="#station-list">elenco stazioni</a></td><td>Opzionale, attivabile da impostazioni; introduce alcuni secondi di latenza aggiuntiva per via della segmentazione HLS</td></tr>
+      </table>
+      <p>La scelta tra i due candidati avviene lato app tramite <code>StreamUrlProber</code>, che prova gli URL in ordine di priorità (non in parallelo) e usa il primo raggiungibile.</p>
+    </div>
+  </div>
+
+  <h2 class="section-title" id="websocket">Contesto: campo WebSocket (presente ma non usato)</h2>
+  <div class="endpoint">
+    <div class="endpoint-body">
+      <p>Ogni stazione ha un campo <code>WebsocketUrl</code> (es. <code>/api/live/nowplaying/websocket</code>, che AzuraCast espone su <code>wss://</code>) salvato nel modello dati e nel DB locale, ma <strong>non è mai aperto/consumato</strong> da nessun servizio dell'app. L'aggiornamento del "now playing" avviene solo tramite polling REST ogni 10 secondi sull'endpoint <a href="#now-playing">Now Playing</a>. Chi implementa la versione HTML+JS può ignorare questo campo, oppure valutare di sostituire il polling con una vera connessione WebSocket per ridurre la latenza (AzuraCast la supporta nativamente).</p>
+      <p class="label">Sorgenti nel repo</p>
+      <span class="src">Models/AzuraStation.cs</span>
+      <span class="src">Models/RadioStation.cs</span>
+      <span class="src">Services/Data/DatabaseService.cs</span>
+    </div>
+  </div>
+
+  <h2 class="section-title" id="docs">Riferimenti alla documentazione</h2>
+  <div class="doclinks">
+    <ul>
+      <li><a href="https://www.azuracast.com/docs/developers/apis/" target="_blank" rel="noopener">AzuraCast — Developer APIs (documentazione ufficiale)</a> — panoramica delle API pubbliche esposte da ogni istanza AzuraCast.</li>
+      <li><a href="https://github.com/AzuraCast/AzuraCast" target="_blank" rel="noopener">AzuraCast — repository GitHub</a> — codice sorgente del backend, inclusi i controller REST (<code>src/Controller/Api/</code>) che definiscono gli esatti schemi di risposta.</li>
+      <li><strong>Swagger/OpenAPI live per istanza:</strong> ogni installazione AzuraCast espone la propria documentazione interattiva all'indirizzo <code>{UrlBase}/api</code> (es. <code>http://192.168.1.68/api</code>) — utile per verificare in tempo reale lo schema esatto della stazione target, che può variare leggermente tra versioni di AzuraCast.</li>
+    </ul>
+  </div>
+
+</main>
+<footer>RadioE45 — documento generato per supporto alla riscrittura HTML + JavaScript · docs/api-reference.html</footer>
+</body>
+</html>
