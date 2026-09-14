@@ -119,7 +119,7 @@
                                 BackgroundColor="{StaticResource HlsGreen}"
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="Transparent"
-                                Padding="10,4"
+                                Padding="8,2"
                                 IsVisible="{Binding IsHlsActive}">
                                 <Label
                                     Text="HLS"
