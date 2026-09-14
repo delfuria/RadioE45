@@ -127,6 +127,10 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
 
         CurrentEpisode = episode;
 
+        // Aggiorna subito l'indicatore (verde -> giallo): non aspettare il prossimo OnAppearing.
+        if (episode.ProgressState == PodcastEpisodeProgressState.NotStarted)
+            episode.ProgressState = PodcastEpisodeProgressState.InProgress;
+
         int startPositionSeconds = await _podcastPlayerService.GetResumePositionSecondsAsync(station, episode);
         TotalTimeText = FormatTime(episode.Duration);
         UpdatePlaybackPosition(TimeSpan.FromSeconds(startPositionSeconds));
@@ -200,6 +204,11 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            // Aggiorna subito l'indicatore (giallo -> rosso) sull'episodio appena terminato,
+            // prima di sganciarlo da CurrentEpisode.
+            if (CurrentEpisode is { } episode)
+                episode.ProgressState = PodcastEpisodeProgressState.Completed;
+
             CurrentEpisode = null;
             IsPlaying = false;
             PlaybackProgress = 0;

@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using RadioE45.Services.Localization;
 
 namespace RadioE45.Models;
@@ -11,7 +12,7 @@ public enum PodcastEpisodeProgressState
     Completed,
 }
 
-public class AzuraCastPodcastEpisode
+public partial class AzuraCastPodcastEpisode : ObservableObject
 {
     [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
@@ -65,14 +66,16 @@ public class AzuraCastPodcastEpisode
     public ICommand? PlayCommand { get; set; }
 
     // Valorizzati da PodcastEpisodesViewModel dopo il fetch, leggendo PodcastEpisodeProgress —
-    // non fanno parte del JSON dell'episodio. L'episodio non è un ObservableObject: questi valori
-    // riflettono lo stato al momento del caricamento della lista, non si aggiornano in diretta
-    // durante la riproduzione (la pagina si ricarica comunque a ogni OnAppearing).
+    // non fanno parte del JSON dell'episodio.
     [JsonIgnore]
     public int ResumePositionSeconds { get; set; }
 
+    // ObservableProperty: il ViewModel aggiorna questo valore anche in diretta durante la
+    // riproduzione (avvio episodio, fine episodio), non solo al caricamento della lista — il
+    // pallino nella UI deve rispecchiarlo subito, non solo al prossimo OnAppearing.
     [JsonIgnore]
-    public PodcastEpisodeProgressState ProgressState { get; set; } = PodcastEpisodeProgressState.NotStarted;
+    [ObservableProperty]
+    public partial PodcastEpisodeProgressState ProgressState { get; set; } = PodcastEpisodeProgressState.NotStarted;
 
     [JsonIgnore]
     public string SeasonEpisodeText => SeasonNumber is { } season && EpisodeNumber is { } number
