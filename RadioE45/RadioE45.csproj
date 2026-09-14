@@ -31,9 +31,9 @@
 
         <!-- Versions -->
         <!-- Android versionCode must be >= 1; Windows Store requires revision = 0, so we split by platform -->
-        <ApplicationDisplayVersion>0.31</ApplicationDisplayVersion>
+        <ApplicationDisplayVersion>0.32</ApplicationDisplayVersion>
         <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">0</ApplicationVersion>
-        <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">31</ApplicationVersion>
+        <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">32</ApplicationVersion>
 
         <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
         <WindowsPackageType>None</WindowsPackageType>
@@ -93,7 +93,6 @@
         <MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
         <MauiImage Update="Resources\Images\tab_onair.png" Resize="True" BaseSize="32,32" />
         <MauiImage Update="Resources\Images\tab_radiolist.png" Resize="True" BaseSize="32,32" />
-        <MauiImage Update="Resources\Images\tab_settings.png" Resize="True" BaseSize="32,32" />
 
         <!-- Custom Fonts -->
         <MauiFont Include="Resources\Fonts\*" />
