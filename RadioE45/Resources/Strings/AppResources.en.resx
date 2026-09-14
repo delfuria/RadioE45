@@ -81,6 +81,16 @@
   <data name="Podcast_Episodes" xml:space="preserve"><value>episodes</value></data>
   <data name="Podcast_NoEpisodes" xml:space="preserve"><value>No episodes available</value></data>
   <data name="Podcast_SeasonEpisode" xml:space="preserve"><value>Season {0} - Ep. {1} </value></data>
+  <data name="Podcast_FilterSeasonLabel" xml:space="preserve"><value>Season</value></data>
+  <data name="Podcast_FilterEpisodeLabel" xml:space="preserve"><value>Episode</value></data>
+  <data name="Podcast_FilterStatusLabel" xml:space="preserve"><value>Status</value></data>
+  <data name="Podcast_FilterAllSeasons" xml:space="preserve"><value>All seasons</value></data>
+  <data name="Podcast_FilterAllEpisodes" xml:space="preserve"><value>All episodes</value></data>
+  <data name="Podcast_FilterAllStatuses" xml:space="preserve"><value>All</value></data>
+  <data name="Podcast_StatusNotStarted" xml:space="preserve"><value>New</value></data>
+  <data name="Podcast_StatusInProgress" xml:space="preserve"><value>In progress</value></data>
+  <data name="Podcast_StatusCompleted" xml:space="preserve"><value>Finished</value></data>
+  <data name="Podcast_NoEpisodesFiltered" xml:space="preserve"><value>No episodes match the selected filters</value></data>
 
   <data name="Settings_Section_Playback" xml:space="preserve"><value>PLAYBACK</value></data>
   <data name="Settings_StartWithFavorite" xml:space="preserve"><value>Start with favorite station</value></data>

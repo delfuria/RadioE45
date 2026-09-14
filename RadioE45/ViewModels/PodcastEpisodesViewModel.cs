@@ -20,6 +20,8 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
     private readonly IPodcastProgressRepository _progressRepository;
     private readonly OnAirViewModel _onAirViewModel;
     private int? _loadedStationId;
+    // Elenco completo scaricato dal feed: Episodes è la vista filtrata che ne deriva.
+    private List<AzuraCastPodcastEpisode> _allEpisodes = [];
 
     [ObservableProperty]
     public partial string PodcastId { get; set; } = string.Empty;
@@ -29,6 +31,37 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
 
     [ObservableProperty]
     public partial ObservableCollection<AzuraCastPodcastEpisode> Episodes { get; set; } = [];
+
+    [ObservableProperty]
+    public partial List<PodcastFilterOption<int>> SeasonOptions { get; set; } = [];
+
+    [ObservableProperty]
+    public partial List<PodcastFilterOption<int>> EpisodeNumberOptions { get; set; } = [];
+
+    [ObservableProperty]
+    public partial List<PodcastFilterOption<PodcastEpisodeProgressState>> StatusOptions { get; set; } = [];
+
+    [ObservableProperty]
+    public partial PodcastFilterOption<int>? SelectedSeason { get; set; }
+
+    [ObservableProperty]
+    public partial PodcastFilterOption<int>? SelectedEpisodeNumber { get; set; }
+
+    [ObservableProperty]
+    public partial PodcastFilterOption<PodcastEpisodeProgressState>? SelectedStatus { get; set; }
+
+    // Stagione/episodio sono spesso assenti dal feed (vedi commento su SeasonEpisodeText):
+    // il relativo Picker si mostra solo se almeno un episodio valorizza il campo.
+    [ObservableProperty]
+    public partial bool IsSeasonFilterVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsEpisodeFilterVisible { get; set; }
+
+    // Distingue "il podcast non ha episodi" da "i filtri escludono tutti gli episodi" — non
+    // cambia con la selezione dei filtri, solo quando cambia l'elenco scaricato dal feed.
+    [ObservableProperty]
+    public partial string EmptyEpisodesText { get; set; } = string.Empty;
 
     [ObservableProperty]
     public partial AzuraCastPodcastEpisode? CurrentEpisode { get; set; }
@@ -79,7 +112,9 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
         AzuraStation? station = _onAirViewModel.CurrentStation;
         if (station is null || string.IsNullOrEmpty(PodcastId))
         {
+            _allEpisodes = [];
             Episodes = [];
+            EmptyEpisodesText = LocalizationResourceManager.Instance["Podcast_NoEpisodes"];
             return;
         }
 
@@ -108,8 +143,78 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
                 }
             }
 
-            Episodes = new ObservableCollection<AzuraCastPodcastEpisode>(items);
+            _allEpisodes = items;
+            EmptyEpisodesText = LocalizationResourceManager.Instance[
+                items.Count == 0 ? "Podcast_NoEpisodes" : "Podcast_NoEpisodesFiltered"];
+            BuildFilterOptions(items);
+            ApplyFilter();
         }, LocalizationResourceManager.Instance["Err_LoadEpisodes"]);
+    }
+
+    private void BuildFilterOptions(List<AzuraCastPodcastEpisode> items)
+    {
+        List<int> seasons = items
+            .Where(e => e.SeasonNumber.HasValue)
+            .Select(e => e.SeasonNumber!.Value)
+            .Distinct()
+            .OrderBy(s => s)
+            .ToList();
+
+        List<int> episodeNumbers = items
+            .Where(e => e.EpisodeNumber.HasValue)
+            .Select(e => e.EpisodeNumber!.Value)
+            .Distinct()
+            .OrderBy(n => n)
+            .ToList();
+
+        IsSeasonFilterVisible = seasons.Count > 0;
+        IsEpisodeFilterVisible = episodeNumbers.Count > 0;
+
+        SeasonOptions = new List<PodcastFilterOption<int>>
+        {
+            new(LocalizationResourceManager.Instance["Podcast_FilterAllSeasons"], null),
+        }.Concat(seasons.Select(s => new PodcastFilterOption<int>(s.ToString(), s))).ToList();
+
+        EpisodeNumberOptions = new List<PodcastFilterOption<int>>
+        {
+            new(LocalizationResourceManager.Instance["Podcast_FilterAllEpisodes"], null),
+        }.Concat(episodeNumbers.Select(n => new PodcastFilterOption<int>(n.ToString(), n))).ToList();
+
+        StatusOptions =
+        [
+            new(LocalizationResourceManager.Instance["Podcast_FilterAllStatuses"], null),
+            new(LocalizationResourceManager.Instance["Podcast_StatusNotStarted"], PodcastEpisodeProgressState.NotStarted),
+            new(LocalizationResourceManager.Instance["Podcast_StatusInProgress"], PodcastEpisodeProgressState.InProgress),
+            new(LocalizationResourceManager.Instance["Podcast_StatusCompleted"], PodcastEpisodeProgressState.Completed),
+        ];
+
+        // Selezionare "Tutti/Tutte" fa scattare ApplyFilter per ciascuna delle tre proprietà;
+        // ridondante con la ApplyFilter() finale di LoadEpisodesAsync ma innocuo (liste corte).
+        SelectedSeason = SeasonOptions[0];
+        SelectedEpisodeNumber = EpisodeNumberOptions[0];
+        SelectedStatus = StatusOptions[0];
+    }
+
+    partial void OnSelectedSeasonChanged(PodcastFilterOption<int>? value) => ApplyFilter();
+
+    partial void OnSelectedEpisodeNumberChanged(PodcastFilterOption<int>? value) => ApplyFilter();
+
+    partial void OnSelectedStatusChanged(PodcastFilterOption<PodcastEpisodeProgressState>? value) => ApplyFilter();
+
+    private void ApplyFilter()
+    {
+        IEnumerable<AzuraCastPodcastEpisode> query = _allEpisodes;
+
+        if (SelectedSeason?.Value is { } season)
+            query = query.Where(e => e.SeasonNumber == season);
+
+        if (SelectedEpisodeNumber?.Value is { } episodeNumber)
+            query = query.Where(e => e.EpisodeNumber == episodeNumber);
+
+        if (SelectedStatus?.Value is { } status)
+            query = query.Where(e => e.ProgressState == status);
+
+        Episodes = new ObservableCollection<AzuraCastPodcastEpisode>(query);
     }
 
     [RelayCommand]
@@ -129,7 +234,13 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
 
         // Aggiorna subito l'indicatore (verde -> giallo): non aspettare il prossimo OnAppearing.
         if (episode.ProgressState == PodcastEpisodeProgressState.NotStarted)
+        {
             episode.ProgressState = PodcastEpisodeProgressState.InProgress;
+            // Se è attivo un filtro per stato, l'episodio potrebbe non farne più parte
+            // (es. filtro "Da ascoltare"): ri-applica per rifletterlo subito in lista.
+            if (SelectedStatus?.Value is not null)
+                ApplyFilter();
+        }
 
         int startPositionSeconds = await _podcastPlayerService.GetResumePositionSecondsAsync(station, episode);
         TotalTimeText = FormatTime(episode.Duration);
@@ -207,7 +318,11 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
             // Aggiorna subito l'indicatore (giallo -> rosso) sull'episodio appena terminato,
             // prima di sganciarlo da CurrentEpisode.
             if (CurrentEpisode is { } episode)
+            {
                 episode.ProgressState = PodcastEpisodeProgressState.Completed;
+                if (SelectedStatus?.Value is not null)
+                    ApplyFilter();
+            }
 
             CurrentEpisode = null;
             IsPlaying = false;

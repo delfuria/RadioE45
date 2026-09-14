@@ -22,8 +22,58 @@
         <!-- MediaElement dedicata al podcast — separata dal player radio, invisibile -->
         <toolkit:MediaElement x:Name="PodcastPlayer" IsVisible="False" HeightRequest="0" />
 
-        <RefreshView
+        <Grid Grid.Row="0" RowDefinitions="Auto,*">
+
+        <!-- Filtri episodi: Stagione/Episodio compaiono solo se il feed valorizza quei campi. -->
+        <Grid
             Grid.Row="0"
+            ColumnDefinitions="*,*,*"
+            ColumnSpacing="8"
+            Margin="16,4,16,0">
+
+            <VerticalStackLayout Grid.Column="0" Spacing="2" IsVisible="{Binding IsSeasonFilterVisible}">
+                <Label
+                    Text="{loc:Translate Podcast_FilterSeasonLabel}"
+                    FontSize="11"
+                    TextColor="{DynamicResource MutedText}" />
+                <Picker
+                    ItemsSource="{Binding SeasonOptions}"
+                    SelectedItem="{Binding SelectedSeason}"
+                    TextColor="{DynamicResource PrimaryText}"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    FontSize="13" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Column="1" Spacing="2" IsVisible="{Binding IsEpisodeFilterVisible}">
+                <Label
+                    Text="{loc:Translate Podcast_FilterEpisodeLabel}"
+                    FontSize="11"
+                    TextColor="{DynamicResource MutedText}" />
+                <Picker
+                    ItemsSource="{Binding EpisodeNumberOptions}"
+                    SelectedItem="{Binding SelectedEpisodeNumber}"
+                    TextColor="{DynamicResource PrimaryText}"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    FontSize="13" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Column="2" Spacing="2">
+                <Label
+                    Text="{loc:Translate Podcast_FilterStatusLabel}"
+                    FontSize="11"
+                    TextColor="{DynamicResource MutedText}" />
+                <Picker
+                    ItemsSource="{Binding StatusOptions}"
+                    SelectedItem="{Binding SelectedStatus}"
+                    TextColor="{DynamicResource PrimaryText}"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    FontSize="13" />
+            </VerticalStackLayout>
+
+        </Grid>
+
+        <RefreshView
+            Grid.Row="1"
             IsRefreshing="{Binding IsBusy}"
             Command="{Binding LoadEpisodesCommand}">
 
@@ -44,7 +94,7 @@
                             FontSize="48"
                             HorizontalTextAlignment="Center" />
                         <Label
-                            Text="{loc:Translate Podcast_NoEpisodes}"
+                            Text="{Binding EmptyEpisodesText}"
                             Style="{StaticResource SubtitleLabel}" />
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
@@ -142,6 +192,8 @@
 
             </CollectionView>
         </RefreshView>
+
+        </Grid>
 
         <!-- Mini player episodio corrente -->
         <Border
