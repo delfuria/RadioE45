@@ -7,6 +7,7 @@
     xmlns:vm="clr-namespace:RadioE45.ViewModels"
     xmlns:loc="clr-namespace:RadioE45.Services.Localization"
     xmlns:controls="clr-namespace:RadioE45.Controls"
+    xmlns:models="clr-namespace:RadioE45.Models"
     x:DataType="vm:OnAirViewModel"
     Title="{loc:Translate Tab_OnAir}">
 
@@ -15,6 +16,7 @@
         <toolkit:BoolToObjectConverter x:Key="FavoriteIconConverter" TrueObject="heart_filled.png" FalseObject="heart_outline.png" />
         <toolkit:BoolToObjectConverter x:Key="PlayPauseTextConverter" x:TypeArguments="x:String" TrueObject="⏸" FalseObject="▶" />
         <toolkit:BoolToObjectConverter x:Key="MuteTextConverter" x:TypeArguments="x:String" TrueObject="🔇" FalseObject="🔊" />
+        <toolkit:BoolToObjectConverter x:Key="ChevronTextConverter" x:TypeArguments="x:String" TrueObject="▲" FalseObject="▼" />
     </ContentPage.Resources>
 
     <RefreshView
@@ -319,6 +321,89 @@
                         FontSize="13"
                         HorizontalTextAlignment="Center"
                         Margin="24,12,24,0" />
+
+                    <!-- Ultimi brani trasmessi -->
+                    <VerticalStackLayout
+                        Margin="24,20,24,0"
+                        Spacing="8"
+                        IsVisible="{Binding NowPlaying.SongHistory, Converter={toolkit:IsListNotNullOrEmptyConverter}}">
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ToggleSongHistoryCommand}" />
+                            </Grid.GestureRecognizers>
+
+                            <Label
+                                Grid.Column="0"
+                                Text="{loc:Translate OnAir_RecentlyPlayed}"
+                                Style="{StaticResource CaptionLabel}"
+                                HorizontalOptions="Start"
+                                VerticalOptions="Center" />
+
+                            <Label
+                                Grid.Column="1"
+                                Text="{Binding IsSongHistoryExpanded, Converter={StaticResource ChevronTextConverter}}"
+                                Style="{StaticResource CaptionLabel}"
+                                VerticalOptions="Center" />
+                        </Grid>
+
+                        <VerticalStackLayout
+                            Spacing="10"
+                            IsVisible="{Binding IsSongHistoryExpanded}"
+                            BindableLayout.ItemsSource="{Binding NowPlaying.SongHistory}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:PlayedTrackInfo">
+                                    <Border
+                                        Padding="8"
+                                        StrokeShape="RoundRectangle 16"
+                                        Stroke="{DynamicResource CardElevated}"
+                                        StrokeThickness="1"
+                                        BackgroundColor="{DynamicResource CardBackground}">
+                                        <Grid ColumnDefinitions="52,*" ColumnSpacing="12">
+
+                                            <Border
+                                                Grid.Column="0"
+                                                HeightRequest="52"
+                                                WidthRequest="52"
+                                                StrokeShape="RoundRectangle 10"
+                                                Stroke="Transparent">
+                                                <Grid>
+                                                    <Image
+                                                        Source="{Binding ArtworkUrl}"
+                                                        Aspect="AspectFill"
+                                                        IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNotNullConverter}}" />
+                                                    <Image
+                                                        Source="radio_placeholder.png"
+                                                        Aspect="AspectFit"
+                                                        IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNullConverter}}" />
+                                                </Grid>
+                                            </Border>
+
+                                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                                                <Label
+                                                    Text="{Binding Title}"
+                                                    Style="{StaticResource SubtitleLabel}"
+                                                    FontSize="18"
+                                                    HorizontalOptions="Fill"
+                                                    HorizontalTextAlignment="Center"
+                                                    LineBreakMode="TailTruncation"
+                                                    MaxLines="1" />
+                                                <Label
+                                                    Text="{Binding Artist}"
+                                                    Style="{StaticResource CaptionLabel}"
+                                                    FontSize="15"
+                                                    HorizontalOptions="Fill"
+                                                    HorizontalTextAlignment="Center"
+                                                    LineBreakMode="TailTruncation" />
+                                            </VerticalStackLayout>
+
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
 
                 </VerticalStackLayout>
 

@@ -68,6 +68,7 @@
 
   <data name="OnAir_Waiting" xml:space="preserve"><value>Waiting...</value></data>
   <data name="OnAir_NoStationSelected" xml:space="preserve"><value>No station selected.</value></data>
+  <data name="OnAir_RecentlyPlayed" xml:space="preserve"><value>Recently played</value></data>
 
   <data name="RadioList_Empty" xml:space="preserve"><value>No stations available</value></data>
   <data name="RadioList_Offline" xml:space="preserve"><value>● Offline</value></data>

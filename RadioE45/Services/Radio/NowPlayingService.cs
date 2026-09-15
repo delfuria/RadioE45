@@ -140,6 +140,22 @@ public class NowPlayingService : INowPlayingService, IDisposable
             };
         }
 
+        List<PlayedTrackInfo> songHistory = response.SongHistory
+            .Take(5)
+            .Select(h =>
+            {
+                var song = MapSong(h.Song, station);
+                return new PlayedTrackInfo
+                {
+                    Artist = song.Artist,
+                    Title = song.Title,
+                    ArtworkUrl = song.ArtworkUrl,
+                    IsJingle = song.IsJingle,
+                    PlayedAt = DateTimeOffset.FromUnixTimeSeconds(h.PlayedAt).UtcDateTime
+                };
+            })
+            .ToList();
+
         return new NowPlayingInfo
         {
             Artist = current.Artist,
@@ -152,7 +168,8 @@ public class NowPlayingService : INowPlayingService, IDisposable
             TrackDurationSeconds = response.NowPlaying.Duration,
             TrackElapsedSeconds = response.NowPlaying.Elapsed,
             LastUpdated = DateTime.UtcNow,
-            Next = next
+            Next = next,
+            SongHistory = songHistory
         };
     }
 

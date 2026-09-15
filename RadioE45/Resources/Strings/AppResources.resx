@@ -70,6 +70,7 @@
   <!-- On Air -->
   <data name="OnAir_Waiting" xml:space="preserve"><value>In attesa...</value></data>
   <data name="OnAir_NoStationSelected" xml:space="preserve"><value>Nessuna stazione selezionata.</value></data>
+  <data name="OnAir_RecentlyPlayed" xml:space="preserve"><value>Ultimi brani trasmessi</value></data>
 
   <!-- Radio list -->
   <data name="RadioList_Empty" xml:space="preserve"><value>Nessuna stazione disponibile</value></data>

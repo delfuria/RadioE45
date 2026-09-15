@@ -16,6 +16,7 @@ public class NowPlayingInfo : IEquatable<NowPlayingInfo>, IComparable<NowPlaying
     public bool IsJingle { get; set; }
 
     public NextPlayingInfo? Next { get; set; }
+    public List<PlayedTrackInfo> SongHistory { get; set; } = new();
 
     public static NowPlayingInfo Empty => new()
     {

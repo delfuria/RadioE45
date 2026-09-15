@@ -60,6 +60,12 @@ public partial class OnAirViewModel : BaseViewModel
     [ObservableProperty]
     public partial bool HasPodcasts { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsSongHistoryExpanded { get; set; }
+
+    [RelayCommand]
+    private void ToggleSongHistory() => IsSongHistoryExpanded = !IsSongHistoryExpanded;
+
     private int _hasPodcastsRequestId;
 
     partial void OnCurrentStationChanged(AzuraStation? value)

@@ -13,6 +13,9 @@ public class AzuraCastNowPlayingResponse
     [JsonPropertyName("playing_next")]
     public NextSong? PlayingNext { get; set; }
 
+    [JsonPropertyName("song_history")]
+    public List<SongHistoryItem> SongHistory { get; set; } = new();
+
     [JsonPropertyName("listeners")]
     public ListenersInfo Listeners { get; set; } = new();
 
@@ -63,6 +66,15 @@ public class NextSong
 
     [JsonPropertyName("duration")]
     public double Duration { get; set; }
+}
+
+public class SongHistoryItem
+{
+    [JsonPropertyName("song")]
+    public SongInfo Song { get; set; } = new();
+
+    [JsonPropertyName("played_at")]
+    public long PlayedAt { get; set; }
 }
 
 public class StationInfo
