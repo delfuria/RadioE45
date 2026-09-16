@@ -24,17 +24,17 @@
             ContentTemplate="{DataTemplate views:SchedulePage}"
             Route="SchedulePage" />
         <ShellContent
-            Title="{loc:Translate Tab_Podcasts}"
-            Icon="tab_podcast.png"
-            ContentTemplate="{DataTemplate views:PodcastListPage}"
-            Route="PodcastListPage"
-            IsVisible="{Binding HasPodcasts}" />
-        <ShellContent
             Title="{loc:Translate Tab_Request}"
             Icon="tab_request.png"
             ContentTemplate="{DataTemplate views:SongRequestPage}"
             Route="SongRequestPage"
             IsVisible="{Binding NowPlaying.RequestsEnabled}" />
+        <ShellContent
+            Title="{loc:Translate Tab_Podcasts}"
+            Icon="tab_podcast.png"
+            ContentTemplate="{DataTemplate views:PodcastListPage}"
+            Route="PodcastListPage"
+            IsVisible="{Binding HasPodcasts}" />
         <ShellContent
             Title="{loc:Translate Tab_Settings}"
             Icon="tab_settings.png"
