@@ -103,6 +103,12 @@
   <data name="Request_Submit" xml:space="preserve"><value>Richiedi</value></data>
   <data name="Request_NoSongs" xml:space="preserve"><value>Nessun brano richiedibile</value></data>
   <data name="Request_NoSongsFiltered" xml:space="preserve"><value>Nessun brano corrisponde alla ricerca</value></data>
+  <data name="Request_Err_TooRecent" xml:space="preserve"><value>Hai già inviato una richiesta di recente. Attendi {0} minuti prima di inviarne un'altra.</value></data>
+  <data name="Request_Err_AlreadyPending" xml:space="preserve"><value>Questo brano è già stato richiesto e verrà trasmesso a breve.</value></data>
+  <data name="Request_Err_PlayedRecently" xml:space="preserve"><value>Questo brano o artista è stato trasmesso troppo di recente. Attendi prima di richiederlo di nuovo.</value></data>
+  <data name="Request_Err_NotRequestable" xml:space="preserve"><value>Questo brano non è richiedibile.</value></data>
+  <data name="Request_Err_NotPermitted" xml:space="preserve"><value>Non sei autorizzato a inviare richieste.</value></data>
+  <data name="Request_Err_Bot" xml:space="preserve"><value>I crawler non sono autorizzati a usare questa funzione.</value></data>
 
   <!-- Settings -->
   <data name="Settings_Section_Playback" xml:space="preserve"><value>RIPRODUZIONE</value></data>

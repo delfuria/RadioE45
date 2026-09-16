@@ -98,6 +98,12 @@
   <data name="Request_Submit" xml:space="preserve"><value>Zamów</value></data>
   <data name="Request_NoSongs" xml:space="preserve"><value>Brak dostępnych utworów do zamówienia</value></data>
   <data name="Request_NoSongsFiltered" xml:space="preserve"><value>Żaden utwór nie pasuje do wyszukiwania</value></data>
+  <data name="Request_Err_TooRecent" xml:space="preserve"><value>Wysłano już prośbę niedawno. Poczekaj {0} minut przed wysłaniem kolejnej.</value></data>
+  <data name="Request_Err_AlreadyPending" xml:space="preserve"><value>Ten utwór został już zamówiony i wkrótce zostanie odtworzony.</value></data>
+  <data name="Request_Err_PlayedRecently" xml:space="preserve"><value>Ten utwór lub wykonawca był odtwarzany zbyt niedawno. Poczekaj, zanim spróbujesz ponownie.</value></data>
+  <data name="Request_Err_NotRequestable" xml:space="preserve"><value>Ten utwór nie może być zamówiony.</value></data>
+  <data name="Request_Err_NotPermitted" xml:space="preserve"><value>Nie masz uprawnień do wysyłania próśb.</value></data>
+  <data name="Request_Err_Bot" xml:space="preserve"><value>Roboty wyszukiwarek nie mogą korzystać z tej funkcji.</value></data>
 
   <data name="Settings_Section_Playback" xml:space="preserve"><value>ODTWARZANIE</value></data>
   <data name="Settings_StartWithFavorite" xml:space="preserve"><value>Uruchamiaj z ulubioną stacją</value></data>
