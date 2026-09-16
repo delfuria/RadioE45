@@ -102,17 +102,33 @@
                                         IsVisible="{Binding IsRequesting}"
                                         HeightRequest="24"
                                         WidthRequest="24" />
-                                    <Button
-                                        Text="{loc:Translate Request_Submit}"
-                                        Command="{Binding RequestCommand}"
-                                        CommandParameter="{Binding .}"
+                                    <!-- Border + tap invece di Button: su Mac Catalyst il Button nativo ripristina il
+                                         proprio background dopo lo stato "pressed", ignorando BackgroundColor — con
+                                         Border il colore resta stabile su tutte le piattaforme. -->
+                                    <Border
                                         IsVisible="{Binding IsRequesting, Converter={StaticResource InvertBool}}"
                                         IsEnabled="{Binding IsRequested, Converter={StaticResource InvertBool}}"
                                         BackgroundColor="{DynamicResource Accent}"
-                                        TextColor="{DynamicResource PrimaryText}"
-                                        FontSize="12"
-                                        Padding="10,6"
-                                        CornerRadius="14" />
+                                        StrokeShape="RoundRectangle 14"
+                                        Stroke="Transparent"
+                                        Padding="10,6">
+
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsRequested}" Value="True">
+                                                <Setter Property="Opacity" Value="0.5" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding RequestCommand}" CommandParameter="{Binding .}" />
+                                        </Border.GestureRecognizers>
+
+                                        <Label
+                                            Text="{loc:Translate Request_Submit}"
+                                            TextColor="{DynamicResource PrimaryText}"
+                                            FontSize="12"
+                                            HorizontalTextAlignment="Center" />
+                                    </Border>
                                 </Grid>
 
                             </Grid>
