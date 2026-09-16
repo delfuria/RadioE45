@@ -108,6 +108,8 @@
                                         CommandParameter="{Binding .}"
                                         IsVisible="{Binding IsRequesting, Converter={StaticResource InvertBool}}"
                                         IsEnabled="{Binding IsRequested, Converter={StaticResource InvertBool}}"
+                                        BackgroundColor="{DynamicResource Accent}"
+                                        TextColor="{DynamicResource PrimaryText}"
                                         FontSize="12"
                                         Padding="10,6"
                                         CornerRadius="14" />
