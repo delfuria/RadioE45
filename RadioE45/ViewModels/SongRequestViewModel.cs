@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
+using RadioE45.Services.Data;
 using RadioE45.Services.Localization;
 using RadioE45.Services.Radio;
 
@@ -10,10 +11,14 @@ namespace RadioE45.ViewModels;
 
 public partial class SongRequestViewModel : BaseViewModel
 {
-    private const int PageSize = 10;
+    private const int DefaultPageSize = 10;
 
     private readonly ISongRequestService _songRequestService;
+    private readonly IAppSettingsRepository _settingsRepo;
     private readonly OnAirViewModel _onAirViewModel;
+
+    // Letto dalle impostazioni a ogni caricamento — vedi LoadSongsAsync.
+    private int _pageSize = DefaultPageSize;
 
     // Catalogo completo scaricato dal server: Songs è la pagina corrente del sottoinsieme
     // filtrato (_filtered), calcolata client-side — l'endpoint AzuraCast non offre search/paginazione.
@@ -41,17 +46,22 @@ public partial class SongRequestViewModel : BaseViewModel
 
     public SongRequestViewModel(
         ISongRequestService songRequestService,
+        IAppSettingsRepository settingsRepo,
         OnAirViewModel onAirViewModel,
         ILogger<SongRequestViewModel> logger)
     {
         Logger = logger;
         _songRequestService = songRequestService;
+        _settingsRepo = settingsRepo;
         _onAirViewModel = onAirViewModel;
     }
 
     [RelayCommand]
     private async Task LoadSongsAsync()
     {
+        AppSettings settings = await _settingsRepo.GetAsync();
+        _pageSize = settings.RequestPageSize > 0 ? settings.RequestPageSize : DefaultPageSize;
+
         AzuraStation? station = _onAirViewModel.CurrentStation;
         if (station is null)
         {
@@ -105,7 +115,7 @@ public partial class SongRequestViewModel : BaseViewModel
         }
 
         _filtered = query.ToList();
-        TotalPages = Math.Max(1, (int)Math.Ceiling(_filtered.Count / (double)PageSize));
+        TotalPages = Math.Max(1, (int)Math.Ceiling(_filtered.Count / (double)_pageSize));
         PageNumber = Math.Clamp(PageNumber, 1, TotalPages);
 
         EmptyResultsText = LocalizationResourceManager.Instance[
@@ -117,7 +127,7 @@ public partial class SongRequestViewModel : BaseViewModel
     private void ApplyPage()
     {
         Songs = new ObservableCollection<AzuraCastRequestItem>(
-            _filtered.Skip((PageNumber - 1) * PageSize).Take(PageSize));
+            _filtered.Skip((PageNumber - 1) * _pageSize).Take(_pageSize));
     }
 
     [RelayCommand]

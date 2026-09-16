@@ -80,6 +80,12 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
             await conn.ExecuteAsync(
                 $"ALTER TABLE AppSettings ADD COLUMN {nameof(AppSettings.PreferHlsStream)} INTEGER NOT NULL DEFAULT 0");
         }
+
+        if (!columnNames.Contains(nameof(AppSettings.RequestPageSize)))
+        {
+            await conn.ExecuteAsync(
+                $"ALTER TABLE AppSettings ADD COLUMN {nameof(AppSettings.RequestPageSize)} INTEGER NOT NULL DEFAULT 10");
+        }
     }
 
     private static async Task MigrateRadioStationsSchemaAsync(SQLiteAsyncConnection conn)

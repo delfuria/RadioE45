@@ -87,6 +87,40 @@
                 </VerticalStackLayout>
             </Border>
 
+            <!-- Sezione Richiesta brani -->
+            <Label
+                Text="{loc:Translate Settings_Section_SongRequest}"
+                Style="{StaticResource CaptionLabel}"
+                HorizontalTextAlignment="Start"
+                Margin="20,24,20,8"
+                FontAttributes="Bold" />
+
+            <Border Style="{StaticResource CardBorder}" Margin="16,0">
+                <VerticalStackLayout Spacing="4">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label
+                            Grid.Column="0"
+                            Text="{loc:Translate Settings_RequestPageSize}"
+                            TextColor="{DynamicResource PrimaryText}"
+                            FontSize="15" />
+                        <Label
+                            Grid.Column="1"
+                            Text="{Binding RequestPageSize}"
+                            Style="{StaticResource CaptionLabel}" />
+                    </Grid>
+                    <Label
+                        Text="{loc:Translate Settings_RequestPageSize_Hint}"
+                        HorizontalTextAlignment="Start"
+                        Style="{StaticResource CaptionLabel}" />
+                    <Slider
+                        Minimum="5"
+                        Maximum="50"
+                        Value="{Binding RequestPageSize}"
+                        ThumbColor="{DynamicResource Accent}"
+                        MinimumTrackColor="{DynamicResource Accent}" />
+                </VerticalStackLayout>
+            </Border>
+
             <!-- Sezione Tema -->
             <Label
                 Text="{loc:Translate Settings_Section_Theme}"

@@ -112,6 +112,9 @@
   <data name="Settings_PreferHls" xml:space="preserve"><value>Preferuj strumień HLS jako główny</value></data>
   <data name="Settings_PreferHls_Hint" xml:space="preserve"><value>Uwaga: HLS może wprowadzić kilka sekund opóźnienia w porównaniu ze strumieniem bezpośrednim. Włącz tylko w razie potrzeby.</value></data>
   <data name="Settings_LatencyOffset_Hint" xml:space="preserve"><value>Sekundy odejmowane od pozycji zgłoszonej przez serwer, aby dopasować ją do rzeczywistego dźwięku</value></data>
+  <data name="Settings_Section_SongRequest" xml:space="preserve"><value>ZAMAWIANIE UTWORÓW</value></data>
+  <data name="Settings_RequestPageSize" xml:space="preserve"><value>Utworów na stronę</value></data>
+  <data name="Settings_RequestPageSize_Hint" xml:space="preserve"><value>Ile utworów wyświetlać na stronę w zakładce Zamów</value></data>
   <data name="Settings_Section_Theme" xml:space="preserve"><value>MOTYW</value></data>
   <data name="Settings_ThemePreference" xml:space="preserve"><value>Preferencja motywu</value></data>
   <data name="Settings_Save" xml:space="preserve"><value>Zapisz ustawienia</value></data>

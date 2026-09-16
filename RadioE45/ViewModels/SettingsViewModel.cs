@@ -50,6 +50,9 @@ public partial class SettingsViewModel : BaseViewModel
     [ObservableProperty]
     public partial bool PreferHlsStream { get; set; }
 
+    [ObservableProperty]
+    public partial int RequestPageSize { get; set; }
+
 #if MACCATALYST
     public bool IsCrashReportingAvailable => false;
 #else
@@ -76,6 +79,7 @@ public partial class SettingsViewModel : BaseViewModel
         CrashReportingEnabled = _currentSettings.CrashReportingEnabled;
         PlaybackLatencyOffsetSeconds = _currentSettings.PlaybackLatencyOffsetSeconds;
         PreferHlsStream = _currentSettings.PreferHlsStream;
+        RequestPageSize = _currentSettings.RequestPageSize;
         _hasChanges = false;
         SaveSettingsCommand.NotifyCanExecuteChanged();
     }
@@ -93,6 +97,8 @@ public partial class SettingsViewModel : BaseViewModel
     partial void OnPlaybackLatencyOffsetSecondsChanged(int value) => MarkChanged();
 
     partial void OnPreferHlsStreamChanged(bool value) => MarkChanged();
+
+    partial void OnRequestPageSizeChanged(int value) => MarkChanged();
 
     private void MarkChanged()
     {
@@ -149,6 +155,7 @@ public partial class SettingsViewModel : BaseViewModel
         _currentSettings.StartWithFavorite = StartWithFavorite;
         _currentSettings.PlaybackLatencyOffsetSeconds = PlaybackLatencyOffsetSeconds;
         _currentSettings.PreferHlsStream = PreferHlsStream;
+        _currentSettings.RequestPageSize = RequestPageSize;
         CrashReportingSettings.ApplyTo(_currentSettings, CrashReportingEnabled, consentRequested: true);
         await _settingsRepo.SaveAsync(_currentSettings);
         Preferences.Default.Set("theme_preference", ThemePreference);

@@ -20,4 +20,6 @@ public class AppSettings
     // non low-latency) ha un ritardo strutturale di alcuni secondi rispetto al live edge reale. Vedi
     // GetStreamCandidates/TryOpenStreamAsync per l'uso.
     public bool PreferHlsStream { get; set; }
+
+    public int RequestPageSize { get; set; } = 10;
 }
