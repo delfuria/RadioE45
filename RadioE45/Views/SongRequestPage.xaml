@@ -14,7 +14,12 @@
         <toolkit:InvertedBoolConverter x:Key="InvertBool" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto">
+    <!-- Grid esterna a cella unica: ospita il contenuto a righe e, sovrapposto, il box di
+         notifica errore — un overlay fatto di solo XAML/binding MAUI (nessun componente nativo
+         per-piattaforma tipo Snackbar/Toast), quindi identico su Android/iOS/macOS/Windows. -->
+    <Grid>
+
+    <Grid RowDefinitions="Auto,*,Auto">
 
         <SearchBar
             Grid.Row="0"
@@ -24,19 +29,8 @@
             BackgroundColor="{DynamicResource CardElevated}"
             TextColor="{DynamicResource PrimaryText}" />
 
-        <!-- Fissa (non dentro la CollectionView): un errore su una richiesta in fondo alla lista
-             lunga andrebbe altrimenti fuori schermo se restasse nell'header scrollabile. -->
-        <Label
-            Grid.Row="1"
-            Text="{Binding ErrorMessage}"
-            IsVisible="{Binding ErrorMessage, Converter={toolkit:IsNotNullConverter}}"
-            TextColor="{StaticResource LiveRed}"
-            FontSize="13"
-            HorizontalTextAlignment="Center"
-            Margin="16,0,16,8" />
-
         <RefreshView
-            Grid.Row="2"
+            Grid.Row="1"
             IsRefreshing="{Binding IsBusy}"
             Command="{Binding LoadSongsCommand}">
 
@@ -133,7 +127,7 @@
 
         <!-- Paginazione: sempre visibile (anche a 1 pagina) per coerenza col resto della UI. -->
         <Grid
-            Grid.Row="3"
+            Grid.Row="2"
             ColumnDefinitions="Auto,*,Auto"
             Margin="16,8,16,16">
 
@@ -177,6 +171,41 @@
                 Padding="0" />
 
         </Grid>
+
+    </Grid>
+
+    <!-- Box di notifica errore: overlay flottante in basso, sopra il contenuto. Tap per chiudere
+         subito; si può comunque richiudere da sé alla richiesta successiva (ErrorMessage torna null). -->
+    <Border
+        Style="{StaticResource CardBorder}"
+        BackgroundColor="{StaticResource LiveRed}"
+        IsVisible="{Binding ErrorMessage, Converter={toolkit:IsNotNullConverter}}"
+        VerticalOptions="End"
+        HorizontalOptions="Fill"
+        Margin="16,0,16,16"
+        Padding="16,12">
+
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding DismissErrorCommand}" />
+        </Border.GestureRecognizers>
+
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Label
+                Grid.Column="0"
+                Text="{Binding ErrorMessage}"
+                TextColor="White"
+                FontSize="13"
+                VerticalOptions="Center" />
+            <Label
+                Grid.Column="1"
+                Text="✕"
+                TextColor="White"
+                Opacity="0.8"
+                FontSize="14"
+                VerticalOptions="Center" />
+        </Grid>
+
+    </Border>
 
     </Grid>
 

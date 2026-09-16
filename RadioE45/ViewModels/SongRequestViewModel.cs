@@ -131,6 +131,9 @@ public partial class SongRequestViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private void DismissError() => ErrorMessage = null;
+
+    [RelayCommand]
     private void PreviousPage()
     {
         if (!CanGoToPreviousPage)
