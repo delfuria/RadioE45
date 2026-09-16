@@ -87,6 +87,9 @@ public class StationInfo
 
     [JsonPropertyName("listen_url")]
     public string ListenUrl { get; set; } = string.Empty;
+
+    [JsonPropertyName("requests_enabled")]
+    public bool RequestsEnabled { get; set; }
 }
 
 public class ListenersInfo

@@ -146,6 +146,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAzuraStationCatalog, AzuraStationCatalog>();
         builder.Services.AddTransient<IScheduleService, ScheduleService>();
         builder.Services.AddTransient<IPodcastService, PodcastService>();
+        builder.Services.AddTransient<ISongRequestService, SongRequestService>();
         builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
         builder.Services.AddSingleton<IRadioRepository, RadioRepository>();
         builder.Services.AddSingleton<IDbVersionRepository, DbVersionRepository>();
@@ -164,6 +165,7 @@ public static class MauiProgram
         builder.Services.AddTransient<SettingsViewModel>();
         builder.Services.AddTransient<PodcastListViewModel>();
         builder.Services.AddTransient<PodcastEpisodesViewModel>();
+        builder.Services.AddTransient<SongRequestViewModel>();
 
         // Views as Transient
         builder.Services.AddTransient<OnAirPage>();
@@ -174,6 +176,7 @@ public static class MauiProgram
         builder.Services.AddTransient<SettingsPage>();
         builder.Services.AddTransient<PodcastListPage>();
         builder.Services.AddTransient<PodcastEpisodesPage>();
+        builder.Services.AddTransient<SongRequestPage>();
 
         DatabaseLoggerProvider dbLoggerProvider = new();
         builder.Services.AddSingleton(dbLoggerProvider);

@@ -14,6 +14,7 @@ public class NowPlayingInfo : IEquatable<NowPlayingInfo>, IComparable<NowPlaying
     public int TrackElapsedSeconds { get; set; }
     public DateTime LastUpdated { get; set; }
     public bool IsJingle { get; set; }
+    public bool RequestsEnabled { get; set; }
 
     public NextPlayingInfo? Next { get; set; }
     public List<PlayedTrackInfo> SongHistory { get; set; } = new();

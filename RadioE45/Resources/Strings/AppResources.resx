@@ -64,6 +64,7 @@
   <data name="Tab_Radio" xml:space="preserve"><value>Canali</value></data>
   <data name="Tab_Schedule" xml:space="preserve"><value>Palinsesto</value></data>
   <data name="Tab_Podcasts" xml:space="preserve"><value>Podcast</value></data>
+  <data name="Tab_Request" xml:space="preserve"><value>Richiedi</value></data>
   <data name="Tab_Settings" xml:space="preserve"><value>Impostazioni</value></data>
   <data name="RadioList_Title" xml:space="preserve"><value>Radio</value></data>
 
@@ -96,6 +97,12 @@
   <data name="Podcast_StatusInProgress" xml:space="preserve"><value>In corso</value></data>
   <data name="Podcast_StatusCompleted" xml:space="preserve"><value>Terminati</value></data>
   <data name="Podcast_NoEpisodesFiltered" xml:space="preserve"><value>Nessun episodio corrisponde ai filtri selezionati</value></data>
+
+  <!-- Song request -->
+  <data name="Request_SearchPlaceholder" xml:space="preserve"><value>Cerca artista o titolo…</value></data>
+  <data name="Request_Submit" xml:space="preserve"><value>Richiedi</value></data>
+  <data name="Request_NoSongs" xml:space="preserve"><value>Nessun brano richiedibile</value></data>
+  <data name="Request_NoSongsFiltered" xml:space="preserve"><value>Nessun brano corrisponde alla ricerca</value></data>
 
   <!-- Settings -->
   <data name="Settings_Section_Playback" xml:space="preserve"><value>RIPRODUZIONE</value></data>
@@ -169,4 +176,6 @@
   <data name="Err_ResetDatabase" xml:space="preserve"><value>Reset database</value></data>
   <data name="Err_DeleteStation" xml:space="preserve"><value>Eliminazione stazione</value></data>
   <data name="Err_ReorderStations" xml:space="preserve"><value>Riordino stazioni</value></data>
+  <data name="Err_LoadRequestableSongs" xml:space="preserve"><value>Caricamento brani richiedibili</value></data>
+  <data name="Err_SubmitRequest" xml:space="preserve"><value>Impossibile inviare la richiesta</value></data>
 </root>

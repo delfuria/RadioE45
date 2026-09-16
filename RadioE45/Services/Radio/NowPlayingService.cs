@@ -163,6 +163,7 @@ public class NowPlayingService : INowPlayingService, IDisposable
             ArtworkUrl = current.ArtworkUrl,
             IsJingle = current.IsJingle,
             IsLive = response.Live.IsLive,
+            RequestsEnabled = response.Station.RequestsEnabled,
             StreamerName = response.Live.StreamerName,
             ListenerCount = response.Listeners.Current,
             TrackDurationSeconds = response.NowPlaying.Duration,

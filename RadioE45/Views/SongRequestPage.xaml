@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.SongRequestPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels"
+    xmlns:models="clr-namespace:RadioE45.Models"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    x:DataType="vm:SongRequestViewModel"
+    Title="{loc:Translate Tab_Request}">
+
+    <ContentPage.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertBool" />
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <SearchBar
+            Grid.Row="0"
+            Margin="12,8"
+            Placeholder="{loc:Translate Request_SearchPlaceholder}"
+            Text="{Binding SearchText}"
+            BackgroundColor="{DynamicResource CardElevated}"
+            TextColor="{DynamicResource PrimaryText}" />
+
+        <!-- Fissa (non dentro la CollectionView): un errore su una richiesta in fondo alla lista
+             lunga andrebbe altrimenti fuori schermo se restasse nell'header scrollabile. -->
+        <Label
+            Grid.Row="1"
+            Text="{Binding ErrorMessage}"
+            IsVisible="{Binding ErrorMessage, Converter={toolkit:IsNotNullConverter}}"
+            TextColor="{StaticResource LiveRed}"
+            FontSize="13"
+            HorizontalTextAlignment="Center"
+            Margin="16,0,16,8" />
+
+        <RefreshView
+            Grid.Row="2"
+            IsRefreshing="{Binding IsBusy}"
+            Command="{Binding LoadSongsCommand}">
+
+            <CollectionView
+                ItemsSource="{Binding Songs}"
+                SelectionMode="None"
+                BackgroundColor="Transparent">
+
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center"
+                        Spacing="12"
+                        Padding="32">
+                        <Label
+                            Text="🎵"
+                            FontSize="48"
+                            HorizontalTextAlignment="Center" />
+                        <Label
+                            Text="{Binding EmptyResultsText}"
+                            Style="{StaticResource SubtitleLabel}" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:AzuraCastRequestItem">
+                        <Border
+                            Style="{StaticResource CardBorder}"
+                            Margin="16,8,16,0">
+
+                            <Grid ColumnDefinitions="52,*,Auto" ColumnSpacing="12">
+
+                                <Border
+                                    Grid.Column="0"
+                                    HeightRequest="52"
+                                    WidthRequest="52"
+                                    StrokeShape="RoundRectangle 10"
+                                    Stroke="Transparent">
+                                    <Grid>
+                                        <Image
+                                            Source="{Binding ArtworkUrl}"
+                                            Aspect="AspectFill"
+                                            IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNotNullConverter}}" />
+                                        <Image
+                                            Source="radio_placeholder.png"
+                                            Aspect="AspectFit"
+                                            IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNullConverter}}" />
+                                    </Grid>
+                                </Border>
+
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                                    <Label
+                                        Text="{Binding Title}"
+                                        Style="{StaticResource SubtitleLabel}"
+                                        FontSize="16"
+                                        LineBreakMode="TailTruncation"
+                                        MaxLines="1" />
+                                    <Label
+                                        Text="{Binding Artist}"
+                                        Style="{StaticResource CaptionLabel}"
+                                        FontSize="14"
+                                        LineBreakMode="TailTruncation"
+                                        MaxLines="1" />
+                                </VerticalStackLayout>
+
+                                <Grid Grid.Column="2" VerticalOptions="Center" WidthRequest="90">
+                                    <ActivityIndicator
+                                        IsRunning="{Binding IsRequesting}"
+                                        IsVisible="{Binding IsRequesting}"
+                                        HeightRequest="24"
+                                        WidthRequest="24" />
+                                    <Button
+                                        Text="{loc:Translate Request_Submit}"
+                                        Command="{Binding RequestCommand}"
+                                        CommandParameter="{Binding .}"
+                                        IsVisible="{Binding IsRequesting, Converter={StaticResource InvertBool}}"
+                                        IsEnabled="{Binding IsRequested, Converter={StaticResource InvertBool}}"
+                                        FontSize="12"
+                                        Padding="10,6"
+                                        CornerRadius="14" />
+                                </Grid>
+
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="16" Color="Transparent" />
+                </CollectionView.Footer>
+
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Paginazione: sempre visibile (anche a 1 pagina) per coerenza col resto della UI. -->
+        <Grid
+            Grid.Row="3"
+            ColumnDefinitions="Auto,*,Auto"
+            Margin="16,8,16,16">
+
+            <Button
+                Grid.Column="0"
+                Text="◀"
+                Command="{Binding PreviousPageCommand}"
+                IsEnabled="{Binding CanGoToPreviousPage}"
+                BackgroundColor="{DynamicResource CardElevated}"
+                TextColor="{DynamicResource PrimaryText}"
+                WidthRequest="44"
+                HeightRequest="44"
+                CornerRadius="22"
+                Padding="0" />
+
+            <Label
+                Grid.Column="1"
+                HorizontalTextAlignment="Center"
+                VerticalOptions="Center"
+                TextColor="{DynamicResource MutedText}"
+                FontSize="13">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="{Binding PageNumber}" />
+                        <Span Text=" / " />
+                        <Span Text="{Binding TotalPages}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+
+            <Button
+                Grid.Column="2"
+                Text="▶"
+                Command="{Binding NextPageCommand}"
+                IsEnabled="{Binding CanGoToNextPage}"
+                BackgroundColor="{DynamicResource CardElevated}"
+                TextColor="{DynamicResource PrimaryText}"
+                WidthRequest="44"
+                HeightRequest="44"
+                CornerRadius="22"
+                Padding="0" />
+
+        </Grid>
+
+    </Grid>
+
+</ContentPage>
