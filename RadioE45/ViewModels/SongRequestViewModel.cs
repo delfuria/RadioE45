@@ -140,7 +140,15 @@ public partial class SongRequestViewModel : BaseViewModel
         ApplyPage();
     }
 
-    [RelayCommand]
+    // AllowConcurrentExecutions: il comando è UNA sola istanza condivisa da tutte le righe della
+    // lista (CommandParameter = riga). Col default (false), CommunityToolkit.Mvvm considera il
+    // comando "occupato" per l'intera durata di QUALSIASI richiesta in corso e MAUI sincronizza
+    // automaticamente Button.IsEnabled sul CanExecute del comando — indipendentemente dal binding
+    // esplicito su IsRequested. Risultato: durante/dopo una richiesta (anche fallita) TUTTI i
+    // bottoni, incluso quello del brano appena rifiutato, restavano visivamente disabilitati/scuriti
+    // come se fossero stati richiesti con successo. Con true, lo stato disabilitato è governato solo
+    // dal nostro IsRequested — cambia SOLO quando la richiesta va davvero a buon fine.
+    [RelayCommand(AllowConcurrentExecutions = true)]
     private async Task RequestSongAsync(AzuraCastRequestItem item)
     {
         AzuraStation? station = _onAirViewModel.CurrentStation;
