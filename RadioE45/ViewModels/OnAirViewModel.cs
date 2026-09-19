@@ -228,7 +228,15 @@ public partial class OnAirViewModel : BaseViewModel
             return;
 
         if (IsPlaying)
+        {
+            // Set optimistically instead of waiting for PlaybackStateChanged: on Android, PauseAsync
+            // stops the player outright (see Media3AudioService.PauseAsync), and the controller's
+            // OnIsPlayingChanged(false) after a Stop() isn't reliably delivered — leaving IsPlaying
+            // stuck true would show a "pause" icon over a dead stream and turn the next tap into
+            // another Stop() instead of a restart.
+            IsPlaying = false;
             await _audioService.PauseAsync();
+        }
         else
         {
             if (_audioService.CurrentStation is null)

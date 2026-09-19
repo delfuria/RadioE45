@@ -218,6 +218,15 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IPlaye
     public void OnPlaybackStateChanged(int playbackState)
     {
         IsBuffering = playbackState == BasePlayer.InterfaceConsts.StateBuffering;
+
+        // STATE_IDLE only follows an explicit Stop() — playback has definitely ended there, so assert
+        // IsPlaying=false directly instead of re-broadcasting the cached field below. That field is
+        // otherwise only updated by OnIsPlayingChanged, which can arrive after this callback (or get
+        // coalesced away entirely); re-sending a stale "true" here was clobbering the ViewModel's own
+        // optimistic pause update a moment after it set IsPlaying=false.
+        if (playbackState == BasePlayer.InterfaceConsts.StateIdle)
+            IsPlaying = false;
+
         // Nudge the UI so the buffering spinner tracks the session even when IsPlaying hasn't flipped.
         PlaybackStateChanged?.Invoke(this, IsPlaying);
     }

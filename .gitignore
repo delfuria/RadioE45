@@ -21,6 +21,7 @@ packages/
 .idea/
 .claude/
 .tokensave/
+.junie/
 *.suo
 *.user
 *.userosscache
