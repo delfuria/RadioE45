@@ -1,59 +1,40 @@
-# RadioE45 — Guida all'aggiornamento del numero di versione
+# RadioE45 — Guida al numero di versione (Nerdbank.GitVersioning)
 
-Ogni volta che si rilascia una nuova versione, vanno aggiornati **manualmente** i seguenti file.
-I file auto-generati dalla build NON vanno toccati: vengono rigenerati automaticamente.
-
----
-
-## File da aggiornare manualmente
-
-### 1. `RadioE45/RadioE45.csproj` (righe 32–34)
-
-**Fonte di verità** per tutte le piattaforme.
-
-```xml
-<ApplicationDisplayVersion>0.20</ApplicationDisplayVersion>
-<ApplicationVersion Condition="...=='windows'">0</ApplicationVersion>
-<ApplicationVersion Condition="...!='windows'">20</ApplicationVersion>
-```
-
-| Campo | Descrizione | Note |
-|---|---|---|
-| `ApplicationDisplayVersion` | Versione visibile all'utente (es. `0.20`) | Uguale su tutte le piattaforme |
-| `ApplicationVersion` (Windows) | Deve essere **sempre 0** | Vincolo Microsoft Store: il quarto campo MSIX deve essere 0 |
-| `ApplicationVersion` (Android/iOS/macOS) | Build counter intero ≥ 1 | Per Android è il `versionCode`; incrementare ad ogni release |
-
-**Regola pratica**: se la `ApplicationDisplayVersion` passa da `0.20` a `0.21`, impostare `ApplicationVersion` (non-Windows) a `21`.
+Il versioning è **automatico** tramite [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) (NBGV). Non si editano più a mano `ApplicationVersion`/`ApplicationDisplayVersion` nel `.csproj` ad ogni release.
 
 ---
 
-### 2. `scripts/RadioE45_x64.iss` (riga 3)
+## Fonte di verità: `version.json`
 
-Installer Inno Setup per Windows x64.
-
-```ini
-AppVersion=0.20
+```json
+{
+  "version": "0.32",
+  ...
+}
 ```
+
+Il campo `version` è l'unico punto da toccare per alzare la versione pubblica (es. `0.32` → `0.33`).
+
+**Regola pratica**: `version.json` deve sempre essere **committato**. Se resta non tracciato, `GitVersionHeight` rimane 0 e il build number (quarta cifra / build counter per piattaforma) non avanza.
 
 ---
 
-### 3. `scripts/RadioE45_arm64.iss` (riga 3)
+## Come funziona
 
-Installer Inno Setup per Windows arm64.
-
-```ini
-AppVersion=0.20
-```
+- `Nerdbank.GitVersioning` è referenziato come `PackageReference` in `RadioE45/RadioE45.csproj` e calcola versione + build number da `version.json` + altezza del commit corrente ad ogni build, senza intervento manuale.
+- I target MAUI built-in di NBGV (`NBGV_SetVersionForMauiAndroid` / `...iOS` / `...Windows`) valorizzano `ApplicationVersion` e `ApplicationDisplayVersion` per piattaforma:
+  - **Android**: `ApplicationVersion` → `versionCode` (bit-packed da NBGV).
+  - **iOS/macOS**: build counter incrementale.
+  - **Windows**: NBGV produrrebbe di default `ApplicationVersion` vuoto e display version a 4 parti — non valido per lo Store, che richiede revision `0`. Per questo `RadioE45.csproj` (target `RestoreWindowsVersionConvention`, dopo `NBGV_SetVersionForMauiWindows` e prima di `MauiGeneratePackageAppxManifest`) forza `ApplicationVersion=0` e `ApplicationDisplayVersion=$(MajorMinorVersion)` (preso da `version.json`).
+- La pagina Impostazioni (`SettingsViewModel.cs`) mostra versione, build e hash commit corto (`ThisAssembly.GitCommitId`) automaticamente — nessun aggiornamento manuale necessario lì.
 
 ---
 
-### 4. `CLAUDE.md` (riga 9)
+## Per alzare la versione
 
-Documentazione di progetto — aggiornare per coerenza.
-
-```markdown
-**App ID:** `com.radioe45.app` | **Version:** 0.20
-```
+1. Modifica `version.json` → campo `"version"`.
+2. Commit (obbligatorio, vedi sopra).
+3. Basta. Nessun altro file da editare a mano.
 
 ---
 
@@ -68,21 +49,19 @@ Questi file vengono rigenerati ad ogni build: modificarli manualmente è inutile
 | `RadioE45/Platforms/Windows/Package.appxmanifest` | Template MAUI — usa placeholder `0.0.0.0` |
 | `RadioE45/obj/*/resizetizer/m/Package.appxmanifest` | Intermediati di build |
 | `RadioE45/store-packages/RadioE45_X.Y.Z.Z_*.msix` | Pacchetti finali MSIX |
+| `RadioE45.Version.cs` (generato da NBGV) | Costanti compile-time `ThisAssembly.*`, incluso `GitCommitId` |
 
 > **Nota**: la cartella `store-packages/` contiene i binari dell'ultima build Windows.
 > Se vedi una versione vecchia lì dentro, ignorala: viene cancellata e ricreata dal
 > passo `rmdir /s /q` in `build-store-windows.bat` ad ogni nuovo publish.
 
+> **Nota su script installer**: eventuali script Inno Setup (`.iss`) o batch di build Windows che referenziano la versione **non sono presenti in questo repository** al momento. Se servono per il packaging, vanno individuati e allineati separatamente a `version.json` prima di fare affidamento su questa guida per quel passo.
+
 ---
 
 ## Checklist di release
 
-- [ ] `RadioE45.csproj` → `ApplicationDisplayVersion` aggiornata
-- [ ] `RadioE45.csproj` → `ApplicationVersion` (non-Windows) incrementata
-- [ ] `RadioE45_x64.iss` → `AppVersion=` aggiornata
-- [ ] `RadioE45_arm64.iss` → `AppVersion=` aggiornata
-- [ ] `CLAUDE.md` → riga `Version:` aggiornata
-- [ ] Commit su `Nightly-Build`
-- [ ] Build Android: `1.build-allstore.sh`
-- [ ] Build Windows MSIX: `2.build-mac2winstore.sh`
-- [ ] Build macOS: `0.build-all.sh`
+- [ ] `version.json` → `version` aggiornato (se serve bump) e **committato**
+- [ ] Build Android
+- [ ] Build Windows MSIX
+- [ ] Build macOS

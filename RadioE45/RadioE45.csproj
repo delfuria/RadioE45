@@ -283,13 +283,19 @@
          its own .targets, triggered just by referencing the package) that auto-fills ApplicationVersion /
          ApplicationDisplayVersion from git commit height for every platform, including Windows. For
          Android and iOS/MacCatalyst that's exactly what we want, so it's left untouched. For Windows it
-         produces a blank ApplicationVersion + 4-part ApplicationDisplayVersion — valid for MSIX, but it
-         breaks the "ApplicationVersion pinned to 0, 2-part display version" convention above, which the
-         Microsoft Store's revision=0 rule requires. Re-assert that convention right after NBGV's own
-         Windows target runs, keeping ApplicationDisplayVersion in sync with version.json via
-         $(MajorMinorVersion) instead of a manual csproj edit. -->
+         sets a 4-part ApplicationDisplayVersion (Major.Minor.Patch.Height) with a nonzero revision — the
+         Microsoft Store rejects any package whose manifest Version has a nonzero revision. Rather than
+         racing NBGV's own Windows target on the same BeforeTargets (fragile — both hook
+         MauiGeneratePackageAppxManifest, and ordering between same-BeforeTargets targets on Windows
+         builds proved unreliable, shipping 0.33.1.53983 to the Store), NBGV's Windows-specific override
+         is disabled outright below and the "revision pinned to 0" convention is asserted once, right
+         after GetBuildVersion computes $(MajorMinorVersion), with no competing target in the picture. -->
+    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+        <NBGV_SetMauiVersionProperties>false</NBGV_SetMauiVersionProperties>
+    </PropertyGroup>
+
     <Target Name="RestoreWindowsVersionConvention"
-            AfterTargets="NBGV_SetVersionForMauiWindows"
+            DependsOnTargets="GetBuildVersion"
             BeforeTargets="MauiGeneratePackageAppxManifest"
             Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
         <PropertyGroup>
