@@ -102,6 +102,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Nerdbank.GitVersioning" Version="3.10.94" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.80" />
         <PackageReference Include="CommunityToolkit.Maui" Version="14.2.0" />
         <PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="10.0.0" />
@@ -276,6 +277,25 @@
     <Target Name="CreateRiderBundleAlias" AfterTargets="Build"
             Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
         <Exec Command="ln -sfn &quot;Radio E45.app&quot; &quot;$(OutputPath)RadioE45.app&quot;" />
+    </Target>
+
+    <!-- Nerdbank.GitVersioning ships built-in MAUI support (NBGV_SetVersionForMauiAndroid/iOS/Windows in
+         its own .targets, triggered just by referencing the package) that auto-fills ApplicationVersion /
+         ApplicationDisplayVersion from git commit height for every platform, including Windows. For
+         Android and iOS/MacCatalyst that's exactly what we want, so it's left untouched. For Windows it
+         produces a blank ApplicationVersion + 4-part ApplicationDisplayVersion — valid for MSIX, but it
+         breaks the "ApplicationVersion pinned to 0, 2-part display version" convention above, which the
+         Microsoft Store's revision=0 rule requires. Re-assert that convention right after NBGV's own
+         Windows target runs, keeping ApplicationDisplayVersion in sync with version.json via
+         $(MajorMinorVersion) instead of a manual csproj edit. -->
+    <Target Name="RestoreWindowsVersionConvention"
+            AfterTargets="NBGV_SetVersionForMauiWindows"
+            BeforeTargets="MauiGeneratePackageAppxManifest"
+            Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+        <PropertyGroup>
+            <ApplicationVersion>0</ApplicationVersion>
+            <ApplicationDisplayVersion>$(MajorMinorVersion)</ApplicationDisplayVersion>
+        </PropertyGroup>
     </Target>
 
 </Project>

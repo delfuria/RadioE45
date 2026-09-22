@@ -65,7 +65,7 @@ public partial class SettingsViewModel : BaseViewModel
         _settingsRepo = settingsRepo;
         _databaseService = databaseService;
         Title = "Impostazioni";
-        AppVersion = AppInfo.VersionString;
+        AppVersion = $"{AppInfo.VersionString} ({AppInfo.BuildString}, {ThisAssembly.GitCommitId[..7]})";
         _ = LoadSettingsAsync();
     }
 
