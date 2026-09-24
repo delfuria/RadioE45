@@ -16,6 +16,9 @@ Cross-platform .NET MAUI 10 app for AzuraCast webradio streaming.
 - Listener count
 - Player with play/pause/stop and volume control
 - Station list with quick selection
+- Podcast support with saved playback position (resume where you left off) and filters by season, episode, and listening status
+- Song requests, when enabled by the station's AzuraCast platform
+- Recently played tracks list
 - Local persistence with SQLite
 - Dark theme by default
 - Apple CarPlay support (iOS)
