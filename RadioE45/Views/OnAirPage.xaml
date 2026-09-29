@@ -359,7 +359,7 @@
                     <!-- Errore -->
                     <Label
                         Text="{Binding ErrorMessage}"
-                        IsVisible="{Binding ErrorMessage, Converter={toolkit:IsNotNullConverter}}"
+                        IsVisible="{Binding ErrorMessage, Converter={toolkit:IsStringNotNullOrEmptyConverter}}"
                         TextColor="{StaticResource LiveRed}"
                         FontSize="13"
                         HorizontalTextAlignment="Center"
@@ -367,7 +367,7 @@
 
                     <!-- Ultimi brani trasmessi -->
                     <VerticalStackLayout
-                        Margin="24,20,24,0"
+                        Margin="24,16,24,0"
                         Spacing="8"
                         IsVisible="{Binding NowPlaying.SongHistory, Converter={toolkit:IsListNotNullOrEmptyConverter}}">
 
