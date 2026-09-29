@@ -2,6 +2,20 @@
 
 Cross-platform .NET MAUI 10 app for AzuraCast webradio streaming.
 
+## Download
+
+[![Get it from Microsoft Store](https://img.shields.io/badge/Microsoft%20Store-Download-0078D4?logo=microsoft&logoColor=white&style=for-the-badge)](https://apps.microsoft.com/detail/9pj0lkl6mnvq)
+
+## Join the beta
+
+Want to try RadioE45 before the public release? Join the preliminary tests:
+
+[![Android beta](https://img.shields.io/badge/Android-Beta%20testers-3DDC84?logo=android&logoColor=white&style=for-the-badge)](https://groups.google.com/g/radioe45-testers)
+[![iOS / macOS beta](https://img.shields.io/badge/iOS%20%7C%20macOS-TestFlight-0D96F6?logo=apple&logoColor=white&style=for-the-badge)](https://testflight.apple.com/join/aHZd6SET)
+
+- 📱 Android beta: https://groups.google.com/g/radioe45-testers
+- 🍎 iOS/macOS beta: https://testflight.apple.com/join/aHZd6SET
+
 ## Platforms
 - iOS 15+
 - Android 8.0+ (API 26)
