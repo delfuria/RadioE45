@@ -29,7 +29,9 @@
             VerticalOptions="Center" />
 
         <SearchBar
+            x:Name="SearchBox"
             Grid.Column="1"
+            SearchButtonPressed="OnSearchButtonPressed"
             Margin="12,8"
             Placeholder="{loc:Translate Request_SearchPlaceholder}"
             Text="{Binding SearchText}"
@@ -44,6 +46,7 @@
             Command="{Binding LoadSongsCommand}">
 
             <CollectionView
+                Scrolled="OnListScrolled"
                 ItemsSource="{Binding Songs}"
                 SelectionMode="None"
                 BackgroundColor="Transparent">
