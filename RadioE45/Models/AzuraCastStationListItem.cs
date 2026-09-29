@@ -31,7 +31,6 @@ public class AzuraCastStationListItem
     public bool HasDescription => !string.IsNullOrEmpty(Description);
 
     public string DefaultMountPath =>
-        Mounts.FirstOrDefault(m => m.IsDefault)?.Path
-        ?? Mounts.FirstOrDefault()?.Path
+        (Mounts.FirstOrDefault(m => m.IsDefault) ?? Mounts.FirstOrDefault())?.StreamSuffix
         ?? "";
 }

@@ -4,7 +4,9 @@ using Android.Content.PM;
 using Android.OS;
 using AndroidX.Concurrent.Futures;
 using AndroidX.Media3.Common;
+using AndroidX.Media3.DataSource;
 using AndroidX.Media3.ExoPlayer;
+using AndroidX.Media3.ExoPlayer.Source;
 using AndroidX.Media3.Session;
 using Google.Common.Util.Concurrent;
 using Java.Interop;
@@ -97,7 +99,17 @@ public sealed class RadioPlaybackService : MediaLibraryService
                 .SetBufferDurationsMs(3000, 8000, 1000, 2000)!
                 .Build()!;
 
+            // AzuraCast reports listen_url with the scheme it was configured with (often http://),
+            // while a reverse proxy in front of it (e.g. Caddy) answers 308 → https://. ExoPlayer's
+            // DefaultHttpDataSource refuses cross-protocol redirects by default and fails with
+            // "Source error"; every other platform player follows them, so allow it here too.
+            DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory()!
+                .SetAllowCrossProtocolRedirects(true)!;
+            DefaultMediaSourceFactory mediaSourceFactory =
+                new DefaultMediaSourceFactory(new DefaultDataSource.Factory(this, httpFactory));
+
             _player = new ExoPlayerBuilder(this)!
+                .SetMediaSourceFactory(mediaSourceFactory)!
                 .SetAudioAttributes(audioAttributes, true)!
                 .SetHandleAudioBecomingNoisy(true)!
                 .SetWakeMode(C.WakeModeNetwork)!
