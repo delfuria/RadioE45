@@ -12,9 +12,9 @@ namespace RadioE45;
 public partial class App : Application
 {
     internal const double PortraitWidth = 500;
-    internal const double PortraitHeight = 950;
+    internal const double PortraitHeight = 855;
     internal const double LandscapeWidth = 900;
-    internal const double LandscapeHeight = 500;
+    internal const double LandscapeHeight = 450;
     private readonly IAppSettingsRepository _settingsRepo;
     private readonly IRadioRepository _radioRepository;
     private readonly OnAirViewModel _onAirViewModel;

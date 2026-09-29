@@ -17,17 +17,20 @@
          (vedi Shell.FlyoutContent) e si aprono come pagine impilate sopra OnAir. -->
     <TabBar>
         <ShellContent
+            x:Name="TabOnAir"
             Title="{loc:Translate Tab_OnAir}"
             Icon="tab_onair.png"
             ContentTemplate="{DataTemplate views:OnAirPage}"
             Route="OnAirPage" />
         <ShellContent
+            x:Name="TabRequest"
             Title="{loc:Translate Tab_Request}"
             Icon="tab_request.png"
             ContentTemplate="{DataTemplate views:SongRequestPage}"
             Route="SongRequestPage"
             IsVisible="{Binding NowPlaying.RequestsEnabled}" />
         <ShellContent
+            x:Name="TabPodcasts"
             Title="{loc:Translate Tab_Podcasts}"
             Icon="tab_podcast.png"
             ContentTemplate="{DataTemplate views:PodcastListPage}"

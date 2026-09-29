@@ -34,7 +34,8 @@
             Placeholder="{loc:Translate Request_SearchPlaceholder}"
             Text="{Binding SearchText}"
             BackgroundColor="{DynamicResource CardElevated}"
-            TextColor="{DynamicResource PrimaryText}" />
+            TextColor="{DynamicResource PrimaryText}"
+            PlaceholderColor="{DynamicResource MutedText}" />
         </Grid>
 
         <RefreshView

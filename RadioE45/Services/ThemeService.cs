@@ -18,7 +18,7 @@ internal static class ThemeService
         res["CardElevated"]     = Color.FromArgb(isDark ? "#2A2A2A" : "#F0F0F0");
         res["PrimaryText"]      = Color.FromArgb(isDark ? "#F1FAEE" : "#1A1A1A");
         res["SecondaryText"]    = Color.FromArgb(isDark ? "#A8DADC" : "#457B9D");
-        res["MutedText"]        = Color.FromArgb(isDark ? "#6B7280" : "#9CA3AF");
+        res["MutedText"]        = Color.FromArgb(isDark ? "#9CA3AF" : "#6B7280");
         res["TabBarBackground"] = Color.FromArgb(isDark ? "#111111" : "#FFFFFF");
         res["DividerColor"]     = Color.FromArgb(isDark ? "#2A2A2A" : "#E5E7EB");
     }
