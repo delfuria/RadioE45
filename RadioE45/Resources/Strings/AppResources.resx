@@ -134,7 +134,6 @@
   <data name="Settings_AppVersion" xml:space="preserve"><value>Versione app</value></data>
   <data name="Settings_DbVersion" xml:space="preserve"><value>Versione DB</value></data>
   <data name="Settings_UpdateRequired" xml:space="preserve"><value>Aggiornamento richiesto</value></data>
-  <data name="Settings_VisitSite" xml:space="preserve"><value>Visita il sito</value></data>
   <data name="Settings_Copyright" xml:space="preserve"><value>© RadioE45 — Tutti i diritti riservati</value></data>
   <data name="Settings_Msg_DbReset" xml:space="preserve"><value>Database ripristinato ai valori di default</value></data>
   <data name="Settings_Msg_SettingsSaved" xml:space="preserve"><value>Impostazioni salvate</value></data>

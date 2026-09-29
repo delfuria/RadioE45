@@ -21,9 +21,4 @@ public partial class SettingsPage : ContentPage
     {
         DiagnosticaBorder.IsVisible = true;
     }
-
-    private async void OnSiteUrlTapped(object sender, TappedEventArgs e)
-    {
-        await Launcher.Default.OpenAsync("https://radioe45.it");
-    }
 }
