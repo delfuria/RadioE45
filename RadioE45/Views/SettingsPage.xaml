@@ -7,7 +7,9 @@
     xmlns:vm="clr-namespace:RadioE45.ViewModels"
     xmlns:loc="clr-namespace:RadioE45.Services.Localization"
     x:DataType="vm:SettingsViewModel"
-    Title="{loc:Translate Tab_Settings}">
+    Title="{loc:Translate Tab_Settings}"
+    Shell.NavBarIsVisible="True"
+    Shell.TabBarIsVisible="False">
 
     <ScrollView>
         <VerticalStackLayout Spacing="0" Padding="0,0,0,32">

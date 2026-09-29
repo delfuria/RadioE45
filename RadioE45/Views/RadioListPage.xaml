@@ -8,7 +8,9 @@
     xmlns:models="clr-namespace:RadioE45.Models"
     xmlns:loc="clr-namespace:RadioE45.Services.Localization"
     x:DataType="vm:RadioListViewModel"
-    Title="{loc:Translate RadioList_Title}">
+    Title="{loc:Translate Tab_Radio}"
+    Shell.NavBarIsVisible="True"
+    Shell.TabBarIsVisible="False">
 
     <Grid>
 

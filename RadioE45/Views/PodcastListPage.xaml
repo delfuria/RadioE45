@@ -7,15 +7,30 @@
     xmlns:vm="clr-namespace:RadioE45.ViewModels"
     xmlns:models="clr-namespace:RadioE45.Models"
     xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    xmlns:controls="clr-namespace:RadioE45.Controls"
     x:DataType="vm:PodcastListViewModel"
     Title="{loc:Translate Tab_Podcasts}">
 
+    <Grid RowDefinitions="Auto,*">
+
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8" Padding="8,8,16,0" MinimumHeightRequest="50">
+        <controls:MenuButton Grid.Column="0" VerticalOptions="Center" />
+        <Label
+            Grid.Column="1"
+            Text="{loc:Translate Tab_Podcasts}"
+            TextColor="{DynamicResource PrimaryText}"
+            FontSize="20"
+            FontAttributes="Bold"
+            VerticalOptions="Center" />
+    </Grid>
+
     <RefreshView
+        Grid.Row="1"
         IsRefreshing="{Binding IsBusy}"
         Command="{Binding LoadPodcastsCommand}">
 
         <CollectionView
-            Margin="0,50,0,0"
+            Margin="0"
             ItemsSource="{Binding Podcasts}"
             SelectionMode="None"
             BackgroundColor="Transparent">
@@ -99,5 +114,7 @@
 
         </CollectionView>
     </RefreshView>
+
+    </Grid>
 
 </ContentPage>

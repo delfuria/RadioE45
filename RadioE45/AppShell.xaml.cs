@@ -9,11 +9,15 @@ public partial class AppShell : Shell
     private readonly IRadioRepository _radioRepository;
     private bool _startupCheckDone;
 
-    public AppShell(IRadioRepository radioRepository, OnAirViewModel onAirViewModel)
+    public AppShell(IRadioRepository radioRepository, OnAirViewModel onAirViewModel, AppMenuViewModel appMenuViewModel)
     {
         _radioRepository = radioRepository;
         BindingContext = onAirViewModel;
         InitializeComponent();
+        MenuRoot.BindingContext = appMenuViewModel;
+
+        Routing.RegisterRoute("RadioListPage", typeof(RadioListPage));
+        Routing.RegisterRoute("SettingsPage", typeof(SettingsPage));
         Routing.RegisterRoute("AddStationPage", typeof(AddStationPage));
         Routing.RegisterRoute("EditStationPage", typeof(EditStationPage));
         Routing.RegisterRoute("PodcastEpisodesPage", typeof(PodcastEpisodesPage));
@@ -27,6 +31,6 @@ public partial class AppShell : Shell
 
         bool hasStations = await _radioRepository.HasStationsAsync();
         if (!hasStations)
-            await GoToAsync("//RadioListPage");
+            await GoToAsync("//OnAirPage/RadioListPage");
     }
 }

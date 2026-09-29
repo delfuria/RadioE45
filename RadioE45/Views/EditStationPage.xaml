@@ -22,7 +22,8 @@
             IsVisible="{Binding ErrorMessage, Converter={toolkit:IsNotNullConverter}}" />
 
         <!-- Form -->
-        <VerticalStackLayout Grid.Row="1" Spacing="16" Padding="16">
+        <ScrollView Grid.Row="1">
+        <VerticalStackLayout Spacing="16" Padding="16">
 
             <VerticalStackLayout Spacing="4">
                 <Label
@@ -116,7 +117,102 @@
                 </Grid>
             </VerticalStackLayout>
 
+            <BoxView
+                HeightRequest="2"
+                Color="{DynamicResource CardElevated}" />
+
+            <Label
+                Text="{loc:Translate EditStation_Section_Links}"
+                Style="{StaticResource CaptionLabel}"
+                HorizontalTextAlignment="Start"
+                FontAttributes="Bold" />
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Text="{loc:Translate EditStation_WebsiteUrl}"
+                    Style="{StaticResource CaptionLabel}"
+                    HorizontalTextAlignment="Start" />
+                <Entry
+                    Text="{Binding WebsiteUrl}"
+                    Keyboard="Url"
+                    Placeholder="https://"
+                    PlaceholderColor="{DynamicResource MutedText}"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    TextColor="{DynamicResource PrimaryText}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Text="{loc:Translate EditStation_SocialUrl1}"
+                    Style="{StaticResource CaptionLabel}"
+                    HorizontalTextAlignment="Start" />
+                <Entry
+                    Text="{Binding SocialUrl1}"
+                    Keyboard="Url"
+                    Placeholder="https://instagram.com/…"
+                    PlaceholderColor="{DynamicResource MutedText}"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    TextColor="{DynamicResource PrimaryText}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Text="{loc:Translate EditStation_SocialUrl2}"
+                    Style="{StaticResource CaptionLabel}"
+                    HorizontalTextAlignment="Start" />
+                <Entry
+                    Text="{Binding SocialUrl2}"
+                    Keyboard="Url"
+                    Placeholder="https://facebook.com/…"
+                    PlaceholderColor="{DynamicResource MutedText}"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    TextColor="{DynamicResource PrimaryText}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Text="{loc:Translate EditStation_SocialUrl3}"
+                    Style="{StaticResource CaptionLabel}"
+                    HorizontalTextAlignment="Start" />
+                <Entry
+                    Text="{Binding SocialUrl3}"
+                    Keyboard="Url"
+                    Placeholder="https://youtube.com/…"
+                    PlaceholderColor="{DynamicResource MutedText}"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    TextColor="{DynamicResource PrimaryText}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Text="{loc:Translate EditStation_ContactEmail}"
+                    Style="{StaticResource CaptionLabel}"
+                    HorizontalTextAlignment="Start" />
+                <Entry
+                    Text="{Binding ContactEmail}"
+                    Keyboard="Email"
+                    Placeholder="info@…"
+                    PlaceholderColor="{DynamicResource MutedText}"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    TextColor="{DynamicResource PrimaryText}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Text="{loc:Translate EditStation_ContactPhone}"
+                    Style="{StaticResource CaptionLabel}"
+                    HorizontalTextAlignment="Start" />
+                <Entry
+                    Text="{Binding ContactPhone}"
+                    Keyboard="Telephone"
+                    Placeholder="+39 …"
+                    PlaceholderColor="{DynamicResource MutedText}"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    TextColor="{DynamicResource PrimaryText}" />
+            </VerticalStackLayout>
+
         </VerticalStackLayout>
+        </ScrollView>
 
         <!-- Save / Cancel -->
         <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16" Margin="32,8,32,0">

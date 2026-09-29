@@ -18,13 +18,15 @@ public partial class App : Application
     private readonly IAppSettingsRepository _settingsRepo;
     private readonly IRadioRepository _radioRepository;
     private readonly OnAirViewModel _onAirViewModel;
+    private readonly AppMenuViewModel _appMenuViewModel;
 
-    public App(IAppSettingsRepository settingsRepo, ILogRepository logRepo, DatabaseLoggerProvider dbLoggerProvider, IAzuraStationCatalog stationCatalog, IRadioRepository radioRepository, OnAirViewModel onAirViewModel)
+    public App(IAppSettingsRepository settingsRepo, ILogRepository logRepo, DatabaseLoggerProvider dbLoggerProvider, IAzuraStationCatalog stationCatalog, IRadioRepository radioRepository, OnAirViewModel onAirViewModel, AppMenuViewModel appMenuViewModel)
     {
         InitializeComponent();
         _settingsRepo = settingsRepo;
         _radioRepository = radioRepository;
         _onAirViewModel = onAirViewModel;
+        _appMenuViewModel = appMenuViewModel;
 
         var pref = Preferences.Default.Get("theme_preference", "Dark");
         ThemeService.Apply(pref);
@@ -85,7 +87,7 @@ public partial class App : Application
         // subito vedendo CurrentStation valorizzato) selezioni di nuovo preferita/prima.
         _onAirViewModel.CurrentStation = null;
 
-        Window window = new(new AppShell(_radioRepository, _onAirViewModel));
+        Window window = new(new AppShell(_radioRepository, _onAirViewModel, _appMenuViewModel));
 
         DevicePlatform platform = DeviceInfo.Current.Platform;
         if (platform == DevicePlatform.WinUI || platform == DevicePlatform.MacCatalyst)

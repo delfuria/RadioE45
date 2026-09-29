@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -18,6 +20,8 @@ public partial class OnAirViewModel : BaseViewModel
     private readonly INowPlayingService _nowPlayingService;
     private readonly IAzuraStationCatalog _catalog;
     private readonly IAppSettingsRepository _settingsRepo;
+    private readonly IScheduleService _scheduleService;
+    private readonly IPopupService _popupService;
     private CancellationTokenSource? _pollingCts;
 
     [ObservableProperty]
@@ -61,6 +65,17 @@ public partial class OnAirViewModel : BaseViewModel
     public partial bool HasPodcasts { get; set; }
 
     [ObservableProperty]
+    public partial bool HasSchedule { get; set; }
+
+    // Senza brano successivo la card "Prossimo brano" sparisce: se la stazione ha un palinsesto
+    // resta comunque una riga compatta con la sola icona per aprirlo.
+    public bool ShowScheduleOnlyRow => HasSchedule && NowPlaying.Next is null;
+
+    partial void OnHasScheduleChanged(bool value) => OnPropertyChanged(nameof(ShowScheduleOnlyRow));
+
+    partial void OnNowPlayingChanged(NowPlayingInfo value) => OnPropertyChanged(nameof(ShowScheduleOnlyRow));
+
+    [ObservableProperty]
     public partial bool IsSongHistoryExpanded { get; set; }
 
     [RelayCommand]
@@ -72,6 +87,7 @@ public partial class OnAirViewModel : BaseViewModel
     {
         IsFavorite = value?.IsFavorite ?? false;
         _ = RefreshHasPodcastsAsync(value);
+        _ = RefreshHasScheduleAsync(value);
         ResetPodcastTabToRoot();
     }
 
@@ -132,6 +148,53 @@ public partial class OnAirViewModel : BaseViewModel
             HasPodcasts = hasPodcasts;
     }
 
+    private int _hasScheduleRequestId;
+
+    // Probe silenziosa come per i podcast: l'icona del palinsesto compare solo se la stazione
+    // ne ha uno non vuoto.
+    private async Task RefreshHasScheduleAsync(AzuraStation? station)
+    {
+        int requestId = ++_hasScheduleRequestId;
+
+        if (station is null)
+        {
+            HasSchedule = false;
+            return;
+        }
+
+        bool hasSchedule;
+        try
+        {
+            List<PlaylistSchedule> items = await _scheduleService.GetScheduleAsync(station);
+            hasSchedule = items.Count > 0;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug(ex, "Schedule probe failed for station {StationId}", station.StationId);
+            hasSchedule = false;
+        }
+
+        if (requestId == _hasScheduleRequestId)
+            HasSchedule = hasSchedule;
+    }
+
+    [RelayCommand]
+    private async Task ShowScheduleAsync()
+    {
+        if (!HasSchedule || Shell.Current is null)
+            return;
+
+        await _popupService.ShowPopupAsync<ScheduleViewModel>(Shell.Current, new PopupOptions
+        {
+            Shape = new Microsoft.Maui.Controls.Shapes.RoundRectangle
+            {
+                CornerRadius = new CornerRadius(20, 20, 0, 0),
+                StrokeThickness = 0
+            },
+            Shadow = null
+        });
+    }
+
     [ObservableProperty]
     public partial double TrackProgress { get; set; }
 
@@ -153,6 +216,8 @@ public partial class OnAirViewModel : BaseViewModel
         INowPlayingService nowPlayingService,
         IAzuraStationCatalog catalog,
         IAppSettingsRepository settingsRepo,
+        IScheduleService scheduleService,
+        IPopupService popupService,
         ILogger<OnAirViewModel> logger)
     {
         Logger = logger;
@@ -162,6 +227,8 @@ public partial class OnAirViewModel : BaseViewModel
         _nowPlayingService = nowPlayingService;
         _catalog = catalog;
         _settingsRepo = settingsRepo;
+        _scheduleService = scheduleService;
+        _popupService = popupService;
 
         // Su telefono (iOS/Android) niente slider: i tasti fisici pilotano il volume reale via
         // stream di sistema, il gain player resta sempre a piena scala tranne che in mute (vedi

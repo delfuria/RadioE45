@@ -7,6 +7,7 @@
     xmlns:vm="clr-namespace:RadioE45.ViewModels"
     xmlns:models="clr-namespace:RadioE45.Models"
     xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    xmlns:controls="clr-namespace:RadioE45.Controls"
     x:DataType="vm:SongRequestViewModel"
     Title="{loc:Translate Tab_Request}">
 
@@ -21,13 +22,20 @@
 
     <Grid RowDefinitions="Auto,*,Auto">
 
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+        <controls:MenuButton
+            Grid.Column="0"
+            Margin="8,0,0,0"
+            VerticalOptions="Center" />
+
         <SearchBar
-            Grid.Row="0"
+            Grid.Column="1"
             Margin="12,8"
             Placeholder="{loc:Translate Request_SearchPlaceholder}"
             Text="{Binding SearchText}"
             BackgroundColor="{DynamicResource CardElevated}"
             TextColor="{DynamicResource PrimaryText}" />
+        </Grid>
 
         <RefreshView
             Grid.Row="1"

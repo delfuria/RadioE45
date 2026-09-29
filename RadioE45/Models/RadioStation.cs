@@ -20,4 +20,12 @@ public class RadioStation
     public bool IsTest { get; set; }
     public bool HasCustomInfo { get; set; }
     public int? PlaybackLatencyOffsetSeconds { get; set; }
+
+    // Link della stazione mostrati nel menu laterale (inseriti dall'utente)
+    public string? WebsiteUrl { get; set; }
+    public string? SocialUrl1 { get; set; }
+    public string? SocialUrl2 { get; set; }
+    public string? SocialUrl3 { get; set; }
+    public string? ContactEmail { get; set; }
+    public string? ContactPhone { get; set; }
 }

@@ -100,6 +100,22 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
             await conn.ExecuteAsync(
                 $"ALTER TABLE RadioStations ADD COLUMN {nameof(RadioStation.PlaybackLatencyOffsetSeconds)} INTEGER NULL");
         }
+
+        string[] linkColumns =
+        [
+            nameof(RadioStation.WebsiteUrl),
+            nameof(RadioStation.SocialUrl1),
+            nameof(RadioStation.SocialUrl2),
+            nameof(RadioStation.SocialUrl3),
+            nameof(RadioStation.ContactEmail),
+            nameof(RadioStation.ContactPhone)
+        ];
+
+        foreach (string column in linkColumns)
+        {
+            if (!columnNames.Contains(column))
+                await conn.ExecuteAsync($"ALTER TABLE RadioStations ADD COLUMN {column} TEXT NULL");
+        }
     }
 
     private static async Task MigratePodcastEpisodeProgressSchemaAsync(SQLiteAsyncConnection conn)
@@ -167,6 +183,7 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
                 LogoUrl =  "https://radioe45.it/assets/images/image06.png",
                 WebsocketUrl = "/api/live/nowplaying/websocket", //wss://radioe45.ddns.net/api/live/nowplaying/websocket
                 ShortName = "RadioE45",
+                WebsiteUrl = "https://radioe45.it",
                 IsTest = false,
                 SortOrder = 0
             },

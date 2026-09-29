@@ -69,6 +69,32 @@
         <Setter Property="Padding" Value="16" />
     </Style>
 
+    <!-- Icona-link (social/contatti) nel menu laterale -->
+    <Style TargetType="Button" x:Key="MenuLinkButton">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="WidthRequest" Value="40" />
+        <Setter Property="HeightRequest" Value="40" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource CardElevated}" />
+        <Setter Property="TextColor" Value="{DynamicResource PrimaryText}" />
+    </Style>
+
+    <!-- Icona calendario che apre il palinsesto (OnAirPage) -->
+    <Style TargetType="Button" x:Key="ScheduleButton">
+        <Setter Property="Text" Value="&#xf073;" />
+        <Setter Property="FontFamily" Value="FaSolid" />
+        <Setter Property="FontSize" Value="24" />
+        <!-- Stessa misura della copertina del prossimo brano (52×52) -->
+        <Setter Property="WidthRequest" Value="52" />
+        <Setter Property="HeightRequest" Value="52" />
+        <Setter Property="CornerRadius" Value="26" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource CardElevated}" />
+        <Setter Property="TextColor" Value="{DynamicResource Accent}" />
+    </Style>
+
     <Style TargetType="ActivityIndicator">
         <Setter Property="Color" Value="{DynamicResource Accent}" />
     </Style>

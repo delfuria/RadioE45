@@ -65,7 +65,6 @@
   <data name="Tab_Podcasts" xml:space="preserve"><value>Podcasty</value></data>
   <data name="Tab_Request" xml:space="preserve"><value>Zamów</value></data>
   <data name="Tab_Settings" xml:space="preserve"><value>Ustawienia</value></data>
-  <data name="RadioList_Title" xml:space="preserve"><value>Radio</value></data>
 
   <data name="OnAir_Waiting" xml:space="preserve"><value>Oczekiwanie...</value></data>
   <data name="OnAir_NoStationSelected" xml:space="preserve"><value>Nie wybrano stacji.</value></data>
@@ -148,6 +147,19 @@
   <data name="EditStation_Description" xml:space="preserve"><value>Opis</value></data>
   <data name="EditStation_UseCustomInfo" xml:space="preserve"><value>Użyj niestandardowych informacji</value></data>
   <data name="EditStation_OverrideLatencyOffset" xml:space="preserve"><value>Niestandardowa korekta opóźnienia</value></data>
+  <data name="EditStation_Section_Links" xml:space="preserve"><value>Linki i kontakty</value></data>
+  <data name="EditStation_WebsiteUrl" xml:space="preserve"><value>Strona internetowa</value></data>
+  <data name="EditStation_SocialUrl1" xml:space="preserve"><value>Social 1</value></data>
+  <data name="EditStation_SocialUrl2" xml:space="preserve"><value>Social 2</value></data>
+  <data name="EditStation_SocialUrl3" xml:space="preserve"><value>Social 3</value></data>
+  <data name="EditStation_ContactEmail" xml:space="preserve"><value>E-mail</value></data>
+  <data name="EditStation_ContactPhone" xml:space="preserve"><value>Telefon</value></data>
+  <data name="EditStation_InvalidLinks" xml:space="preserve"><value>Co najmniej jeden link/kontakt jest nieprawidłowy</value></data>
+
+  <data name="Menu_Open" xml:space="preserve"><value>Otwórz menu</value></data>
+  <data name="Menu_Website" xml:space="preserve"><value>Strona internetowa</value></data>
+  <data name="Menu_Social" xml:space="preserve"><value>Social media</value></data>
+  <data name="Menu_Contacts" xml:space="preserve"><value>Kontakty</value></data>
   <data name="AddStation_UrlPlaceholder" xml:space="preserve"><value>np. radioe45.ddns.net</value></data>
   <data name="AddStation_Search" xml:space="preserve"><value>Szukaj</value></data>
   <data name="AddStation_Prompt" xml:space="preserve"><value>Wpisz adres serwera AzuraCast i naciśnij Szukaj</value></data>
@@ -161,6 +173,7 @@
   <data name="Common_Delete" xml:space="preserve"><value>Usuń</value></data>
   <data name="Common_Cancel" xml:space="preserve"><value>Anuluj</value></data>
   <data name="Common_Save" xml:space="preserve"><value>Zapisz</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>Zamknij</value></data>
 
   <data name="Err_Init" xml:space="preserve"><value>Inicjalizacja</value></data>
   <data name="Err_Reconnect" xml:space="preserve"><value>Przywracanie po ponownym połączeniu</value></data>

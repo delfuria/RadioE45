@@ -3,26 +3,24 @@
     x:Class="RadioE45.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:views="clr-namespace:RadioE45.Views"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels"
+    xmlns:models="clr-namespace:RadioE45.Models"
     xmlns:loc="clr-namespace:RadioE45.Services.Localization"
-    Shell.NavBarIsVisible="False">
+    Shell.NavBarIsVisible="False"
+    FlyoutBehavior="Flyout"
+    FlyoutWidth="280"
+    FlyoutBackgroundColor="{DynamicResource CardBackground}">
 
+    <!-- Solo le pagine della stazione sono tab; Canali e Impostazioni stanno nel menu laterale
+         (vedi Shell.FlyoutContent) e si aprono come pagine impilate sopra OnAir. -->
     <TabBar>
         <ShellContent
             Title="{loc:Translate Tab_OnAir}"
             Icon="tab_onair.png"
             ContentTemplate="{DataTemplate views:OnAirPage}"
             Route="OnAirPage" />
-        <ShellContent
-            Title="{loc:Translate Tab_Radio}"
-            Icon="tab_radiolist.png"
-            ContentTemplate="{DataTemplate views:RadioListPage}"
-            Route="RadioListPage" />
-        <ShellContent
-            Title="{loc:Translate Tab_Schedule}"
-            Icon="tab_schedule.png"
-            ContentTemplate="{DataTemplate views:SchedulePage}"
-            Route="SchedulePage" />
         <ShellContent
             Title="{loc:Translate Tab_Request}"
             Icon="tab_request.png"
@@ -35,11 +33,142 @@
             ContentTemplate="{DataTemplate views:PodcastListPage}"
             Route="PodcastListPage"
             IsVisible="{Binding HasPodcasts}" />
-        <ShellContent
-            Title="{loc:Translate Tab_Settings}"
-            Icon="tab_settings.png"
-            ContentTemplate="{DataTemplate views:SettingsPage}"
-            Route="SettingsPage" />
     </TabBar>
+
+    <Shell.FlyoutContent>
+        <ScrollView x:Name="MenuRoot" x:DataType="vm:AppMenuViewModel">
+            <VerticalStackLayout Padding="0,24,0,16" Spacing="0">
+
+                <VerticalStackLayout.Resources>
+                    <Style TargetType="Label" x:Key="MenuIcon">
+                        <Setter Property="FontFamily" Value="FaSolid" />
+                        <Setter Property="FontSize" Value="18" />
+                        <Setter Property="TextColor" Value="{DynamicResource SecondaryText}" />
+                        <Setter Property="HorizontalTextAlignment" Value="Center" />
+                        <Setter Property="VerticalOptions" Value="Center" />
+                    </Style>
+                    <Style TargetType="Label" x:Key="MenuText">
+                        <Setter Property="FontSize" Value="16" />
+                        <Setter Property="TextColor" Value="{DynamicResource PrimaryText}" />
+                        <Setter Property="VerticalOptions" Value="Center" />
+                    </Style>
+                    <Style TargetType="Grid" x:Key="MenuRow">
+                        <Setter Property="ColumnDefinitions" Value="28,*,Auto" />
+                        <Setter Property="ColumnSpacing" Value="16" />
+                        <Setter Property="Padding" Value="20,0" />
+                        <Setter Property="MinimumHeightRequest" Value="52" />
+                    </Style>
+                </VerticalStackLayout.Resources>
+
+                <!-- Header: stazione corrente -->
+                <Grid ColumnDefinitions="56,*" ColumnSpacing="12" Padding="20,0,20,16">
+                    <Border
+                        Grid.Column="0"
+                        HeightRequest="56"
+                        WidthRequest="56"
+                        StrokeShape="RoundRectangle 12"
+                        Stroke="Transparent"
+                        BackgroundColor="{DynamicResource CardElevated}">
+                        <Grid>
+                            <Image Source="{Binding StationLogoUrl}" Aspect="AspectFill" />
+                            <Image
+                                Source="radio_placeholder.png"
+                                Aspect="AspectFit"
+                                Margin="10"
+                                IsVisible="{Binding StationLogoUrl, Converter={toolkit:IsNullConverter}}" />
+                        </Grid>
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label
+                            Text="{Binding StationName}"
+                            TextColor="{DynamicResource PrimaryText}"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            LineBreakMode="TailTruncation" />
+                        <Label
+                            Text="Radio E45"
+                            TextColor="{DynamicResource MutedText}"
+                            FontSize="13" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" Margin="0,0,0,8" />
+
+                <!-- Canali -->
+                <Grid Style="{StaticResource MenuRow}">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenChannelsCommand}" />
+                    </Grid.GestureRecognizers>
+                    <Label Grid.Column="0" Text="&#xf8d7;" Style="{StaticResource MenuIcon}" />
+                    <Label Grid.Column="1" Text="{loc:Translate Tab_Radio}" Style="{StaticResource MenuText}" />
+                </Grid>
+
+                <!-- Impostazioni -->
+                <Grid Style="{StaticResource MenuRow}">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenSettingsCommand}" />
+                    </Grid.GestureRecognizers>
+                    <Label Grid.Column="0" Text="&#xf013;" Style="{StaticResource MenuIcon}" />
+                    <Label Grid.Column="1" Text="{loc:Translate Tab_Settings}" Style="{StaticResource MenuText}" />
+                </Grid>
+
+                <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" Margin="0,8" />
+
+                <!-- Sito web -->
+                <Grid Style="{StaticResource MenuRow}" IsVisible="{Binding Website, Converter={toolkit:IsNotNullConverter}}">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenLinkCommand}" CommandParameter="{Binding Website}" />
+                    </Grid.GestureRecognizers>
+                    <Label Grid.Column="0" Text="&#xf0ac;" Style="{StaticResource MenuIcon}" />
+                    <Label Grid.Column="1" Text="{loc:Translate Menu_Website}" Style="{StaticResource MenuText}" />
+                </Grid>
+
+                <!-- Social: fino a 3 icone affiancate -->
+                <Grid Style="{StaticResource MenuRow}" IsVisible="{Binding HasSocialLinks}">
+                    <Label Grid.Column="0" Text="&#xf1e0;" Style="{StaticResource MenuIcon}" />
+                    <Label Grid.Column="1" Text="{loc:Translate Menu_Social}" Style="{StaticResource MenuText}" />
+                    <HorizontalStackLayout Grid.Column="2" Spacing="4" BindableLayout.ItemsSource="{Binding SocialLinks}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:StationLink">
+                                <Button
+                                    Text="{Binding Glyph}"
+                                    FontFamily="{Binding FontFamily}"
+                                    Style="{StaticResource MenuLinkButton}"
+                                    SemanticProperties.Description="{Binding Uri.Host}"
+                                    Command="{Binding OpenLinkCommand, Source={RelativeSource AncestorType={x:Type vm:AppMenuViewModel}}, x:DataType=vm:AppMenuViewModel}"
+                                    CommandParameter="{Binding .}" />
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </Grid>
+
+                <!-- Contatti: email e telefono affiancati -->
+                <Grid Style="{StaticResource MenuRow}" IsVisible="{Binding HasContactLinks}">
+                    <Label Grid.Column="0" Text="&#xf2b9;" Style="{StaticResource MenuIcon}" />
+                    <Label Grid.Column="1" Text="{loc:Translate Menu_Contacts}" Style="{StaticResource MenuText}" />
+                    <HorizontalStackLayout Grid.Column="2" Spacing="4" BindableLayout.ItemsSource="{Binding ContactLinks}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:StationLink">
+                                <Button
+                                    Text="{Binding Glyph}"
+                                    FontFamily="{Binding FontFamily}"
+                                    Style="{StaticResource MenuLinkButton}"
+                                    SemanticProperties.Description="{Binding Uri.OriginalString}"
+                                    Command="{Binding OpenLinkCommand, Source={RelativeSource AncestorType={x:Type vm:AppMenuViewModel}}, x:DataType=vm:AppMenuViewModel}"
+                                    CommandParameter="{Binding .}" />
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </Grid>
+
+                <Label
+                    Text="{Binding AppVersion}"
+                    TextColor="{DynamicResource MutedText}"
+                    FontSize="12"
+                    Margin="20,24,20,0" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Shell.FlyoutContent>
 
 </Shell>

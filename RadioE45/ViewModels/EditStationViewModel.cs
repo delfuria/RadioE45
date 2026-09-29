@@ -42,6 +42,24 @@ public partial class EditStationViewModel : BaseViewModel
     [ObservableProperty]
     public partial int LatencyOffsetSeconds { get; set; } = 3;
 
+    [ObservableProperty]
+    public partial string WebsiteUrl { get; set; } = "";
+
+    [ObservableProperty]
+    public partial string SocialUrl1 { get; set; } = "";
+
+    [ObservableProperty]
+    public partial string SocialUrl2 { get; set; } = "";
+
+    [ObservableProperty]
+    public partial string SocialUrl3 { get; set; } = "";
+
+    [ObservableProperty]
+    public partial string ContactEmail { get; set; } = "";
+
+    [ObservableProperty]
+    public partial string ContactPhone { get; set; } = "";
+
     public EditStationViewModel(
         IRadioRepository radioRepository,
         IAzuraStationCatalog catalog,
@@ -74,6 +92,12 @@ public partial class EditStationViewModel : BaseViewModel
             HasCustomInfo = _station.HasCustomInfo;
             OverrideLatencyOffset = _station.PlaybackLatencyOffsetSeconds.HasValue;
             LatencyOffsetSeconds = _station.PlaybackLatencyOffsetSeconds ?? 3;
+            WebsiteUrl = _station.WebsiteUrl ?? "";
+            SocialUrl1 = _station.SocialUrl1 ?? "";
+            SocialUrl2 = _station.SocialUrl2 ?? "";
+            SocialUrl3 = _station.SocialUrl3 ?? "";
+            ContactEmail = _station.ContactEmail ?? "";
+            ContactPhone = _station.ContactPhone ?? "";
         }, LocalizationResourceManager.Instance["Err_LoadStations"]);
     }
 
@@ -83,6 +107,12 @@ public partial class EditStationViewModel : BaseViewModel
         if (_station is null || IsBusy)
             return;
 
+        if (!AreLinksValid())
+        {
+            ErrorMessage = LocalizationResourceManager.Instance["EditStation_InvalidLinks"];
+            return;
+        }
+
         await SafeExecuteAsync(async () =>
         {
             _station.Name = Name;
@@ -90,6 +120,12 @@ public partial class EditStationViewModel : BaseViewModel
             _station.Description = Description;
             _station.HasCustomInfo = HasCustomInfo;
             _station.PlaybackLatencyOffsetSeconds = OverrideLatencyOffset ? LatencyOffsetSeconds : null;
+            _station.WebsiteUrl = StationLink.NormalizeUrl(WebsiteUrl);
+            _station.SocialUrl1 = StationLink.NormalizeUrl(SocialUrl1);
+            _station.SocialUrl2 = StationLink.NormalizeUrl(SocialUrl2);
+            _station.SocialUrl3 = StationLink.NormalizeUrl(SocialUrl3);
+            _station.ContactEmail = NullIfBlank(ContactEmail);
+            _station.ContactPhone = NullIfBlank(ContactPhone);
 
             await _radioRepository.UpdateAsync(_station);
             _ = _catalog.ReloadAsync();
@@ -97,6 +133,21 @@ public partial class EditStationViewModel : BaseViewModel
             await Shell.Current.GoToAsync("..");
         }, LocalizationResourceManager.Instance["Err_SaveStations"]);
     }
+
+    // Un campo vuoto è sempre valido (link assente); uno compilato deve essere riconoscibile.
+    private bool AreLinksValid() =>
+        IsBlankOr(WebsiteUrl, StationLink.ForWebsite)
+        && IsBlankOr(SocialUrl1, StationLink.ForSocial)
+        && IsBlankOr(SocialUrl2, StationLink.ForSocial)
+        && IsBlankOr(SocialUrl3, StationLink.ForSocial)
+        && IsBlankOr(ContactEmail, StationLink.ForEmail)
+        && IsBlankOr(ContactPhone, StationLink.ForPhone);
+
+    private static bool IsBlankOr(string value, Func<string, StationLink?> factory)
+        => string.IsNullOrWhiteSpace(value) || factory(value) is not null;
+
+    private static string? NullIfBlank(string value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     [RelayCommand]
     private async Task CancelAsync()

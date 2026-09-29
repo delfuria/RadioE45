@@ -54,6 +54,15 @@
                                 Aspect="AspectFit"
                                 Margin="48"
                                 IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNullConverter}}" />
+
+                            <!-- Apre il menu laterale. Sta sopra la copertina su fondo scuro semitrasparente:
+                                 icona sempre bianca, indipendente dal tema -->
+                            <controls:MenuButton
+                                HorizontalOptions="Start"
+                                VerticalOptions="Start"
+                                Margin="8"
+                                BackgroundColor="#66000000"
+                                TextColor="White" />
                         </Grid>
                     </Border>
 
@@ -186,10 +195,17 @@
                         StrokeThickness="1"
                         BackgroundColor="{DynamicResource CardBackground}"
                         IsVisible="{Binding NowPlaying.Next, Converter={toolkit:IsNotNullConverter}}">
-                        <Grid ColumnDefinitions="52,*" ColumnSpacing="12">
+                        <Grid ColumnDefinitions="Auto,52,*" ColumnSpacing="12">
+
+                            <!-- Palinsesto (solo se la stazione ne ha uno) -->
+                            <Button
+                                Grid.Column="0"
+                                Style="{StaticResource ScheduleButton}"
+                                IsVisible="{Binding HasSchedule}"
+                                Command="{Binding ShowScheduleCommand}" />
 
                             <Border
-                                Grid.Column="0"
+                                Grid.Column="1"
                                 HeightRequest="52"
                                 WidthRequest="52"
                                 StrokeShape="RoundRectangle 10"
@@ -206,7 +222,7 @@
                                 </Grid>
                             </Border>
 
-                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                            <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="4">
                                 <Label
                                     Text="{Binding NowPlaying.Next.Title}"
                                     Style="{StaticResource SubtitleLabel}"
@@ -224,6 +240,33 @@
                                     LineBreakMode="TailTruncation" />
                             </VerticalStackLayout>
 
+                        </Grid>
+                    </Border>
+
+                    <!-- Palinsesto senza prossimo brano: riga compatta con la sola icona -->
+                    <Border
+                        Margin="24,12,24,0"
+                        Padding="8"
+                        StrokeShape="RoundRectangle 16"
+                        Stroke="{DynamicResource CardElevated}"
+                        StrokeThickness="1"
+                        BackgroundColor="{DynamicResource CardBackground}"
+                        IsVisible="{Binding ShowScheduleOnlyRow}">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ShowScheduleCommand}" />
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Button
+                                Grid.Column="0"
+                                Style="{StaticResource ScheduleButton}"
+                                Command="{Binding ShowScheduleCommand}" />
+                            <Label
+                                Grid.Column="1"
+                                Text="{loc:Translate Tab_Schedule}"
+                                Style="{StaticResource SubtitleLabel}"
+                                FontSize="16"
+                                HorizontalTextAlignment="Start"
+                                VerticalOptions="Center" />
                         </Grid>
                     </Border>
 

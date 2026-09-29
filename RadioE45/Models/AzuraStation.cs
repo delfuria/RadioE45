@@ -16,6 +16,14 @@ public partial class AzuraStation : ObservableObject
     public string WebsocketUrl { get; set; } = "";
     public int? PlaybackLatencyOffsetSeconds { get; set; }
 
+    // DB — link mostrati nel menu laterale. WebsiteUrl ricade su PublicUrl se non impostato.
+    public string? WebsiteUrl { get; set; }
+    public string? SocialUrl1 { get; set; }
+    public string? SocialUrl2 { get; set; }
+    public string? SocialUrl3 { get; set; }
+    public string? ContactEmail { get; set; }
+    public string? ContactPhone { get; set; }
+
     // API — live data (fallback to DB values if API unavailable)
     public string Name { get; set; } = "";
     public string ShortName { get; set; } = "";

@@ -37,7 +37,13 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
-            .UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false);
+            .UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false)
+            .ConfigureFonts(fonts =>
+            {
+                // Font Awesome Free 6.7.2 (icone menu laterale, social, palinsesto)
+                fonts.AddFont("FaSolid.ttf", "FaSolid");
+                fonts.AddFont("FaBrands.ttf", "FaBrands");
+            });
 
 #if ANDROID
         // Fixes the Podcast tab title not rendering: BottomNavigationView picks its
@@ -156,12 +162,12 @@ public static class MauiProgram
 
         // OnAirViewModel is Singleton so RadioListViewModel can reference it and share state
         builder.Services.AddSingleton<OnAirViewModel>();
+        builder.Services.AddSingleton<AppMenuViewModel>();
 
         // Other ViewModels as Transient
         builder.Services.AddTransient<RadioListViewModel>();
         builder.Services.AddTransient<AddStationViewModel>();
         builder.Services.AddTransient<EditStationViewModel>();
-        builder.Services.AddTransient<ScheduleViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
         builder.Services.AddTransient<PodcastListViewModel>();
         builder.Services.AddTransient<PodcastEpisodesViewModel>();
@@ -172,7 +178,7 @@ public static class MauiProgram
         builder.Services.AddTransient<AddStationPage>();
         builder.Services.AddTransient<EditStationPage>();
         builder.Services.AddTransient<RadioListPage>();
-        builder.Services.AddTransient<SchedulePage>();
+        builder.Services.AddTransientPopup<SchedulePopup, ScheduleViewModel>();
         builder.Services.AddTransient<SettingsPage>();
         builder.Services.AddTransient<PodcastListPage>();
         builder.Services.AddTransient<PodcastEpisodesPage>();

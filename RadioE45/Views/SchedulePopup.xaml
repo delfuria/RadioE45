@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="RadioE45.Views.SchedulePage"
+<!-- Palinsesto come pannello dal basso (bottom sheet), aperto dall'icona accanto al
+     prossimo brano in OnAirPage. Mostrato via IPopupService (vedi OnAirViewModel.ShowSchedule). -->
+<toolkit:Popup
+    x:Class="RadioE45.Views.SchedulePopup"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
@@ -8,14 +10,63 @@
     xmlns:models="clr-namespace:RadioE45.Models"
     xmlns:loc="clr-namespace:RadioE45.Services.Localization"
     x:DataType="vm:ScheduleViewModel"
-    Title="{loc:Translate Tab_Schedule}">
+    VerticalOptions="End"
+    HorizontalOptions="Fill"
+    Margin="0"
+    Padding="0"
+    BackgroundColor="{DynamicResource PageBackground}">
 
-    <RefreshView
-        IsRefreshing="{Binding IsBusy}"
-        Command="{Binding LoadScheduleCommand}">
+    <Grid x:Name="SheetGrid" RowDefinitions="Auto,Auto,*" Padding="0,0,0,24" BackgroundColor="{DynamicResource PageBackground}">
+
+        <!-- Maniglia: trascinare/scorrere verso il basso chiude il pannello -->
+        <Grid Grid.Row="0" Grid.RowSpan="2" BackgroundColor="Transparent">
+            <Grid.GestureRecognizers>
+                <SwipeGestureRecognizer Direction="Down" Swiped="OnSwipedDown" />
+            </Grid.GestureRecognizers>
+        </Grid>
+
+        <BoxView
+            Grid.Row="0"
+            HeightRequest="5"
+            WidthRequest="40"
+            CornerRadius="3"
+            Margin="0,10,0,4"
+            HorizontalOptions="Center"
+            Color="{DynamicResource MutedText}"
+            InputTransparent="True" />
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Padding="20,4,8,4">
+            <Label
+                Grid.Column="0"
+                Text="{loc:Translate Tab_Schedule}"
+                TextColor="{DynamicResource PrimaryText}"
+                FontSize="20"
+                FontAttributes="Bold"
+                VerticalOptions="Center" />
+            <Button
+                Grid.Column="1"
+                Text="&#xf00d;"
+                FontFamily="FaSolid"
+                FontSize="18"
+                WidthRequest="44"
+                HeightRequest="44"
+                Padding="0"
+                CornerRadius="22"
+                BackgroundColor="Transparent"
+                TextColor="{DynamicResource SecondaryText}"
+                SemanticProperties.Description="{loc:Translate Common_Close}"
+                Clicked="OnCloseClicked" />
+        </Grid>
+
+        <ActivityIndicator
+            Grid.Row="2"
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            VerticalOptions="Start"
+            Margin="0,24,0,0" />
 
         <CollectionView
-            Margin="0,50,0,0"
+            Grid.Row="2"
             ItemsSource="{Binding ScheduleItems}"
             SelectionMode="None"
             BackgroundColor="Transparent">
@@ -102,11 +153,8 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
 
-            <CollectionView.Footer>
-                <BoxView HeightRequest="20" Color="Transparent" />
-            </CollectionView.Footer>
-
         </CollectionView>
-    </RefreshView>
 
-</ContentPage>
+    </Grid>
+
+</toolkit:Popup>
