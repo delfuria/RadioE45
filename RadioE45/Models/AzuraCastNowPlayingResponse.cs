@@ -89,7 +89,8 @@ public class StationInfo
     public string ListenUrl { get; set; } = string.Empty;
 
     [JsonPropertyName("requests_enabled")]
-    public bool RequestsEnabled { get; set; }
+    // Assente nelle versioni vecchie di AzuraCast (es. 0.20.x): null = sconosciuto.
+    public bool? RequestsEnabled { get; set; }
 }
 
 public class ListenersInfo

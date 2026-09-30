@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using System.Net;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
 using Refit;
@@ -13,6 +16,7 @@ public class NowPlayingService : INowPlayingService, IDisposable
     private Task? _pollingTask;
     private volatile bool _isPaused;
     private readonly string _nowPlayingApi = "/api/nowplaying";
+    private readonly ConcurrentDictionary<string, bool> _requestsProbeCache = new();
     public NowPlayingInfo Current => _current;
 
     public event EventHandler<NowPlayingInfo>? NowPlayingUpdated;
@@ -87,6 +91,8 @@ public class NowPlayingService : INowPlayingService, IDisposable
             IAzuraCastApi api = RestService.For<IAzuraCastApi>(client);
             AzuraCastNowPlayingResponse response = await api.GetNowPlayingAsync(station.StationId, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
             NowPlayingInfo np = Map(response, station);
+            if (response.Station.RequestsEnabled is null)
+                np.RequestsEnabled = await ProbeRequestsEnabledAsync(station);
             _logger.LogInformation(
                 "▶ {Artist} - {Title} |  {Elapsed}/{Duration}s  |  👥 {Listeners}  |  Next: {NextArtist} - {NextTitle}",
                 np.Artist, np.Title,
@@ -110,6 +116,42 @@ public class NowPlayingService : INowPlayingService, IDisposable
         {
             _logger.LogError(ex, "Unexpected error fetching now playing");
             return _current;
+        }
+    }
+
+    // Le versioni vecchie di AzuraCast non pubblicano station.requests_enabled: si verifica
+    // se l'endpoint pubblico delle richieste risponde. Solo gli esiti definitivi sono in cache.
+    private async Task<bool> ProbeRequestsEnabledAsync(AzuraStation station)
+    {
+        string key = $"{station.UrlBase}/{station.StationId}";
+        if (_requestsProbeCache.TryGetValue(key, out bool cached))
+            return cached;
+
+        try
+        {
+            HttpClient client = _httpClientFactory.CreateClient("AzuraCast");
+            client.Timeout = TimeSpan.FromSeconds(3);
+            string url = $"{UrlBaseHelper.EnsureScheme(station.UrlBase)}/api/station/{station.StationId}/requests?per_page=1";
+
+            using HttpResponseMessage resp = await client.GetAsync(url);
+            if (resp.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.NotFound)
+                return _requestsProbeCache[key] = false;
+            if (!resp.IsSuccessStatusCode)
+                return false;
+
+            using JsonDocument doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+            bool hasSongs = doc.RootElement.ValueKind switch
+            {
+                JsonValueKind.Array => doc.RootElement.GetArrayLength() > 0,
+                JsonValueKind.Object when doc.RootElement.TryGetProperty("total", out JsonElement total) => total.GetInt32() > 0,
+                _ => false
+            };
+            return _requestsProbeCache[key] = hasSongs;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Requests probe failed for station {StationId}", station.StationId);
+            return false;
         }
     }
 
@@ -163,7 +205,7 @@ public class NowPlayingService : INowPlayingService, IDisposable
             ArtworkUrl = current.ArtworkUrl,
             IsJingle = current.IsJingle,
             IsLive = response.Live.IsLive,
-            RequestsEnabled = response.Station.RequestsEnabled,
+            RequestsEnabled = response.Station.RequestsEnabled ?? false,
             StreamerName = response.Live.StreamerName,
             ListenerCount = response.Listeners.Current,
             TrackDurationSeconds = response.NowPlaying.Duration,
