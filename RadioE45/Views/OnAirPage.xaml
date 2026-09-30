@@ -282,38 +282,62 @@
                     <!-- Controlli playback: stazione precedente · play/pausa · stazione successiva · mute (solo mobile) -->
                     <HorizontalStackLayout
                         HorizontalOptions="Center"
-                        Spacing="18"
+                        Spacing="14"
                         Margin="0,16,0,0">
 
-                        <Button
-                            Text="⏮"
-                            BackgroundColor="{DynamicResource CardElevated}"
-                            TextColor="{DynamicResource MutedText}"
-                            CornerRadius="26"
-                            HeightRequest="52"
-                            WidthRequest="52"
-                            FontSize="20"
-                            Padding="0"
-                            VerticalOptions="Center"
-                            Command="{Binding PreviousStationCommand}" />
+                        <!-- Stazione precedente: pulsante + nome (max 2 righe). Il margine superiore
+                             centra il pulsante (44) sulla verticale del play (68) -->
+                        <VerticalStackLayout WidthRequest="76" Spacing="4" VerticalOptions="Start" Margin="0,12,0,0" IsVisible="{Binding HasMultipleStations}">
+                            <Button
+                                Text="⏮"
+                                BackgroundColor="{DynamicResource CardElevated}"
+                                TextColor="{DynamicResource MutedText}"
+                                CornerRadius="22"
+                                HeightRequest="44"
+                                WidthRequest="44"
+                                FontSize="18"
+                                Padding="0"
+                                HorizontalOptions="Center"
+                                Command="{Binding PreviousStationCommand}" />
+                            <Label
+                                Text="{Binding PreviousStationName}"
+                                Style="{StaticResource CaptionLabel}"
+                                TextColor="{DynamicResource SecondaryText}"
+                                FontSize="11"
+                                HorizontalTextAlignment="Center"
+                                LineBreakMode="TailTruncation"
+                                MaxLines="2" />
+                        </VerticalStackLayout>
 
                         <Button
                             Text="{Binding IsPlaying, Converter={StaticResource PlayPauseTextConverter}}"
                             Style="{StaticResource PlayButton}"
+                            VerticalOptions="Start"
                             Command="{Binding PlayPauseCommand}"
                             IsEnabled="{Binding IsBuffering, Converter={StaticResource InvertBool}}" />
 
-                        <Button
-                            Text="⏭"
-                            BackgroundColor="{DynamicResource CardElevated}"
-                            TextColor="{DynamicResource MutedText}"
-                            CornerRadius="26"
-                            HeightRequest="52"
-                            WidthRequest="52"
-                            FontSize="20"
-                            Padding="0"
-                            VerticalOptions="Center"
-                            Command="{Binding NextStationCommand}" />
+                        <!-- Stazione successiva -->
+                        <VerticalStackLayout WidthRequest="76" Spacing="4" VerticalOptions="Start" Margin="0,12,0,0" IsVisible="{Binding HasMultipleStations}">
+                            <Button
+                                Text="⏭"
+                                BackgroundColor="{DynamicResource CardElevated}"
+                                TextColor="{DynamicResource MutedText}"
+                                CornerRadius="22"
+                                HeightRequest="44"
+                                WidthRequest="44"
+                                FontSize="18"
+                                Padding="0"
+                                HorizontalOptions="Center"
+                                Command="{Binding NextStationCommand}" />
+                            <Label
+                                Text="{Binding NextStationName}"
+                                Style="{StaticResource CaptionLabel}"
+                                TextColor="{DynamicResource SecondaryText}"
+                                FontSize="11"
+                                HorizontalTextAlignment="Center"
+                                LineBreakMode="TailTruncation"
+                                MaxLines="2" />
+                        </VerticalStackLayout>
 
                         <Button
                             IsVisible="{OnPlatform Default=False, iOS=True, Android=True}"
@@ -326,7 +350,8 @@
                             WidthRequest="52"
                             FontSize="20"
                             Padding="0"
-                            VerticalOptions="Center" />
+                            Margin="0,8,0,0"
+                            VerticalOptions="Start" />
 
                     </HorizontalStackLayout>
 

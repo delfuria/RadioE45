@@ -86,6 +86,7 @@ public partial class OnAirViewModel : BaseViewModel
     partial void OnCurrentStationChanged(AzuraStation? value)
     {
         IsFavorite = value?.IsFavorite ?? false;
+        NotifyAdjacentStationsChanged();
         _ = RefreshHasPodcastsAsync(value);
         _ = RefreshHasScheduleAsync(value);
         ResetPodcastTabToRoot();
@@ -283,6 +284,8 @@ public partial class OnAirViewModel : BaseViewModel
 
     private async void OnStationsRefreshed()
     {
+        MainThread.BeginInvokeOnMainThread(NotifyAdjacentStationsChanged);
+
         if (CurrentStation is not null) return;
 
         await SafeExecuteAsync(SelectDefaultStationAsync, LocalizationResourceManager.Instance["Err_Reconnect"]);
@@ -336,15 +339,36 @@ public partial class OnAirViewModel : BaseViewModel
     // as Seek-to-Next/Previous from Android Auto / the car, kept in sync with the phone UI.
     private Task SwitchStationAsync(int direction)
     {
+        AzuraStation? target = GetAdjacentStation(direction);
+        return target is null ? Task.CompletedTask : SelectStationAsync(target);
+    }
+
+    private AzuraStation? GetAdjacentStation(int direction)
+    {
         IReadOnlyList<AzuraStation> stations = _catalog.Stations;
         if (stations.Count == 0)
-            return Task.CompletedTask;
+            return null;
 
         int currentIndex = CurrentStation is null ? -1 : IndexOfStation(stations, CurrentStation.Id);
         int count = stations.Count;
-        int nextIndex = currentIndex < 0 ? 0 : (((currentIndex + direction) % count) + count) % count;
+        int targetIndex = currentIndex < 0 ? 0 : (((currentIndex + direction) % count) + count) % count;
 
-        return SelectStationAsync(stations[nextIndex]);
+        return stations[targetIndex];
+    }
+
+    // Names shown under the previous/next station buttons.
+    public string? PreviousStationName => GetAdjacentStation(-1)?.Name;
+
+    public string? NextStationName => GetAdjacentStation(+1)?.Name;
+
+    // With a single station previous/next would just reselect it: the buttons are hidden.
+    public bool HasMultipleStations => _catalog.Stations.Count > 1;
+
+    private void NotifyAdjacentStationsChanged()
+    {
+        OnPropertyChanged(nameof(PreviousStationName));
+        OnPropertyChanged(nameof(NextStationName));
+        OnPropertyChanged(nameof(HasMultipleStations));
     }
 
     private static int IndexOfStation(IReadOnlyList<AzuraStation> stations, int id)
