@@ -16,6 +16,8 @@ public partial class SongRequestPage : ContentPage
 
     private void OnSearchButtonPressed(object? sender, EventArgs e) => SearchBox.Unfocus();
 
+    private void OnPageTapped(object? sender, TappedEventArgs e) => SearchBox.Unfocus();
+
     // Scorrere la lista chiude la tastiera (che su iOS copre le tab).
     private void OnListScrolled(object? sender, ItemsViewScrolledEventArgs e)
     {
@@ -31,7 +33,7 @@ public partial class SongRequestPage : ContentPage
             return;
 
         var toolbar = new UIKit.UIToolbar(new CoreGraphics.CGRect(0, 0, 320, 44));
-        var done = new UIKit.UIBarButtonItem(UIKit.UIBarButtonSystemItem.Done, (_, _) => bar.ResignFirstResponder());
+        var done = new UIKit.UIBarButtonItem(UIKit.UIBarButtonSystemItem.Done, (_, _) => SearchBox.Unfocus());
         var space = new UIKit.UIBarButtonItem(UIKit.UIBarButtonSystemItem.FlexibleSpace);
         toolbar.Items = [space, done];
         toolbar.SizeToFit();

@@ -19,6 +19,11 @@
 
     <Grid RowDefinitions="Auto,Auto,*,Auto">
 
+        <!-- Tap su un'area libera chiude la tastiera (su iOS copre le tab). I tap dei controlli figli hanno la precedenza. -->
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnPageTapped" />
+        </Grid.GestureRecognizers>
+
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
         <controls:MenuButton
             Grid.Column="0"
