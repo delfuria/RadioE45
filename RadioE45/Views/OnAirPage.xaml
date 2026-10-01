@@ -63,42 +63,42 @@
                                 Margin="8"
                                 BackgroundColor="#66000000"
                                 TextColor="White" />
-                        </Grid>
-                    </Border>
 
-                    <!-- Badge stazione + indicatore LIVE -->
-                    <Grid Margin="24,14,24,0">
-
-                        <HorizontalStackLayout
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center"
-                            Spacing="8">
-
+                            <!-- Indicatore LIVE in sovrimpressione, come nei programmi TV:
+                                 testo sempre bianco su rosso, indipendente dal tema -->
                             <Border
-                                BackgroundColor="{DynamicResource Accent}"
-                                StrokeShape="RoundRectangle 12"
-                                Stroke="Transparent"
-                                Padding="8,2">
-                                <Label
-                                    Text="{Binding CurrentStation.Name}"
-                                    TextColor="{DynamicResource PrimaryText}"
-                                    FontSize="11"
-                                    FontAttributes="Bold" />
-                            </Border>
-
-                            <Border
+                                HorizontalOptions="End"
+                                VerticalOptions="Start"
+                                Margin="12"
                                 BackgroundColor="{StaticResource LiveRed}"
-                                StrokeShape="RoundRectangle 12"
+                                StrokeShape="RoundRectangle 6"
                                 Stroke="Transparent"
                                 Padding="10,4"
                                 IsVisible="{Binding NowPlaying.IsLive}">
                                 <Label
                                     Text="• LIVE"
-                                    TextColor="{DynamicResource PrimaryText}"
+                                    TextColor="White"
                                     Style="{StaticResource LiveBadgeLabel}" />
                             </Border>
+                        </Grid>
+                    </Border>
 
-                        </HorizontalStackLayout>
+                    <!-- Badge stazione -->
+                    <Grid Margin="24,14,24,0">
+
+                        <Border
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            BackgroundColor="{DynamicResource Accent}"
+                            StrokeShape="RoundRectangle 12"
+                            Stroke="Transparent"
+                            Padding="8,2">
+                            <Label
+                                Text="{Binding CurrentStation.Name}"
+                                TextColor="{DynamicResource PrimaryText}"
+                                FontSize="11"
+                                FontAttributes="Bold" />
+                        </Border>
 
                         <HorizontalStackLayout
                             HorizontalOptions="Start"
