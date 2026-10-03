@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
+using RadioE45.Services.Localization;
 using Refit;
 
 namespace RadioE45.Services.Radio;
@@ -166,7 +167,9 @@ public class NowPlayingService : INowPlayingService, IDisposable
 
     private static NowPlayingInfo Map(AzuraCastNowPlayingResponse response, AzuraStation station)
     {
-        var current = MapSong(response.NowPlaying.Song, station);
+        var current = response.Live.IsLive
+            ? MapLiveSong(response.NowPlaying.Song, response.Live)
+            : MapSong(response.NowPlaying.Song, station);
 
         NextPlayingInfo? next = null;
         if (response.PlayingNext is not null)
@@ -225,6 +228,20 @@ public class NowPlayingService : INowPlayingService, IDisposable
 
         string? logo = string.IsNullOrWhiteSpace(station.LogoUrl) ? null : station.LogoUrl;
         return (station.Description, station.Name, logo, true);
+    }
+
+    // Durante una diretta il titolo del brano è il metadato inviato dal software del DJ, che spesso
+    // contiene solo lo username dell'account streamer: mostriamo invece il nome visualizzato del DJ.
+    // Se il DJ invia metadati completi "Artista - Titolo" li teniamo come sottotitolo.
+    private static (string Artist, string Title, string? ArtworkUrl, bool IsJingle) MapLiveSong(SongInfo song, LiveInfo live)
+    {
+        string title = string.IsNullOrWhiteSpace(live.StreamerName) ? song.Title : live.StreamerName;
+        string artist = !string.IsNullOrWhiteSpace(song.Artist)
+            ? song.Text
+            : LocalizationResourceManager.Instance["OnAir_LiveBroadcast"];
+        string? art = !string.IsNullOrWhiteSpace(live.ArtUrl) ? live.ArtUrl
+            : string.IsNullOrWhiteSpace(song.ArtUrl) ? null : song.ArtUrl;
+        return (artist, title, art, false);
     }
 
     public void Dispose()

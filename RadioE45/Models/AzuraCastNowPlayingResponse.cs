@@ -106,4 +106,7 @@ public class LiveInfo
 
     [JsonPropertyName("streamer_name")]
     public string StreamerName { get; set; } = string.Empty;
+
+    [JsonPropertyName("art")]
+    public string? ArtUrl { get; set; }
 }

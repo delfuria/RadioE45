@@ -67,6 +67,7 @@
   <data name="Tab_Settings" xml:space="preserve"><value>Settings</value></data>
 
   <data name="OnAir_Waiting" xml:space="preserve"><value>Waiting...</value></data>
+  <data name="OnAir_LiveBroadcast" xml:space="preserve"><value>Live broadcast</value></data>
   <data name="OnAir_NoStationSelected" xml:space="preserve"><value>No station selected.</value></data>
   <data name="OnAir_RecentlyPlayed" xml:space="preserve"><value>Recently played</value></data>
 
