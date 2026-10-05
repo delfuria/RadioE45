@@ -171,8 +171,10 @@ public class NowPlayingService : INowPlayingService, IDisposable
             ? MapLiveSong(response.NowPlaying.Song, response.Live)
             : MapSong(response.NowPlaying.Song, station);
 
+        // During a live broadcast AzuraCast still reports the AutoDJ queue, which won't play until
+        // the DJ disconnects: hide it instead of announcing a misleading "next" track.
         NextPlayingInfo? next = null;
-        if (response.PlayingNext is not null)
+        if (response.PlayingNext is not null && !response.Live.IsLive)
         {
             var nextSong = MapSong(response.PlayingNext.Song, station);
             next = new NextPlayingInfo
