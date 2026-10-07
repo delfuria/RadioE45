@@ -6,6 +6,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using RadioE45.DependencyInjection;
 using RadioE45.Services.Audio;
 using RadioE45.Services.CrashReporting;
 using RadioE45.Services.Data;
@@ -118,12 +119,10 @@ public static class MauiProgram
         });
 #endif
 
-        // HTTP client for AzuraCast (base URL set dynamically per-station)
-        builder.Services.AddHttpClient("AzuraCast")
-            .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(3));
+        // Shared services from RadioE45.Core (AzuraCast HTTP client, radio/podcast services, repositories)
+        builder.Services.AddRadioE45Core();
 
         // Singletons — survive navigation
-        builder.Services.AddSingleton<IStreamUrlProber, StreamUrlProber>();
  #if ANDROID
         // Android playback runs entirely in the Media3 MediaLibraryService (RadioPlaybackService);
         // the UI drives it via a MediaController. No UI MediaElement, no separate now-playing service.
@@ -131,7 +130,6 @@ public static class MauiProgram
  #else
         builder.Services.AddSingleton<IAudioService, AudioService>();
  #endif
-        builder.Services.AddSingleton<RemoteArtworkLoader>();
         builder.Services.AddSingleton<IPodcastPlayerService, PodcastPlayerService>();
  #if IOS || MACCATALYST
         builder.Services.AddSingleton<IPlatformNowPlayingService, IosNowPlayingService>();
@@ -146,19 +144,8 @@ public static class MauiProgram
  #else
         builder.Services.AddSingleton<IAudioFocusManager, NullAudioFocusManager>();
  #endif
-        builder.Services.AddSingleton<INowPlayingService, NowPlayingService>();
-        builder.Services.AddSingleton<IStationDetailService, StationDetailService>();
-        builder.Services.AddTransient<IStationListService, StationListService>();
         builder.Services.AddSingleton<IAzuraStationCatalog, AzuraStationCatalog>();
-        builder.Services.AddTransient<IScheduleService, ScheduleService>();
-        builder.Services.AddTransient<IPodcastService, PodcastService>();
-        builder.Services.AddTransient<ISongRequestService, SongRequestService>();
         builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
-        builder.Services.AddSingleton<IRadioRepository, RadioRepository>();
-        builder.Services.AddSingleton<IDbVersionRepository, DbVersionRepository>();
-        builder.Services.AddSingleton<IAppSettingsRepository, AppSettingsRepository>();
-        builder.Services.AddSingleton<ILogRepository, LogRepository>();
-        builder.Services.AddSingleton<IPodcastProgressRepository, PodcastProgressRepository>();
 
         // OnAirViewModel is Singleton so RadioListViewModel can reference it and share state
         builder.Services.AddSingleton<OnAirViewModel>();

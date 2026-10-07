@@ -72,13 +72,10 @@
         <Compile Remove="AppSecrets.template.cs" />
     </ItemGroup>
 
-    <!-- Localization RESX: neutral = Italian, plus .en / .pl satellites. Declared explicitly so the
-         MAUI SDK's Resources/ handling doesn't skip them; logical name resolves to
-         RadioE45.Resources.Strings.AppResources, matching LocalizationResourceManager. -->
+    <!-- Shared UI-agnostic code (models, API clients, services, repositories, localized RESX
+         strings). See docs/LINUX-UNO-ROADMAP.md. -->
     <ItemGroup>
-        <EmbeddedResource Update="Resources\Strings\*.resx">
-            <Generator></Generator>
-        </EmbeddedResource>
+        <ProjectReference Include="..\RadioE45.Core\RadioE45.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

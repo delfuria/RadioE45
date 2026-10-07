@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- UI-agnostic code shared by the MAUI app (RadioE45) and the Uno Platform app (RadioE45.Uno):
+         models, AzuraCast API clients, radio/podcast services, SQLite repositories, logging and
+         localized strings. Must never reference Microsoft.Maui.* or CommunityToolkit.Maui.*.
+         See docs/LINUX-UNO-ROADMAP.md. -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <!-- Same root namespace as the MAUI app: moved types keep their namespaces and the RESX
+             manifest name stays RadioE45.Resources.Strings.AppResources (LocalizationResourceManager). -->
+        <RootNamespace>RadioE45</RootNamespace>
+        <AssemblyName>RadioE45.Core</AssemblyName>
+        <!-- Deliberately NOT IsTrimmable: these types used to live in the (untrimmed) app assembly;
+             marking Core trimmable would let the Android/iOS linker strip Refit/sqlite-net
+             reflection targets in Release. Revisit with proper annotations before enabling. -->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="RadioE45" />
+        <InternalsVisibleTo Include="RadioE45.Uno" />
+        <InternalsVisibleTo Include="RadioE45.Core.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+        <PackageReference Include="Refit" Version="13.1.0" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
+        <!-- Compile-time only: every app head brings its own sqlite-net + SQLitePCLRaw provider.
+             The MAUI Mac Catalyst build in particular must keep using the net8.0-ios18.0
+             SQLite-net.dll it references explicitly (see RadioE45.csproj); letting the plain net8.0
+             build flow from here would reintroduce the Aug 2026 launch crash. -->
+        <PackageReference Include="sqlite-net-pcl" Version="1.11.285" PrivateAssets="all" ExcludeAssets="runtime" />
+    </ItemGroup>
+
+</Project>

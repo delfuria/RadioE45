@@ -1,5 +1,7 @@
 # Localizzazione UI — RadioE45
 
+> **Aggiornamento ottobre 2026:** i file `AppResources*.resx` e `LocalizationResourceManager` ora stanno nel progetto condiviso `RadioE45.Core` (`RadioE45.Core/Resources/Strings/`), usato sia dall'app MAUI sia dall'app Uno. Il nome della risorsa resta `RadioE45.Resources.Strings.AppResources`. Vedi `docs/LINUX-UNO-ROADMAP.md`.
+
 ## Approccio scelto: `.resx` + `x:Static`
 
 La soluzione standard .NET per le app MAUI multi-lingua è basata sui file `.resx`.

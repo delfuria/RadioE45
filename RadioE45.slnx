@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="RadioE45.Core.Tests/RadioE45.Core.Tests.csproj" />
+  <Project Path="RadioE45.Core/RadioE45.Core.csproj" />
   <Project Path="RadioE45/RadioE45.csproj" />
 </Solution>

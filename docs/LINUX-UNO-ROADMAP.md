@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
 > Branch: `Linux-support-exp`. Ultimo aggiornamento: 2026-10-07 (app v0.44).
-> Stato: **S0, S1 e S2 completate, prossima S3** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Stato: **S0–S2 completate; S3 codice fatto, in attesa di regressione manuale; poi S4** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -414,14 +414,20 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 - **Uscita:** fattibilità web confermata; D5 = SQLite anche sul web. La cartella `spikes/` resta (ignorata da git) come banco di prova; si può cancellare dopo la S7.
 - Note operative: il dev server WASM usa `http://localhost:5000` (da `launchSettings.json`); dopo un `pkill` la porta 5000 sul Mac può rispondere 403, perché l'AirPlay Receiver di macOS usa la stessa porta. Se dà fastidio, cambiare porta nel profilo. Il primo clic sul canvas Uno a volte serve solo a dare il focus.
 
-### S3 — Estrazione del Core (parte 1) · Mac
-- [ ] Creare `RadioE45.Core` (`net10.0`, `Nullable`, stessi analyzer); aggiungerlo alla `.slnx`.
-- [ ] Spostare i file di §4.1, con `git mv` per preservare la storia.
-- [ ] Spostare `.resx` e `LocalizationResourceManager`; verificare it/en/pl.
-- [ ] Core: solo `sqlite-net-pcl` (senza bundle); il progetto MAUI mantiene la sua configurazione SQLite attuale.
-- [ ] `AddRadioE45Core()` per la DI; `MauiProgram` lo usa.
-- [ ] Creare `RadioE45.Core.Tests` con i primi test (`ScheduleFlattener`).
-- **Uscita:** app MAUI invariata (verifica manuale su Mac Catalyst e un dispositivo mobile).
+### S3 — Estrazione del Core (parte 1) · Mac — ✅ codice completato 2026-10-07, ⏳ regressione manuale
+- [x] `RadioE45.Core` (`net10.0`, `Nullable`, `ImplicitUsings`, `RootNamespace=RadioE45`, `AssemblyName=RadioE45.Core`) aggiunto alla `.slnx`. `InternalsVisibleTo` per `RadioE45`, `RadioE45.Uno`, `RadioE45.Core.Tests` (servono a `ConsoleLoggerProvider` e `StationRateLimitedException`, che sono `internal`).
+- [x] 67 file `.cs` spostati con `git mv` (namespace invariati): `Models/*`, `Services/IAzuraCast*Api.cs`, `Services/Radio/*` tranne `AzuraStationCatalog`, `Services/Audio` (prober, artwork, now-playing snapshot/tracker/result, interfacce e `Null*`), `Services/Data/*` tranne `DatabaseService`, `Services/Logging/*`, `LocalizationResourceManager`.
+- [x] `.resx` spostati in `RadioE45.Core/Resources/Strings/`: il manifest resta `RadioE45.Resources.Strings.AppResources` e le satellite diventano `en|pl/RadioE45.Core.resources.dll`. Rimosso dal csproj MAUI il blocco `EmbeddedResource Update="Resources\Strings\*.resx"`.
+- [x] SQLite nel Core **solo in compilazione** (`sqlite-net-pcl` con `PrivateAssets=all ExcludeAssets=runtime`). Verificato che il bundle Mac Catalyst usa ancora lo stesso `SQLite-net.dll` (SHA1 `3e960306…` identico alla baseline) e non contiene `e_sqlite3`/`SourceGear`.
+- [x] Core **non** marcato `IsTrimmable`: con il flag sarebbero comparsi 18 warning IL2026 (Refit `RestService.For`, sqlite-net) e il linker Android/iOS in Release avrebbe potuto rimuovere codice che prima, nell'assembly dell'app, non veniva toccato.
+- [x] `AddRadioE45Core()` (`RadioE45.Core/DependencyInjection`) registra HTTP client "AzuraCast", prober, artwork, servizi radio e podcast, repository. `MauiProgram` lo chiama e mantiene solo le registrazioni di piattaforma (audio, now playing, focus, `AzuraStationCatalog`, `DatabaseService`, ViewModel, pagine).
+- [x] `RadioE45.Core.Tests` (xUnit v3 4.0.1, Microsoft.Testing.Platform): 4 test su `ScheduleFlattener` verdi. Creato `global.json` in root con `"test": { "runner": "Microsoft.Testing.Platform" }`; in S6 vi si aggiunge `msbuild-sdks` → `Uno.Sdk`. Comando: `dotnet test --project RadioE45.Core.Tests/RadioE45.Core.Tests.csproj`.
+- [x] Build pulite dopo `dotnet clean`: maccatalyst, ios, android Debug con **0 warning e 0 errori** (come la baseline).
+- [x] Rimandati a S4: `CrashReportingConfiguration` (dipende da `AppSecrets.cs`, file locale non versionato), `AzuraStationCatalog`, `DatabaseService`, `CrashDiagnostics`, `CrashReportingSettings` (usano API MAUI).
+- [ ] **Regressione manuale (utente):** Mac Catalyst e un dispositivo mobile. Avvio, lingua dei testi (it/en/pl), play/pausa/cambio stazione, palinsesto, podcast, richieste brani, aggiunta/modifica stazione (DB).
+- [ ] **Build Windows** non verificabile sul Mac: da fare nella VM Windows 11 prima del merge su `main`.
+- [ ] Build Release Android/iOS da verificare prima del merge (linker).
+- **Uscita:** app MAUI invariata.
 
 ### S4 — Astrazioni e ViewModel nel Core · Mac
 - [ ] Interfacce di §4.2 nel Core; implementazioni MAUI nel progetto `RadioE45`.
@@ -517,6 +523,7 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-07 | S3 | Codice completato | Core + Tests nella soluzione, 67 file e 3 resx spostati, `AddRadioE45Core()`, 4 test verdi, build MAUI pulite (maccatalyst/ios/android); attesa regressione manuale e build Windows |
 | 2026-10-07 | S2 | Completata | Web: audio MP3/HLS ok in Chrome e Safari con clic reale, autoplay bloccato; CORS API e Icecast ok; SQLite WASM persistente; circa 13,5 MB Brotli; regola pausa live = stop documentata |
 | 2026-10-07 | S1 | Completata | Decisioni D1–D4 chiuse; spike audio/SQLite/HTTP ok su VM arm64 e macOS; fix SkiaSharp NoDependencies; note di comportamento del player in §4.3 |
 | 2026-10-07 | S0 | Completata | VM pronta, SSH e rsync configurati, `dotnet` 10.0.401 raggiungibile via SSH |
