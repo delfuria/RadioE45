@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
 > Branch: `Linux-support-exp`. Ultimo aggiornamento: 2026-10-07 (app v0.44).
-> Stato: **S0 completata, prossima S1** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Stato: **S0 e S1 completate, prossima S2** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -83,16 +83,21 @@ rsync -az --delete --exclude 'bin/' --exclude 'obj/' --exclude '.vs/' --exclude 
 # build nella VM
 ssh radioe45-vm 'cd ~/RadioE45 && dotnet build RadioE45.Uno -f net10.0-desktop'
 
-# avvio GUI sulla sessione Wayland della VM (in background, log su file)
-ssh radioe45-vm 'cd ~/RadioE45 && export WAYLAND_DISPLAY=wayland-0 XDG_RUNTIME_DIR=/run/user/1000 && \
-  nohup dotnet run --project RadioE45.Uno -f net10.0-desktop > /tmp/radioe45.log 2>&1 &'
+# avvio GUI sullo schermo della VM (Uno usa X11: sotto GNOME Wayland passa da XWayland :0)
+ssh radioe45-vm 'cd ~/RadioE45 && export DISPLAY=:0 XAUTHORITY=$(ls /run/user/1000/.mutter-Xwaylandauth.* | head -1) \
+  XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus && \
+  nohup dotnet run --no-build --project RadioE45.Uno -f net10.0-desktop > /tmp/radioe45.log 2>&1 < /dev/null &'
 ssh radioe45-vm 'tail -50 /tmp/radioe45.log'
+ssh radioe45-vm 'pkill -f "net10.0-desktop/RadioE45.Uno"'   # chiusura
 ```
 
 Note:
 - La VM è una **copia di lavoro sincronizzata a senso unico** (Mac → VM): non modificare i file nella VM. Il `--delete` di rsync sovrascrive.
 - SDK diversi tra Mac (10.0.1xx) e VM (10.0.4xx): nel `global.json` **non** fissare la versione dell'SDK, oppure usare `rollForward: latestFeature`. Fissare solo `msbuild-sdks` → `Uno.Sdk`.
 - Se l'IP della VM cambia, aggiornare `HostName` in `~/.ssh/config` sul Mac.
+- Il file `XAUTHORITY` di XWayland (`.mutter-Xwaylandauth.*`) cambia a ogni login nella VM: per questo si risolve con `ls` invece di scriverlo fisso.
+- `dotnet run` lanciato via SSH senza `nohup … < /dev/null &` tiene occupata la sessione: per i test interattivi usare sempre la forma in background.
+- Sul Mac `timeout` non esiste: per i test automatici con limite di tempo usare `perl -e 'alarm 120; exec @ARGV' dotnet run …`.
 
 ---
 
@@ -159,7 +164,14 @@ Dopo questa fase **tutti i 12 ViewModel** si spostano nel Core.
 
 ### 4.3 Audio (punto delicato)
 - Togliere `Initialize(MediaElement)` da `IAudioService` e `IPodcastPlayerService`. Nel progetto MAUI resta un'interfaccia `IMediaElementHost.Attach(MediaElement)` (cambiano 2 righe in `OnAirPage` e `PodcastEpisodesPage`).
-- Uno, desktop e web: `Windows.Media.Playback.MediaPlayer` di Uno (`UnoFeatures` → `MediaPlayerElement`). Su desktop Linux usa libVLC, su web l'elemento HTML5 audio. Secondo la documentazione Uno supporta MP3 e HLS v3/v4 su tutti i target; la sorgente va creata solo con `MediaSource.CreateFromUri()`. Fallback desktop: `LibVLCSharp`.
+- Uno, desktop e web: `Windows.Media.Playback.MediaPlayer` di Uno (`UnoFeatures` → `MediaPlayerElement`). Su desktop Linux usa libVLC, su macOS il player di sistema, su web l'elemento HTML5 audio. La sorgente va creata solo con `MediaSource.CreateFromUri()`. **Scelto in S1 (D4)**; `LibVLCSharp` resta come piano B solo se in S7 servissero eventi più ricchi.
+- **Esiti dello spike S1, da rispettare nell'implementazione:**
+  - Il `MediaPlayer` funziona **senza elemento visuale** (`new MediaPlayer()`): il servizio audio Uno non dipende dalla pagina, a differenza di MAUI.
+  - `PlaybackSession.BufferingStarted` e `BufferingEnded` **non sono implementati** in Uno (warning `Uno0001`): il buffering si ricava da `PlaybackState == Buffering`.
+  - All'apertura lo stato **oscilla** (Opening → Buffering → Opening → Playing → Paused → Buffering → Playing in pochi ms) e la semantica cambia tra backend: su macOS `Playing` arriva dopo 3 ms, prima dell'audio reale. Il coordinatore deve applicare un **debounce** (es. 300–500 ms di stato stabile) prima di notificare la UI.
+  - `PlaybackSession.Position` non è affidabile per gli stream live: con libVLC resta 0 sull'MP3 e avanza sull'HLS; su macOS succede il contrario. **Non usarla** come watchdog di stallo.
+  - Caduta di rete breve (circa 20 s): libVLC **non genera eventi** (né `MediaFailed` né cambi di stato) e riprende da solo circa 5 s dopo il ritorno della rete. La riconnessione attiva va comandata da `INetworkMonitor` (ritorno della rete → riapertura se l'audio non è ripartito entro N secondi). Le cadute lunghe vanno verificate in S7.
+  - Stop: non esiste `Stop()`; usare `Pause()` + `Source = null`. `Play()` dopo uno stop non fa nulla: va riaperta la sorgente.
 - Logica di riconnessione e fallback HLS→Icecast (oggi in `AudioService`): **decisione S1**. Estrarla in un `StreamPlaybackCoordinator` nel Core che pilota un `IStreamPlayer` minimale (consigliato: logica scritta una volta e testabile), oppure duplicarla nell'implementazione Uno.
 
 ### 4.4 Non riutilizzabile
@@ -375,13 +387,17 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 - [x] `uno-check --target linux` ok, a parte `unosdk` (da ricontrollare in S6 con il `global.json` del repo).
 - **Uscita:** `ssh radioe45-vm 'dotnet --version'` → `10.0.401`. ✅
 
-### S1 — Decisioni e spike desktop · Mac + VM
-- [ ] Confermare i default del §3 (nome `RadioE45.Uno`, progetti accanto, namespace invariati) e la decisione del §4.3 (coordinatore audio condiviso o duplicato).
-- [ ] Progetto spike usa-e-getta in `spikes/UnoAudioSpike` (fuori dalla soluzione): `net10.0-desktop`, `MediaPlayer` di Uno.
-- [ ] Nella VM: stream MP3 E45 (`https://radioe45.ddns.net:8060/radio.mp3`), HLS (`https://radioe45.ddns.net/hls/radioe45/live.m3u8`), pausa/ripresa, volume, cambio stazione, rete staccata e riattaccata. Su X11 e su Wayland.
-- [ ] Misure: tempo al primo audio, comportamento in caso di errore.
-- [ ] `sqlite-net` + `bundle_e_sqlite3` su linux-arm64.
-- **Uscita:** player scelto (Uno `MediaPlayer` o `LibVLCSharp`), lista definitiva dei pacchetti di sistema.
+### S1 — Decisioni e spike desktop · Mac + VM — ✅ completata 2026-10-07
+- [x] Decisioni confermate dall'utente: D1 `RadioE45.Uno`, D2 progetti accanto a `RadioE45/`, D3 coordinatore audio **condiviso** nel Core.
+- [x] Spike `spikes/UnoAudioSpike` (ignorato da git tramite `.gitignore`, fuori dalla soluzione): template `unoapp` blank, `Uno.Sdk` **6.7.30**, target desktop + browserwasm, `UnoFeatures` `SkiaRenderer; MediaPlayerElement`. Variabili: `SPIKE_AUTO=1` (test scriptato), `SPIKE_EXIT=1`, `SPIKE_STANDALONE=1` (player senza elemento).
+- [x] VM (Ubuntu arm64, GNOME Wayland → XWayland): MP3 E45, HLS E45, seconda stazione, pausa/ripresa, volume, cambio sorgente. Audio confermato dall'utente ("ottimo, udito subito"). Stato `Playing` in circa 0,3–0,6 s.
+- [x] Rete staccata per circa 20 s: audio interrotto circa 5 s dopo il distacco, ripreso da solo circa 5 s dopo il ritorno della rete; nessun evento al codice (vedi §4.3).
+- [x] Una sessione X11 pura non è stata testata: Uno usa comunque X11 (via XWayland). Da ripetere in S9 con "Ubuntu on Xorg".
+- [x] SQLite (`sqlite-net-pcl` 1.11.285 + `SQLitePCLRaw.bundle_e_sqlite3` 3.0.4) su linux-arm64 e macOS: ok, persistente tra avvii (`~/.local/share/<app>/<appId>/LocalState`).
+- [x] HTTP: API nowplaying ok (circa 0,7–1 s); sonda `GET` sull'Icecast ok sul desktop.
+- [x] macOS desktop (`net10.0-desktop`): audio, HTTP e SQLite ok → ciclo di sviluppo veloce sul Mac confermato.
+- [x] **Problema bloccante risolto:** su linux-arm64 `libSkiaSharp.so` 3.119.2 (portato da Uno) va in errore all'avvio con `symbol lookup error: … undefined symbol: FT_Get_BDF_Property`. Fix: `PackageReference` a **`SkiaSharp.NativeAssets.Linux.NoDependencies`** 3.119.2 nel progetto Uno (alternativa: `LD_PRELOAD=/lib/aarch64-linux-gnu/libfreetype.so.6`). Da verificare anche su x64 in CI.
+- **Uscita:** D4 = Uno `MediaPlayer`. Pacchetti di sistema runtime: `vlc`, `libvlc5`, `vlc-plugin-base` (+ `libfontconfig1`, `libx11-6`, `libgl1`); da inserire nel packaging (S10).
 
 ### S2 — Spike web · Mac
 - [ ] Stesso spike con target `net10.0-browserwasm`: MP3 e HLS in Chrome, Firefox e Safari, primo play da clic, volume.
@@ -427,6 +443,8 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 - [ ] Desktop: `XdgAppPaths`, `LinuxNetworkMonitor`, SQLite.
 - [ ] Web: storage (decisione S2), `BrowserNetworkMonitor`, `IStreamUrlProber` senza sonda.
 - [ ] Sentry base sul desktop.
+- [ ] Riconnessione: cadute di rete lunghe (2–5 min) nella VM, con il coordinatore e `INetworkMonitor`; verificare che l'audio riparta da solo e che la UI non resti su "in riproduzione" durante lo stallo.
+- [ ] Snap/CI x64: verificare se serve ancora il fix SkiaSharp `NoDependencies` (§S1).
 - **Uscita:** da una pagina di debug, play/stop della stazione E45 funziona su macOS desktop, VM e browser.
 
 ### S8.x — Porting delle pagine (una o due pagine per sessione, con la skill `ui-parity-port`) · Mac (+ VM per le verifiche)
@@ -474,10 +492,10 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 
 | # | Decisione | Quando | Default proposto |
 |---|---|---|---|
-| D1 | Nome del progetto Uno | S1 | `RadioE45.Uno` |
-| D2 | Posizione dei progetti | S1 | Accanto a `RadioE45/` |
-| D3 | Coordinatore audio condiviso o duplicato | S1 | Condiviso |
-| D4 | Player desktop: Uno `MediaPlayer` o `LibVLCSharp` | Fine S1 | Uno `MediaPlayer` |
+| D1 | Nome del progetto Uno | S1 | ✅ `RadioE45.Uno` |
+| D2 | Posizione dei progetti | S1 | ✅ Accanto a `RadioE45/` |
+| D3 | Coordinatore audio condiviso o duplicato | S1 | ✅ Condiviso |
+| D4 | Player desktop: Uno `MediaPlayer` o `LibVLCSharp` | Fine S1 | ✅ Uno `MediaPlayer` |
 | D5 | Storage web: SQLite WASM o repository dedicati | Fine S2 | SQLite, se lo spike passa |
 | D6 | Navigazione: `Frame` scritto a mano o `Uno.Extensions.Navigation` | S6 | A mano |
 | D7 | Canali desktop: Snap Store, Flathub, AppImage | S10 | Snap + AppImage, Flathub dopo |
@@ -491,6 +509,7 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-07 | S1 | Completata | Decisioni D1–D4 chiuse; spike audio/SQLite/HTTP ok su VM arm64 e macOS; fix SkiaSharp NoDependencies; note di comportamento del player in §4.3 |
 | 2026-10-07 | S0 | Completata | VM pronta, SSH e rsync configurati, `dotnet` 10.0.401 raggiungibile via SSH |
 | 2026-10-07 | Pianificazione | Documento creato | Verificati CORS dell'API AzuraCast e HTTPS degli stream E45; Mac arm64, `prlctl` disponibile, workload `wasm-tools` installato |
 

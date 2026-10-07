@@ -55,3 +55,6 @@ RadioE45/store-packages/
 
 # TokenSave code graph
 .tokensave/
+
+# Throwaway technical spikes (Linux/Web Uno roadmap)
+spikes/
