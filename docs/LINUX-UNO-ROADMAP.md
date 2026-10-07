@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
 > Branch: `Linux-support-exp`. Ultimo aggiornamento: 2026-10-07 (app v0.44).
-> Stato: **S0 e S1 completate, prossima S2** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Stato: **S0, S1 e S2 completate, prossima S3** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -172,6 +172,11 @@ Dopo questa fase **tutti i 12 ViewModel** si spostano nel Core.
   - `PlaybackSession.Position` non è affidabile per gli stream live: con libVLC resta 0 sull'MP3 e avanza sull'HLS; su macOS succede il contrario. **Non usarla** come watchdog di stallo.
   - Caduta di rete breve (circa 20 s): libVLC **non genera eventi** (né `MediaFailed` né cambi di stato) e riprende da solo circa 5 s dopo il ritorno della rete. La riconnessione attiva va comandata da `INetworkMonitor` (ritorno della rete → riapertura se l'audio non è ripartito entro N secondi). Le cadute lunghe vanno verificate in S7.
   - Stop: non esiste `Stop()`; usare `Pause()` + `Source = null`. `Play()` dopo uno stop non fa nulla: va riaperta la sorgente.
+- **Regola di prodotto (utente, 2026-10-07): per la radio in diretta Pausa e Stop chiudono entrambi lo stream.** Una diretta non si mette in pausa: `MediaPlayer.Pause()` lascerebbe la connessione aperta e bufferizzata, e alla ripresa si sentirebbe audio non più live. Quindi:
+  - `PauseAsync()` = chiudere la sorgente (`Pause()` + `Source = null`) mantenendo stazione e metadati, così la UI e MPRIS/Media Session mostrano "in pausa";
+  - `ResumeAsync()` = **riaprire** lo stream della stazione corrente (stessa logica HLS→Icecast di `PlayAsync`);
+  - `StopAsync()` = chiudere la sorgente e azzerare lo stato.
+  È lo stesso comportamento già presente in `AudioService.PauseAsync` di MAUI: va spostato nel coordinatore condiviso (D3) e coperto da test. **Non vale per i podcast:** `PodcastPlayerService` mantiene la pausa vera, con ripresa dalla posizione.
 - Logica di riconnessione e fallback HLS→Icecast (oggi in `AudioService`): **decisione S1**. Estrarla in un `StreamPlaybackCoordinator` nel Core che pilota un `IStreamPlayer` minimale (consigliato: logica scritta una volta e testabile), oppure duplicarla nell'implementazione Uno.
 
 ### 4.4 Non riutilizzabile
@@ -185,14 +190,14 @@ Dopo questa fase **tutti i 12 ViewModel** si spostano nel Core.
 |---|---|---|
 | CORS API AzuraCast | `radioe45.ddns.net` e `demo.azuracast.com` rispondono `Access-Control-Allow-Origin: *` sia alla GET sia alla preflight | OK per le stazioni predefinite. Le stazioni aggiunte dall'utente su server senza CORS **non funzioneranno sul web**: messaggio d'errore dedicato e voce nel manifest. |
 | Stream audio | Tutti gli stream E45 sono **HTTPS** (Icecast su porte 8000–8060; HLS su `/hls/.../live.m3u8` con CORS `*`) | Riproduzione tramite `<audio>`: CORS non necessario, niente mixed content. |
-| `StreamUrlProber` | Fa una `GET` HTTP sugli URL Icecast, che **non mandano header CORS**: sul web la richiesta fallisce | Implementazione web di `IStreamUrlProber` che non sonda (considera l'URL raggiungibile) oppure tratta un errore CORS come "sconosciuto". |
-| SQLite su WASM | La documentazione Uno dichiara supporto, con persistenza tramite IDBFS | **Da verificare nello spike S2.** Piano B: repository web su `LocalSettings`/IndexedDB dietro le stesse interfacce `I*Repository` del Core. |
+| `StreamUrlProber` | **Verificato in S2:** Icecast E45 risponde con CORS se la richiesta ha un `Origin` (`Access-Control-Allow-Origin` = origine riflessa, `Range` e `Icy-*` ammessi). La sonda dal browser funziona (HTTP 200 `audio/mpeg`, circa 230 ms) | Nessuna implementazione web dedicata per le stazioni E45. Per server Icecast di terze parti senza CORS: trattare l'errore della sonda come "sconosciuto" e provare comunque la riproduzione. |
+| SQLite su WASM | **Verificato in S2:** `sqlite-net-pcl` 1.11.285 + `bundle_e_sqlite3` 3.0.4 funzionano su `net10.0-browserwasm`; il file in `ApplicationData.LocalFolder` (`/local/...`) **persiste dopo il ricaricamento** (IDBFS). Warning di build `WASM0001` sulle funzioni varargs (`sqlite3_config`, `sqlite3_db_config`): innocui finché non vengono chiamate | Stessa implementazione SQLite del desktop; piano B non necessario. Prima di aprire il DB attendere `LocalFolder.CreateFolderAsync(...)` (inizializzazione IDBFS). |
 | Thread | WASM è single-thread: il sync-over-async può bloccare l'app | Nel codice condiviso non ci sono `.Result`, `.Wait()` o `GetResult()` (gli unici due casi sono in `Platforms/` MAUI). Regola in `CLAUDE.md`: vietati nel Core. |
 | Controlli multimediali | — | Media Session API (JS interop): metadati e tasti multimediali del browser e del sistema operativo. |
-| Riproduzione in background | La scheda continua a suonare; l'autoplay richiede un gesto dell'utente | Il primo Play deve partire da un clic. |
+| Riproduzione e autoplay | **Verificato in S2:** senza un gesto reale dell'utente `play()` fallisce (`NotAllowedError: play() failed because the user didn't interact with the document first`). Con clic reale MP3 e HLS partono subito in Chrome e Safari | **Mai** avviare la riproduzione automaticamente all'apertura sul web (niente "riprendi ultima stazione"); ogni `PlayAsync`/`ResumeAsync` deve partire da un'azione dell'utente. Gestire `NotAllowedError` mostrando lo stato "tocca Play". I clic simulati dagli strumenti di automazione non valgono come gesto: i test audio web restano manuali. |
 | Crash reporting | Sentry .NET su WASM è limitato | Fase successiva: Sentry JS SDK oppure nessun reporting sul web. |
 | Hosting | Sito statico (MIME `.wasm`, `.dat`, `.clr` come da documentazione Uno) | GitHub Pages, Cloudflare Pages o Azure Static Web Apps, con dominio tipo `web.radioe45.it` (S10). PWA installabile. |
-| Peso iniziale | Payload .NET WASM di vari MB | Trimming attivo; valutare AOT e la compressione Brotli lato hosting. |
+| Peso iniziale | **Misurato in S2** (spike, Release): circa 47 MB non compressi, **circa 13,5 MB Brotli** (totale dei file pubblicati, il primo caricamento reale è inferiore) | Servire `.br` dall'hosting; splash di caricamento; valutare AOT/trimming più aggressivo in S10. |
 
 ---
 
@@ -399,12 +404,15 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 - [x] **Problema bloccante risolto:** su linux-arm64 `libSkiaSharp.so` 3.119.2 (portato da Uno) va in errore all'avvio con `symbol lookup error: … undefined symbol: FT_Get_BDF_Property`. Fix: `PackageReference` a **`SkiaSharp.NativeAssets.Linux.NoDependencies`** 3.119.2 nel progetto Uno (alternativa: `LD_PRELOAD=/lib/aarch64-linux-gnu/libfreetype.so.6`). Da verificare anche su x64 in CI.
 - **Uscita:** D4 = Uno `MediaPlayer`. Pacchetti di sistema runtime: `vlc`, `libvlc5`, `vlc-plugin-base` (+ `libfontconfig1`, `libx11-6`, `libgl1`); da inserire nel packaging (S10).
 
-### S2 — Spike web · Mac
-- [ ] Stesso spike con target `net10.0-browserwasm`: MP3 e HLS in Chrome, Firefox e Safari, primo play da clic, volume.
-- [ ] Chiamata Refit a `https://radioe45.ddns.net/api/nowplaying` dal browser (CORS).
-- [ ] `sqlite-net` su WASM con persistenza dopo il ricaricamento della pagina. Se fallisce → piano B (§5).
-- [ ] Dimensione del payload e tempo di primo caricamento.
-- **Uscita:** fattibilità web confermata, strategia di storage scelta. Eliminare la cartella `spikes/` o tenerla fuori dalla soluzione.
+### S2 — Spike web · Mac — ✅ completata 2026-10-07
+- [x] Spike `net10.0-browserwasm` (`dotnet run -f net10.0-browserwasm` → `http://localhost:5000/`).
+- [x] Audio con clic reale: MP3 e HLS E45 **ok in Chrome e Safari** (conferma utente: partenza immediata). Autoplay senza gesto bloccato (vedi §5). **Firefox non testato:** da fare in S9.
+- [x] Pausa = chiusura dello stream e Resume = riapertura della diretta, implementate nello spike secondo la regola del §4.3.
+- [x] API nowplaying dal browser: ok (6 stazioni, 558 ms). Sonda Icecast dal browser: ok (CORS riflesso).
+- [x] SQLite su WASM: ok e persistente dopo il ricaricamento (righe da 1 a 2).
+- [x] Peso Release: circa 13,5 MB Brotli, circa 47 MB non compressi.
+- **Uscita:** fattibilità web confermata; D5 = SQLite anche sul web. La cartella `spikes/` resta (ignorata da git) come banco di prova; si può cancellare dopo la S7.
+- Note operative: il dev server WASM usa `http://localhost:5000` (da `launchSettings.json`); dopo un `pkill` la porta 5000 sul Mac può rispondere 403, perché l'AirPlay Receiver di macOS usa la stessa porta. Se dà fastidio, cambiare porta nel profilo. Il primo clic sul canvas Uno a volte serve solo a dare il focus.
 
 ### S3 — Estrazione del Core (parte 1) · Mac
 - [ ] Creare `RadioE45.Core` (`net10.0`, `Nullable`, stessi analyzer); aggiungerlo alla `.slnx`.
@@ -496,7 +504,7 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 | D2 | Posizione dei progetti | S1 | ✅ Accanto a `RadioE45/` |
 | D3 | Coordinatore audio condiviso o duplicato | S1 | ✅ Condiviso |
 | D4 | Player desktop: Uno `MediaPlayer` o `LibVLCSharp` | Fine S1 | ✅ Uno `MediaPlayer` |
-| D5 | Storage web: SQLite WASM o repository dedicati | Fine S2 | SQLite, se lo spike passa |
+| D5 | Storage web: SQLite WASM o repository dedicati | Fine S2 | ✅ SQLite (verificato) |
 | D6 | Navigazione: `Frame` scritto a mano o `Uno.Extensions.Navigation` | S6 | A mano |
 | D7 | Canali desktop: Snap Store, Flathub, AppImage | S10 | Snap + AppImage, Flathub dopo |
 | D8 | Hosting e dominio web | S10 | Da decidere con l'utente |
@@ -509,6 +517,7 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-07 | S2 | Completata | Web: audio MP3/HLS ok in Chrome e Safari con clic reale, autoplay bloccato; CORS API e Icecast ok; SQLite WASM persistente; circa 13,5 MB Brotli; regola pausa live = stop documentata |
 | 2026-10-07 | S1 | Completata | Decisioni D1–D4 chiuse; spike audio/SQLite/HTTP ok su VM arm64 e macOS; fix SkiaSharp NoDependencies; note di comportamento del player in §4.3 |
 | 2026-10-07 | S0 | Completata | VM pronta, SSH e rsync configurati, `dotnet` 10.0.401 raggiungibile via SSH |
 | 2026-10-07 | Pianificazione | Documento creato | Verificati CORS dell'API AzuraCast e HTTPS degli stream E45; Mac arm64, `prlctl` disponibile, workload `wasm-tools` installato |
