@@ -28,14 +28,16 @@
             Icon="tab_request.png"
             ContentTemplate="{DataTemplate views:SongRequestPage}"
             Route="SongRequestPage"
-            IsVisible="{Binding NowPlaying.RequestsEnabled}" />
+            IsVisible="{Binding NowPlaying.RequestsEnabled}"
+            x:DataType="vm:OnAirViewModel" />
         <ShellContent
             x:Name="TabPodcasts"
             Title="{loc:Translate Tab_Podcasts}"
             Icon="tab_podcast.png"
             ContentTemplate="{DataTemplate views:PodcastListPage}"
             Route="PodcastListPage"
-            IsVisible="{Binding HasPodcasts}" />
+            IsVisible="{Binding HasPodcasts}"
+            x:DataType="vm:OnAirViewModel" />
     </TabBar>
 
     <Shell.FlyoutContent>
