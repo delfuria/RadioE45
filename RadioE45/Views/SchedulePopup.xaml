@@ -95,7 +95,7 @@
 
                         <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
 
-                            <!-- Fascia oraria + badge ORA -->
+                            <!-- Fascia oraria + badge (In Onda / LIVE / In orario) -->
                             <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
                                 <Label
                                     Grid.Column="0"
@@ -116,7 +116,7 @@
                                     StrokeShape="RoundRectangle 8"
                                     Stroke="Transparent"
                                     Padding="8,3"
-                                    IsVisible="{Binding IsNow}">
+                                    IsVisible="{Binding ShowPlaylistOnAirBadge}">
                                     <Label
                                         Text="{loc:Translate Schedule_Now}"
                                         TextColor="{DynamicResource PrimaryText}"
@@ -124,19 +124,80 @@
                                         FontAttributes="Bold"
                                         HorizontalTextAlignment="Center" />
                                 </Border>
+                                <Border
+                                    Grid.Column="1"
+                                    BackgroundColor="{DynamicResource Accent}"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="Transparent"
+                                    Padding="8,3"
+                                    IsVisible="{Binding ShowLiveBadge}">
+                                    <Label
+                                        Text="{loc:Translate Schedule_Live}"
+                                        TextColor="{DynamicResource PrimaryText}"
+                                        FontSize="11"
+                                        FontAttributes="Bold"
+                                        HorizontalTextAlignment="Center" />
+                                </Border>
+                                <Border
+                                    Grid.Column="1"
+                                    BackgroundColor="Transparent"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="{DynamicResource Accent}"
+                                    Padding="8,3"
+                                    IsVisible="{Binding ShowInScheduleBadge}">
+                                    <Label
+                                        Text="{loc:Translate Schedule_InSchedule}"
+                                        TextColor="{DynamicResource Accent}"
+                                        FontSize="11"
+                                        FontAttributes="Bold"
+                                        HorizontalTextAlignment="Center" />
+                                </Border>
                             </Grid>
 
-                            <!-- Nome playlist -->
-                            <Label
+                            <!-- Icona tipo (microfono = streamer, nota = playlist) + nome.
+                                 Streamer: solo icona + nome in un riquadro con bordo accent. Playlist: nessun riquadro. -->
+                            <Border
                                 Grid.Row="1"
-                                Text="{Binding Name}"
-                                TextColor="{DynamicResource PrimaryText}"
-                                FontSize="16"
-                                FontAttributes="Bold"
-                                LineBreakMode="TailTruncation"
-                                MaxLines="1" />
+                                HorizontalOptions="Start"
+                                StrokeShape="RoundRectangle 10"
+                                Stroke="Transparent"
+                                StrokeThickness="1.5"
+                                Padding="0">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsStreamer}" Value="True">
+                                        <Setter Property="Stroke" Value="{DynamicResource Accent}" />
+                                        <Setter Property="Padding" Value="10,4" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                    <Label
+                                        Grid.Column="0"
+                                        Text="&#xf001;"
+                                        FontFamily="FaSolid"
+                                        FontSize="14"
+                                        TextColor="{DynamicResource MutedText}"
+                                        VerticalOptions="Center"
+                                        IsVisible="{Binding IsStreamer, Converter={toolkit:InvertedBoolConverter}}" />
+                                    <Label
+                                        Grid.Column="0"
+                                        Text="&#xf130;"
+                                        FontFamily="FaSolid"
+                                        FontSize="14"
+                                        TextColor="{DynamicResource Accent}"
+                                        VerticalOptions="Center"
+                                        IsVisible="{Binding IsStreamer}" />
+                                    <Label
+                                        Grid.Column="1"
+                                        Text="{Binding Name}"
+                                        TextColor="{DynamicResource PrimaryText}"
+                                        FontSize="16"
+                                        FontAttributes="Bold"
+                                        LineBreakMode="TailTruncation"
+                                        MaxLines="1" />
+                                </Grid>
+                            </Border>
 
-                            <!-- Data (solo se non è oggi) -->
+                            <!-- Data -->
                             <Label
                                 Grid.Row="2"
                                 TextColor="{DynamicResource MutedText}"

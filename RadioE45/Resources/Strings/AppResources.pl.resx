@@ -79,6 +79,8 @@
 
   <data name="Schedule_Empty" xml:space="preserve"><value>Brak dostępnej ramówki</value></data>
   <data name="Schedule_Now" xml:space="preserve"><value>● TERAZ</value></data>
+  <data name="Schedule_Live" xml:space="preserve"><value>● NA ŻYWO</value></data>
+  <data name="Schedule_InSchedule" xml:space="preserve"><value>Zgodnie z planem</value></data>
   <data name="Podcast_Empty" xml:space="preserve"><value>Brak dostępnych podcastów</value></data>
   <data name="Podcast_Episodes" xml:space="preserve"><value>odcinków</value></data>
   <data name="Podcast_NoEpisodes" xml:space="preserve"><value>Brak dostępnych odcinków</value></data>

@@ -79,6 +79,8 @@
 
   <data name="Schedule_Empty" xml:space="preserve"><value>No schedule available</value></data>
   <data name="Schedule_Now" xml:space="preserve"><value>● On Air</value></data>
+  <data name="Schedule_Live" xml:space="preserve"><value>● LIVE</value></data>
+  <data name="Schedule_InSchedule" xml:space="preserve"><value>On schedule</value></data>
   <data name="Podcast_Empty" xml:space="preserve"><value>No podcasts available</value></data>
   <data name="Podcast_Episodes" xml:space="preserve"><value>episodes</value></data>
   <data name="Podcast_NoEpisodes" xml:space="preserve"><value>No episodes available</value></data>

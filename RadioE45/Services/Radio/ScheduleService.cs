@@ -15,7 +15,7 @@ public class ScheduleService : IScheduleService
         _logger = logger;
     }
 
-    public async Task<List<PlaylistSchedule>> GetScheduleAsync(AzuraStation station, CancellationToken ct = default)
+    public async Task<List<PlaylistSchedule>> GetScheduleAsync(AzuraStation station, TimeSpan? minPlaylistDuration = null, CancellationToken ct = default)
     {
         try
         {
@@ -25,7 +25,7 @@ public class ScheduleService : IScheduleService
             IAzuraCastScheduleApi api = RestService.For<IAzuraCastScheduleApi>(client);
             List<PlaylistSchedule> items = await api.GetScheduleAsync(station.StationId, ct);
 
-            return Map(items);
+            return Map(items, minPlaylistDuration);
         }
         catch (ApiException ex)
         {
@@ -39,6 +39,9 @@ public class ScheduleService : IScheduleService
         }
     }
 
-    private static List<PlaylistSchedule> Map(List<PlaylistSchedule> items) =>
-        items.Where(s => !s.Title.Contains("jingle", StringComparison.InvariantCultureIgnoreCase)).ToList();
+    private static List<PlaylistSchedule> Map(List<PlaylistSchedule> items, TimeSpan? minPlaylistDuration) =>
+        ScheduleFlattener.Flatten(
+            items.Where(s => !s.Title.Contains("jingle", StringComparison.InvariantCultureIgnoreCase)),
+            DateTimeOffset.Now,
+            minPlaylistDuration);
 }

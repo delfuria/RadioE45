@@ -83,6 +83,8 @@
   <!-- Schedule -->
   <data name="Schedule_Empty" xml:space="preserve"><value>Nessun palinsesto disponibile</value></data>
   <data name="Schedule_Now" xml:space="preserve"><value>● In Onda</value></data>
+  <data name="Schedule_Live" xml:space="preserve"><value>● Diretta</value></data>
+  <data name="Schedule_InSchedule" xml:space="preserve"><value>In orario</value></data>
   <data name="Podcast_Empty" xml:space="preserve"><value>Nessun podcast disponibile</value></data>
   <data name="Podcast_Episodes" xml:space="preserve"><value>episodi</value></data>
   <data name="Podcast_NoEpisodes" xml:space="preserve"><value>Nessun episodio disponibile</value></data>

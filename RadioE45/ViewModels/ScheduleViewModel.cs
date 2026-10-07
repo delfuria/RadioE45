@@ -37,6 +37,12 @@ public partial class ScheduleViewModel : BaseViewModel
         await SafeExecuteAsync(async () =>
         {
             List<PlaylistSchedule> items = await _scheduleService.GetScheduleAsync(station);
+
+            // IsNow = "in orario"; IsOnAir = realmente in onda (per lo streamer serve anche il live collegato).
+            bool isLive = _onAirViewModel.NowPlaying.IsLive;
+            foreach (PlaylistSchedule item in items)
+                item.IsOnAir = item.IsNow && (item.IsStreamer ? isLive : !isLive);
+
             ScheduleItems = new ObservableCollection<PlaylistSchedule>(items);
         }, LocalizationResourceManager.Instance["Err_LoadSchedule"]);
     }
