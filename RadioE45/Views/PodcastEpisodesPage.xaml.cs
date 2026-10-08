@@ -3,6 +3,10 @@ using RadioE45.ViewModels;
 
 namespace RadioE45.Views;
 
+// Shell query parameters land on the page and are forwarded to the shared ViewModel, which
+// lives in RadioE45.Core and cannot carry MAUI's [QueryProperty].
+[QueryProperty(nameof(PodcastId), "podcastId")]
+[QueryProperty(nameof(PodcastTitle), "podcastTitle")]
 public partial class PodcastEpisodesPage : ContentPage
 {
     private readonly PodcastEpisodesViewModel _viewModel;
@@ -28,6 +32,18 @@ public partial class PodcastEpisodesPage : ContentPage
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
     }
 
+    public string PodcastId
+    {
+        get => _viewModel.PodcastId;
+        set => _viewModel.PodcastId = value;
+    }
+
+    public string PodcastTitle
+    {
+        get => _viewModel.PodcastTitle;
+        set => _viewModel.PodcastTitle = value;
+    }
+
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(PodcastEpisodesViewModel.PlaybackProgress) && !_isDragging)
@@ -41,7 +57,7 @@ public partial class PodcastEpisodesPage : ContentPage
         if (!_isInitialized)
         {
             _isInitialized = true;
-            _podcastPlayerService.Initialize(PodcastPlayer);
+            (_podcastPlayerService as IMediaElementHost)?.Initialize(PodcastPlayer);
         }
 
         // La stazione può essere cambiata (frecce OnAir) mentre eravamo su un'altra tab: gli

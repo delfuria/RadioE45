@@ -9,7 +9,7 @@ namespace RadioE45.Services.Audio;
 // Player dedicato agli episodi podcast: MediaElement propria (non quella della radio live), foreground
 // only per la v1 — non integra Media3/RadioPlaybackService (Android) né il Now Playing di sistema
 // (iOS/Windows), che restano di pertinenza esclusiva di IAudioService. Vedi PODCAST-FEATURE.md.
-public class PodcastPlayerService : IPodcastPlayerService
+public class PodcastPlayerService : IPodcastPlayerService, IMediaElementHost
 {
     private readonly IAudioService _audioService;
     private readonly IPodcastProgressRepository _progressRepository;

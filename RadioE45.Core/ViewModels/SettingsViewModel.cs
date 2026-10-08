@@ -1,15 +1,10 @@
-using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
-using RadioE45.Services.CrashReporting;
-using RadioE45.Services;
 using RadioE45.Services.Data;
 using RadioE45.Services.Localization;
-#if !MACCATALYST
-using Sentry;
-#endif
+using RadioE45.Services.Platform;
 
 namespace RadioE45.ViewModels;
 
@@ -17,6 +12,12 @@ public partial class SettingsViewModel : BaseViewModel
 {
     private readonly IAppSettingsRepository _settingsRepo;
     private readonly IDatabaseService _databaseService;
+    private readonly INavigationService _navigation;
+    private readonly IDialogService _dialogs;
+    private readonly ISettingsStore _settingsStore;
+    private readonly IThemeService _themeService;
+    private readonly ICrashReportingService _crashReporting;
+    private readonly IAppEnvironment _environment;
     private AppSettings? _currentSettings;
     private bool _hasChanges;
 
@@ -53,19 +54,30 @@ public partial class SettingsViewModel : BaseViewModel
     [ObservableProperty]
     public partial int RequestPageSize { get; set; }
 
-#if MACCATALYST
-    public bool IsCrashReportingAvailable => false;
-#else
-    public bool IsCrashReportingAvailable => CrashReportingConfiguration.IsConfigured;
-#endif
+    public bool IsCrashReportingAvailable => _crashReporting.IsAvailable;
 
-    public SettingsViewModel(IAppSettingsRepository settingsRepo, IDatabaseService databaseService, ILogger<SettingsViewModel> logger)
+    public SettingsViewModel(
+        IAppSettingsRepository settingsRepo,
+        IDatabaseService databaseService,
+        INavigationService navigation,
+        IDialogService dialogs,
+        ISettingsStore settingsStore,
+        IThemeService themeService,
+        ICrashReportingService crashReporting,
+        IAppEnvironment environment,
+        ILogger<SettingsViewModel> logger)
     {
         Logger = logger;
         _settingsRepo = settingsRepo;
         _databaseService = databaseService;
+        _navigation = navigation;
+        _dialogs = dialogs;
+        _settingsStore = settingsStore;
+        _themeService = themeService;
+        _crashReporting = crashReporting;
+        _environment = environment;
         Title = "Impostazioni";
-        AppVersion = $"{AppInfo.VersionString} ({AppInfo.BuildString}, {ThisAssembly.GitCommitId[..7]})";
+        AppVersion = $"{environment.VersionString} ({environment.BuildString}, {environment.CommitId})";
         _ = LoadSettingsAsync();
     }
 
@@ -86,7 +98,7 @@ public partial class SettingsViewModel : BaseViewModel
 
     partial void OnThemePreferenceChanged(string value)
     {
-        ThemeService.Apply(value);
+        _themeService.Apply(value);
         MarkChanged();
     }
     
@@ -112,19 +124,16 @@ public partial class SettingsViewModel : BaseViewModel
         await SafeExecuteAsync(async () =>
         {
             await _databaseService.ResetToDefaultsAsync();
-
-#if ANDROID || IOS
-            await Snackbar.Make(LocalizationResourceManager.Instance["Settings_Msg_DbReset"], duration: TimeSpan.FromSeconds(3)).Show();
-#endif
+            await _dialogs.ShowToastAsync(LocalizationResourceManager.Instance["Settings_Msg_DbReset"], TimeSpan.FromSeconds(3));
         }, LocalizationResourceManager.Instance["Err_ResetDatabase"]);
     }
 
     [RelayCommand]
     private async Task SendCrashReportTestAsync()
     {
-        if (!CrashReportingSettings.IsEnabled())
+        if (!_crashReporting.IsEnabled())
         {
-            await Shell.Current.DisplayAlertAsync(
+            await _dialogs.AlertAsync(
                 LocalizationResourceManager.Instance["Settings_Alert_CrashInactive_Title"],
                 LocalizationResourceManager.Instance["Settings_Alert_CrashInactive_Message"],
                 LocalizationResourceManager.Instance["Common_Ok"]);
@@ -132,15 +141,10 @@ public partial class SettingsViewModel : BaseViewModel
         }
 
         Exception testException = new InvalidOperationException(
-            $"Test crash report da impostazioni ({DeviceInfo.Current.Platform}, v{AppInfo.VersionString})");
+            $"Test crash report da impostazioni ({_environment.PlatformName}, v{_environment.VersionString})");
 
-#if !MACCATALYST
-        SentrySdk.CaptureException(testException);
-#endif
-
-#if ANDROID || IOS
-        await Snackbar.Make(LocalizationResourceManager.Instance["Settings_Msg_TestCrashSent"], duration: TimeSpan.FromSeconds(2)).Show();
-#endif
+        _crashReporting.CaptureTestException(testException);
+        await _dialogs.ShowToastAsync(LocalizationResourceManager.Instance["Settings_Msg_TestCrashSent"], TimeSpan.FromSeconds(2));
     }
 
     private bool CanSaveSettings() => _hasChanges;
@@ -156,24 +160,23 @@ public partial class SettingsViewModel : BaseViewModel
         _currentSettings.PlaybackLatencyOffsetSeconds = PlaybackLatencyOffsetSeconds;
         _currentSettings.PreferHlsStream = PreferHlsStream;
         _currentSettings.RequestPageSize = RequestPageSize;
-        CrashReportingSettings.ApplyTo(_currentSettings, CrashReportingEnabled, consentRequested: true);
+        _currentSettings.CrashReportingEnabled = CrashReportingEnabled;
+        _currentSettings.CrashReportingConsentRequested = true;
         await _settingsRepo.SaveAsync(_currentSettings);
-        Preferences.Default.Set("theme_preference", ThemePreference);
-        CrashReportingSettings.SaveToPreferences(CrashReportingEnabled, consentRequested: true);
+        _settingsStore.Set("theme_preference", ThemePreference);
+        _crashReporting.SaveConsent(CrashReportingEnabled, consentRequested: true);
         _hasChanges = false;
         SaveSettingsCommand.NotifyCanExecuteChanged();
 
-#if ANDROID || IOS
-        await Snackbar.Make(LocalizationResourceManager.Instance["Settings_Msg_SettingsSaved"], duration: TimeSpan.FromSeconds(2)).Show();
-#endif
+        await _dialogs.ShowToastAsync(LocalizationResourceManager.Instance["Settings_Msg_SettingsSaved"], TimeSpan.FromSeconds(2));
         if (crashReportingChanged)
         {
-            await Shell.Current.DisplayAlertAsync(
+            await _dialogs.AlertAsync(
                 LocalizationResourceManager.Instance["Settings_Alert_Restart_Title"],
                 LocalizationResourceManager.Instance["Settings_Alert_Restart_Message"],
                 LocalizationResourceManager.Instance["Common_Ok"]);
         }
 
-        await MainThread.InvokeOnMainThreadAsync(() => Shell.Current.GoToAsync("//OnAirPage"));
+        await _navigation.GoToOnAirAsync();
     }
 }

@@ -8,17 +8,17 @@ using RadioE45.Services.Audio;
 using RadioE45.Services.Data;
 using RadioE45.Services.Localization;
 using RadioE45.Services.Radio;
+using RadioE45.Services.Platform;
 
 namespace RadioE45.ViewModels;
 
-[QueryProperty(nameof(PodcastId), "podcastId")]
-[QueryProperty(nameof(PodcastTitle), "podcastTitle")]
 public partial class PodcastEpisodesViewModel : BaseViewModel
 {
     private readonly IPodcastService _podcastService;
     private readonly IPodcastPlayerService _podcastPlayerService;
     private readonly IPodcastProgressRepository _progressRepository;
     private readonly OnAirViewModel _onAirViewModel;
+    private readonly IUiDispatcher _dispatcher;
     private int? _loadedStationId;
     // Elenco completo scaricato dal feed: Episodes è la vista filtrata che ne deriva.
     private List<AzuraCastPodcastEpisode> _allEpisodes = [];
@@ -85,9 +85,11 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
         IPodcastPlayerService podcastPlayerService,
         IPodcastProgressRepository progressRepository,
         OnAirViewModel onAirViewModel,
+        IUiDispatcher dispatcher,
         ILogger<PodcastEpisodesViewModel> logger)
     {
         Logger = logger;
+        _dispatcher = dispatcher;
         _podcastService = podcastService;
         _podcastPlayerService = podcastPlayerService;
         _progressRepository = progressRepository;
@@ -288,12 +290,12 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
 
     private void OnPlaybackStateChanged(object? sender, bool isPlaying)
     {
-        MainThread.BeginInvokeOnMainThread(() => IsPlaying = isPlaying);
+        _dispatcher.Post(() => IsPlaying = isPlaying);
     }
 
     private void OnPositionChanged(object? sender, TimeSpan position)
     {
-        MainThread.BeginInvokeOnMainThread(() => UpdatePlaybackPosition(position));
+        _dispatcher.Post(() => UpdatePlaybackPosition(position));
     }
 
     // Unico punto che valorizza label ed elapsed e progress bar: entrambi derivano dalla STESSA
@@ -313,7 +315,7 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
 
     private void OnEpisodeCompleted(object? sender, EventArgs e)
     {
-        MainThread.BeginInvokeOnMainThread(() =>
+        _dispatcher.Post(() =>
         {
             // Aggiorna subito l'indicatore (giallo -> rosso) sull'episodio appena terminato,
             // prima di sganciarlo da CurrentEpisode.
@@ -332,7 +334,7 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
 
     private void OnPlaybackFailed(object? sender, string? message)
     {
-        MainThread.BeginInvokeOnMainThread(() =>
+        _dispatcher.Post(() =>
         {
             ErrorMessage = string.IsNullOrWhiteSpace(message)
                 ? LocalizationResourceManager.Instance["Err_PodcastPlayback"]

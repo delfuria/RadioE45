@@ -8,7 +8,7 @@ using RadioE45.Services.Data;
 
 namespace RadioE45.Services.Audio;
 
-public class AudioService : IAudioService
+public class AudioService : IAudioService, IMediaElementHost
 {
     private readonly IStreamUrlProber _streamUrlProber;
     private readonly IPlatformNowPlayingService _platformNowPlayingService;

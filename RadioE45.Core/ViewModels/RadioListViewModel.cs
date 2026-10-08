@@ -6,6 +6,7 @@ using RadioE45.Models;
 using RadioE45.Services.Data;
 using RadioE45.Services.Localization;
 using RadioE45.Services.Radio;
+using RadioE45.Services.Platform;
 
 namespace RadioE45.ViewModels;
 
@@ -15,6 +16,9 @@ public partial class RadioListViewModel : BaseViewModel
     private readonly OnAirViewModel _onAirViewModel;
     private readonly IRadioRepository _radioRepository;
     private readonly IDatabaseService _databaseService;
+    private readonly INavigationService _navigation;
+    private readonly IDialogService _dialogs;
+    private readonly IUiDispatcher _dispatcher;
 
     [ObservableProperty]
     public partial ObservableCollection<AzuraStation> Stations { get; set; } = [];
@@ -26,9 +30,15 @@ public partial class RadioListViewModel : BaseViewModel
         OnAirViewModel onAirViewModel,
         IRadioRepository radioRepository,
         IDatabaseService databaseService,
+        INavigationService navigation,
+        IDialogService dialogs,
+        IUiDispatcher dispatcher,
         ILogger<RadioListViewModel> logger)
     {
         Logger = logger;
+        _navigation = navigation;
+        _dialogs = dialogs;
+        _dispatcher = dispatcher;
         _catalog = catalog;
         _onAirViewModel = onAirViewModel;
         _radioRepository = radioRepository;
@@ -46,7 +56,7 @@ public partial class RadioListViewModel : BaseViewModel
             bool hasStations = await _radioRepository.HasStationsAsync();
             if (!hasStations)
             {
-                bool accepted = await Shell.Current.DisplayAlertAsync(
+                bool accepted = await _dialogs.ConfirmAsync(
                     "Radio E45",
                     LocalizationResourceManager.Instance["RadioList_SeedPrompt"],
                     LocalizationResourceManager.Instance["Common_Yes"],
@@ -54,12 +64,12 @@ public partial class RadioListViewModel : BaseViewModel
 
                 if (!accepted)
                 {
-                    await Shell.Current.GoToAsync("//OnAirPage");
+                    await _navigation.GoToOnAirAsync();
                     return;
                 }
 
                 await _databaseService.SeedStationsAsync();
-                await Shell.Current.GoToAsync("//OnAirPage");
+                await _navigation.GoToOnAirAsync();
                 _ = _catalog.ReloadAsync(); // dopo navigazione: StationsRefreshed → auto-play, senza bloccare la transizione Android
                 return;
             }
@@ -87,7 +97,7 @@ public partial class RadioListViewModel : BaseViewModel
 
     private void OnStationsRefreshed()
     {
-        MainThread.BeginInvokeOnMainThread(RefreshStationsFromCatalog);
+        _dispatcher.Post(RefreshStationsFromCatalog);
     }
 
     private void RefreshStationsFromCatalog()
@@ -107,7 +117,7 @@ public partial class RadioListViewModel : BaseViewModel
     [RelayCommand]
     private async Task DeleteStationAsync(AzuraStation station)
     {
-        bool confirmed = await Shell.Current.DisplayAlertAsync(
+        bool confirmed = await _dialogs.ConfirmAsync(
             LocalizationResourceManager.Instance["RadioList_DeleteStation"],
             LocalizationResourceManager.Instance.Format("RadioList_ConfirmDeleteMessage", station.Name),
             LocalizationResourceManager.Instance["Common_Delete"],
@@ -131,7 +141,7 @@ public partial class RadioListViewModel : BaseViewModel
             return;
         }
 
-        await MainThread.InvokeOnMainThreadAsync(RefreshStationsFromCatalog);
+        await _dispatcher.InvokeAsync(RefreshStationsFromCatalog);
     }
 
     public async Task MoveStationToEndAsync(AzuraStation dragged)
@@ -165,13 +175,13 @@ public partial class RadioListViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToAddStationAsync()
     {
-        await Shell.Current.GoToAsync("AddStationPage");
+        await _navigation.GoToAddStationAsync();
     }
 
     [RelayCommand]
     private async Task EditStationAsync(AzuraStation station)
     {
-        await Shell.Current.GoToAsync($"EditStationPage?id={station.Id}");
+        await _navigation.GoToEditStationAsync(station.Id);
     }
 
     [RelayCommand]
@@ -184,6 +194,6 @@ public partial class RadioListViewModel : BaseViewModel
             s.IsActive = s.Id == station.Id;
 
         await _onAirViewModel.SelectStationCommand.ExecuteAsync(station);
-        await Shell.Current.GoToAsync("//OnAirPage");
+        await _navigation.GoToOnAirAsync();
     }
 }

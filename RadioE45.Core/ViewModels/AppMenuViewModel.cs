@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
 using RadioE45.Services.Radio;
+using RadioE45.Services.Platform;
 
 namespace RadioE45.ViewModels;
 
@@ -13,6 +14,8 @@ public partial class AppMenuViewModel : BaseViewModel
 {
     private readonly OnAirViewModel _onAirViewModel;
     private readonly IAzuraStationCatalog _catalog;
+    private readonly INavigationService _navigation;
+    private readonly IUrlLauncher _urlLauncher;
 
     [ObservableProperty]
     public partial string StationName { get; set; } = "";
@@ -35,18 +38,28 @@ public partial class AppMenuViewModel : BaseViewModel
     [ObservableProperty]
     public partial bool HasContactLinks { get; set; }
 
-    public string AppVersion { get; } = $"v{AppInfo.VersionString}";
+    public string AppVersion { get; }
 
-    public AppMenuViewModel(OnAirViewModel onAirViewModel, IAzuraStationCatalog catalog, ILogger<AppMenuViewModel> logger)
+    public AppMenuViewModel(
+        OnAirViewModel onAirViewModel,
+        IAzuraStationCatalog catalog,
+        INavigationService navigation,
+        IUrlLauncher urlLauncher,
+        IUiDispatcher dispatcher,
+        IAppEnvironment environment,
+        ILogger<AppMenuViewModel> logger)
     {
         Logger = logger;
         _onAirViewModel = onAirViewModel;
         _catalog = catalog;
+        _navigation = navigation;
+        _urlLauncher = urlLauncher;
+        AppVersion = $"v{environment.VersionString}";
 
         _onAirViewModel.PropertyChanged += OnOnAirPropertyChanged;
         // Dopo la modifica di una stazione il catalogo ricrea le istanze: CurrentStation resta
         // quella vecchia, quindi i link vanno riletti dal catalogo.
-        _catalog.StationsRefreshed += () => MainThread.BeginInvokeOnMainThread(UpdateStationLinks);
+        _catalog.StationsRefreshed += () => dispatcher.Post(UpdateStationLinks);
         UpdateStationLinks();
     }
 
@@ -80,10 +93,10 @@ public partial class AppMenuViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private Task OpenChannelsAsync() => OpenPageAsync("RadioListPage");
+    private Task OpenChannelsAsync() => _navigation.OpenFromMenuAsync(MenuPage.Channels);
 
     [RelayCommand]
-    private Task OpenSettingsAsync() => OpenPageAsync("SettingsPage");
+    private Task OpenSettingsAsync() => _navigation.OpenFromMenuAsync(MenuPage.Settings);
 
     [RelayCommand]
     private async Task OpenLinkAsync(StationLink? link)
@@ -91,29 +104,14 @@ public partial class AppMenuViewModel : BaseViewModel
         if (link is null)
             return;
 
-        CloseFlyout();
+        _navigation.CloseMenu();
         try
         {
-            await Launcher.Default.OpenAsync(link.Uri);
+            await _urlLauncher.OpenAsync(link.Uri);
         }
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Unable to open {Uri}", link.Uri);
         }
-    }
-
-    // Canali e Impostazioni vengono sempre impilate sopra il tab OnAir: così il "//OnAirPage"
-    // con cui quelle pagine tornano indietro svuota lo stack in modo pulito.
-    private static async Task OpenPageAsync(string route)
-    {
-        CloseFlyout();
-        if (Shell.Current is Shell shell)
-            await shell.GoToAsync($"//OnAirPage/{route}");
-    }
-
-    private static void CloseFlyout()
-    {
-        if (Shell.Current is Shell shell)
-            shell.FlyoutIsPresented = false;
     }
 }

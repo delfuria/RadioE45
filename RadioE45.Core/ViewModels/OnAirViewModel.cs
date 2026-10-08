@@ -1,5 +1,3 @@
-using CommunityToolkit.Maui;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -7,6 +5,7 @@ using RadioE45.Models;
 using RadioE45.Services.Audio;
 using RadioE45.Services.Data;
 using RadioE45.Services.Localization;
+using RadioE45.Services.Platform;
 using RadioE45.Services.Radio;
 using RadioE45.Services;
 
@@ -21,7 +20,10 @@ public partial class OnAirViewModel : BaseViewModel
     private readonly IAzuraStationCatalog _catalog;
     private readonly IAppSettingsRepository _settingsRepo;
     private readonly IScheduleService _scheduleService;
-    private readonly IPopupService _popupService;
+    private readonly INavigationService _navigation;
+    private readonly IUiDispatcher _dispatcher;
+    private readonly ISettingsStore _settingsStore;
+    private readonly IAppEnvironment _environment;
     private CancellationTokenSource? _pollingCts;
 
     [ObservableProperty]
@@ -48,9 +50,8 @@ public partial class OnAirViewModel : BaseViewModel
     [ObservableProperty]
     public partial bool IsMuted { get; set; }
 
-#if !ANDROID && !IOS
+    // Only used where the app owns the volume (desktop): see IAppEnvironment.UsesSystemVolume.
     private double _preMuteVolume = 1.0;
-#endif
 
     [ObservableProperty]
     public partial string? ArtworkUrl { get; set; }
@@ -89,36 +90,10 @@ public partial class OnAirViewModel : BaseViewModel
         NotifyAdjacentStationsChanged();
         _ = RefreshHasPodcastsAsync(value);
         _ = RefreshHasScheduleAsync(value);
-        ResetPodcastTabToRoot();
-    }
-
-    // Il tab Podcast resta vivo con il proprio stack di navigazione anche quando non è quello
-    // attivo — se la stazione cambia mentre si era navigati dentro la lista episodi, quello stack
-    // punta ormai a dati non pertinenti. Si opera direttamente sulla ShellSection del tab (per
-    // Route, non su Shell.Current "corrente") così funziona indipendentemente dal tab attivo in quel
-    // momento — GoToAsync("..") relativo sarebbe stato ambiguo/rischioso da qui.
-    private static void ResetPodcastTabToRoot()
-    {
-        Shell? shell = Shell.Current;
-        if (shell is null)
-            return;
-
-        foreach (ShellItem item in shell.Items)
-        {
-            foreach (ShellSection section in item.Items)
-            {
-                foreach (ShellContent content in section.Items)
-                {
-                    if (content.Route != "PodcastListPage")
-                        continue;
-
-                    if (section.Navigation.NavigationStack.Count > 1)
-                        _ = section.Navigation.PopToRootAsync(false);
-
-                    return;
-                }
-            }
-        }
+        // Il tab Podcast resta vivo con il proprio stack di navigazione anche quando non è quello
+        // attivo — se la stazione cambia mentre si era dentro la lista episodi, quello stack punta
+        // ormai a dati non pertinenti.
+        _navigation.ResetPodcastTabToRoot();
     }
 
     // Probe silenziosa: determina se mostrare il tab Podcast per la stazione corrente. Non
@@ -182,18 +157,10 @@ public partial class OnAirViewModel : BaseViewModel
     [RelayCommand]
     private async Task ShowScheduleAsync()
     {
-        if (!HasSchedule || Shell.Current is null)
+        if (!HasSchedule)
             return;
 
-        await _popupService.ShowPopupAsync<ScheduleViewModel>(Shell.Current, new PopupOptions
-        {
-            Shape = new Microsoft.Maui.Controls.Shapes.RoundRectangle
-            {
-                CornerRadius = new CornerRadius(20, 20, 0, 0),
-                StrokeThickness = 0
-            },
-            Shadow = null
-        });
+        await _navigation.ShowScheduleAsync();
     }
 
     [ObservableProperty]
@@ -205,7 +172,7 @@ public partial class OnAirViewModel : BaseViewModel
     [ObservableProperty]
     public partial string TotalTimeText { get; set; } = "0:00";
 
-    private IDispatcherTimer? _progressTimer;
+    private IUiTimer? _progressTimer;
     private int _elapsedAnchorSeconds;
     private DateTime _elapsedAnchorUtc;
     private volatile bool _isShuttingDown;
@@ -218,7 +185,10 @@ public partial class OnAirViewModel : BaseViewModel
         IAzuraStationCatalog catalog,
         IAppSettingsRepository settingsRepo,
         IScheduleService scheduleService,
-        IPopupService popupService,
+        INavigationService navigation,
+        IUiDispatcher dispatcher,
+        ISettingsStore settingsStore,
+        IAppEnvironment environment,
         ILogger<OnAirViewModel> logger)
     {
         Logger = logger;
@@ -229,16 +199,15 @@ public partial class OnAirViewModel : BaseViewModel
         _catalog = catalog;
         _settingsRepo = settingsRepo;
         _scheduleService = scheduleService;
-        _popupService = popupService;
+        _navigation = navigation;
+        _dispatcher = dispatcher;
+        _settingsStore = settingsStore;
+        _environment = environment;
 
         // Su telefono (iOS/Android) niente slider: i tasti fisici pilotano il volume reale via
         // stream di sistema, il gain player resta sempre a piena scala tranne che in mute (vedi
-        // ToggleMute). Su MacCatalyst/Windows il gain applicativo resta indipendente, da slider.
-#if ANDROID || IOS
-        Volume = 1.0;
-#else
-        Volume = Preferences.Default.Get("player_volume", 1.0);
-#endif
+        // ToggleMute). Su desktop il gain applicativo resta indipendente, da slider.
+        Volume = _environment.UsesSystemVolume ? 1.0 : _settingsStore.Get("player_volume", 1.0);
         Title = LocalizationResourceManager.Instance["Tab_OnAir"];
 
         _audioService.PlaybackStateChanged += OnPlaybackStateChanged;
@@ -284,7 +253,7 @@ public partial class OnAirViewModel : BaseViewModel
 
     private async void OnStationsRefreshed()
     {
-        MainThread.BeginInvokeOnMainThread(NotifyAdjacentStationsChanged);
+        _dispatcher.Post(NotifyAdjacentStationsChanged);
 
         if (CurrentStation is not null) return;
 
@@ -409,7 +378,7 @@ public partial class OnAirViewModel : BaseViewModel
 
     // On Android the volume rides on the Media3 controller (MediaController.Volume), which scales the
     // player output — it is independent of the system stream volume, exactly as the MediaElement
-    // volume was on the other heads. Preferences is the live source, read back by SettingsViewModel.
+    // volume was on the other heads. ISettingsStore ("player_volume") is the live source.
     [RelayCommand]
     private void SetVolume(double volume)
     {
@@ -423,7 +392,7 @@ public partial class OnAirViewModel : BaseViewModel
         if (volume <= 0)
             return;
 
-        Preferences.Default.Set("player_volume", volume);
+        _settingsStore.Set("player_volume", volume);
         if (IsMuted)
             IsMuted = false;
     }
@@ -434,22 +403,18 @@ public partial class OnAirViewModel : BaseViewModel
         if (IsMuted)
         {
             IsMuted = false;
-#if ANDROID || IOS
-            double restore = 1.0;
-#else
-            double restore = _preMuteVolume > 0 ? _preMuteVolume : 1.0;
-#endif
+            double restore = _environment.UsesSystemVolume
+                ? 1.0
+                : _preMuteVolume > 0 ? _preMuteVolume : 1.0;
             Volume = restore;
             _audioService.SetVolume(restore);
-#if !ANDROID && !IOS
-            Preferences.Default.Set("player_volume", restore);
-#endif
+            if (!_environment.UsesSystemVolume)
+                _settingsStore.Set("player_volume", restore);
         }
         else
         {
-#if !ANDROID && !IOS
-            _preMuteVolume = Volume > 0 ? Volume : 1.0;
-#endif
+            if (!_environment.UsesSystemVolume)
+                _preMuteVolume = Volume > 0 ? Volume : 1.0;
             IsMuted = true;
             Volume = 0;
             _audioService.SetVolume(0);
@@ -628,14 +593,8 @@ public partial class OnAirViewModel : BaseViewModel
         if (_isShuttingDown || _progressTimer is not null)
             return;
 
-        IDispatcher? dispatcher = Application.Current?.Dispatcher;
-        if (dispatcher is null)
-            return;
-
-        _progressTimer = dispatcher.CreateTimer();
-        _progressTimer.Interval = TimeSpan.FromSeconds(1);
-        _progressTimer.Tick += OnProgressTimerTick;
-        _progressTimer.Start();
+        _progressTimer = _dispatcher.CreateTimer(TimeSpan.FromSeconds(1), OnProgressTimerTick);
+        _progressTimer?.Start();
     }
 
     private void StopProgressTimer()
@@ -644,11 +603,10 @@ public partial class OnAirViewModel : BaseViewModel
             return;
 
         _progressTimer.Stop();
-        _progressTimer.Tick -= OnProgressTimerTick;
         _progressTimer = null;
     }
 
-    private void OnProgressTimerTick(object? sender, EventArgs e)
+    private void OnProgressTimerTick()
     {
         int duration = NowPlaying.TrackDurationSeconds;
         if (duration <= 0)
@@ -726,7 +684,7 @@ public partial class OnAirViewModel : BaseViewModel
         if (_isShuttingDown)
             return;
 
-        MainThread.BeginInvokeOnMainThread(() =>
+        _dispatcher.Post(() =>
         {
             if (_isShuttingDown)
                 return;

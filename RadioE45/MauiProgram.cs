@@ -12,6 +12,7 @@ using RadioE45.Services.CrashReporting;
 using RadioE45.Services.Data;
 using RadioE45.Services.Diagnostics;
 using RadioE45.Services.Logging;
+using RadioE45.Services.Platform;
 using RadioE45.Services.Radio;
 using RadioE45.ViewModels;
 using RadioE45.Views;
@@ -67,7 +68,7 @@ public static class MauiProgram
                 options.AutoSessionTracking = true;
                 options.SetBeforeSend((@event, hint) =>
                 {
-                    string dbPath = DatabaseService.GetDatabasePath();
+                    string dbPath = DatabaseService.GetDatabasePath(FileSystem.AppDataDirectory);
                     if (File.Exists(dbPath))
                     {
                         hint.AddAttachment(dbPath, AttachmentType.Default, "application/vnd.sqlite3");
@@ -118,6 +119,18 @@ public static class MauiProgram
             }
         });
 #endif
+
+        // Platform services behind the RadioE45.Core abstractions
+        builder.Services.AddSingleton<IUiDispatcher, MauiUiDispatcher>();
+        builder.Services.AddSingleton<INavigationService, MauiNavigationService>();
+        builder.Services.AddSingleton<IDialogService, MauiDialogService>();
+        builder.Services.AddSingleton<ISettingsStore, MauiSettingsStore>();
+        builder.Services.AddSingleton<IAppEnvironment, MauiAppEnvironment>();
+        builder.Services.AddSingleton<IAppPaths, MauiAppPaths>();
+        builder.Services.AddSingleton<INetworkMonitor, MauiNetworkMonitor>();
+        builder.Services.AddSingleton<IUrlLauncher, MauiUrlLauncher>();
+        builder.Services.AddSingleton<IThemeService, MauiThemeService>();
+        builder.Services.AddSingleton<ICrashReportingService, MauiCrashReportingService>();
 
         // Shared services from RadioE45.Core (AzuraCast HTTP client, radio/podcast services, repositories)
         builder.Services.AddRadioE45Core();

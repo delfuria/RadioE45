@@ -5,14 +5,15 @@ using RadioE45.Models;
 using RadioE45.Services.Data;
 using RadioE45.Services.Localization;
 using RadioE45.Services.Radio;
+using RadioE45.Services.Platform;
 
 namespace RadioE45.ViewModels;
 
-[QueryProperty(nameof(StationId), "id")]
 public partial class EditStationViewModel : BaseViewModel
 {
     private readonly IRadioRepository _radioRepository;
     private readonly IAzuraStationCatalog _catalog;
+    private readonly INavigationService _navigation;
     private RadioStation? _station;
 
     [ObservableProperty]
@@ -63,9 +64,11 @@ public partial class EditStationViewModel : BaseViewModel
     public EditStationViewModel(
         IRadioRepository radioRepository,
         IAzuraStationCatalog catalog,
+        INavigationService navigation,
         ILogger<EditStationViewModel> logger)
     {
         Logger = logger;
+        _navigation = navigation;
         _radioRepository = radioRepository;
         _catalog = catalog;
         Title = LocalizationResourceManager.Instance["EditStation_Title"];
@@ -130,7 +133,7 @@ public partial class EditStationViewModel : BaseViewModel
             await _radioRepository.UpdateAsync(_station);
             _ = _catalog.ReloadAsync();
 
-            await Shell.Current.GoToAsync("..");
+            await _navigation.GoBackAsync();
         }, LocalizationResourceManager.Instance["Err_SaveStations"]);
     }
 
@@ -152,6 +155,6 @@ public partial class EditStationViewModel : BaseViewModel
     [RelayCommand]
     private async Task CancelAsync()
     {
-        await Shell.Current.GoToAsync("..");
+        await _navigation.GoBackAsync();
     }
 }

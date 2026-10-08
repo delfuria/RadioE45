@@ -1,6 +1,6 @@
 using RadioE45.Models;
 using SQLite;
-using Microsoft.Maui.Storage;
+using RadioE45.Services.Platform;
 
 namespace RadioE45.Services.Data;
 
@@ -13,18 +13,24 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
 
     private const string DbFileName = "radioe45.db";
     private SQLiteAsyncConnection? _connection;
+    private readonly string _databasePath;
     private readonly Task _initTask;
 
-    public DatabaseService()
+    public DatabaseService(IAppPaths appPaths)
     {
+        _databasePath = GetDatabasePath(appPaths.AppDataDirectory);
         _initTask = InitializeCoreAsync();
     }
 
-    public static string GetDatabasePath() => Path.Combine(FileSystem.AppDataDirectory, DbFileName);
+    /// <summary>
+    /// Database file inside the app data folder. Static so startup code (crash reporter
+    /// attachments) can locate it before the DI container exists.
+    /// </summary>
+    public static string GetDatabasePath(string appDataDirectory) => Path.Combine(appDataDirectory, DbFileName);
 
     private async Task InitializeCoreAsync()
     {
-        string dbPath = GetDatabasePath();
+        string dbPath = _databasePath;
         var conn = new SQLiteAsyncConnection(dbPath);
         await InitializeAsync(conn);
         _connection = conn;

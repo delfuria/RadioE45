@@ -13,7 +13,7 @@ namespace RadioE45.Services.Audio;
 // RadioPlaybackService's MediaLibrarySession. The single ExoPlayer in that service is the only
 // player; the phone UI drives it through this controller and mirrors its state, exactly like
 // Android Auto / Bluetooth do. Replaces the old MediaElement-in-UI AudioService on Android.
-public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IPlayerListener
+public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IMediaElementHost, IPlayerListener
 {
     private readonly IAzuraStationCatalog _catalog;
     private readonly ILogger<Media3AudioService> _logger;

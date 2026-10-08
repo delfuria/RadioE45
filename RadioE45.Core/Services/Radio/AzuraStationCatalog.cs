@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Networking;
 using RadioE45.Models;
 using RadioE45.Services.Data;
+using RadioE45.Services.Platform;
 
 namespace RadioE45.Services.Radio;
 
@@ -26,13 +26,14 @@ public class AzuraStationCatalog : IAzuraStationCatalog
     public AzuraStationCatalog(
         IRadioRepository radioRepository,
         IStationDetailService stationDetailService,
+        INetworkMonitor networkMonitor,
         ILogger<AzuraStationCatalog> logger)
     {
         _radioRepository = radioRepository;
         _stationDetailService = stationDetailService;
         _logger = logger;
 
-        Connectivity.ConnectivityChanged += OnConnectivityChanged;
+        networkMonitor.ConnectivityChanged += OnConnectivityChanged;
     }
 
     public Task LoadAsync(CancellationToken ct = default)
@@ -207,9 +208,9 @@ public class AzuraStationCatalog : IAzuraStationCatalog
         }
     }
 
-    private void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
+    private void OnConnectivityChanged(object? sender, bool hasInternet)
     {
-        if (e.NetworkAccess != NetworkAccess.Internet) return;
+        if (!hasInternet) return;
         // Reload solo se ci sono stazioni offline da recuperare. Evita di degradare
         // stazioni già online quando la connettività cambia (es. WiFi → 4G).
         if (!_stations.Any(s => !s.IsOnline)) return;

@@ -5,20 +5,27 @@ using Microsoft.Extensions.Logging;
 using RadioE45.Models;
 using RadioE45.Services.Localization;
 using RadioE45.Services.Radio;
+using RadioE45.Services.Platform;
 
 namespace RadioE45.ViewModels;
 
 public partial class PodcastListViewModel : BaseViewModel
 {
+    private readonly INavigationService _navigation;
     private readonly IPodcastService _podcastService;
     private readonly OnAirViewModel _onAirViewModel;
 
     [ObservableProperty]
     public partial ObservableCollection<AzuraCastPodcast> Podcasts { get; set; } = [];
 
-    public PodcastListViewModel(IPodcastService podcastService, OnAirViewModel onAirViewModel, ILogger<PodcastListViewModel> logger)
+    public PodcastListViewModel(
+        IPodcastService podcastService,
+        OnAirViewModel onAirViewModel,
+        INavigationService navigation,
+        ILogger<PodcastListViewModel> logger)
     {
         Logger = logger;
+        _navigation = navigation;
         _podcastService = podcastService;
         _onAirViewModel = onAirViewModel;
         Title = LocalizationResourceManager.Instance["Tab_Podcasts"];
@@ -57,6 +64,6 @@ public partial class PodcastListViewModel : BaseViewModel
     [RelayCommand]
     private async Task SelectPodcastAsync(AzuraCastPodcast podcast)
     {
-        await Shell.Current.GoToAsync($"PodcastEpisodesPage?podcastId={Uri.EscapeDataString(podcast.Id)}&podcastTitle={Uri.EscapeDataString(podcast.Title)}");
+        await _navigation.GoToPodcastEpisodesAsync(podcast.Id, podcast.Title);
     }
 }

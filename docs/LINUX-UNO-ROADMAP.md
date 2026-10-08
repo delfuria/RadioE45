@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
 > Branch: `Linux-support-exp`. Ultimo aggiornamento: 2026-10-07 (app v0.44).
-> Stato: **S0–S2 completate; S3 codice fatto, in attesa di regressione manuale; poi S4** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Stato: **S0–S3 completate; S4a codice fatto, in attesa di regressione manuale; poi S4b** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -414,7 +414,7 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 - **Uscita:** fattibilità web confermata; D5 = SQLite anche sul web. La cartella `spikes/` resta (ignorata da git) come banco di prova; si può cancellare dopo la S7.
 - Note operative: il dev server WASM usa `http://localhost:5000` (da `launchSettings.json`); dopo un `pkill` la porta 5000 sul Mac può rispondere 403, perché l'AirPlay Receiver di macOS usa la stessa porta. Se dà fastidio, cambiare porta nel profilo. Il primo clic sul canvas Uno a volte serve solo a dare il focus.
 
-### S3 — Estrazione del Core (parte 1) · Mac — ✅ codice completato 2026-10-07, ⏳ regressione manuale
+### S3 — Estrazione del Core (parte 1) · Mac — ✅ completata 2026-10-07
 - [x] `RadioE45.Core` (`net10.0`, `Nullable`, `ImplicitUsings`, `RootNamespace=RadioE45`, `AssemblyName=RadioE45.Core`) aggiunto alla `.slnx`. `InternalsVisibleTo` per `RadioE45`, `RadioE45.Uno`, `RadioE45.Core.Tests` (servono a `ConsoleLoggerProvider` e `StationRateLimitedException`, che sono `internal`).
 - [x] 67 file `.cs` spostati con `git mv` (namespace invariati): `Models/*`, `Services/IAzuraCast*Api.cs`, `Services/Radio/*` tranne `AzuraStationCatalog`, `Services/Audio` (prober, artwork, now-playing snapshot/tracker/result, interfacce e `Null*`), `Services/Data/*` tranne `DatabaseService`, `Services/Logging/*`, `LocalizationResourceManager`.
 - [x] `.resx` spostati in `RadioE45.Core/Resources/Strings/`: il manifest resta `RadioE45.Resources.Strings.AppResources` e le satellite diventano `en|pl/RadioE45.Core.resources.dll`. Rimosso dal csproj MAUI il blocco `EmbeddedResource Update="Resources\Strings\*.resx"`.
@@ -424,18 +424,34 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 - [x] `RadioE45.Core.Tests` (xUnit v3 4.0.1, Microsoft.Testing.Platform): 4 test su `ScheduleFlattener` verdi. Creato `global.json` in root con `"test": { "runner": "Microsoft.Testing.Platform" }`; in S6 vi si aggiunge `msbuild-sdks` → `Uno.Sdk`. Comando: `dotnet test --project RadioE45.Core.Tests/RadioE45.Core.Tests.csproj`.
 - [x] Build pulite dopo `dotnet clean`: maccatalyst, ios, android Debug con **0 warning e 0 errori** (come la baseline).
 - [x] Rimandati a S4: `CrashReportingConfiguration` (dipende da `AppSecrets.cs`, file locale non versionato), `AzuraStationCatalog`, `DatabaseService`, `CrashDiagnostics`, `CrashReportingSettings` (usano API MAUI).
-- [ ] **Regressione manuale (utente):** Mac Catalyst e un dispositivo mobile. Avvio, lingua dei testi (it/en/pl), play/pausa/cambio stazione, palinsesto, podcast, richieste brani, aggiunta/modifica stazione (DB).
-- [ ] **Build Windows** non verificabile sul Mac: da fare nella VM Windows 11 prima del merge su `main`.
-- [ ] Build Release Android/iOS da verificare prima del merge (linker).
-- **Uscita:** app MAUI invariata.
+- [x] **Regressione manuale (utente):** ok (confermato il 2026-10-07).
+- [x] Build Windows e build Release: confermate ok dall'utente insieme alla regressione.
+- **Uscita:** app MAUI invariata. ✅
 
-### S4 — Astrazioni e ViewModel nel Core · Mac
-- [ ] Interfacce di §4.2 nel Core; implementazioni MAUI nel progetto `RadioE45`.
-- [ ] Refactoring dei 12 ViewModel; spostamento nel Core.
-- [ ] Spostare nel Core `AzuraStationCatalog`, `DatabaseService`, `CrashReportingSettings`, `CrashDiagnostics`.
-- [ ] Audio: separare `Initialize(MediaElement)` (§4.3) ed eventuale `StreamPlaybackCoordinator` con test.
-- [ ] Verifica: `grep -rE "Microsoft\.Maui|CommunityToolkit\.Maui" RadioE45.Core` → vuoto.
-- **Uscita:** Core UI-agnostic, MAUI invariata, test verdi. Può richiedere 2 sessioni (S4a ViewModel, S4b audio).
+### S4a — Astrazioni e ViewModel nel Core · Mac — ✅ codice completato 2026-10-07, ⏳ regressione manuale
+- [x] Interfacce in `RadioE45.Core/Services/Platform/` (namespace `RadioE45.Services.Platform`): `IUiDispatcher` (+`IUiTimer`), `INavigationService` (intenti: `GoToOnAirAsync`, `GoBackAsync`, `GoToAddStationAsync`, `GoToEditStationAsync(id)`, `GoToPodcastEpisodesAsync(id, title)`, `OpenFromMenuAsync(MenuPage)`, `CloseMenu`, `ResetPodcastTabToRoot`, `ShowScheduleAsync`), `IDialogService` (`AlertAsync`, `ConfirmAsync`, `ShowToastAsync`), `ISettingsStore`, `IAppEnvironment` (versione, build, commit, piattaforma, `UsesSystemVolume`), `IAppPaths`, `INetworkMonitor`, `IUrlLauncher`, `IThemeService`, `ICrashReportingService`.
+- [x] Implementazioni MAUI in `RadioE45/Services/Platform/Maui*.cs`, registrate in `MauiProgram`. Le condizioni di piattaforma che prima stavano nei ViewModel (`#if ANDROID || IOS` per volume e Snackbar, `#if MACCATALYST` per Sentry) ora vivono **solo** nelle implementazioni MAUI (`MauiAppEnvironment.UsesSystemVolume`, `MauiDialogService.ShowToastAsync`, `MauiCrashReportingService`).
+- [x] I 12 ViewModel spostati in `RadioE45.Core/ViewModels` (`git mv`) e rifattorizzati sulle interfacce; nessun `#if` di piattaforma rimasto (solo `#if DEBUG` per `IsDebugBuild`).
+- [x] `[QueryProperty]` (tipo MAUI) tolto dai ViewModel e messo sulle **pagine** (`EditStationPage`: `id`; `PodcastEpisodesPage`: `podcastId`, `podcastTitle`), che inoltrano il valore al ViewModel. Stessa conversione e decodifica di prima.
+- [x] Spostati nel Core anche `AzuraStationCatalog` (connettività via `INetworkMonitor`), `DatabaseService` (percorso via `IAppPaths`; `GetDatabasePath(appDataDirectory)` resta statico per l'allegato Sentry all'avvio), `IAudioService` e `IPodcastPlayerService` **senza** `Initialize(MediaElement)`.
+- [x] MAUI: nuova interfaccia `IMediaElementHost.Initialize(MediaElement)` implementata da `AudioService`, `PodcastPlayerService` e `Media3AudioService` (Android: connette solo il MediaController). Le pagine fanno `(service as IMediaElementHost)?.Initialize(...)`.
+- [x] Restano in MAUI di proposito: `ThemeService` (risorse colore MAUI), `CrashReportingSettings`, `CrashReportingConfiguration`/`AppSecrets`, `CrashDiagnostics` (usati all'avvio prima della DI), `AudioService`, `PodcastPlayerService`, `IosNowPlayingService`.
+- [x] Verifica: `grep -rE "Microsoft\.Maui|CommunityToolkit\.Maui" RadioE45.Core` → nessun uso nel codice (solo commenti).
+- [x] Test: 9 verdi (`ScheduleFlattener` 4 + `OnAirViewModel` volume/mute 5, con NSubstitute 6.2.0) per le regole che prima erano `#if ANDROID || IOS`.
+- [x] Build Debug maccatalyst/ios/android: 0 warning, 0 errori.
+- [ ] **Regressione manuale (utente)**, punti toccati da S4a:
+  - modifica stazione (parametro `id`) e apertura episodi podcast (titolo e id con caratteri speciali);
+  - popup palinsesto; menu laterale: Canali, Impostazioni, link della stazione (sito, social, email/telefono);
+  - eliminazione stazione con conferma; prompt di seed con lista vuota; cambio stazione mentre si è dentro gli episodi podcast (il tab torna alla lista);
+  - volume e mute su Mac (valore ricordato al riavvio) e su telefono (sempre piena scala);
+  - Impostazioni: tema, salvataggio (Snackbar su telefono), reset DB, test crash report, avviso di riavvio quando cambia il consenso;
+  - barra di avanzamento del brano (timer UI), ritorno della rete con stazioni offline (ricarica del catalogo).
+- [ ] Build Windows nella VM Windows.
+
+### S4b — Coordinatore audio condiviso · Mac
+- [ ] `StreamPlaybackCoordinator` nel Core (riconnessione, fallback HLS→Icecast, `IsHlsActive`, regola pausa live = chiusura stream, debounce degli stati) che pilota un `IStreamPlayer` minimale; test con player finto.
+- [ ] `AudioService` (MAUI, non Android) usa il coordinatore; `Media3AudioService` (Android) resta com'è, perché la logica sta nel servizio nativo Media3.
+- [ ] Regressione audio su Mac Catalyst, iOS e Windows.
 
 ### S5 — Sistema di parità · Mac
 - [ ] `tools/ParityCheck` con i controlli 1–5 del §6.3, aggiunto alla `.slnx`.
@@ -523,7 +539,8 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
-| 2026-10-07 | S3 | Codice completato | Core + Tests nella soluzione, 67 file e 3 resx spostati, `AddRadioE45Core()`, 4 test verdi, build MAUI pulite (maccatalyst/ios/android); attesa regressione manuale e build Windows |
+| 2026-10-07 | S4a | Codice completato | 10 interfacce di piattaforma + implementazioni MAUI, 12 ViewModel + catalog, DB e interfacce audio nel Core; `QueryProperty` sulle pagine; `IMediaElementHost`; 9 test verdi; build MAUI pulite; attesa regressione |
+| 2026-10-07 | S3 | Completata (regressione utente ok) | Core + Tests nella soluzione, 67 file e 3 resx spostati, `AddRadioE45Core()`, 4 test verdi, build MAUI pulite (maccatalyst/ios/android); attesa regressione manuale e build Windows |
 | 2026-10-07 | S2 | Completata | Web: audio MP3/HLS ok in Chrome e Safari con clic reale, autoplay bloccato; CORS API e Icecast ok; SQLite WASM persistente; circa 13,5 MB Brotli; regola pausa live = stop documentata |
 | 2026-10-07 | S1 | Completata | Decisioni D1–D4 chiuse; spike audio/SQLite/HTTP ok su VM arm64 e macOS; fix SkiaSharp NoDependencies; note di comportamento del player in §4.3 |
 | 2026-10-07 | S0 | Completata | VM pronta, SSH e rsync configurati, `dotnet` 10.0.401 raggiungibile via SSH |

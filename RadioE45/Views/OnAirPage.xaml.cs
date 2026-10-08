@@ -33,7 +33,8 @@ public partial class OnAirPage : ContentPage
         if (!_isInitialized)
         {
             _isInitialized = true;
-            _audioService.Initialize(AudioPlayer);
+            // Android (Media3) ignores the element and just connects its MediaController.
+            (_audioService as IMediaElementHost)?.Initialize(AudioPlayer);
             _audioService.SetVolume(_viewModel.Volume);
             await _viewModel.InitializeAsync();
         }

@@ -1,4 +1,3 @@
-using CommunityToolkit.Maui.Views;
 using RadioE45.Models;
 
 namespace RadioE45.Services.Audio;
@@ -14,11 +13,6 @@ public interface IPodcastPlayerService
     event EventHandler<TimeSpan>? PositionChanged;
     event EventHandler? EpisodeCompleted;
     event EventHandler<string?>? PlaybackFailed;
-
-    /// <summary>
-    /// Called once from PodcastEpisodesPage to attach the MediaElement from the visual tree.
-    /// </summary>
-    void Initialize(MediaElement mediaElement);
 
     /// <summary>
     /// Legge il progresso salvato per l'episodio senza avviare la riproduzione — da usare per

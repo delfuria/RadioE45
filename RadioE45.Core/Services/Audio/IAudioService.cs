@@ -1,4 +1,3 @@
-using CommunityToolkit.Maui.Views;
 using RadioE45.Models;
 
 namespace RadioE45.Services.Audio;
@@ -25,11 +24,6 @@ public interface IAudioService
     /// from Android Auto, the car display or a steering-wheel button. Lets the UI mirror the selection.
     /// </summary>
     event EventHandler<AzuraStation> StationChanged;
-
-    /// <summary>
-    /// Called once from OnAirPage to attach the MediaElement from the visual tree.
-    /// </summary>
-    void Initialize(MediaElement mediaElement);
 
     Task PlayAsync(AzuraStation station);
     Task PauseAsync();
