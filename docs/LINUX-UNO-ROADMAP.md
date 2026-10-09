@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
 > Branch: `Linux-support-exp`. Ultimo aggiornamento: 2026-10-07 (app v0.44).
-> Stato: **S0–S3 completate; S4a codice fatto, in attesa di regressione manuale; poi S4b** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Stato: **S0–S4a completate; S4b codice fatto, in attesa di regressione audio; poi S5** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -93,7 +93,7 @@ ssh radioe45-vm 'pkill -f "net10.0-desktop/RadioE45.Uno"'   # chiusura
 
 Note:
 - La VM è una **copia di lavoro sincronizzata a senso unico** (Mac → VM): non modificare i file nella VM. Il `--delete` di rsync sovrascrive.
-- SDK diversi tra Mac (10.0.1xx) e VM (10.0.4xx): nel `global.json` **non** fissare la versione dell'SDK, oppure usare `rollForward: latestFeature`. Fissare solo `msbuild-sdks` → `Uno.Sdk`.
+- SDK diversi tra Mac (10.0.1xx) e VM (10.0.4xx): il `global.json` fissa `"sdk": { "version": "10.0.101", "rollForward": "latestFeature" }`, cioè 10.0.101 come minimo e qualsiasi 10.0.x più recente va bene. Mai `rollForward: disable`, perché romperebbe la build sulla VM. In S6 si aggiunge `msbuild-sdks` → `Uno.Sdk`.
 - Se l'IP della VM cambia, aggiornare `HostName` in `~/.ssh/config` sul Mac.
 - Il file `XAUTHORITY` di XWayland (`.mutter-Xwaylandauth.*`) cambia a ogni login nella VM: per questo si risolve con `ls` invece di scriverlo fisso.
 - `dotnet run` lanciato via SSH senza `nohup … < /dev/null &` tiene occupata la sessione: per i test interattivi usare sempre la forma in background.
@@ -105,7 +105,7 @@ Note:
 
 ```
 RadioE45.slnx
-├── global.json                    { "msbuild-sdks": { "Uno.Sdk": "<stabile>" } }
+├── global.json                    sdk 10.0.101 + latestFeature, test runner MTP, msbuild-sdks → Uno.Sdk (S6)
 ├── version.json                   NBGV, condiviso da tutte le app
 ├── CLAUDE.md                      regole di progetto (nuovo, §7)
 ├── .claude/
@@ -428,7 +428,7 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 - [x] Build Windows e build Release: confermate ok dall'utente insieme alla regressione.
 - **Uscita:** app MAUI invariata. ✅
 
-### S4a — Astrazioni e ViewModel nel Core · Mac — ✅ codice completato 2026-10-07, ⏳ regressione manuale
+### S4a — Astrazioni e ViewModel nel Core · Mac — ✅ completata 2026-10-07 (regressione utente ok)
 - [x] Interfacce in `RadioE45.Core/Services/Platform/` (namespace `RadioE45.Services.Platform`): `IUiDispatcher` (+`IUiTimer`), `INavigationService` (intenti: `GoToOnAirAsync`, `GoBackAsync`, `GoToAddStationAsync`, `GoToEditStationAsync(id)`, `GoToPodcastEpisodesAsync(id, title)`, `OpenFromMenuAsync(MenuPage)`, `CloseMenu`, `ResetPodcastTabToRoot`, `ShowScheduleAsync`), `IDialogService` (`AlertAsync`, `ConfirmAsync`, `ShowToastAsync`), `ISettingsStore`, `IAppEnvironment` (versione, build, commit, piattaforma, `UsesSystemVolume`), `IAppPaths`, `INetworkMonitor`, `IUrlLauncher`, `IThemeService`, `ICrashReportingService`.
 - [x] Implementazioni MAUI in `RadioE45/Services/Platform/Maui*.cs`, registrate in `MauiProgram`. Le condizioni di piattaforma che prima stavano nei ViewModel (`#if ANDROID || IOS` per volume e Snackbar, `#if MACCATALYST` per Sentry) ora vivono **solo** nelle implementazioni MAUI (`MauiAppEnvironment.UsesSystemVolume`, `MauiDialogService.ShowToastAsync`, `MauiCrashReportingService`).
 - [x] I 12 ViewModel spostati in `RadioE45.Core/ViewModels` (`git mv`) e rifattorizzati sulle interfacce; nessun `#if` di piattaforma rimasto (solo `#if DEBUG` per `IsDebugBuild`).
@@ -439,19 +439,26 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 - [x] Verifica: `grep -rE "Microsoft\.Maui|CommunityToolkit\.Maui" RadioE45.Core` → nessun uso nel codice (solo commenti).
 - [x] Test: 9 verdi (`ScheduleFlattener` 4 + `OnAirViewModel` volume/mute 5, con NSubstitute 6.2.0) per le regole che prima erano `#if ANDROID || IOS`.
 - [x] Build Debug maccatalyst/ios/android: 0 warning, 0 errori.
-- [ ] **Regressione manuale (utente)**, punti toccati da S4a:
+- [x] **Regressione manuale (utente)**: ok. Punti verificati:
   - modifica stazione (parametro `id`) e apertura episodi podcast (titolo e id con caratteri speciali);
   - popup palinsesto; menu laterale: Canali, Impostazioni, link della stazione (sito, social, email/telefono);
   - eliminazione stazione con conferma; prompt di seed con lista vuota; cambio stazione mentre si è dentro gli episodi podcast (il tab torna alla lista);
   - volume e mute su Mac (valore ricordato al riavvio) e su telefono (sempre piena scala);
   - Impostazioni: tema, salvataggio (Snackbar su telefono), reset DB, test crash report, avviso di riavvio quando cambia il consenso;
   - barra di avanzamento del brano (timer UI), ritorno della rete con stazioni offline (ricarica del catalogo).
-- [ ] Build Windows nella VM Windows.
+- [x] Build Windows: inclusa nella conferma utente.
 
-### S4b — Coordinatore audio condiviso · Mac
-- [ ] `StreamPlaybackCoordinator` nel Core (riconnessione, fallback HLS→Icecast, `IsHlsActive`, regola pausa live = chiusura stream, debounce degli stati) che pilota un `IStreamPlayer` minimale; test con player finto.
-- [ ] `AudioService` (MAUI, non Android) usa il coordinatore; `Media3AudioService` (Android) resta com'è, perché la logica sta nel servizio nativo Media3.
-- [ ] Regressione audio su Mac Catalyst, iOS e Windows.
+### S4b — Motore audio live condiviso · Mac — ✅ codice completato 2026-10-08, ⏳ regressione audio
+- [x] `LiveStreamAudioService : IAudioService` nel Core (`RadioE45.Core/Services/Audio/`): è la logica di `AudioService` MAUI **spostata senza modifiche di comportamento**. Comprende ordine e fallback degli URL (`GetCandidateUrls`: ultimo URL funzionante → MP3/Icecast → fallback → HLS, oppure HLS per primo con `PreferHlsStream`), `IsHlsActive`, guardia di riconnessione, watchdog (10 s, buffering bloccato > 12 s), riconnessione al ritorno della rete (`INetworkMonitor`), su `MediaFailed` e su fine stream, regola **pausa live = chiusura stream** e Resume = riapertura, Stop/StopImmediate/Shutdown.
+- [x] `IStreamPlayer` (Core): `HasSource`, `Open(url)`, `Close()`, `SetVolume`, `SetMetadata`, `ClearMetadata`, eventi `StateChanged` (enum `StreamPlayerState`), `Failed`, `Ended`. `AttachPlayer(player)` sostituisce l'`Initialize(MediaElement)`.
+- [x] MAUI: `MediaElementStreamPlayer` (adattatore del `MediaElement`, contiene la guardia sui metadati per Windows e il reset di `ShouldAutoPlay`) e `AudioService : LiveStreamAudioService, IMediaElementHost`, ridotto a circa 30 righe (prima 515). `IUiDispatcher` ha ora anche `IsUiThread`.
+- [x] Android invariato: `Media3AudioService` non usa il motore condiviso (la logica sta nel servizio Media3).
+- [x] **Debounce degli stati instabili (spike S1): NON nel motore condiviso**, per non cambiare il comportamento MAUI. Va nell'adattatore Uno (`MediaPlayerStreamPlayer`, S7), che normalizza gli stati di libVLC/HTML5 prima di inoltrarli.
+- [x] Test: 20 su `LiveStreamAudioService` con player e rete finti e dispatcher sincrono (ordine dei candidati, apertura, HLS attivo, URL tutti irraggiungibili, focus negato, pausa = chiusura con stazione mantenuta, Resume = riapertura, Stop, Resume dopo Stop, errore in riproduzione = riconnessione silenziosa, errore dopo pausa = segnalato, fine stream, ritorno rete, watchdog, stati, cambio player, volume). Totale progetto: **29 test verdi**.
+- [x] Build Debug maccatalyst/ios/android: 0 warning, 0 errori.
+- [ ] **Regressione audio (utente)** su Mac Catalyst, iOS e Windows: avvio con autoplay, play/pausa/ripresa (riparte in diretta), stop, cambio stazione (frecce e lista), volume/mute, stazione con HLS e preferenza HLS on/off (badge HLS), rete staccata e riattaccata, ritorno su OnAir dopo un podcast, metadati e controlli di sistema (lock screen iOS, Centro di controllo macOS, SMTC Windows).
+- Nota: già prima, dopo `Shutdown()` il `CancellationTokenSource` di riconnessione viene eliminato e un successivo `AttachPlayer`+`PlayAsync` lo cancellerebbe da eliminato. Comportamento preservato tale e quale (Shutdown avviene solo alla chiusura dell'app). Da rivedere se l'app Uno riusasse il servizio dopo Shutdown.
+- Per Uno (S7): il player podcast (`PodcastPlayerService`) resta MAUI; per Uno serve un'implementazione propria di `IPodcastPlayerService`, oppure si estrae anche quello sullo stesso schema.
 
 ### S5 — Sistema di parità · Mac
 - [ ] `tools/ParityCheck` con i controlli 1–5 del §6.3, aggiunto alla `.slnx`.
@@ -539,7 +546,8 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
-| 2026-10-07 | S4a | Codice completato | 10 interfacce di piattaforma + implementazioni MAUI, 12 ViewModel + catalog, DB e interfacce audio nel Core; `QueryProperty` sulle pagine; `IMediaElementHost`; 9 test verdi; build MAUI pulite; attesa regressione |
+| 2026-10-08 | S4b | Codice completato | `LiveStreamAudioService` + `IStreamPlayer` nel Core (logica `AudioService` invariata), adattatore `MediaElementStreamPlayer`, 20 nuovi test (29 totali), build MAUI pulite; attesa regressione audio |
+| 2026-10-07 | S4a | Completata (regressione utente ok) | 10 interfacce di piattaforma + implementazioni MAUI, 12 ViewModel + catalog, DB e interfacce audio nel Core; `QueryProperty` sulle pagine; `IMediaElementHost`; 9 test verdi; build MAUI pulite; attesa regressione |
 | 2026-10-07 | S3 | Completata (regressione utente ok) | Core + Tests nella soluzione, 67 file e 3 resx spostati, `AddRadioE45Core()`, 4 test verdi, build MAUI pulite (maccatalyst/ios/android); attesa regressione manuale e build Windows |
 | 2026-10-07 | S2 | Completata | Web: audio MP3/HLS ok in Chrome e Safari con clic reale, autoplay bloccato; CORS API e Icecast ok; SQLite WASM persistente; circa 13,5 MB Brotli; regola pausa live = stop documentata |
 | 2026-10-07 | S1 | Completata | Decisioni D1–D4 chiuse; spike audio/SQLite/HTTP ok su VM arm64 e macOS; fix SkiaSharp NoDependencies; note di comportamento del player in §4.3 |

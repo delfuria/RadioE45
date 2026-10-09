@@ -205,19 +205,6 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
                 ShortName = "azuratest_radio",
                 IsTest = false,
                 SortOrder = 1
-            },
-            new()
-            {
-                StationId = 1,
-                Name = "Muse",
-                Description = "TestStation",
-                StreamUrl = "/radio.mp3",
-                UrlBase = "hear.moe",
-                LogoUrl = "",
-                WebsocketUrl = "",
-                ShortName = "muse",
-                IsTest = false,
-                SortOrder = 2
             }
             /*,
             new()

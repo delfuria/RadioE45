@@ -2,6 +2,8 @@ namespace RadioE45.Services.Platform;
 
 public sealed class MauiUiDispatcher : IUiDispatcher
 {
+    public bool IsUiThread => MainThread.IsMainThread;
+
     public void Post(Action action) => MainThread.BeginInvokeOnMainThread(action);
 
     public Task InvokeAsync(Action action) => MainThread.InvokeOnMainThreadAsync(action);

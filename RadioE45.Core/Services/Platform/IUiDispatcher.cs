@@ -6,6 +6,9 @@ namespace RadioE45.Services.Platform;
 /// </summary>
 public interface IUiDispatcher
 {
+    /// <summary>True when called on the UI thread.</summary>
+    bool IsUiThread { get; }
+
     /// <summary>Queues the action on the UI thread without waiting (BeginInvokeOnMainThread).</summary>
     void Post(Action action);
 
