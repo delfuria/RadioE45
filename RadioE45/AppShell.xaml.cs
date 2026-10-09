@@ -61,10 +61,33 @@ public partial class AppShell : Shell
         _startupCheckDone = true;
 
         // Prima dell'eventuale proposta di stazioni di prova: i Termini d'uso compaiono solo al primo avvio.
+        // Il primo Navigated arriva prima che la Shell sia nella finestra: su iOS/Windows l'AlertManager
+        // di MAUI scarta la richiesta senza mai completare il Task, e lo startup resterebbe appeso.
+        await WaitUntilLoadedAsync();
         await _termsService.EnsureAcceptedAsync();
 
         bool hasStations = await _radioRepository.HasStationsAsync();
         if (!hasStations)
             await GoToAsync("//OnAirPage/RadioListPage");
+    }
+
+    private async Task WaitUntilLoadedAsync()
+    {
+        if (!IsLoaded)
+        {
+            TaskCompletionSource loaded = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            void OnLoaded(object? s, EventArgs e)
+            {
+                Loaded -= OnLoaded;
+                loaded.TrySetResult();
+            }
+            Loaded += OnLoaded;
+            await loaded.Task;
+        }
+
+        // Un giro di dispatcher in più: la finestra nativa finisce di attivarsi dopo Loaded.
+        TaskCompletionSource dispatched = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        Dispatcher.Dispatch(() => dispatched.TrySetResult());
+        await dispatched.Task;
     }
 }
