@@ -1,4 +1,5 @@
 using RadioE45.Services.Data;
+using RadioE45.Services.Legal;
 using RadioE45.ViewModels;
 using RadioE45.Views;
 
@@ -7,11 +8,13 @@ namespace RadioE45;
 public partial class AppShell : Shell
 {
     private readonly IRadioRepository _radioRepository;
+    private readonly ITermsService _termsService;
     private bool _startupCheckDone;
 
-    public AppShell(IRadioRepository radioRepository, OnAirViewModel onAirViewModel, AppMenuViewModel appMenuViewModel)
+    public AppShell(IRadioRepository radioRepository, OnAirViewModel onAirViewModel, AppMenuViewModel appMenuViewModel, ITermsService termsService)
     {
         _radioRepository = radioRepository;
+        _termsService = termsService;
         BindingContext = onAirViewModel;
         InitializeComponent();
         MenuRoot.BindingContext = appMenuViewModel;
@@ -56,6 +59,9 @@ public partial class AppShell : Shell
     {
         if (_startupCheckDone) return;
         _startupCheckDone = true;
+
+        // Prima dell'eventuale proposta di stazioni di prova: i Termini d'uso compaiono solo al primo avvio.
+        await _termsService.EnsureAcceptedAsync();
 
         bool hasStations = await _radioRepository.HasStationsAsync();
         if (!hasStations)

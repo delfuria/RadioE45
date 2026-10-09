@@ -3,6 +3,7 @@ using RadioE45.Services.CrashReporting;
 using RadioE45.Services;
 using RadioE45.Services.Data;
 using RadioE45.Services.Diagnostics;
+using RadioE45.Services.Legal;
 using RadioE45.Services.Logging;
 using RadioE45.Services.Radio;
 using RadioE45.ViewModels;
@@ -19,14 +20,16 @@ public partial class App : Application
     private readonly IRadioRepository _radioRepository;
     private readonly OnAirViewModel _onAirViewModel;
     private readonly AppMenuViewModel _appMenuViewModel;
+    private readonly ITermsService _termsService;
 
-    public App(IAppSettingsRepository settingsRepo, ILogRepository logRepo, DatabaseLoggerProvider dbLoggerProvider, IAzuraStationCatalog stationCatalog, IRadioRepository radioRepository, OnAirViewModel onAirViewModel, AppMenuViewModel appMenuViewModel)
+    public App(IAppSettingsRepository settingsRepo, ILogRepository logRepo, DatabaseLoggerProvider dbLoggerProvider, IAzuraStationCatalog stationCatalog, IRadioRepository radioRepository, OnAirViewModel onAirViewModel, AppMenuViewModel appMenuViewModel, ITermsService termsService)
     {
         InitializeComponent();
         _settingsRepo = settingsRepo;
         _radioRepository = radioRepository;
         _onAirViewModel = onAirViewModel;
         _appMenuViewModel = appMenuViewModel;
+        _termsService = termsService;
 
         var pref = Preferences.Default.Get("theme_preference", "Dark");
         ThemeService.Apply(pref);
@@ -87,7 +90,7 @@ public partial class App : Application
         // subito vedendo CurrentStation valorizzato) selezioni di nuovo preferita/prima.
         _onAirViewModel.CurrentStation = null;
 
-        Window window = new(new AppShell(_radioRepository, _onAirViewModel, _appMenuViewModel));
+        Window window = new(new AppShell(_radioRepository, _onAirViewModel, _appMenuViewModel, _termsService));
 
         DevicePlatform platform = DeviceInfo.Current.Platform;
         if (platform == DevicePlatform.WinUI || platform == DevicePlatform.MacCatalyst)

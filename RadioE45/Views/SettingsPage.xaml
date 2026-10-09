@@ -310,6 +310,26 @@
 
                     <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" />
 
+                    <Grid ColumnDefinitions="*,Auto" MinimumHeightRequest="32">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ShowTermsCommand}" />
+                        </Grid.GestureRecognizers>
+                        <Label
+                            Grid.Column="0"
+                            Text="{loc:Translate Settings_Terms}"
+                            TextColor="{DynamicResource PrimaryText}"
+                            FontSize="15"
+                            VerticalOptions="Center" />
+                        <Label
+                            Grid.Column="1"
+                            Text="&#x203A;"
+                            TextColor="{DynamicResource MutedText}"
+                            FontSize="20"
+                            VerticalOptions="Center" />
+                    </Grid>
+
+                    <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" />
+
                     <Label
                         Text="{loc:Translate Settings_Copyright}"
                         Style="{StaticResource CaptionLabel}"

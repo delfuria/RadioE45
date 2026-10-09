@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using RadioE45.Services.Audio;
 using RadioE45.Services.Data;
+using RadioE45.Services.Legal;
 using RadioE45.Services.Radio;
 
 namespace RadioE45.DependencyInjection;
@@ -17,6 +18,7 @@ public static class CoreServiceCollectionExtensions
         services.AddHttpClient("AzuraCast")
             .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(3));
 
+        services.AddSingleton<ITermsService, TermsService>();
         services.AddSingleton<IStreamUrlProber, StreamUrlProber>();
         services.AddSingleton<RemoteArtworkLoader>();
 

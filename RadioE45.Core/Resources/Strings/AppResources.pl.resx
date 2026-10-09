@@ -193,4 +193,18 @@
   <data name="Err_ReorderStations" xml:space="preserve"><value>Zmiana kolejności stacji</value></data>
   <data name="Err_LoadRequestableSongs" xml:space="preserve"><value>Ładowanie utworów do zamówienia</value></data>
   <data name="Err_SubmitRequest" xml:space="preserve"><value>Nie można wysłać żądania</value></data>
+  <data name="Terms_Title" xml:space="preserve"><value>Warunki korzystania</value></data>
+  <data name="Terms_Accept" xml:space="preserve"><value>Rozumiem</value></data>
+  <data name="Terms_Body" xml:space="preserve"><value>Radio E45 to odtwarzacz strumieni radia internetowego. Nie hostuje, nie przechowuje ani nie retransmituje żadnych treści audio.
+
+Stacje dodajesz Ty, podając publiczny adres URL. Potwierdzasz, że masz prawo ich słuchać i że przestrzegasz warunków każdego operatora. Prawa do każdego strumienia należą do jego operatora lub licencjodawców.
+
+Aplikacja zawiera wyłącznie stację Radio E45 (prowadzoną przez twórcę) oraz oficjalną stację demo AzuraCast. Możesz je usunąć w dowolnym momencie.
+
+Właściciele praw: aby zgłosić nieautoryzowany dostęp lub poprosić o usunięcie stacji, napisz na support@radioe45.it, podając nazwę stacji, adres URL strumienia i krótki opis przysługujących Ci praw. Uzasadnione zgłoszenia rozpatrujemy w ciągu 5 dni roboczych.
+
+Aplikacja jest udostępniana „tak jak jest”. Nie odpowiadamy za strumienie podmiotów trzecich.
+
+Warunki możesz przeczytać ponownie w dowolnym momencie w Ustawienia → Info.</value></data>
+  <data name="Settings_Terms" xml:space="preserve"><value>Warunki korzystania</value></data>
 </root>

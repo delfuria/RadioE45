@@ -193,4 +193,18 @@
   <data name="Err_ReorderStations" xml:space="preserve"><value>Reordering stations</value></data>
   <data name="Err_LoadRequestableSongs" xml:space="preserve"><value>Loading requestable songs</value></data>
   <data name="Err_SubmitRequest" xml:space="preserve"><value>Could not submit the request</value></data>
+  <data name="Terms_Title" xml:space="preserve"><value>Terms of Use</value></data>
+  <data name="Terms_Accept" xml:space="preserve"><value>I have read this</value></data>
+  <data name="Terms_Body" xml:space="preserve"><value>Radio E45 is a player for internet radio streams. It does not host, store or rebroadcast any audio.
+
+Stations are added by you via public URL. You confirm you are allowed to listen to them and will respect each operator's terms. Rights to each stream belong to its operator or licensors.
+
+The app includes only the Radio E45 station (operated by the developer) and the official AzuraCast demo station. You can remove them at any time.
+
+Rights holders: to report unauthorized access or request removal of a station, write to support@radioe45.it with the station name, stream URL and a short description of your rights. Valid requests are handled within 5 business days.
+
+The app is provided "as is". We are not responsible for third-party streams.
+
+You can read these terms again at any time in Settings → Info.</value></data>
+  <data name="Settings_Terms" xml:space="preserve"><value>Terms of Use</value></data>
 </root>

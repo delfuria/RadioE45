@@ -57,13 +57,19 @@ All documentation lives in [`docs/`](docs/):
 | Store distribution | [`docs/STORE-DISTRIBUTION.md`](docs/STORE-DISTRIBUTION.md) · [`docs/store-descriptions.md`](docs/store-descriptions.md) |
 | Version bump procedure | [`docs/VERSION-BUMP.md`](docs/VERSION-BUMP.md) |
 | Windows build notes | [`docs/WINDOWS-README.md`](docs/WINDOWS-README.md) |
+| App Store review 5.2.3 (third-party content, Terms of Use) | [`docs/APP-REVIEW-5.2.3.md`](docs/APP-REVIEW-5.2.3.md) |
 | Tester distribution | [`docs/tester/distribuzione-tester.md`](docs/tester/distribuzione-tester.md) |
 
-## Configured stations
-| Name | Stream |
+## Preloaded stations
+The app ships with no third-party catalog. The only stations it can add on first launch are these two;
+every other station is added by the user via public URL.
+
+| Name | Server |
 |------|--------|
-| Radio Example | https://stream.radioexample.net:8060/live.mp3 |
-| Radio Demo FM | https://stream.radioexample.net:8000/live.mp3 |
+| RadioE45 (operated by the developer) | radioe45.ddns.net |
+| AzuraTest Radio (official AzuraCast demo) | demo.azuracast.com |
+
+On first launch the app also shows Terms of Use once (see [`docs/APP-REVIEW-5.2.3.md`](docs/APP-REVIEW-5.2.3.md)).
 
 ## Development
 

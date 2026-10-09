@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
 using RadioE45.Services.Data;
+using RadioE45.Services.Legal;
 using RadioE45.Services.Localization;
 using RadioE45.Services.Platform;
 
@@ -18,6 +19,7 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly IThemeService _themeService;
     private readonly ICrashReportingService _crashReporting;
     private readonly IAppEnvironment _environment;
+    private readonly ITermsService _terms;
     private AppSettings? _currentSettings;
     private bool _hasChanges;
 
@@ -65,6 +67,7 @@ public partial class SettingsViewModel : BaseViewModel
         IThemeService themeService,
         ICrashReportingService crashReporting,
         IAppEnvironment environment,
+        ITermsService terms,
         ILogger<SettingsViewModel> logger)
     {
         Logger = logger;
@@ -76,6 +79,7 @@ public partial class SettingsViewModel : BaseViewModel
         _themeService = themeService;
         _crashReporting = crashReporting;
         _environment = environment;
+        _terms = terms;
         Title = "Impostazioni";
         AppVersion = $"{environment.VersionString} ({environment.BuildString}, {environment.CommitId})";
         _ = LoadSettingsAsync();
@@ -117,6 +121,9 @@ public partial class SettingsViewModel : BaseViewModel
         _hasChanges = true;
         SaveSettingsCommand.NotifyCanExecuteChanged();
     }
+
+    [RelayCommand]
+    private Task ShowTermsAsync() => _terms.ShowAsync();
 
     [RelayCommand]
     private async Task ResetDatabaseAsync()
