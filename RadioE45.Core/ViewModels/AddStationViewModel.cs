@@ -1,9 +1,11 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
+using RadioE45.Services.Audio;
 using RadioE45.Services.Data;
 using RadioE45.Services.Localization;
 using RadioE45.Services.Radio;
@@ -17,6 +19,17 @@ public partial class AddStationViewModel : BaseViewModel
     private readonly IStationListService _stationListService;
     private readonly IRadioRepository _radioRepository;
     private readonly IAzuraStationCatalog _catalog;
+    private readonly IAppEnvironment _environment;
+
+    // Apple Local Network alert: the first request to a LAN host can fail while the alert is still
+    // on screen (TN3179), so a private address is retried until the user answers — bounded by
+    // attempts and total time, so a LAN server that is really down still reports the error.
+    internal const int LocalNetworkMaxAttempts = 10;
+    internal static readonly TimeSpan LocalNetworkRetryDelay = TimeSpan.FromSeconds(2);
+    internal static readonly TimeSpan LocalNetworkRetryBudget = TimeSpan.FromSeconds(30);
+
+    // Injectable for tests, so retries don't wait for real.
+    internal Func<TimeSpan, Task> DelayAsync { get; set; } = delay => Task.Delay(delay);
 
     [ObservableProperty]
     public partial string UrlBase { get; set; } = "";
@@ -42,6 +55,7 @@ public partial class AddStationViewModel : BaseViewModel
         IRadioRepository radioRepository,
         IAzuraStationCatalog catalog,
         INavigationService navigation,
+        IAppEnvironment environment,
         ILogger<AddStationViewModel> logger)
     {
         Logger = logger;
@@ -49,6 +63,7 @@ public partial class AddStationViewModel : BaseViewModel
         _stationListService = stationListService;
         _radioRepository = radioRepository;
         _catalog = catalog;
+        _environment = environment;
         Title = LocalizationResourceManager.Instance["AddStation_Title"];
     }
 
@@ -68,7 +83,7 @@ public partial class AddStationViewModel : BaseViewModel
                 // .Replace("http://", "", StringComparison.OrdinalIgnoreCase)
                 .TrimEnd('/');
 
-            List<AzuraCastStationListItem>? stations = await _stationListService.FetchAsync(urlBase);
+            List<AzuraCastStationListItem>? stations = await FetchStationsAsync(urlBase);
             if (stations == null)
             {
                 ErrorMessage = LocalizationResourceManager.Instance["AddStation_ServerError"];
@@ -93,6 +108,26 @@ public partial class AddStationViewModel : BaseViewModel
             HasResults = true;
             UpdateSelectedCount();
         }, LocalizationResourceManager.Instance["Err_SearchStations"]);
+    }
+
+    private async Task<List<AzuraCastStationListItem>?> FetchStationsAsync(string urlBase)
+    {
+        List<AzuraCastStationListItem>? stations = await _stationListService.FetchAsync(urlBase);
+        if (stations is not null || !_environment.HasLocalNetworkPrivacy || !PrivateHostDetector.IsPrivateHost(urlBase))
+            return stations;
+
+        var elapsed = Stopwatch.StartNew();
+        for (int attempt = 2; attempt <= LocalNetworkMaxAttempts && elapsed.Elapsed < LocalNetworkRetryBudget; attempt++)
+        {
+            await DelayAsync(LocalNetworkRetryDelay);
+            Logger.LogInformation("Local network host {UrlBase}: retry {Attempt}/{Max}", urlBase, attempt, LocalNetworkMaxAttempts);
+
+            stations = await _stationListService.FetchAsync(urlBase);
+            if (stations is not null)
+                return stations;
+        }
+
+        return null;
     }
 
     [RelayCommand]

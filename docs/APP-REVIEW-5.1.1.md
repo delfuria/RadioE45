@@ -20,7 +20,8 @@ no purpose string.
 | `PrivateHostDetector`: purely syntactic check (no DNS) for private hosts: 10/8, 172.16/12, 192.168/16, 169.254/16, 127/8, `::1`, `fe80::/10`, `fc00::/7`, dotless names, `localhost`, `.local`, `.lan`, `.home.arpa`, `.internal`. | `RadioE45.Core/Services/Audio/PrivateHostDetector.cs` |
 | Stream candidates: private URLs are dropped for **public** stations, order and `PreferHlsStream` unchanged. A station is "local" when its `UrlBase` is private (fallback: `StreamUrlFallback`); local stations keep every candidate. If nothing public is left, the original list is used. | `LiveStreamAudioService.GetCandidateUrls` (iOS, Mac Catalyst, Windows, Uno), `RadioPlaybackService.GetStreamCandidates` (Android) |
 | Track artwork from the now-playing API: same rule, a private `art` URL becomes `null` for public stations. | `RadioE45.Core/Services/Radio/NowPlayingService.cs` |
-| Tests | `RadioE45.Core.Tests/Services/Audio/PrivateHostDetectorTests.cs`, `LiveStreamAudioServiceTests.cs` |
+| Add station on a LAN host: while the Local Network alert is on screen the system can fail the first request (TN3179), which showed "server unreachable". On Apple platforms only (`IAppEnvironment.HasLocalNetworkPrivacy`) and only for private addresses, the search is retried every 2 s, at most 10 attempts / 30 s, so results appear once the user answers. | `RadioE45.Core/ViewModels/AddStationViewModel.cs` |
+| Tests | `RadioE45.Core.Tests/Services/Audio/PrivateHostDetectorTests.cs`, `LiveStreamAudioServiceTests.cs`, `RadioE45.Core.Tests/ViewModels/AddStationViewModelTests.cs` |
 
 ### Still reachable on a misconfigured public server
 
@@ -52,8 +53,14 @@ The API then stops returning LAN addresses in `listen_url`, `hls_url` and `art`.
 2. With the default stations (Radio E45, AzuraCast demo), play each one and open the On Air screen:
    the Local Network prompt must **not** appear.
 3. Add a station whose URL is on the LAN (e.g. `192.168.1.x` or `myserver.local`): the prompt must
-   appear with the new text in the device language (try it, en, pl) and playback must work after
-   allowing it.
+   appear with the new text in the device language (try it, en, pl); after allowing it the station
+   list appears without pressing "Search" again, and playback works.
+
+Conditions for the prompt to appear (TN3179): a **real device** (the Simulator has no local network
+privacy); the app **deleted first** (the choice is remembered); the server on the **same Wi-Fi/Ethernet
+subnet** (routed, VPN, cellular and loopback addresses don't count). On macOS, open the app from
+Finder, not from Terminal/IDE (processes launched from Terminal are allowed automatically); the
+choice can be reset in System Settings → Privacy & Security → Local Network (macOS 27.2+).
 4. Bump the version (`version.json`, see [`VERSION-BUMP.md`](VERSION-BUMP.md)), build, upload.
 
 ## Reply for the Resolution Center

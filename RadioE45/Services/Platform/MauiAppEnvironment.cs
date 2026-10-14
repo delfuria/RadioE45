@@ -15,4 +15,10 @@ public sealed class MauiAppEnvironment : IAppEnvironment
 #else
     public bool UsesSystemVolume => false;
 #endif
+
+#if IOS || MACCATALYST
+    public bool HasLocalNetworkPrivacy => true;
+#else
+    public bool HasLocalNetworkPrivacy => false;
+#endif
 }

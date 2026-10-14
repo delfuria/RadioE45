@@ -20,4 +20,12 @@ public interface IAppEnvironment
     /// gain stays at full scale except when muted and no volume slider is shown or persisted.
     /// </summary>
     bool UsesSystemVolume { get; }
+
+    /// <summary>
+    /// True on Apple platforms, where the first connection to a LAN host shows the Local Network
+    /// alert and the system may fail that connection before the user answers. Default
+    /// implementation keeps heads that don't override it (e.g. Uno) compiling and correct.
+    /// </summary>
+    bool HasLocalNetworkPrivacy =>
+        OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS();
 }
