@@ -462,13 +462,26 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 - Nota: già prima, dopo `Shutdown()` il `CancellationTokenSource` di riconnessione viene eliminato e un successivo `AttachPlayer`+`PlayAsync` lo cancellerebbe da eliminato. Comportamento preservato tale e quale (Shutdown avviene solo alla chiusura dell'app). Da rivedere se l'app Uno riusasse il servizio dopo Shutdown.
 - Per Uno (S7): il player podcast (`PodcastPlayerService`) resta MAUI; per Uno serve un'implementazione propria di `IPodcastPlayerService`, oppure si estrae anche quello sullo stesso schema.
 
-### S5 — Sistema di parità · Mac
-- [ ] `tools/ParityCheck` con i controlli 1–5 del §6.3, aggiunto alla `.slnx`.
-- [ ] `parity/pages.yaml` (9 pagine), `parity/features.yaml` generato dall'inventario delle feature della v0.44, con desktop e web in `todo`.
-- [ ] `parity/vm-surface.txt` iniziale.
-- [ ] `CLAUDE.md` di progetto (§7.1), skill `ui-parity-port` (§7.2), hook (§7.3), `docs/parity/MAUI-TO-UNO.md`.
-- [ ] Test dell'hook: modificare un binding in una vista MAUI e verificare che la sessione venga bloccata con exit 2.
-- **Uscita:** `ParityCheck` restituisce 1 (tutto il debito dichiarato, nessun errore 2).
+### S5 — Sistema di parità · Mac (divisa in S5a + S5b)
+
+Decisioni prese con l'utente (2026-10-14):
+- **Versioning:** `.claude/` oggi è tutta in `.gitignore`. Si aggiungono eccezioni per `.claude/skills/` e `.claude/settings.json` (hook condivisi e versionati); `settings.local.json` resta privato.
+- **Superficie VM cambiata senza modifica di `features.yaml` = errore (exit 2)**, non solo avviso (modifica al §6.3 punto 4).
+- **Granularità di `features.yaml`: per sezione di pagina** (circa 40–60 voci).
+- Fatti rilevati: il menu dell'app sta in `AppShell.xaml` (binding e `AppMenuViewModel`), quindi `pages.yaml` ha **10 voci** (9 viste + AppShell). I ViewModel usano `[ObservableProperty]`/`[RelayCommand]` (CommunityToolkit.Mvvm): la superficie si legge **con la reflection su `RadioE45.Core.dll` compilato**, non dai sorgenti. Finché `RadioE45.Uno` non esiste, una pagina Uno mancante è debito (exit 1) se le feature della pagina sono `todo`.
+
+#### S5a — ParityCheck e manifest
+- [ ] `tools/ParityCheck` (`net10.0`, YamlDotNet, riferimento solo a `RadioE45.Core`) con i controlli 1–5 del §6.3, più l'integrità del manifest (id unici, `page`/`viewmodel` esistenti, stati validi, nota obbligatoria per `limited`/`n/a`). Opzioni `--strict`, `--json`, `--update-surface`. Aggiunto alla `.slnx`.
+- [ ] `parity/pages.yaml` (10 voci), `parity/features.yaml` dall'inventario della v0.44 (README, viste, `roadmap.md`): `maui: done`, desktop e web `todo`; CarPlay e Android Auto `n/a`; stazioni personalizzate sul web `limited` (CORS).
+- [ ] `parity/vm-surface.txt` iniziale + test snapshot della superficie in `RadioE45.Core.Tests`.
+- **Uscita:** `ParityCheck` restituisce 1; build della soluzione e test verdi.
+
+#### S5b — Processo Claude Code
+- [ ] `CLAUDE.md` di progetto (§7.1) e `docs/parity/MAUI-TO-UNO.md` (§8).
+- [ ] Eccezioni nel `.gitignore`; skill `.claude/skills/ui-parity-port/SKILL.md` (§7.2).
+- [ ] Hook in `.claude/settings.json` (§7.3): `PostToolUse` per il promemoria, `Stop` che lancia `tools/parity-hook.sh` (DLL già compilata, < 5 s) e blocca solo con exit 2.
+- [ ] Test dell'hook: aggiungere una proprietà a un ViewModel senza toccare `features.yaml`, verificare il blocco (exit 2), annullare la modifica.
+- **Uscita:** hook verificato, `ParityCheck` restituisce 1.
 
 ### S6 — Scheletro `RadioE45.Uno` · Mac + VM
 - [ ] `global.json` con `Uno.Sdk`; progetto da template `unoapp` con target desktop e browserwasm, `UnoFeatures`: `MediaPlayerElement`, `Hosting`, `Toolkit` (solo se serve); niente MVUX.
@@ -539,7 +552,7 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 | D6 | Navigazione: `Frame` scritto a mano o `Uno.Extensions.Navigation` | S6 | A mano |
 | D7 | Canali desktop: Snap Store, Flathub, AppImage | S10 | Snap + AppImage, Flathub dopo |
 | D8 | Hosting e dominio web | S10 | Da decidere con l'utente |
-| D9 | Hook Stop bloccante o solo avviso | S5 | Bloccante solo per exit 2 |
+| D9 | Hook Stop bloccante o solo avviso | S5 | ✅ Bloccante solo per exit 2; drift della superficie VM non tracciato = exit 2 |
 | D10 | Rilascio delle app Uno legato alle versioni MAUI (stesso `version.json`) | S10 | Sì, stessa versione |
 
 ---
