@@ -19,7 +19,10 @@ packages/
 .vs/
 .vscode/
 .idea/
-.claude/
+# Claude Code: only the shared project settings (parity hooks) and skills are versioned
+.claude/*
+!.claude/settings.json
+!.claude/skills/
 .tokensave/
 .junie/
 *.suo

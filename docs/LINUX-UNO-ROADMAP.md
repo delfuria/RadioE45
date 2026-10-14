@@ -1,8 +1,8 @@
 # RadioE45 su Linux e Web con Uno Platform — Piano operativo
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
-> Branch di lavoro attuale: `S5A` (derivato da `main`, allineato a `S4B`). Ultimo aggiornamento: 2026-10-14 (app v0.44).
-> Stato: **S0–S5a completate; prossima sessione: S5b** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Branch di lavoro attuale: `S5B` (derivato da `S5A`). Ultimo aggiornamento: 2026-10-14 (app v0.44).
+> Stato: **S0–S5 completate; prossima sessione: S6** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -309,10 +309,10 @@ Input: feature id oppure range git. Passi:
 7. Stato in `features.yaml` → `done` (o `limited` con nota).
 8. Proporre il messaggio di commit con il trailer.
 
-### 7.3 Hook (in `.claude/settings.local.json`, coerente con la configurazione attuale dell'utente)
-- `PostToolUse` su `Edit|Write` con path `RadioE45/Views/*`, `RadioE45.Core/ViewModels/*`, `RadioE45/Resources/Styles/*` → contesto aggiuntivo: "Modifica UI MAUI: aggiornare `parity/features.yaml` e portare su RadioE45.Uno (skill ui-parity-port) oppure dichiarare il debito."
-- `Stop` → script `tools/parity-hook.sh` che lancia `ParityCheck --json`; se l'exit code è 2 restituisce `decision: block` con l'elenco dei disallineamenti, così la sessione non si chiude con incoerenze non dichiarate. Con exit 0 o 1 non blocca, e con 1 riporta il debito.
-- Lo script deve essere veloce (< 5 s): `ParityCheck` legge solo i file, e per ripetere le esecuzioni si usa una build già compilata (`dotnet tools/ParityCheck/bin/.../ParityCheck.dll`).
+### 7.3 Hook (in `.claude/settings.json`, versionato; script `tools/parity-hook.sh`)
+- `PostToolUse` su `Edit|Write|MultiEdit` con path `RadioE45/Views/*`, `RadioE45/AppShell.xaml`, `RadioE45.Core/ViewModels/*`, `RadioE45/Resources/Styles/*` → contesto aggiuntivo: "Modifica UI MAUI: aggiornare `parity/features.yaml` e portare su RadioE45.Uno (skill ui-parity-port) oppure dichiarare il debito."
+- `Stop` → script `tools/parity-hook.sh` che lancia `ParityCheck --json`; se l'exit code è 2 restituisce `decision: block` con l'elenco dei disallineamenti, così la sessione non si chiude con incoerenze non dichiarate. Con exit 0 o 1 non blocca e resta in silenzio (la lista del debito, ripetuta a ogni fine turno, sarebbe solo rumore). Se `stop_hook_active` è vero (Claude sta già continuando per colpa dell'hook) non blocca una seconda volta: mostra un `systemMessage` all'utente, per evitare cicli. Se la build o ParityCheck falliscono, mostra un `systemMessage` e non blocca.
+- Lo script è veloce: esegue la DLL già compilata (circa 0,1–0,4 s) e ricompila `tools/ParityCheck` solo se `.cs`, `.csproj` o `.resx` del Core o del tool sono più recenti del file `tools/ParityCheck/obj/parity-hook.stamp` (circa 3 s).
 
 ---
 
@@ -486,12 +486,13 @@ Decisioni prese con l'utente (2026-10-14):
   - Corretto anche il `.gitignore` di `main`, che conteneva marcatori di conflitto committati.
 - **Uscita:** `ParityCheck` restituisce 1; build della soluzione e test verdi. ✅
 
-#### S5b — Processo Claude Code
-- [ ] `CLAUDE.md` di progetto (§7.1) e `docs/parity/MAUI-TO-UNO.md` (§8).
-- [ ] Eccezioni nel `.gitignore`; skill `.claude/skills/ui-parity-port/SKILL.md` (§7.2).
-- [ ] Hook in `.claude/settings.json` (§7.3): `PostToolUse` per il promemoria, `Stop` che lancia `tools/parity-hook.sh` (DLL già compilata, < 5 s) e blocca solo con exit 2.
-- [ ] Test dell'hook: aggiungere una proprietà a un ViewModel senza toccare `features.yaml`, verificare il blocco (exit 2), annullare la modifica.
-- **Uscita:** hook verificato, `ParityCheck` restituisce 1.
+#### S5b — Processo Claude Code — ✅ completata 2026-10-14
+- [x] `CLAUDE.md` di progetto (§7.1) e `docs/parity/MAUI-TO-UNO.md` (§8, ampliata: convenzioni per ParityCheck, gesture, popup, converter, navigazione).
+- [x] `.gitignore`: `.claude/*` con eccezioni `!.claude/settings.json` e `!.claude/skills/` (`settings.local.json` e i suoi backup restano privati); skill `.claude/skills/ui-parity-port/SKILL.md` (§7.2).
+- [x] Hook in `.claude/settings.json` (§7.3): `PostToolUse` (`post-edit`) e `Stop` (`stop`) tramite `tools/parity-hook.sh`; servono `python3` e l'SDK .NET.
+- [x] Test dell'hook (script con input JSON simulato): proprietà `ParityHookProbe` aggiunta a `ScheduleViewModel` → ricompilazione automatica, `decision: block` con il diff della superficie; con `stop_hook_active: true` → solo `systemMessage`; con `features.yaml` modificato → avviso, nessun blocco. Modifiche annullate, `ParityCheck` di nuovo a 1. Promemoria `post-edit` verificato su una vista MAUI (nessun output per altri file).
+- Nota: gli hook di `.claude/settings.json` valgono dalle sessioni Claude Code successive (all'avvio può essere chiesto di approvarli). `ParityCheck` in CI resta per S10.
+- **Uscita:** hook verificato, `ParityCheck` restituisce 1. ✅
 
 ### S6 — Scheletro `RadioE45.Uno` · Mac + VM
 - [ ] `global.json` con `Uno.Sdk`; progetto da template `unoapp` con target desktop e browserwasm, `UnoFeatures`: `MediaPlayerElement`, `Hosting`, `Toolkit` (solo se serve); niente MVUX.
@@ -571,6 +572,7 @@ Decisioni prese con l'utente (2026-10-14):
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-14 | S5b | Completata | Branch `S5B` da `S5A`. `CLAUDE.md`, `docs/parity/MAUI-TO-UNO.md`, skill `ui-parity-port`, hook `PostToolUse`/`Stop` versionati (`.claude/settings.json` + `tools/parity-hook.sh`); blocco con exit 2 verificato e annullato; ParityCheck = 1. Prossima: S6 |
 | 2026-10-14 | S5a | Completata | Branch `S5A` da `main`. `tools/ParityCheck` (controlli §6.3 + integrità del manifest + code-behind), `parity/pages.yaml` (10), `features.yaml` (60 feature), `vm-surface.txt`; 15 nuovi test (109 totali); soluzione verde; ParityCheck = 1. Prossima: S5b |
 | 2026-10-14 | S4b | Completata (regressione utente ok) | Regressione audio ok su tutti gli ambienti; crash Android (loader assembly Mono) corretto. Commit extra sul branch `S4B`: Terms, namespace XAML, Neutral Language, Local Network/`PrivateHostDetector`. 94 test verdi, Core senza riferimenti MAUI. Prossima: S5 |
 | 2026-10-08 | S4b | Codice completato | `LiveStreamAudioService` + `IStreamPlayer` nel Core (logica `AudioService` invariata), adattatore `MediaElementStreamPlayer`, 20 nuovi test (29 totali), build MAUI pulite; attesa regressione audio |
