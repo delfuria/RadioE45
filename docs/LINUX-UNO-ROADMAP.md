@@ -494,11 +494,23 @@ Decisioni prese con l'utente (2026-10-14):
 - Nota: gli hook di `.claude/settings.json` valgono dalle sessioni Claude Code successive (all'avvio può essere chiesto di approvarli). `ParityCheck` in CI resta per S10.
 - **Uscita:** hook verificato, `ParityCheck` restituisce 1. ✅
 
-### S6 — Scheletro `RadioE45.Uno` · Mac + VM
-- [ ] `global.json` con `Uno.Sdk`; progetto da template `unoapp` con target desktop e browserwasm, `UnoFeatures`: `MediaPlayerElement`, `Hosting`, `Toolkit` (solo se serve); niente MVUX.
-- [ ] Riferimento al Core; NBGV attivo; icona, font, colori base.
-- [ ] Shell: `NavigationView` + `Frame` + `INavigationService` Uno; pagine vuote per le tre tab.
-- [ ] Implementazioni condivise: `IUiDispatcher`, `IDialogService`, `ISettingsStore`, `IAppInfoProvider`, `IUrlLauncher`, `IThemeService`.
+### S6 — Scheletro `RadioE45.Uno` · Mac + VM (divisa in S6a + S6b)
+
+Decisioni prese con l'utente (2026-10-14): tema **Fluent** (stile WinUI di default, personalizzato con i colori di RadioE45; niente Uno.Material/Toolkit); navigazione **a mano** (D6: `Frame` + `INavigationService`); branch `S6` da `S5B`.
+Fatti rilevati: `Uno.Sdk` 6.7.30 è ancora l'ultima stabile (come negli spike). Lo spike usa la gestione centralizzata dei pacchetti, il repo no: il progetto Uno mette le versioni nel `.csproj`. L'interfaccia chiamata `IAppInfoProvider` nel §4.2 è `IAppEnvironment` nel Core (S4a).
+
+#### S6a — Progetto, shell e pagine vuote · Mac
+- [ ] `global.json` con `msbuild-sdks` → `Uno.Sdk` 6.7.30; `RadioE45.Uno` (`net10.0-desktop;net10.0-browserwasm`), `UnoFeatures`: `SkiaRenderer`, `MediaPlayerElement`, `Hosting`; niente MVUX. Aggiunto alla `.slnx`.
+- [ ] Riferimento al Core, NBGV (`version.json`), `SkiaSharp.NativeAssets.Linux.NoDependencies` (§S1).
+- [ ] Icona (`appicon.svg`), font (OpenSans, Font Awesome), colori di base da `Colors.xaml` in `ThemeDictionaries` Light/Dark.
+- [ ] `ShellPage.xaml`: `NavigationView` + `Frame` + `INavigationService` Uno; pagine vuote per OnAir, SongRequest, Podcast; registrazione DI di `AddRadioE45Core()` e delle interfacce di piattaforma (placeholder dove l'implementazione arriva in S6b/S7).
+- [ ] `ParityCheck` vede le pagine Uno create: deve restare 1. `CLAUDE.md` aggiornato con i comandi Uno.
+- **Uscita:** `dotnet build RadioE45.slnx` verde; l'app si apre su macOS (desktop) e in Chrome (web); test verdi; MAUI invariata.
+
+#### S6b — Servizi condivisi e Linux · Mac + VM
+- [ ] Implementazioni in `Services/Shared/`: `IUiDispatcher` (`DispatcherQueue`), `IDialogService` (`ContentDialog`), `ISettingsStore` (`ApplicationData.LocalSettings`), `IAppEnvironment`, `IUrlLauncher`, `IThemeService`.
+- [ ] Test (dove possibile senza UI) e verifica manuale da una pagina di debug: dialog, impostazione salvata e riletta dopo il riavvio, apertura di un link, cambio tema.
+- [ ] VM: rsync, build e avvio di `net10.0-desktop` (§2.2); ricontrollare `uno-check` con il `global.json` del repo (`unosdk`, vedi S0).
 - **Uscita:** l'app si apre su macOS (desktop), in Chrome (web) e nella VM; tutta la soluzione compila.
 
 ### S7 — Servizi di piattaforma Uno · Mac + VM
@@ -560,7 +572,7 @@ Decisioni prese con l'utente (2026-10-14):
 | D3 | Coordinatore audio condiviso o duplicato | S1 | ✅ Condiviso |
 | D4 | Player desktop: Uno `MediaPlayer` o `LibVLCSharp` | Fine S1 | ✅ Uno `MediaPlayer` |
 | D5 | Storage web: SQLite WASM o repository dedicati | Fine S2 | ✅ SQLite (verificato) |
-| D6 | Navigazione: `Frame` scritto a mano o `Uno.Extensions.Navigation` | S6 | A mano |
+| D6 | Navigazione: `Frame` scritto a mano o `Uno.Extensions.Navigation` | S6 | ✅ A mano (confermato 2026-10-14); tema Fluent |
 | D7 | Canali desktop: Snap Store, Flathub, AppImage | S10 | Snap + AppImage, Flathub dopo |
 | D8 | Hosting e dominio web | S10 | Da decidere con l'utente |
 | D9 | Hook Stop bloccante o solo avviso | S5 | ✅ Bloccante solo per exit 2; drift della superficie VM non tracciato = exit 2 |
