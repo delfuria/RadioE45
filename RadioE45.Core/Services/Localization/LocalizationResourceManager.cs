@@ -22,6 +22,13 @@ public sealed class LocalizationResourceManager : INotifyPropertyChanged
 
     private LocalizationResourceManager() { }
 
+    /// <summary>
+    /// Resolves the resource set for the current culture chain once, on the calling thread. Call it
+    /// at startup, before any thread-pool work: on Android a failed satellite-assembly probe
+    /// (e.g. en-US) racing on several pool threads can SIGSEGV inside Mono's open_from_bundles.
+    /// </summary>
+    public void Preload() => _ = this["Menu_Open"];
+
     /// <summary>Localized string for <paramref name="key"/>; returns the key itself if missing.</summary>
     public string this[string key] => _resourceManager.GetString(key, _currentCulture) ?? key;
 

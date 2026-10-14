@@ -11,6 +11,7 @@ using RadioE45.Services.Audio;
 using RadioE45.Services.CrashReporting;
 using RadioE45.Services.Data;
 using RadioE45.Services.Diagnostics;
+using RadioE45.Services.Localization;
 using RadioE45.Services.Logging;
 using RadioE45.Services.Platform;
 using RadioE45.Services.Radio;
@@ -33,6 +34,9 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         CrashDiagnostics.Initialize();
+
+        // Resolve satellite resources on this thread before any parallel HTTP/thread-pool work.
+        LocalizationResourceManager.Instance.Preload();
 
         MauiAppBuilder builder = MauiApp.CreateBuilder();
 

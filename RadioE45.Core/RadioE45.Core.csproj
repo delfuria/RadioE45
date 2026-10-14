@@ -12,6 +12,8 @@
              manifest name stays RadioE45.Resources.Strings.AppResources (LocalizationResourceManager). -->
         <RootNamespace>RadioE45</RootNamespace>
         <AssemblyName>RadioE45.Core</AssemblyName>
+        <!-- Neutral RESX is Italian: tells the ResourceManager not to probe for it/it-IT satellites. -->
+        <NeutralLanguage>it</NeutralLanguage>
         <!-- Deliberately NOT IsTrimmable: these types used to live in the (untrimmed) app assembly;
              marking Core trimmable would let the Android/iOS linker strip Refit/sqlite-net
              reflection targets in Release. Revisit with proper annotations before enabling. -->
