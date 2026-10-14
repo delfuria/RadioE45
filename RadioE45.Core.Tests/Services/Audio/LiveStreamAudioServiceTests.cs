@@ -63,6 +63,89 @@ public sealed class LiveStreamAudioServiceTests : IDisposable
         Assert.Equal([Fallback, Mp3, Hls], LiveStreamAudioService.GetCandidateUrls(station, preferHls: false));
     }
 
+    // AzuraCast with a LAN Base URL: listen_url points to 192.168.x.x even for a public station.
+    private const string LanMp3 = "http://192.168.1.100/listen/radioe45/radio.mp3";
+    private const string LanHls = "http://192.168.1.100/hls/radioe45/live.m3u8";
+    private const string PublicFallback = "https://radioe45.ddns.net:8060/radio.mp3";
+
+    private static AzuraStation PublicStationWithLanListenUrl() => new()
+    {
+        Id = 7,
+        Name = "Radio E45",
+        UrlBase = "radioe45.ddns.net",
+        StreamUrl = LanMp3,
+        StreamUrlFallback = PublicFallback,
+        HlsUrl = Hls,
+    };
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Public_station_drops_lan_candidates_and_keeps_order(bool preferHls)
+    {
+        AzuraStation station = PublicStationWithLanListenUrl();
+
+        string[] expected = preferHls ? [Hls, PublicFallback] : [PublicFallback, Hls];
+        Assert.Equal(expected, LiveStreamAudioService.GetCandidateUrls(station, preferHls));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Lan_station_keeps_every_candidate(bool preferHls)
+    {
+        const string LanFallback = "https://192.168.1.100:8000/radio.mp3";
+        AzuraStation station = new()
+        {
+            Id = 9,
+            UrlBase = "192.168.1.100",
+            StreamUrl = LanMp3,
+            StreamUrlFallback = LanFallback,
+            HlsUrl = LanHls,
+        };
+
+        string[] expected = preferHls ? [LanHls, LanMp3, LanFallback] : [LanMp3, LanFallback, LanHls];
+        Assert.Equal(expected, LiveStreamAudioService.GetCandidateUrls(station, preferHls));
+    }
+
+    [Fact]
+    public void Public_station_with_only_private_candidates_falls_back_to_the_unfiltered_list()
+    {
+        const string LanFallback = "http://10.0.0.5:8000/radio.mp3";
+        AzuraStation station = new()
+        {
+            Id = 7,
+            UrlBase = "radioe45.ddns.net",
+            StreamUrl = LanMp3,
+            StreamUrlFallback = LanFallback,
+        };
+
+        Assert.Equal([LanMp3, LanFallback], LiveStreamAudioService.GetCandidateUrls(station, preferHls: false));
+    }
+
+    [Fact]
+    public void Lan_OnAirStreamUrl_is_dropped_for_a_public_station()
+    {
+        AzuraStation station = PublicStationWithLanListenUrl();
+        station.OnAirStreamUrl = LanMp3;
+
+        Assert.Equal([PublicFallback, Hls], LiveStreamAudioService.GetCandidateUrls(station, preferHls: false));
+    }
+
+    [Fact]
+    public async Task Prober_never_receives_private_urls_for_a_public_station()
+    {
+        await _service.PlayAsync(PublicStationWithLanListenUrl());
+
+        await _prober.Received(1).ProbeFirstReachableAsync(
+            Arg.Is<string[]>(urls => urls.SequenceEqual(new[] { PublicFallback, Hls })),
+            Arg.Any<CancellationToken>());
+        await _prober.DidNotReceive().ProbeFirstReachableAsync(
+            Arg.Is<string[]>(urls => urls.Any(PrivateHostDetector.IsPrivateHost)),
+            Arg.Any<CancellationToken>());
+        Assert.Equal([PublicFallback], _player.OpenedUrls);
+    }
+
     [Fact]
     public async Task Play_opens_the_first_reachable_url_and_raises_StreamOpened()
     {

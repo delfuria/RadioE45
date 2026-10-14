@@ -26,6 +26,16 @@
 			<string>UIInterfaceOrientationLandscapeLeft</string>
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
+		<key>CFBundleDevelopmentRegion</key>
+		<string>en</string>
+		<key>CFBundleLocalizations</key>
+		<array>
+			<string>en</string>
+			<string>it</string>
+			<string>pl</string>
+		</array>
+		<key>NSLocalNetworkUsageDescription</key>
+		<string>Radio E45 connects to radio stations on your local network, for example an AzuraCast server at home or in your studio, so you can listen to them in the app.</string>
 		<key>CFBundleDisplayName</key>
 		<string>RadioE45</string>
 		<key>ITSAppUsesNonExemptEncryption</key>

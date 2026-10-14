@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
+using RadioE45.Services.Audio;
 using RadioE45.Services.Localization;
 using Refit;
 
@@ -168,7 +169,7 @@ public class NowPlayingService : INowPlayingService, IDisposable
     private static NowPlayingInfo Map(AzuraCastNowPlayingResponse response, AzuraStation station)
     {
         var current = response.Live.IsLive
-            ? MapLiveSong(response.NowPlaying.Song, response.Live)
+            ? MapLiveSong(response.NowPlaying.Song, response.Live, station)
             : MapSong(response.NowPlaying.Song, station);
 
         // During a live broadcast AzuraCast still reports the AutoDJ queue, which won't play until
@@ -221,12 +222,14 @@ public class NowPlayingService : INowPlayingService, IDisposable
         };
     }
 
-    // Jingles report the station's own name/logo instead of a real track.
+    // Jingles report the station's own name/logo instead of a real track. Track art comes from the
+    // AzuraCast Base URL, so a misconfigured server returns LAN addresses: dropped for public
+    // stations (PrivateHostDetector) so loading artwork never triggers the iOS Local Network prompt.
     private static (string Artist, string Title, string? ArtworkUrl, bool IsJingle) MapSong(SongInfo song, AzuraStation station)
     {
         bool isJingle = song.Title.Contains("jingle", StringComparison.OrdinalIgnoreCase);
         if (!isJingle)
-            return (song.Artist, song.Title, string.IsNullOrWhiteSpace(song.ArtUrl) ? null : song.ArtUrl, false);
+            return (song.Artist, song.Title, PrivateHostDetector.FilterUrl(string.IsNullOrWhiteSpace(song.ArtUrl) ? null : song.ArtUrl, station), false);
 
         string? logo = string.IsNullOrWhiteSpace(station.LogoUrl) ? null : station.LogoUrl;
         return (station.Description, station.Name, logo, true);
@@ -235,7 +238,7 @@ public class NowPlayingService : INowPlayingService, IDisposable
     // Durante una diretta il titolo del brano è il metadato inviato dal software del DJ, che spesso
     // contiene solo lo username dell'account streamer: mostriamo invece il nome visualizzato del DJ.
     // Se il DJ invia metadati completi "Artista - Titolo" li teniamo come sottotitolo.
-    private static (string Artist, string Title, string? ArtworkUrl, bool IsJingle) MapLiveSong(SongInfo song, LiveInfo live)
+    private static (string Artist, string Title, string? ArtworkUrl, bool IsJingle) MapLiveSong(SongInfo song, LiveInfo live, AzuraStation station)
     {
         string title = string.IsNullOrWhiteSpace(live.StreamerName) ? song.Title : live.StreamerName;
         string artist = !string.IsNullOrWhiteSpace(song.Artist)
@@ -243,7 +246,7 @@ public class NowPlayingService : INowPlayingService, IDisposable
             : LocalizationResourceManager.Instance["OnAir_LiveBroadcast"];
         string? art = !string.IsNullOrWhiteSpace(live.ArtUrl) ? live.ArtUrl
             : string.IsNullOrWhiteSpace(song.ArtUrl) ? null : song.ArtUrl;
-        return (artist, title, art, false);
+        return (artist, title, PrivateHostDetector.FilterUrl(art, station), false);
     }
 
     public void Dispose()

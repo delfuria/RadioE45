@@ -260,14 +260,17 @@ public class LiveStreamAudioService : IAudioService
     /// AzuraCast HLS config has a structural floor of a few seconds behind the live edge (standard
     /// HLS forbids starting closer than ~3 segments from the end), which the direct stream doesn't
     /// have. See AppSettings.PreferHlsStream. The last URL that worked always comes first.
+    /// Private-host URLs are dropped for public stations (see PrivateHostDetector.FilterCandidates).
     /// </summary>
     public static string[] GetCandidateUrls(AzuraStation station, bool preferHls) =>
-        (preferHls
-            ? new[] { station.OnAirStreamUrl, station.HlsUrl, station.StreamUrl, station.StreamUrlFallback }
-            : new[] { station.OnAirStreamUrl, station.StreamUrl, station.StreamUrlFallback, station.HlsUrl })
-        .Where(u => !string.IsNullOrEmpty(u))
-        .Distinct()
-        .ToArray()!;
+        PrivateHostDetector.FilterCandidates(
+            (preferHls
+                ? new[] { station.OnAirStreamUrl, station.HlsUrl, station.StreamUrl, station.StreamUrlFallback }
+                : new[] { station.OnAirStreamUrl, station.StreamUrl, station.StreamUrlFallback, station.HlsUrl })
+            .Where(u => !string.IsNullOrEmpty(u))
+            .Distinct()
+            .ToArray()!,
+            station);
 
     private async Task TryOpenStreamAsync(AzuraStation station, IStreamPlayer player, CancellationToken ct = default)
     {

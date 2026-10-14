@@ -350,16 +350,20 @@ public sealed class RadioPlaybackService : MediaLibraryService
     // https://radioe45.ddns.net:8060/radio.mp3) and is the reliable PUBLIC url; the API's ListenUrl
     // (StreamUrl) currently returns a LAN address (192.168.1.100) that only resolves inside the
     // station's own network — see the TODO in AzuraStationCatalog.Map, so it stays last either way.
+    // Private-host URLs are dropped for public stations, same rule as LiveStreamAudioService
+    // (PrivateHostDetector.FilterCandidates); LAN stations keep every candidate.
     private IReadOnlyList<string> GetStreamCandidates(AzuraStation station)
     {
         string?[] ordered = _preferHls
             ? new[] { station.OnAirStreamUrl, station.HlsUrl, station.StreamUrlFallback, station.StreamUrl }
             : new[] { station.OnAirStreamUrl, station.StreamUrlFallback, station.StreamUrl, station.HlsUrl };
 
-        return ordered
-            .Where(u => !string.IsNullOrEmpty(u))
-            .Distinct()
-            .ToArray()!;
+        return PrivateHostDetector.FilterCandidates(
+            ordered
+                .Where(u => !string.IsNullOrEmpty(u))
+                .Distinct()
+                .ToArray()!,
+            station);
     }
 
     // The URL for the current fallback attempt on this station (clamped to the last candidate).

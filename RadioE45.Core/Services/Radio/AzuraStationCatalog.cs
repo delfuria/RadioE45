@@ -241,7 +241,9 @@ public class AzuraStationCatalog : IAzuraStationCatalog
             ShortName = db.HasCustomInfo ? db.ShortName : detail.Shortcode,
             Description = db.HasCustomInfo ? db.Description : detail.Description,
             PublicUrl = detail.Url,
-            //TODO: sostituire con detail.ListenUrl quando l'URL base restituito dall'API sarà corretto
+            //TODO: la causa a monte è la Base URL di AzuraCast (System Settings → Base URL): se punta
+            // a un IP LAN, listen_url/hls_url/art arrivano con 192.168.x.x. Finché non è corretta,
+            // PrivateHostDetector scarta questi URL per le stazioni pubbliche (prompt Rete locale iOS).
             StreamUrl = detail.ListenUrl,
             StreamUrlFallback = $"{UrlBaseHelper.EnsureScheme(db.UrlBase)}{db.StreamUrl}",
             HlsEnabled = detail.HlsEnabled,

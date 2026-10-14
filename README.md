@@ -58,6 +58,7 @@ All documentation lives in [`docs/`](docs/):
 | Version bump procedure | [`docs/VERSION-BUMP.md`](docs/VERSION-BUMP.md) |
 | Windows build notes | [`docs/WINDOWS-README.md`](docs/WINDOWS-README.md) |
 | App Store review 5.2.3 (third-party content, Terms of Use) | [`docs/APP-REVIEW-5.2.3.md`](docs/APP-REVIEW-5.2.3.md) |
+| App Store review 5.1.1 (Local Network purpose string, private hosts) | [`docs/APP-REVIEW-5.1.1.md`](docs/APP-REVIEW-5.1.1.md) |
 | Tester distribution | [`docs/tester/distribuzione-tester.md`](docs/tester/distribuzione-tester.md) |
 
 ## Preloaded stations
