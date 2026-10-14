@@ -18,6 +18,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\RadioE45.Core\RadioE45.Core.csproj" />
+        <ProjectReference Include="..\tools\ParityCheck\ParityCheck.csproj" />
     </ItemGroup>
 
     <ItemGroup>

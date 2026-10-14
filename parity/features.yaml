@@ -1,0 +1,453 @@
+# Feature parity manifest, read by tools/ParityCheck (docs/LINUX-UNO-ROADMAP.md §6.2).
+# Source of truth for WHAT exists and WHERE. Every UI change updates this file.
+#
+#   id:         page.section[.detail], lowercase, dot-separated
+#   since:      app version that introduced the feature ("0.44" = already in the S5 inventory)
+#   page:       logical page name from pages.yaml
+#   viewmodel:  ViewModel that owns the behaviour (optional for platform-only features)
+#   status:     maui | desktop | web  →  done | todo (declared debt) | limited | n/a
+#   notes:      required for limited and n/a; also used for planned limitations of todo items
+#
+# Initial inventory (S5a, v0.44): MAUI done, desktop and web todo until RadioE45.Uno exists.
+
+# --- Shell: tabs, side menu, app-level -------------------------------------------------------
+
+- id: shell.tabs
+  title: Tab della stazione (On Air, Richieste, Podcast) con Richieste e Podcast visibili solo se la stazione li supporta
+  since: "0.44"
+  page: Shell
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+  notes: "Uno: NavigationView (§8)"
+
+- id: shell.menu.station-header
+  title: Menu laterale, intestazione con logo e nome della stazione corrente
+  since: "0.44"
+  page: Shell
+  viewmodel: AppMenuViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: shell.menu.navigation
+  title: Menu laterale, voci Canali e Impostazioni
+  since: "0.44"
+  page: Shell
+  viewmodel: AppMenuViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: shell.menu.station-links
+  title: Menu laterale, link della stazione (sito web, fino a 3 social, email e telefono)
+  since: "0.44"
+  page: Shell
+  viewmodel: AppMenuViewModel
+  status: { maui: done, desktop: todo, web: todo }
+  notes: "Web: i link mailto/tel e i siti si aprono in una nuova scheda"
+
+- id: shell.menu.app-version
+  title: Menu laterale, versione dell'app
+  since: "0.44"
+  page: Shell
+  viewmodel: AppMenuViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: shell.terms-of-use
+  title: Termini d'uso mostrati una volta al primo avvio (App Review 5.2.3)
+  since: "0.44"
+  page: Shell
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: shell.system-media-controls
+  title: Metadati e tasti multimediali di sistema (lock screen iOS, Centro di controllo macOS, SMTC Windows)
+  since: "0.44"
+  page: Shell
+  status: { maui: done, desktop: todo, web: todo }
+  notes: "Desktop: MPRIS; web: Media Session API (S9)"
+
+- id: shell.carplay
+  title: Apple CarPlay
+  since: "0.44"
+  page: Shell
+  status: { maui: done, desktop: n/a, web: n/a }
+  notes: "Solo iOS"
+
+- id: shell.android-auto
+  title: Android Auto e controlli Bluetooth/AVRCP (Media3)
+  since: "0.44"
+  page: Shell
+  status: { maui: done, desktop: n/a, web: n/a }
+  notes: "Solo Android"
+
+# --- On Air ----------------------------------------------------------------------------------
+
+- id: onair.artwork
+  title: Copertina del brano (con fallback), altezza adattata all'orientamento
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.menu-button
+  title: Pulsante sopra la copertina che apre il menu laterale
+  since: "0.44"
+  page: OnAir
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.live-indicator
+  title: Indicatore LIVE in sovrimpressione con nome dello streamer
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.station-badge
+  title: Badge della stazione con nome, preferito, numero di ascoltatori e badge HLS
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.favorite
+  title: Stazione preferita (toggle dalla pagina On Air)
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.track-info
+  title: Titolo e artista del brano in onda
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.track-progress
+  title: Avanzamento del brano con tempo trascorso e durata
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.next-track
+  title: Prossimo brano (copertina, titolo, artista)
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.schedule-entry
+  title: Accesso al palinsesto accanto al prossimo brano, o riga compatta se manca il prossimo brano
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.playback-controls
+  title: Play/pausa (pausa live = chiusura stream, ripresa in diretta) e indicatore di buffering
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+  notes: "Web: nessun autoplay, ogni avvio parte da un gesto dell'utente (§5)"
+
+- id: onair.station-switch
+  title: Stazione precedente e successiva con il nome della stazione
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.volume
+  title: Volume e mute (slider su desktop, mute su mobile con volume di sistema)
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.error
+  title: Messaggio d'errore della pagina On Air
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.song-history
+  title: Ultimi brani trasmessi, sezione espandibile
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.pull-to-refresh
+  title: Aggiornamento manuale del now playing (pull to refresh)
+  since: "0.44"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: onair.vu-meter
+  title: VU meter animato durante la riproduzione
+  since: "0.44"
+  page: OnAir
+  status: { maui: done, desktop: todo, web: todo }
+  notes: "Uno: SKCanvasElement al posto di GraphicsView (§4.4)"
+
+# --- Radio list ------------------------------------------------------------------------------
+
+- id: radiolist.list
+  title: Elenco stazioni con logo, nome, descrizione, stazione attiva, preferita e badge HLS
+  since: "0.44"
+  page: RadioList
+  viewmodel: RadioListViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: radiolist.offline-indicator
+  title: Indicatore di stazione offline
+  since: "0.44"
+  page: RadioList
+  viewmodel: RadioListViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: radiolist.select-and-play
+  title: Selezione di una stazione e avvio della riproduzione
+  since: "0.44"
+  page: RadioList
+  viewmodel: RadioListViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: radiolist.edit-delete
+  title: Modifica ed eliminazione (con conferma) da swipe o menu contestuale
+  since: "0.44"
+  page: RadioList
+  viewmodel: RadioListViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: radiolist.reorder
+  title: Riordino delle stazioni con trascinamento
+  since: "0.44"
+  page: RadioList
+  viewmodel: RadioListViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: radiolist.refresh
+  title: Ricarica forzata del catalogo stazioni
+  since: "0.44"
+  page: RadioList
+  viewmodel: RadioListViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: radiolist.empty-seed-prompt
+  title: Lista vuota e proposta delle stazioni predefinite (RadioE45, AzuraTest)
+  since: "0.44"
+  page: RadioList
+  viewmodel: RadioListViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: radiolist.add-button
+  title: Pulsante flottante per aggiungere una stazione
+  since: "0.44"
+  page: RadioList
+  viewmodel: RadioListViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+# --- Add / edit station ----------------------------------------------------------------------
+
+- id: addstation.search
+  title: Ricerca delle stazioni di un server AzuraCast dall'URL pubblico
+  since: "0.44"
+  page: AddStation
+  viewmodel: AddStationViewModel
+  status: { maui: done, desktop: todo, web: todo }
+  notes: "Web: funzionerà solo con server AzuraCast con CORS abilitato (diventerà limited, §5)"
+
+- id: addstation.select-and-add
+  title: Selezione multipla dei risultati, stazioni già aggiunte segnate, pulsante aggiungi/annulla
+  since: "0.44"
+  page: AddStation
+  viewmodel: AddStationViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: addstation.errors
+  title: Messaggi di stato (prompt iniziale, nessun risultato, errore del server)
+  since: "0.44"
+  page: AddStation
+  viewmodel: AddStationViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: editstation.form
+  title: Modifica di nome, URL, ID, short name e descrizione della stazione
+  since: "0.44"
+  page: EditStation
+  viewmodel: EditStationViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: editstation.custom-links
+  title: Informazioni personalizzate (sito, 3 social, email, telefono) con validazione dei link
+  since: "0.44"
+  page: EditStation
+  viewmodel: EditStationViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: editstation.latency-override
+  title: Ritardo di sincronizzazione personalizzato per la stazione
+  since: "0.44"
+  page: EditStation
+  viewmodel: EditStationViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: editstation.save-cancel
+  title: Salva e annulla, con messaggio d'errore
+  since: "0.44"
+  page: EditStation
+  viewmodel: EditStationViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+# --- Settings --------------------------------------------------------------------------------
+
+- id: settings.playback.start-with-favorite
+  title: Avvio con la stazione preferita
+  since: "0.44"
+  page: Settings
+  viewmodel: SettingsViewModel
+  status: { maui: done, desktop: todo, web: todo }
+  notes: "Web: la stazione viene selezionata ma non avviata (nessun autoplay, §5)"
+
+- id: settings.playback.latency-offset
+  title: Ritardo di sincronizzazione dei metadati (globale)
+  since: "0.44"
+  page: Settings
+  viewmodel: SettingsViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: settings.playback.prefer-hls
+  title: Preferenza per lo stream HLS
+  since: "0.44"
+  page: Settings
+  viewmodel: SettingsViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: settings.song-request.page-size
+  title: Numero di brani per pagina nelle richieste
+  since: "0.44"
+  page: Settings
+  viewmodel: SettingsViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: settings.theme
+  title: Tema (sistema, chiaro, scuro)
+  since: "0.44"
+  page: Settings
+  viewmodel: SettingsViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: settings.save
+  title: Salvataggio delle impostazioni con conferma (toast)
+  since: "0.44"
+  page: Settings
+  viewmodel: SettingsViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: settings.diagnostics.reset-database
+  title: Reset del database con conferma
+  since: "0.44"
+  page: Settings
+  viewmodel: SettingsViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: settings.diagnostics.crash-reports
+  title: Consenso all'invio dei crash report, crash di test, avviso di riavvio
+  since: "0.44"
+  page: Settings
+  viewmodel: SettingsViewModel
+  status: { maui: done, desktop: todo, web: todo }
+  notes: "Web: Sentry .NET su WASM limitato, decisione rinviata (§5)"
+
+- id: settings.info
+  title: Versione app, versione del DB, aggiornamento richiesto, copyright, link ai Termini d'uso
+  since: "0.44"
+  page: Settings
+  viewmodel: SettingsViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+# --- Schedule --------------------------------------------------------------------------------
+
+- id: schedule.list
+  title: Palinsesto come pannello dal basso, raggruppato per giorno, chiusura con swipe
+  since: "0.44"
+  page: Schedule
+  viewmodel: ScheduleViewModel
+  status: { maui: done, desktop: todo, web: todo }
+  notes: "Uno: ContentDialog (§8)"
+
+- id: schedule.live-badge
+  title: Palinsesto distingue live (streamer) da playlist, badge LIVE / In orario / In onda
+  since: "0.44"
+  page: Schedule
+  viewmodel: ScheduleViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+# --- Song requests ---------------------------------------------------------------------------
+
+- id: songrequest.search
+  title: Ricerca nei brani richiedibili
+  since: "0.44"
+  page: SongRequest
+  viewmodel: SongRequestViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: songrequest.list
+  title: Elenco brani con copertina, titolo, artista e stato della richiesta
+  since: "0.44"
+  page: SongRequest
+  viewmodel: SongRequestViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: songrequest.submit
+  title: Invio della richiesta con messaggi d'errore dedicati (troppo recente, già in coda, non richiedibile…)
+  since: "0.44"
+  page: SongRequest
+  viewmodel: SongRequestViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: songrequest.pagination
+  title: Paginazione (pagina precedente/successiva, numero di pagina)
+  since: "0.44"
+  page: SongRequest
+  viewmodel: SongRequestViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+# --- Podcasts --------------------------------------------------------------------------------
+
+- id: podcastlist.list
+  title: Elenco podcast della stazione con copertina, descrizione e numero di episodi
+  since: "0.44"
+  page: PodcastList
+  viewmodel: PodcastListViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: podcastepisodes.list
+  title: Elenco episodi con data, stagione/episodio, durata e stato di ascolto
+  since: "0.44"
+  page: PodcastEpisodes
+  viewmodel: PodcastEpisodesViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: podcastepisodes.filters
+  title: Filtri per stagione, episodio e stato di ascolto (stagione/episodio solo se presenti nel feed)
+  since: "0.44"
+  page: PodcastEpisodes
+  viewmodel: PodcastEpisodesViewModel
+  status: { maui: done, desktop: todo, web: todo }
+
+- id: podcastepisodes.player
+  title: Mini player dell'episodio con play/pausa, seek e tempi
+  since: "0.44"
+  page: PodcastEpisodes
+  viewmodel: PodcastEpisodesViewModel
+  status: { maui: done, desktop: todo, web: todo }
+  notes: "Uno: serve un IPodcastPlayerService proprio (S7)"
+
+- id: podcastepisodes.resume
+  title: Ripresa dalla posizione salvata
+  since: "0.44"
+  page: PodcastEpisodes
+  viewmodel: PodcastEpisodesViewModel
+  status: { maui: done, desktop: todo, web: todo }

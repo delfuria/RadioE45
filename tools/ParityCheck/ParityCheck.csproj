@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- MAUI ↔ Uno UI parity checker (docs/LINUX-UNO-ROADMAP.md §6.3).
+         Reads parity/*.yaml and the XAML files; references RadioE45.Core only to reflect the
+         public ViewModel surface (CommunityToolkit.Mvvm generates properties and commands, so the
+         sources alone are not enough). Never reference the UI projects. -->
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>RadioE45.ParityCheck</RootNamespace>
+        <AssemblyName>ParityCheck</AssemblyName>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="YamlDotNet" Version="18.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\RadioE45.Core\RadioE45.Core.csproj" />
+    </ItemGroup>
+
+</Project>

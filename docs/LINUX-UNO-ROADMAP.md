@@ -1,8 +1,8 @@
 # RadioE45 su Linux e Web con Uno Platform — Piano operativo
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
-> Branch di lavoro attuale: `S4B` (derivato da `Linux-support-exp`). Ultimo aggiornamento: 2026-10-14 (app v0.44).
-> Stato: **S0–S4b completate (regressione audio ok); prossima sessione: S5** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Branch di lavoro attuale: `S5A` (derivato da `main`, allineato a `S4B`). Ultimo aggiornamento: 2026-10-14 (app v0.44).
+> Stato: **S0–S5a completate; prossima sessione: S5b** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -241,10 +241,11 @@ Fonte di verità di **cosa** esiste e **dove**:
 - `parity/pages.yaml` collega le pagine MAUI a quelle Uno ed elenca le eccezioni ammesse per binding o membri.
 
 ```yaml
-- maui: RadioE45/Views/OnAirPage.xaml
-  uno: RadioE45.Uno/Views/OnAirPage.xaml
-  viewmodel: OnAirViewModel
-  ignore: []                 # membri del VM usati solo su MAUI, con motivo
+- page: OnAir                # nome logico, usato da features.yaml
+  maui: RadioE45/Views/OnAirPage.xaml
+  uno: RadioE45.Uno/Views/OnAirPage.xaml   # oppure n/a + reason
+  viewmodels: [OnAirViewModel]
+  ignore: []                 # membri del VM o chiavi di stringa usati solo su MAUI: - name: X / reason: ...
 ```
 
 - Il manifest iniziale si genera in S5 da un inventario delle feature della v0.44 (README, `roadmap.md`, pagine). Dopo, ogni modifica UI lo aggiorna.
@@ -470,11 +471,20 @@ Decisioni prese con l'utente (2026-10-14):
 - **Granularità di `features.yaml`: per sezione di pagina** (circa 40–60 voci).
 - Fatti rilevati: il menu dell'app sta in `AppShell.xaml` (binding e `AppMenuViewModel`), quindi `pages.yaml` ha **10 voci** (9 viste + AppShell). I ViewModel usano `[ObservableProperty]`/`[RelayCommand]` (CommunityToolkit.Mvvm): la superficie si legge **con la reflection su `RadioE45.Core.dll` compilato**, non dai sorgenti. Finché `RadioE45.Uno` non esiste, una pagina Uno mancante è debito (exit 1) se le feature della pagina sono `todo`.
 
-#### S5a — ParityCheck e manifest
-- [ ] `tools/ParityCheck` (`net10.0`, YamlDotNet, riferimento solo a `RadioE45.Core`) con i controlli 1–5 del §6.3, più l'integrità del manifest (id unici, `page`/`viewmodel` esistenti, stati validi, nota obbligatoria per `limited`/`n/a`). Opzioni `--strict`, `--json`, `--update-surface`. Aggiunto alla `.slnx`.
-- [ ] `parity/pages.yaml` (10 voci), `parity/features.yaml` dall'inventario della v0.44 (README, viste, `roadmap.md`): `maui: done`, desktop e web `todo`; CarPlay e Android Auto `n/a`; stazioni personalizzate sul web `limited` (CORS).
-- [ ] `parity/vm-surface.txt` iniziale + test snapshot della superficie in `RadioE45.Core.Tests`.
-- **Uscita:** `ParityCheck` restituisce 1; build della soluzione e test verdi.
+#### S5a — ParityCheck e manifest — ✅ completata 2026-10-14
+- [x] `tools/ParityCheck` (`net10.0`, YamlDotNet, riferimento solo a `RadioE45.Core`) con i controlli 1–5 del §6.3, più l'integrità del manifest (id unici, `page`/`viewmodel` esistenti, stati validi, nota obbligatoria per `limited`/`n/a`). Opzioni `--strict`, `--json`, `--update-surface`. Aggiunto alla `.slnx`.
+- [x] `parity/pages.yaml` (10 voci), `parity/features.yaml` dall'inventario della v0.44 (README, viste, `roadmap.md`): **60 feature**, `maui: done`, desktop e web `todo`; CarPlay e Android Auto `n/a`. Le limitazioni previste (stazioni personalizzate sul web per il CORS, niente autoplay sul web, Sentry su WASM) restano `todo` con la nota: `limited` vale come "fatto" e, finché la pagina Uno non esiste, ParityCheck lo segnala come errore.
+- [x] `parity/vm-surface.txt` iniziale (156 righe) + test snapshot della superficie in `RadioE45.Core.Tests/Parity/` (riferimento al progetto `ParityCheck`).
+- [x] Test di `ParityChecker` su un layout temporaneo (15 test): pagine mancanti, binding `{Binding}` ↔ `{x:Bind ViewModel.*}`, stringhe, `ignore`, code-behind, drift della superficie, stati e note, `--strict`. Totale progetto: **109 test verdi**.
+- [x] `dotnet build RadioE45.slnx`: 0 avvisi, 0 errori (android, ios, maccatalyst, Core, test, ParityCheck). `ParityCheck` restituisce **1** (solo debito dichiarato); la DLL compilata gira in circa 0,4 s.
+- Dettagli di implementazione da sapere:
+  - Formato di `pages.yaml`: `page` (nome logico usato da `features.yaml`), `maui`, `uno` (percorso oppure `n/a` + `reason`), `viewmodels` (lista: AppShell ne usa due), `ignore` (lista di `name` + `reason`, vale per binding e chiavi di stringa).
+  - Percorsi Uno previsti: `RadioE45.Uno/Views/<Pagina>.xaml`, con `ShellPage.xaml` per AppShell e `ScheduleDialog.xaml` per il palinsesto.
+  - Oltre al XAML, ParityCheck confronta i membri usati nel code-behind (`_viewModel.X` in MAUI, `ViewModel.X` in Uno).
+  - Pagina Uno mancante: debito se le feature della pagina non sono `done`/`limited` su desktop o web, altrimenti errore. Binding o stringhe mancanti: debito se la pagina ha almeno una feature `todo`, altrimenti errore.
+  - Drift della superficie: errore se `git status` non mostra modifiche a `parity/features.yaml`, avviso ("lancia `--update-surface`") se le mostra.
+  - Corretto anche il `.gitignore` di `main`, che conteneva marcatori di conflitto committati.
+- **Uscita:** `ParityCheck` restituisce 1; build della soluzione e test verdi. ✅
 
 #### S5b — Processo Claude Code
 - [ ] `CLAUDE.md` di progetto (§7.1) e `docs/parity/MAUI-TO-UNO.md` (§8).
@@ -561,6 +571,7 @@ Decisioni prese con l'utente (2026-10-14):
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-14 | S5a | Completata | Branch `S5A` da `main`. `tools/ParityCheck` (controlli §6.3 + integrità del manifest + code-behind), `parity/pages.yaml` (10), `features.yaml` (60 feature), `vm-surface.txt`; 15 nuovi test (109 totali); soluzione verde; ParityCheck = 1. Prossima: S5b |
 | 2026-10-14 | S4b | Completata (regressione utente ok) | Regressione audio ok su tutti gli ambienti; crash Android (loader assembly Mono) corretto. Commit extra sul branch `S4B`: Terms, namespace XAML, Neutral Language, Local Network/`PrivateHostDetector`. 94 test verdi, Core senza riferimenti MAUI. Prossima: S5 |
 | 2026-10-08 | S4b | Codice completato | `LiveStreamAudioService` + `IStreamPlayer` nel Core (logica `AudioService` invariata), adattatore `MediaElementStreamPlayer`, 20 nuovi test (29 totali), build MAUI pulite; attesa regressione audio |
 | 2026-10-07 | S4a | Completata (regressione utente ok) | 10 interfacce di piattaforma + implementazioni MAUI, 12 ViewModel + catalog, DB e interfacce audio nel Core; `QueryProperty` sulle pagine; `IMediaElementHost`; 9 test verdi; build MAUI pulite; attesa regressione |

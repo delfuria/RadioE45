@@ -1,0 +1,72 @@
+# MAUI page ↔ Uno page map, read by tools/ParityCheck (docs/LINUX-UNO-ROADMAP.md §6.2).
+#
+#   page:        logical name, referenced by 'page' in features.yaml
+#   maui:        MAUI XAML (every RadioE45/Views/*.xaml and RadioE45/AppShell.xaml must be listed)
+#   uno:         Uno XAML (one project for desktop and web), or 'n/a' + reason
+#   viewmodels:  ViewModels the page binds (RadioE45.Core/ViewModels)
+#   ignore:      binding members or string keys used only by MAUI, each with a reason:
+#                  - name: IsMuted
+#                    reason: "..."
+#
+# Uno pages expose the ViewModel as a 'ViewModel' property and bind with {x:Bind ViewModel.X}
+# so that ParityCheck can compare them with the MAUI {Binding X} paths.
+
+- page: Shell
+  maui: RadioE45/AppShell.xaml
+  uno: RadioE45.Uno/Views/ShellPage.xaml
+  viewmodels: [OnAirViewModel, AppMenuViewModel]
+  ignore: []
+
+- page: OnAir
+  maui: RadioE45/Views/OnAirPage.xaml
+  uno: RadioE45.Uno/Views/OnAirPage.xaml
+  viewmodels: [OnAirViewModel]
+  ignore: []
+
+- page: RadioList
+  maui: RadioE45/Views/RadioListPage.xaml
+  uno: RadioE45.Uno/Views/RadioListPage.xaml
+  viewmodels: [RadioListViewModel]
+  ignore: []
+
+- page: AddStation
+  maui: RadioE45/Views/AddStationPage.xaml
+  uno: RadioE45.Uno/Views/AddStationPage.xaml
+  viewmodels: [AddStationViewModel, StationSelectionItem]
+  ignore: []
+
+- page: EditStation
+  maui: RadioE45/Views/EditStationPage.xaml
+  uno: RadioE45.Uno/Views/EditStationPage.xaml
+  viewmodels: [EditStationViewModel]
+  ignore: []
+
+- page: Settings
+  maui: RadioE45/Views/SettingsPage.xaml
+  uno: RadioE45.Uno/Views/SettingsPage.xaml
+  viewmodels: [SettingsViewModel]
+  ignore: []
+
+- page: Schedule
+  maui: RadioE45/Views/SchedulePopup.xaml
+  uno: RadioE45.Uno/Views/ScheduleDialog.xaml
+  viewmodels: [ScheduleViewModel]
+  ignore: []
+
+- page: SongRequest
+  maui: RadioE45/Views/SongRequestPage.xaml
+  uno: RadioE45.Uno/Views/SongRequestPage.xaml
+  viewmodels: [SongRequestViewModel]
+  ignore: []
+
+- page: PodcastList
+  maui: RadioE45/Views/PodcastListPage.xaml
+  uno: RadioE45.Uno/Views/PodcastListPage.xaml
+  viewmodels: [PodcastListViewModel]
+  ignore: []
+
+- page: PodcastEpisodes
+  maui: RadioE45/Views/PodcastEpisodesPage.xaml
+  uno: RadioE45.Uno/Views/PodcastEpisodesPage.xaml
+  viewmodels: [PodcastEpisodesViewModel]
+  ignore: []
