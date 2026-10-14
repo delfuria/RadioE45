@@ -1,0 +1,10 @@
+{
+  "background_color": "#0D0D0D",
+  "description": "Radio E45: AzuraCast web radio player",
+  "display": "standalone",
+  "name": "Radio E45",
+  "short_name": "Radio E45",
+  "start_url": "/index.html",
+  "theme_color": "#E63946",
+  "scope": "/"
+}

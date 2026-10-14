@@ -1,8 +1,8 @@
 # RadioE45 su Linux e Web con Uno Platform — Piano operativo
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
-> Branch di lavoro attuale: `S5B` (derivato da `S5A`). Ultimo aggiornamento: 2026-10-14 (app v0.44).
-> Stato: **S0–S5 completate; prossima sessione: S6** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Branch di lavoro attuale: `S6` (derivato da `S5B`). Ultimo aggiornamento: 2026-10-14 (app v0.44).
+> Stato: **S0–S6a completate; prossima sessione: S6b** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -334,7 +334,7 @@ Input: feature id oppure range git. Passi:
 | `AppThemeBinding` | `{ThemeResource}` + `ThemeDictionaries` Light/Dark |
 | `FontImageSource` Font Awesome | `FontIcon FontFamily="ms-appx:///Assets/Fonts/FaSolid.ttf#Font Awesome 6 Free Solid"` |
 | `GraphicsView` | `SKCanvasElement` |
-| `{loc:Translate Key}` | `{loc:Translate Key}` (`MarkupExtension` WinUI equivalente, stessa sintassi per facilitare `ParityCheck`) |
+| `{loc:Translate Key}` | `{loc:Translate Key=Key}` (`MarkupExtension` WinUI: niente argomenti posizionali, `Key=` obbligatorio; ParityCheck accetta entrambe le forme) |
 | `{Binding}` compilato con `x:DataType` | `{x:Bind ViewModel.X, Mode=OneWay}` |
 
 Per facilitare `ParityCheck`, nelle pagine Uno il ViewModel si espone sempre come proprietà `ViewModel` nel code-behind e si usa `x:Bind ViewModel.*`.
@@ -499,13 +499,18 @@ Decisioni prese con l'utente (2026-10-14):
 Decisioni prese con l'utente (2026-10-14): tema **Fluent** (stile WinUI di default, personalizzato con i colori di RadioE45; niente Uno.Material/Toolkit); navigazione **a mano** (D6: `Frame` + `INavigationService`); branch `S6` da `S5B`.
 Fatti rilevati: `Uno.Sdk` 6.7.30 è ancora l'ultima stabile (come negli spike). Lo spike usa la gestione centralizzata dei pacchetti, il repo no: il progetto Uno mette le versioni nel `.csproj`. L'interfaccia chiamata `IAppInfoProvider` nel §4.2 è `IAppEnvironment` nel Core (S4a).
 
-#### S6a — Progetto, shell e pagine vuote · Mac
-- [ ] `global.json` con `msbuild-sdks` → `Uno.Sdk` 6.7.30; `RadioE45.Uno` (`net10.0-desktop;net10.0-browserwasm`), `UnoFeatures`: `SkiaRenderer`, `MediaPlayerElement`, `Hosting`; niente MVUX. Aggiunto alla `.slnx`.
-- [ ] Riferimento al Core, NBGV (`version.json`), `SkiaSharp.NativeAssets.Linux.NoDependencies` (§S1).
-- [ ] Icona (`appicon.svg`), font (OpenSans, Font Awesome), colori di base da `Colors.xaml` in `ThemeDictionaries` Light/Dark.
-- [ ] `ShellPage.xaml`: `NavigationView` + `Frame` + `INavigationService` Uno; pagine vuote per OnAir, SongRequest, Podcast; registrazione DI di `AddRadioE45Core()` e delle interfacce di piattaforma (placeholder dove l'implementazione arriva in S6b/S7).
-- [ ] `ParityCheck` vede le pagine Uno create: deve restare 1. `CLAUDE.md` aggiornato con i comandi Uno.
-- **Uscita:** `dotnet build RadioE45.slnx` verde; l'app si apre su macOS (desktop) e in Chrome (web); test verdi; MAUI invariata.
+#### S6a — Progetto, shell e pagine vuote · Mac — ✅ completata 2026-10-14
+- [x] `global.json` con `msbuild-sdks` → `Uno.Sdk` 6.7.30 (le build MAUI restano verdi). `RadioE45.Uno` generato dal template `unoapp` (blank, Fluent, `-di`, `-nav blank`, `-mpe`) e adattato: `net10.0-desktop;net10.0-browserwasm`, `UnoFeatures` `SkiaRenderer; MediaPlayerElement; Hosting; Logging`; niente MVUX. Aggiunto alla `.slnx`.
+- [x] **Niente `Directory.Build.props` né gestione centralizzata dei pacchetti alla radice** (toccherebbero MAUI): impostazioni e versioni nel `.csproj` Uno.
+- [x] **`RootNamespace=RadioE45`** (assembly `RadioE45.Uno`): un namespace `RadioE45.Uno` oscurerebbe i namespace `Uno.*` del framework dentro il codice `RadioE45.*`. Pagine in `RadioE45.Views`, servizi in `RadioE45.Services.*`, come in MAUI.
+- [x] Riferimento al Core, NBGV, runtime SQLite (`sqlite-net-pcl` 1.11.285 + `bundle_e_sqlite3` 3.0.4), `SkiaSharp.NativeAssets.Linux.NoDependencies` 3.119.2 solo su desktop. `System.Security.Cryptography.Pkcs`/`Xml` fissati a 10.0.13: la 10.0.12 portata da `Microsoft.Windows.Compatibility` (Uno) ha vulnerabilità note (NU1902/NU1903). `WASM0001` di SQLitePCLRaw silenziato (innocuo, §5). `LinkerConfig.xml` preserva anche `RadioE45.Core`.
+- [x] Icona e splash dagli SVG MAUI, font OpenSans e Font Awesome (`Styles/Fonts.xaml`, Open Sans come font di default), colori in `Styles/Colors.xaml` con `ThemeDictionaries` Dark/Light e chiavi allineate a MAUI (`PageBackgroundBrush`, `PrimaryTextBrush`…). Tema scuro di default come MAUI. Manifest web "Radio E45".
+- [x] `ShellPage.xaml` (`NavigationView` top + `Frame`), `UnoNavigationService` (tab, Back, On Air; gli intenti verso pagine non ancora portate fanno log e niente altro), pagine segnaposto OnAir, SongRequest, PodcastList. DI: `AddRadioE45Core()` + navigazione; `App.Services` per le pagine. Tolto `UseStudio()` del template (Hot Design senza dev server dell'IDE: errore in console e widget sopra il primo tab).
+- [x] `TranslateExtension` WinUI anticipata da S8.1: `{loc:Translate Key=Tab_OnAir}`. **`Key=` è obbligatorio** (le markup extension WinUI non accettano argomenti posizionali); ParityCheck già accetta entrambe le forme. Valore letto al caricamento (nessun cambio lingua a runtime).
+- [x] Porta del dev server web: **5045** (la 5000 è dell'AirPlay Receiver di macOS, §S2).
+- [x] Verifica: `dotnet build RadioE45.slnx` 0 avvisi/0 errori (android, ios, maccatalyst, Core, test, ParityCheck, Uno desktop e browserwasm); 109 test verdi; app aperta su macOS desktop e in Chrome (screenshot), con tab e stringhe italiane del Core; cambio tab ok anche sul web; nessun errore in console. `ParityCheck` = 1: ora confronta davvero Shell, OnAir, SongRequest e PodcastList (binding e stringhe mancanti = debito dichiarato).
+- Da sistemare in S8.1 (stili): l'indicatore della tab selezionata resta blu, l'override di `SystemAccentColor` non arriva alla `NavigationView`.
+- **Uscita:** ✅
 
 #### S6b — Servizi condivisi e Linux · Mac + VM
 - [ ] Implementazioni in `Services/Shared/`: `IUiDispatcher` (`DispatcherQueue`), `IDialogService` (`ContentDialog`), `ISettingsStore` (`ApplicationData.LocalSettings`), `IAppEnvironment`, `IUrlLauncher`, `IThemeService`.
@@ -584,6 +589,7 @@ Fatti rilevati: `Uno.Sdk` 6.7.30 è ancora l'ultima stabile (come negli spike). 
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-14 | S6a | Completata | Branch `S6` da `S5B`. `RadioE45.Uno` (Uno.Sdk 6.7.30, Fluent, `RootNamespace=RadioE45`), shell `NavigationView` + 3 pagine segnaposto, `TranslateExtension` (`Key=`), colori/font/icona; desktop macOS e web Chrome verificati; soluzione verde, 109 test, ParityCheck = 1. Prossima: S6b (servizi condivisi + VM) |
 | 2026-10-14 | S5b | Completata | Branch `S5B` da `S5A`. `CLAUDE.md`, `docs/parity/MAUI-TO-UNO.md`, skill `ui-parity-port`, hook `PostToolUse`/`Stop` versionati (`.claude/settings.json` + `tools/parity-hook.sh`); blocco con exit 2 verificato e annullato; ParityCheck = 1. Prossima: S6 |
 | 2026-10-14 | S5a | Completata | Branch `S5A` da `main`. `tools/ParityCheck` (controlli §6.3 + integrità del manifest + code-behind), `parity/pages.yaml` (10), `features.yaml` (60 feature), `vm-surface.txt`; 15 nuovi test (109 totali); soluzione verde; ParityCheck = 1. Prossima: S5b |
 | 2026-10-14 | S4b | Completata (regressione utente ok) | Regressione audio ok su tutti gli ambienti; crash Android (loader assembly Mono) corretto. Commit extra sul branch `S4B`: Terms, namespace XAML, Neutral Language, Local Network/`PrivateHostDetector`. 94 test verdi, Core senza riferimenti MAUI. Prossima: S5 |

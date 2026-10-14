@@ -9,7 +9,7 @@ Piano operativo e stato delle sessioni: [`docs/LINUX-UNO-ROADMAP.md`](docs/LINUX
 |---|---|
 | `RadioE45/` | App MAUI: viste (`Views/`, `AppShell.xaml`), stili, `Platforms/`, implementazioni MAUI delle interfacce di piattaforma (`Services/Platform/Maui*.cs`), audio MAUI, CarPlay, Android Auto |
 | `RadioE45.Core/` | `net10.0`, senza UI: modelli, client AzuraCast (Refit), servizi radio/podcast, repository SQLite, interfacce di piattaforma (`Services/Platform/`), motore audio live (`LiveStreamAudioService`), **tutti i ViewModel**, stringhe `.resx` |
-| `RadioE45.Uno/` | App Uno (`net10.0-desktop`, `net10.0-browserwasm`), dalla sessione S6 |
+| `RadioE45.Uno/` | App Uno (`net10.0-desktop`, `net10.0-browserwasm`, tema Fluent, `RootNamespace=RadioE45`): `Views/`, `Styles/`, `Services/Shared/` (desktop + web); `App.Services` è il service provider usato dalle pagine |
 | `RadioE45.Core.Tests/` | xUnit v3 (Microsoft.Testing.Platform): logica del Core, snapshot della superficie dei ViewModel, test di ParityCheck |
 | `tools/ParityCheck/` | Verifica di parità MAUI ↔ Uno (legge `parity/*.yaml` e i XAML) |
 
@@ -38,11 +38,10 @@ dotnet run --project tools/ParityCheck                       # 0 allineato, 1 so
 dotnet run --project tools/ParityCheck -- --update-surface   # dopo una modifica dell'API pubblica di un ViewModel
 dotnet run --project tools/ParityCheck -- --strict --json    # CI / rilascio Uno: anche il debito è errore
 
-# dalla sessione S6
 dotnet build RadioE45.Uno -f net10.0-desktop
 dotnet build RadioE45.Uno -f net10.0-browserwasm
-dotnet run --project RadioE45.Uno -f net10.0-desktop
-dotnet run --project RadioE45.Uno -f net10.0-browserwasm
+dotnet run --project RadioE45.Uno -f net10.0-desktop             # anche su macOS (stesso renderer Skia)
+dotnet run --project RadioE45.Uno -f net10.0-browserwasm         # http://localhost:5045 (la 5000 è dell'AirPlay Receiver di macOS)
 ```
 
 Test Linux nella VM Parallels (`ssh radioe45-vm`, sorgenti sincronizzati con `rsync`): comandi in §2.2 del roadmap.

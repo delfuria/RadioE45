@@ -1,0 +1,14 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Same font files as the MAUI app (RadioE45/Resources/Fonts). -->
+    <FontFamily x:Key="OpenSansRegular">ms-appx:///Assets/Fonts/OpenSans-Regular.ttf#Open Sans</FontFamily>
+    <FontFamily x:Key="OpenSansSemibold">ms-appx:///Assets/Fonts/OpenSans-Semibold.ttf#Open Sans SemiBold</FontFamily>
+    <FontFamily x:Key="FaSolid">ms-appx:///Assets/Fonts/FaSolid.ttf#Font Awesome 6 Free Solid</FontFamily>
+    <FontFamily x:Key="FaBrands">ms-appx:///Assets/Fonts/FaBrands.ttf#Font Awesome 6 Brands Regular</FontFamily>
+
+    <!-- Default text font for the whole app (Fluent controls read ContentControlThemeFontFamily). -->
+    <FontFamily x:Key="ContentControlThemeFontFamily">ms-appx:///Assets/Fonts/OpenSans-Regular.ttf#Open Sans</FontFamily>
+
+</ResourceDictionary>

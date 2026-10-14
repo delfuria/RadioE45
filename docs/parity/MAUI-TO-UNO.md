@@ -8,7 +8,7 @@ Le pagine Uno valgono sia per desktop sia per web: le differenze stanno nei serv
 - Il code-behind della pagina Uno espone il ViewModel come proprietà **`ViewModel`** (risolta dalla DI) e i binding usano **`{x:Bind ViewModel.X, Mode=OneWay}`**. ParityCheck toglie il prefisso `ViewModel.` e confronta il percorso con quello di `{Binding X}` in MAUI.
 - Nei template degli elementi (`x:DataType="models:AzuraStation"`) usare `{x:Bind Name}` con lo stesso percorso usato in MAUI.
 - Chiamate al ViewModel dal code-behind: `ViewModel.X` in Uno, `_viewModel.X` in MAUI; anche queste vengono confrontate.
-- Stringhe: `{loc:Translate Key}` con la stessa sintassi di MAUI (`MarkupExtension` WinUI equivalente, S8.1).
+- Stringhe: `{loc:Translate Key=Tab_OnAir}` (`xmlns:loc="using:RadioE45.Services.Localization"`). Le markup extension WinUI non accettano argomenti posizionali, quindi `Key=` è obbligatorio; ParityCheck riconosce entrambe le forme. Il valore viene letto una volta al caricamento della pagina (l'app non cambia lingua a runtime).
 - Un membro usato solo in MAUI per una ragione di piattaforma va in `ignore` in `parity/pages.yaml`, con `reason`.
 
 ## Controlli e layout

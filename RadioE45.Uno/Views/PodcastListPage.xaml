@@ -1,0 +1,16 @@
+<Page
+    x:Class="RadioE45.Views.PodcastListPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:loc="using:RadioE45.Services.Localization"
+    Background="{ThemeResource PageBackgroundBrush}">
+
+    <!-- Placeholder (S6a): the page is ported from RadioE45/Views/PodcastListPage.xaml in S8.6. -->
+    <TextBlock
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Foreground="{ThemeResource MutedTextBrush}"
+        Style="{StaticResource SubtitleTextBlockStyle}"
+        Text="{loc:Translate Key=Tab_Podcasts}" />
+
+</Page>

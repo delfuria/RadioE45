@@ -1,0 +1,27 @@
+<Page
+    x:Class="RadioE45.Views.ShellPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:loc="using:RadioE45.Services.Localization"
+    Background="{ThemeResource PageBackgroundBrush}">
+
+    <!-- Counterpart of RadioE45/AppShell.xaml. Station pages are tabs; the side menu
+         (channels, settings, station links) is ported in S8.3. -->
+    <NavigationView
+        x:Name="NavView"
+        PaneDisplayMode="Top"
+        IsBackButtonVisible="Collapsed"
+        IsSettingsVisible="False"
+        IsBackEnabled="False"
+        SelectionChanged="OnSelectionChanged">
+
+        <NavigationView.MenuItems>
+            <NavigationViewItem x:Name="TabOnAir" Content="{loc:Translate Key=Tab_OnAir}" Tag="OnAir" />
+            <NavigationViewItem x:Name="TabRequest" Content="{loc:Translate Key=Tab_Request}" Tag="Request" />
+            <NavigationViewItem x:Name="TabPodcasts" Content="{loc:Translate Key=Tab_Podcasts}" Tag="Podcasts" />
+        </NavigationView.MenuItems>
+
+        <Frame x:Name="ContentFrame" />
+    </NavigationView>
+
+</Page>

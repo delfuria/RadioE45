@@ -1,0 +1,6 @@
+<linker>
+  <assembly fullname="RadioE45.Uno" />
+  <!-- Core: Refit interfaces and sqlite-net tables are used through reflection
+       (the same reason Core is not marked IsTrimmable, see RadioE45.Core.csproj). -->
+  <assembly fullname="RadioE45.Core" />
+</linker>

@@ -1,0 +1,61 @@
+<Project Sdk="Uno.Sdk">
+
+    <!-- Uno Platform head of RadioE45: Linux/macOS/Windows desktop (Skia) and WebAssembly.
+         Layout and platform services only; ViewModels and logic live in RadioE45.Core.
+         See docs/LINUX-UNO-ROADMAP.md. The Uno.Sdk version is pinned in /global.json. -->
+    <PropertyGroup>
+        <TargetFrameworks>net10.0-desktop;net10.0-browserwasm</TargetFrameworks>
+        <OutputType>Exe</OutputType>
+        <UnoSingleProject>true</UnoSingleProject>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <!-- Same root namespace as the MAUI app and Core: Uno code lives in RadioE45.Views,
+             RadioE45.Services.*, … A RadioE45.Uno namespace would shadow the Uno.* framework
+             namespaces inside RadioE45.* code. -->
+        <RootNamespace>RadioE45</RootNamespace>
+        <AssemblyName>RadioE45.Uno</AssemblyName>
+
+        <ApplicationTitle>Radio E45</ApplicationTitle>
+        <ApplicationId>com.radioe45.app</ApplicationId>
+        <ApplicationPublisher>CN=RadioE45</ApplicationPublisher>
+        <Description>Radio E45: AzuraCast web radio player.</Description>
+        <!-- ApplicationDisplayVersion/ApplicationVersion come from version.json (NBGV) when
+             packaging is set up in S10; the assembly version attributes already do. -->
+
+        <UnoFeatures>
+            SkiaRenderer;
+            MediaPlayerElement;
+            Hosting;
+            Logging;
+        </UnoFeatures>
+
+        <!-- NETSDK1201: RID without self-contained (template default).
+             PRI257: default language not among the .resw cultures (the app strings are .resx in Core).
+             WASM0001: SQLitePCLRaw varargs functions (sqlite3_config, sqlite3_db_config) cannot be
+             called on WASM; never used by sqlite-net (roadmap §5, verified in the S2 spike). -->
+        <NoWarn>$(NoWarn);NETSDK1201;PRI257;WASM0001</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Nerdbank.GitVersioning" Version="3.10.94" PrivateAssets="all" />
+        <!-- Core references sqlite-net for compilation only; the app head brings the runtime
+             (verified on desktop and WASM in the S1/S2 spikes). -->
+        <PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.4" />
+        <!-- Transitive through Microsoft.Windows.Compatibility (Uno): 10.0.12 has known
+             vulnerabilities (NU1902/NU1903). Remove once Uno.Sdk brings a patched version. -->
+        <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+        <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.13" />
+    </ItemGroup>
+
+    <!-- linux-arm64: the libSkiaSharp.so brought by Uno fails at startup with
+         "undefined symbol: FT_Get_BDF_Property"; the NoDependencies build fixes it (S1). -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-desktop'">
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\RadioE45.Core\RadioE45.Core.csproj" />
+    </ItemGroup>
+
+</Project>
