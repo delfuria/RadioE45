@@ -1,8 +1,8 @@
 # RadioE45 su Linux e Web con Uno Platform — Piano operativo
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
-> Branch: `Linux-support-exp`. Ultimo aggiornamento: 2026-10-07 (app v0.44).
-> Stato: **S0–S4a completate; S4b codice fatto, in attesa di regressione audio; poi S5** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Branch di lavoro attuale: `S4B` (derivato da `Linux-support-exp`). Ultimo aggiornamento: 2026-10-14 (app v0.44).
+> Stato: **S0–S4b completate (regressione audio ok); prossima sessione: S5** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -448,7 +448,7 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
   - barra di avanzamento del brano (timer UI), ritorno della rete con stazioni offline (ricarica del catalogo).
 - [x] Build Windows: inclusa nella conferma utente.
 
-### S4b — Motore audio live condiviso · Mac — ✅ codice completato 2026-10-08, ⏳ regressione audio
+### S4b — Motore audio live condiviso · Mac — ✅ completata 2026-10-14 (regressione utente ok)
 - [x] `LiveStreamAudioService : IAudioService` nel Core (`RadioE45.Core/Services/Audio/`): è la logica di `AudioService` MAUI **spostata senza modifiche di comportamento**. Comprende ordine e fallback degli URL (`GetCandidateUrls`: ultimo URL funzionante → MP3/Icecast → fallback → HLS, oppure HLS per primo con `PreferHlsStream`), `IsHlsActive`, guardia di riconnessione, watchdog (10 s, buffering bloccato > 12 s), riconnessione al ritorno della rete (`INetworkMonitor`), su `MediaFailed` e su fine stream, regola **pausa live = chiusura stream** e Resume = riapertura, Stop/StopImmediate/Shutdown.
 - [x] `IStreamPlayer` (Core): `HasSource`, `Open(url)`, `Close()`, `SetVolume`, `SetMetadata`, `ClearMetadata`, eventi `StateChanged` (enum `StreamPlayerState`), `Failed`, `Ended`. `AttachPlayer(player)` sostituisce l'`Initialize(MediaElement)`.
 - [x] MAUI: `MediaElementStreamPlayer` (adattatore del `MediaElement`, contiene la guardia sui metadati per Windows e il reset di `ShouldAutoPlay`) e `AudioService : LiveStreamAudioService, IMediaElementHost`, ridotto a circa 30 righe (prima 515). `IUiDispatcher` ha ora anche `IsUiThread`.
@@ -456,7 +456,9 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 - [x] **Debounce degli stati instabili (spike S1): NON nel motore condiviso**, per non cambiare il comportamento MAUI. Va nell'adattatore Uno (`MediaPlayerStreamPlayer`, S7), che normalizza gli stati di libVLC/HTML5 prima di inoltrarli.
 - [x] Test: 20 su `LiveStreamAudioService` con player e rete finti e dispatcher sincrono (ordine dei candidati, apertura, HLS attivo, URL tutti irraggiungibili, focus negato, pausa = chiusura con stazione mantenuta, Resume = riapertura, Stop, Resume dopo Stop, errore in riproduzione = riconnessione silenziosa, errore dopo pausa = segnalato, fine stream, ritorno rete, watchdog, stati, cambio player, volume). Totale progetto: **29 test verdi**.
 - [x] Build Debug maccatalyst/ios/android: 0 warning, 0 errori.
-- [ ] **Regressione audio (utente)** su Mac Catalyst, iOS e Windows: avvio con autoplay, play/pausa/ripresa (riparte in diretta), stop, cambio stazione (frecce e lista), volume/mute, stazione con HLS e preferenza HLS on/off (badge HLS), rete staccata e riattaccata, ritorno su OnAir dopo un podcast, metadati e controlli di sistema (lock screen iOS, Centro di controllo macOS, SMTC Windows).
+- [x] **Regressione audio (utente)**: ok su tutti gli ambienti (confermato il 2026-10-14). Punti coperti: avvio con autoplay, play/pausa/ripresa (riparte in diretta), stop, cambio stazione (frecce e lista), volume/mute, stazione con HLS e preferenza HLS on/off (badge HLS), rete staccata e riattaccata, ritorno su OnAir dopo un podcast, metadati e controlli di sistema (lock screen iOS, Centro di controllo macOS, SMTC Windows).
+- [x] **Crash Android (SIGSEGV nel loader assembly Mono, 2026-10-10):** diagnosticato il 2026-10-10 sulle satellite assembly `.resx` del Core (culture-tagged) e sul `NeutralResourcesLanguage` (neutro = italiano), poi corretto con il commit "Fix Neutral Language". Il crash risulta risolto secondo l'utente (2026-10-14).
+- Dopo S4b, sullo stesso branch e senza legami con Uno: Terms and Conditions, qualifica dei namespace XAML spostati nel Core, `NeutralResourcesLanguage`, purpose string Local Network + `PrivateHostDetector` (host privati saltati per le stazioni pubbliche), retry della ricerca stazioni su host LAN durante l'alert Local Network. I test del Core sono ora **94** (erano 29).
 - Nota: già prima, dopo `Shutdown()` il `CancellationTokenSource` di riconnessione viene eliminato e un successivo `AttachPlayer`+`PlayAsync` lo cancellerebbe da eliminato. Comportamento preservato tale e quale (Shutdown avviene solo alla chiusura dell'app). Da rivedere se l'app Uno riusasse il servizio dopo Shutdown.
 - Per Uno (S7): il player podcast (`PodcastPlayerService`) resta MAUI; per Uno serve un'implementazione propria di `IPodcastPlayerService`, oppure si estrae anche quello sullo stesso schema.
 
@@ -546,6 +548,7 @@ Ogni sessione è dimensionata per una singola sessione Claude Code. Criterio com
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-14 | S4b | Completata (regressione utente ok) | Regressione audio ok su tutti gli ambienti; crash Android (loader assembly Mono) corretto. Commit extra sul branch `S4B`: Terms, namespace XAML, Neutral Language, Local Network/`PrivateHostDetector`. 94 test verdi, Core senza riferimenti MAUI. Prossima: S5 |
 | 2026-10-08 | S4b | Codice completato | `LiveStreamAudioService` + `IStreamPlayer` nel Core (logica `AudioService` invariata), adattatore `MediaElementStreamPlayer`, 20 nuovi test (29 totali), build MAUI pulite; attesa regressione audio |
 | 2026-10-07 | S4a | Completata (regressione utente ok) | 10 interfacce di piattaforma + implementazioni MAUI, 12 ViewModel + catalog, DB e interfacce audio nel Core; `QueryProperty` sulle pagine; `IMediaElementHost`; 9 test verdi; build MAUI pulite; attesa regressione |
 | 2026-10-07 | S3 | Completata (regressione utente ok) | Core + Tests nella soluzione, 67 file e 3 resx spostati, `AddRadioE45Core()`, 4 test verdi, build MAUI pulite (maccatalyst/ios/android); attesa regressione manuale e build Windows |
