@@ -145,16 +145,17 @@ public partial class App : Application
 
         services.AddRadioE45Core();
 
-        // Audio: shared live engine on the Uno MediaPlayer. System media controls (MPRIS, Media
-        // Session) arrive in S9, the podcast player in S7b.
+        // Audio: shared live and podcast engines on the Uno MediaPlayer. System media controls
+        // (MPRIS, Media Session) arrive in S9.
         services.AddSingleton<IAudioService, UnoAudioService>();
+        services.AddSingleton<IPodcastPlayerService, UnoPodcastPlayerService>();
         services.AddSingleton<IPlatformNowPlayingService, NullPlatformNowPlayingService>();
         services.AddSingleton<IAudioFocusManager, NullAudioFocusManager>();
 
         services.AddSingleton<IAzuraStationCatalog, AzuraStationCatalog>();
         services.AddSingleton<IDatabaseService, DatabaseService>();
 
-        // ViewModels, same lifetimes as MAUI. PodcastEpisodesViewModel needs the podcast player (S7b).
+        // ViewModels, same lifetimes as MAUI.
         services.AddSingleton<OnAirViewModel>();
         services.AddSingleton<AppMenuViewModel>();
         services.AddTransient<RadioListViewModel>();
@@ -162,6 +163,7 @@ public partial class App : Application
         services.AddTransient<EditStationViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<PodcastListViewModel>();
+        services.AddTransient<PodcastEpisodesViewModel>();
         services.AddTransient<SongRequestViewModel>();
         services.AddTransient<ScheduleViewModel>();
 

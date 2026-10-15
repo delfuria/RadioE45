@@ -20,6 +20,7 @@ public sealed partial class DebugPage : Page
     private readonly IAudioService _audio = App.Services.GetRequiredService<IAudioService>();
     private readonly INetworkMonitor _network = App.Services.GetRequiredService<INetworkMonitor>();
     private readonly IAppPaths _paths = App.Services.GetRequiredService<IAppPaths>();
+    private readonly IPodcastPlayerService _podcast = App.Services.GetRequiredService<IPodcastPlayerService>();
     private IUiTimer? _timer;
     private int _ticks;
 
@@ -48,6 +49,10 @@ public sealed partial class DebugPage : Page
             _network.ConnectivityChanged += OnConnectivityChanged;
             _audio.PlaybackStateChanged += OnPlaybackStateChanged;
             _audio.ErrorOccurred += OnAudioError;
+            _podcast.PositionChanged += OnPodcastPosition;
+            _podcast.PlaybackStateChanged += OnPodcastState;
+            _podcast.EpisodeCompleted += OnPodcastCompleted;
+            _podcast.PlaybackFailed += OnPodcastFailed;
             _timer = _dispatcher.CreateTimer(TimeSpan.FromSeconds(1), () => TimerText.Text = $"Timer UI: {++_ticks} s");
             _timer?.Start();
         };
@@ -56,6 +61,10 @@ public sealed partial class DebugPage : Page
             _network.ConnectivityChanged -= OnConnectivityChanged;
             _audio.PlaybackStateChanged -= OnPlaybackStateChanged;
             _audio.ErrorOccurred -= OnAudioError;
+            _podcast.PositionChanged -= OnPodcastPosition;
+            _podcast.PlaybackStateChanged -= OnPodcastState;
+            _podcast.EpisodeCompleted -= OnPodcastCompleted;
+            _podcast.PlaybackFailed -= OnPodcastFailed;
             _timer?.Stop();
             _timer = null;
         };
@@ -143,4 +152,74 @@ public sealed partial class DebugPage : Page
     private void ShowAudio() =>
         AudioText.Text = $"Stazione: {_audio.CurrentStation?.Name ?? "-"} · playing={_audio.IsPlaying} · " +
                          $"buffering={_audio.IsBuffering} · HLS={_audio.IsHlsActive} ({DateTime.Now:HH:mm:ss})";
+
+    private (AzuraStation Station, AzuraCastPodcastEpisode Episode)? _episode;
+
+    // First episode with media of the first station (in the loaded catalog) that has podcasts.
+    // Separate from Play: on the web play() must follow the click within a few seconds (§5),
+    // and fetching the lists takes longer.
+    private async void OnPodcastFindClick(object sender, RoutedEventArgs e)
+    {
+        var catalog = App.Services.GetRequiredService<IAzuraStationCatalog>();
+        var podcasts = App.Services.GetRequiredService<IPodcastService>();
+        string? error = null;
+        foreach (var station in catalog.Stations)
+        {
+            try
+            {
+                foreach (var podcast in await podcasts.GetPodcastsAsync(station))
+                {
+                    var episode = (await podcasts.GetEpisodesAsync(station, podcast)).FirstOrDefault(x => x.MediaUrl.Length > 0);
+                    if (episode is null)
+                        continue;
+                    _episode = (station, episode);
+                    PodcastText.Text = $"Episodio: '{episode.Title}' ({station.Name})";
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                error = $"{station.Name}: {ex.GetType().Name}: {ex.Message}";
+            }
+        }
+
+        PodcastText.Text = error ?? "Nessun episodio trovato (premere prima \"Carica stazioni\")";
+    }
+
+    // Starts from the saved position, like PodcastEpisodesViewModel.
+    private async void OnPodcastPlayClick(object sender, RoutedEventArgs e)
+    {
+        if (_episode is not { } selected)
+        {
+            PodcastText.Text = "Premere prima \"Trova episodio\"";
+            return;
+        }
+
+        var start = await _podcast.GetResumePositionSecondsAsync(selected.Station, selected.Episode);
+        PodcastText.Text = $"Avvio da {start} s";
+        await _podcast.PlayAsync(selected.Station, selected.Episode, start);
+    }
+
+    private async void OnPodcastPauseClick(object sender, RoutedEventArgs e) => await _podcast.PauseAsync();
+
+    private async void OnPodcastResumeClick(object sender, RoutedEventArgs e) => await _podcast.ResumeAsync();
+
+    private async void OnPodcastSeekClick(object sender, RoutedEventArgs e) =>
+        await _podcast.SeekAsync(_podcast.Position + TimeSpan.FromSeconds(10));
+
+    private async void OnPodcastStopClick(object sender, RoutedEventArgs e) => await _podcast.StopAsync();
+
+    private void OnPodcastPosition(object? sender, TimeSpan position) => _dispatcher.Post(ShowPodcast);
+
+    private void OnPodcastState(object? sender, bool playing) => _dispatcher.Post(ShowPodcast);
+
+    private void OnPodcastCompleted(object? sender, EventArgs e) =>
+        _dispatcher.Post(() => PodcastText.Text = "Episodio completato (EpisodeCompleted)");
+
+    private void OnPodcastFailed(object? sender, string? message) =>
+        _dispatcher.Post(() => PodcastText.Text = $"Errore podcast: {message ?? "avvio non riuscito"}");
+
+    private void ShowPodcast() =>
+        PodcastText.Text = $"{_podcast.CurrentEpisode?.Title ?? "-"} · playing={_podcast.IsPlaying} · " +
+                           $"{_podcast.Position:mm\\:ss} / {_podcast.Duration:mm\\:ss}";
 }

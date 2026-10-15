@@ -17,7 +17,43 @@ public static class PlatformSelfTest
 {
     private const string RunCountKey = "selftest_run_count";
 
-    public static bool IsRequested => Environment.GetEnvironmentVariable("RADIOE45_SELFTEST") == "1";
+    public static bool IsRequested => Environment.GetEnvironmentVariable("RADIOE45_SELFTEST") is "1" or "network";
+
+    private static bool IsNetworkRun => Environment.GetEnvironmentVariable("RADIOE45_SELFTEST") == "network";
+
+    /// <summary>
+    /// <c>RADIOE45_SELFTEST=network</c> (optional <c>RADIOE45_SELFTEST_MINUTES</c>, default 8):
+    /// plays the E45 stream and prints playing/buffering/network every 5 s, for long network drop
+    /// tests (the network is cut from outside, e.g. <c>prlctl set … --device-set net0 --disconnect</c>).
+    /// </summary>
+    private static async Task RunNetworkAsync(IServiceProvider services)
+    {
+        var minutes = int.TryParse(Environment.GetEnvironmentVariable("RADIOE45_SELFTEST_MINUTES"), out var m) ? m : 8;
+        if (!await services.GetRequiredService<IRadioRepository>().HasStationsAsync())
+            await services.GetRequiredService<IDatabaseService>().SeedStationsAsync();
+        var catalog = services.GetRequiredService<IAzuraStationCatalog>();
+        await catalog.ReloadAsync();
+        var station = catalog.Stations.FirstOrDefault(s => s.Name.Contains("E45", StringComparison.OrdinalIgnoreCase))
+                      ?? catalog.Stations.First();
+
+        var audio = services.GetRequiredService<IAudioService>();
+        var network = services.GetRequiredService<INetworkMonitor>();
+        network.ConnectivityChanged += (_, online) => Console.WriteLine($"NETTEST {DateTime.Now:HH:mm:ss} event ConnectivityChanged={online}");
+        audio.PlaybackStateChanged += (_, playing) => Console.WriteLine($"NETTEST {DateTime.Now:HH:mm:ss} event PlaybackStateChanged={playing}");
+        audio.ErrorOccurred += (_, error) => Console.WriteLine($"NETTEST {DateTime.Now:HH:mm:ss} event ErrorOccurred={error}");
+
+        await audio.PlayAsync(station);
+        var end = DateTime.UtcNow.AddMinutes(minutes);
+        while (DateTime.UtcNow < end)
+        {
+            Console.WriteLine($"NETTEST {DateTime.Now:HH:mm:ss} playing={audio.IsPlaying} buffering={audio.IsBuffering} " +
+                              $"internet={network.HasInternet} hls={audio.IsHlsActive}");
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+
+        await audio.StopAsync();
+        Console.WriteLine("NETTEST DONE");
+    }
 
     private static async Task<bool> WaitAsync(Func<bool> condition, TimeSpan timeout)
     {
@@ -34,6 +70,12 @@ public static class PlatformSelfTest
 
     public static async Task RunAsync(IServiceProvider services)
     {
+        if (IsNetworkRun)
+        {
+            await RunNetworkAsync(services);
+            return;
+        }
+
         var dispatcher = services.GetRequiredService<IUiDispatcher>();
         var settings = services.GetRequiredService<ISettingsStore>();
         var environment = services.GetRequiredService<IAppEnvironment>();
@@ -137,7 +179,107 @@ public static class PlatformSelfTest
             Report("audio.stop", await WaitAsync(() => !audio.IsPlaying, TimeSpan.FromSeconds(3)), $"station after stop: {audio.CurrentStation?.Name ?? "none"}");
         }
 
+        await PodcastAsync(services, Report);
+
         Console.WriteLine($"SELFTEST DONE failures={failures}");
+    }
+
+    // S7b: first episode with media of the first station that has podcasts.
+    private static async Task PodcastAsync(IServiceProvider services, Action<string, bool, string> report)
+    {
+        var catalog = services.GetRequiredService<IAzuraStationCatalog>();
+        var podcasts = services.GetRequiredService<IPodcastService>();
+        AzuraStation? station = null;
+        AzuraCastPodcastEpisode? episode = null;
+        foreach (var candidate in catalog.Stations)
+        {
+            try
+            {
+                foreach (var podcast in await podcasts.GetPodcastsAsync(candidate))
+                {
+                    episode = (await podcasts.GetEpisodesAsync(candidate, podcast)).FirstOrDefault(e => e.MediaUrl.Length > 0);
+                    if (episode is not null)
+                    {
+                        station = candidate;
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SELFTEST info podcasts of '{candidate.Name}': {ex.GetType().Name} {ex.Message}");
+            }
+
+            if (episode is not null)
+                break;
+        }
+
+        if (station is null || episode is null)
+        {
+            Console.WriteLine("SELFTEST SKIP podcast: no station in the catalog has an episode with media");
+            return;
+        }
+
+        // Real use: the user switches from the live radio to an episode (PlayAsync stops the radio).
+        var radio = services.GetRequiredService<IAudioService>();
+        var radioStation = catalog.Stations.FirstOrDefault(s => s.Name.Contains("E45", StringComparison.OrdinalIgnoreCase));
+        if (radioStation is not null)
+        {
+            await radio.PlayAsync(radioStation);
+            report("podcast.radio-before", await WaitAsync(() => radio.IsPlaying, TimeSpan.FromSeconds(20)), "radio playing before the episode");
+        }
+
+        var player = services.GetRequiredService<IPodcastPlayerService>();
+        await player.PlayAsync(station, episode, 0);
+        report("podcast.radio-stopped", !radio.IsPlaying, "starting the episode stopped the radio");
+        var playing = await WaitAsync(() => player.IsPlaying, TimeSpan.FromSeconds(20));
+        report("podcast.play", playing, $"'{episode.Title}' on '{station.Name}', duration {player.Duration:mm\\:ss}");
+        if (!playing)
+            return;
+
+        var start = player.Position;
+        await Task.Delay(TimeSpan.FromSeconds(4));
+        report("podcast.position", player.Position > start + TimeSpan.FromSeconds(2), $"{start:mm\\:ss} → {player.Position:mm\\:ss}");
+
+        await player.PauseAsync();
+        var paused = await WaitAsync(() => !player.IsPlaying, TimeSpan.FromSeconds(3));
+        var pausedAt = player.Position;
+        await Task.Delay(TimeSpan.FromSeconds(2));
+        report("podcast.pause", paused && (player.Position - pausedAt).Duration() < TimeSpan.FromSeconds(1),
+            $"real pause at {pausedAt:mm\\:ss}, position held");
+
+        // Half way (the demo episodes can be shorter than a minute), at least 8 s so that the
+        // saved position counts as resumable (> 3 s).
+        var target = TimeSpan.FromSeconds(Math.Max(8, Math.Min(60, player.Duration.TotalSeconds / 2)));
+        await player.SeekAsync(target);
+        await player.ResumeAsync();
+        var resumed = await WaitAsync(() => player.IsPlaying, TimeSpan.FromSeconds(10));
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        report("podcast.seek+resume", resumed && player.Position >= target,
+            $"resumed at {player.Position:mm\\:ss} after seek to {target:mm\\:ss}");
+
+        await player.StopAsync(); // saves the position
+        var saved = await player.GetResumePositionSecondsAsync(station, episode);
+        report("podcast.saved-position", saved >= (int)target.TotalSeconds, $"resume position {saved} s");
+
+        // Start again from the saved position: muted until the seek, then audible.
+        await player.PlayAsync(station, episode, saved);
+        var again = await WaitAsync(() => player.IsPlaying && player.Position >= TimeSpan.FromSeconds(saved - 2), TimeSpan.FromSeconds(20));
+        report("podcast.resume-from-saved", again, $"playing={player.IsPlaying} position {player.Position:mm\\:ss} (saved {saved} s)");
+        await player.StopAsync();
+
+        // End of episode: start 5 s before the end, wait for EpisodeCompleted; the episode is then
+        // saved as completed, so it would start over from 0.
+        var completed = new TaskCompletionSource();
+        void OnCompleted(object? sender, EventArgs e) => completed.TrySetResult();
+        player.EpisodeCompleted += OnCompleted;
+        var duration = player.Duration > TimeSpan.Zero ? player.Duration : TimeSpan.FromSeconds(27);
+        await player.PlayAsync(station, episode, (int)Math.Max(4, duration.TotalSeconds - 5));
+        var ended = await Task.WhenAny(completed.Task, Task.Delay(TimeSpan.FromSeconds(30))) == completed.Task;
+        player.EpisodeCompleted -= OnCompleted;
+        var resumeAfterEnd = await player.GetResumePositionSecondsAsync(station, episode);
+        report("podcast.end", ended && resumeAfterEnd == 0 && player.CurrentEpisode is null,
+            $"EpisodeCompleted={ended}, resume position after the end {resumeAfterEnd} s");
     }
 }
 #endif

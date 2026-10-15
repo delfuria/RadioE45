@@ -1,4 +1,5 @@
 using RadioE45.Services.Audio;
+using RadioE45.Services.Platform;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 
@@ -12,7 +13,11 @@ namespace RadioE45.Services.Shared;
 ///   opening; Buffering is derived from the playback state (BufferingStarted/Ended are not
 ///   implemented in Uno);
 /// - stop = Pause() + Source = null (there is no Stop()); a new source is needed to play again;
-/// - PlaybackSession.Position is not used (unreliable for live streams).
+/// - PlaybackSession.Position is not used (unreliable for live streams);
+/// - libVLC raises no event when the network drops (S1, confirmed in S7b with a 3-minute cut):
+///   when <see cref="INetworkMonitor"/> reports the loss while a source is open, the player
+///   reports Buffering, so the UI does not stay on "playing" during the stall and the watchdog
+///   of <see cref="LiveStreamAudioService"/> (stuck buffering > 12 s) takes over.
 /// System metadata (MPRIS, Media Session) comes in S9: SetMetadata is a no-op until then.
 /// </summary>
 public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
@@ -23,9 +28,10 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
     private readonly StreamStateDebouncer _states;
     private readonly ILogger _logger;
 
-    public MediaPlayerStreamPlayer(ILogger logger)
+    public MediaPlayerStreamPlayer(INetworkMonitor networkMonitor, ILogger logger)
     {
         _logger = logger;
+        networkMonitor.ConnectivityChanged += OnConnectivityChanged;
         _player = new MediaPlayer { AutoPlay = false };
         _states = new StreamStateDebouncer(StateDebounce, TimeProvider.System,
             (previous, current) => StateChanged?.Invoke(this, new StreamPlayerStateChangedEventArgs(previous, current)));
@@ -50,6 +56,11 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
 
     public void Close()
     {
+        // Already closed: touching the player again is not harmless on the web, where the
+        // deferred stop (HTMLMediaElement.load) aborts a play() just started by the podcast player.
+        if (_player.Source is null)
+            return;
+
         _player.Pause();
         _player.Source = null;
         _states.ReportNow(StreamPlayerState.Stopped);
@@ -72,6 +83,15 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
         _player.PlaybackSession.PlaybackStateChanged -= OnPlaybackStateChanged;
         _states.Dispose();
         _player.Dispose();
+    }
+
+    private void OnConnectivityChanged(object? sender, bool hasInternet)
+    {
+        if (!hasInternet && _player.Source is not null)
+        {
+            _logger.LogInformation("Network lost while streaming: reporting Buffering");
+            _states.ReportNow(StreamPlayerState.Buffering);
+        }
     }
 
     private void OnPlaybackStateChanged(MediaPlaybackSession session, object args)

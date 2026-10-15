@@ -21,6 +21,6 @@ public sealed class UnoAudioService : LiveStreamAudioService
         ILogger<UnoAudioService> logger)
         : base(streamUrlProber, platformNowPlayingService, audioFocusManager, settingsRepo, networkMonitor, dispatcher, logger)
     {
-        AttachPlayer(new MediaPlayerStreamPlayer(logger));
+        AttachPlayer(new MediaPlayerStreamPlayer(networkMonitor, logger));
     }
 }

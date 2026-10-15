@@ -450,7 +450,7 @@
   page: PodcastEpisodes
   viewmodel: PodcastEpisodesViewModel
   status: { maui: done, desktop: todo, web: todo }
-  notes: "Uno: serve un IPodcastPlayerService proprio (S7)"
+  notes: "Uno: UnoPodcastPlayerService (S7b). Ciclo di vita (fix 2026-10-15, bug presente da sempre): la pagina resta nello stack della tab Podcast quando si passa a On Air; a ogni ritorno va richiamato PodcastEpisodesViewModel.Activate() (MAUI: OnAppearing; Uno: OnNavigatedTo) dopo Cleanup() all'uscita"
 
 - id: podcastepisodes.resume
   title: Ripresa dalla posizione salvata

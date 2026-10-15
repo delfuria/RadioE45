@@ -11,7 +11,6 @@ public partial class PodcastEpisodesPage : ContentPage
 {
     private readonly PodcastEpisodesViewModel _viewModel;
     private readonly IPodcastPlayerService _podcastPlayerService;
-    private bool _isInitialized;
     // Vero mentre l'utente sta trascinando lo Slider: i campioni di posizione live continuano ad
     // arrivare durante il drag (ogni ~200ms) e, se non sospesi qui, sovrascrivono continuamente
     // ProgressSlider.Value con la posizione reale (non ancora spostata), annullando visivamente
@@ -54,11 +53,13 @@ public partial class PodcastEpisodesPage : ContentPage
     {
         base.OnAppearing();
 
-        if (!_isInitialized)
-        {
-            _isInitialized = true;
-            (_podcastPlayerService as IMediaElementHost)?.Initialize(PodcastPlayer);
-        }
+        // Every time, not only the first: switching to another tab and back keeps this page in
+        // the tab's stack, but OnDisappearing stopped playback and unsubscribed the ViewModel, and
+        // the MediaElement's native player may have been torn down meanwhile (MAUI 9+ disconnects
+        // handlers automatically). Re-attaching gives the service a live player again (iOS crashed
+        // on the stale one) and Activate re-subscribes the ViewModel.
+        (_podcastPlayerService as IMediaElementHost)?.Initialize(PodcastPlayer);
+        _viewModel.Activate();
 
         // La stazione può essere cambiata (frecce OnAir) mentre eravamo su un'altra tab: gli
         // episodi caricati non sono più pertinenti, si torna alla lista podcast della stazione attuale.

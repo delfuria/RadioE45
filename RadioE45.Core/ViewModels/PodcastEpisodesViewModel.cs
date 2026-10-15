@@ -95,6 +95,23 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
         _progressRepository = progressRepository;
         _onAirViewModel = onAirViewModel;
 
+        Activate();
+    }
+
+    private bool _isActive;
+
+    /// <summary>
+    /// Subscribes to the player events. Called again by the page every time it appears: leaving
+    /// the Podcast tab (e.g. to On Air) keeps this page and ViewModel alive in the tab's stack
+    /// while <see cref="Cleanup"/> unsubscribed them, so without this the page stopped reacting
+    /// to the player when the user came back (play seemed to do nothing). Idempotent.
+    /// </summary>
+    public void Activate()
+    {
+        if (_isActive)
+            return;
+        _isActive = true;
+
         _podcastPlayerService.PlaybackStateChanged += OnPlaybackStateChanged;
         _podcastPlayerService.PositionChanged += OnPositionChanged;
         _podcastPlayerService.EpisodeCompleted += OnEpisodeCompleted;
@@ -350,6 +367,10 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
 
     public void Cleanup()
     {
+        if (!_isActive)
+            return;
+        _isActive = false;
+
         _podcastPlayerService.PlaybackStateChanged -= OnPlaybackStateChanged;
         _podcastPlayerService.PositionChanged -= OnPositionChanged;
         _podcastPlayerService.EpisodeCompleted -= OnEpisodeCompleted;

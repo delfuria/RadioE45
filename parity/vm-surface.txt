@@ -80,6 +80,7 @@ OnAirViewModel.TotalTimeText : string { get; set; }
 OnAirViewModel.TrackProgress : double { get; set; }
 OnAirViewModel.Volume : double { get; set; }
 PodcastEpisodesViewModel : type
+PodcastEpisodesViewModel.Activate() : void
 PodcastEpisodesViewModel.Cleanup() : void
 PodcastEpisodesViewModel.CurrentEpisode : AzuraCastPodcastEpisode { get; set; }
 PodcastEpisodesViewModel.ElapsedTimeText : string { get; set; }

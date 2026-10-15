@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
 > Branch di lavoro attuale: `S7` (derivato da `S6`). Ultimo aggiornamento: 2026-10-15 (app v0.44).
-> Stato: **S0–S7a completate; prossima sessione: S7b** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Stato: **S0–S7b completate (manca la regressione MAUI dell'utente); prossima sessione: S8.1** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -567,15 +567,37 @@ Decisioni prese con l'utente (2026-10-15):
 - Da fare con l'utente: **ascolto reale** su macOS, nella VM e nel browser (gli autotest controllano lo stato del player, non l'audio). La prova del `NetworkMonitor` con la rete staccata è in S7b, insieme alle cadute lunghe.
 - **Uscita:** ✅ (salvo conferma d'ascolto dell'utente)
 
-#### S7b — Podcast, test di rete lunghi · Mac + VM
-- [ ] Motore podcast condiviso nel Core (logica di `PodcastPlayerService` MAUI: posizione salvata, ripresa, fine episodio, errori) + adattatore MAUI (`MediaElement`) e Uno (`MediaPlayer`, pausa vera con ripresa dalla posizione); test; **regressione podcast MAUI (utente)**.
-- [ ] Riconnessione: cadute di rete lunghe (2–5 min) nella VM; l'audio riparte da solo e la UI non resta su "in riproduzione" durante lo stallo.
-- [ ] Snap/CI x64: la verifica del fix SkiaSharp `NoDependencies` si sposta in S10 (serve la CI x64).
+#### S7b — Podcast, test di rete lunghi · Mac + VM — ✅ codice completato 2026-10-15 (manca la regressione MAUI dell'utente)
+- [x] **Motore podcast condiviso** `RadioE45.Core/Services/Audio/PodcastPlaybackService` (logica di `PodcastPlayerService` MAUI spostata senza modifiche di comportamento: retry all'avvio, ripresa silenziata con seek sul primo campione reale di posizione, guardia sull'episodio corrente, salvataggio ogni 5 s / pausa / stop / fine = completato) + interfaccia `IPodcastMediaPlayer`. `TimeProvider` per i ritardi, `IUiDispatcher` al posto di `MainThread`. **14 test** con player e tempo finti.
+- [x] MAUI: `MediaElementPodcastPlayer` (adattatore) e `PodcastPlayerService : PodcastPlaybackService, IMediaElementHost`, ridotto a un guscio (prima 285 righe). Pagina e ViewModel invariati.
+- [x] Uno: `MediaPlayerPodcastPlayer` + `UnoPodcastPlayerService`; `PodcastEpisodesViewModel` registrato. La posizione viene letta ogni 500 ms (il `MediaPlayer` Uno non ha un evento di posizione), gli stati passano dallo `StreamStateDebouncer`.
+- [x] **Comportamenti di Uno 6.7 aggirati** (documentati nell'adattatore):
+  1. macOS: riaprire un file sullo stesso `MediaPlayer` dopo `Source = null` si ferma in Paused subito dopo Playing → su desktop un `MediaPlayer` nuovo per ogni episodio.
+  2. macOS: `Dispose()` del `MediaPlayer` fa crashare l'app (`NullReferenceException` in `MacOSMediaPlayerExtension.OnPeriodicPositionUpdate`) → i player rilasciati vengono fermati e tenuti in memoria, mai `Dispose`.
+  3. macOS: subito dopo l'apertura il seek può essere ignorato → seek verificato con retry (fino a ~2 s).
+  4. Web: player multipli si disturbano (`AbortError: play() interrupted by a call to pause()` / `by a new load request`) e il primo `play()` subito dopo la creazione del player si perde (l'elemento HTML nasce in modo asincrono) → sul web un solo player podcast, creato all'avvio. Anche il `Close()` della radio ora non tocca nulla se la sorgente è già chiusa.
+  5. Linux (libVLC): a fine episodio il backend ricarica la sorgente come percorso locale (`file:///<cartella>/https:\\host\…`) e genera un `MediaFailed`: ignorato fino alla successiva apertura (resta solo un messaggio di libVLC nel terminale).
+- [x] **Radio senza rete (Linux):** libVLC non segnala la caduta (S1). L'adattatore `MediaPlayerStreamPlayer` ora riceve `INetworkMonitor` e alla perdita della rete segnala Buffering, così la UI non resta su "in riproduzione". Test nella VM con `prlctl set … --device-set net0 --disconnect`:
+  - 3 minuti senza la correzione: `playing=True` per tutto lo stallo (requisito non rispettato);
+  - 2 minuti con la correzione: subito `buffering=True`, il watchdog ritenta ogni 10 s in silenzio, al ritorno della rete radio di nuovo in riproduzione in circa 2 s.
+  - Modalità di prova: `RADIOE45_SELFTEST=network RADIOE45_SELFTEST_MINUTES=n` (stato ogni 5 s, righe `NETTEST`).
+- [x] Autotest desktop esteso ai podcast (episodio demo AzuraTest): radio → podcast (la radio si ferma), avanzamento, pausa vera, seek + ripresa, posizione salvata, ripartenza dalla posizione salvata, fine episodio = completato. **macOS e VM: tutto ok** (due esecuzioni consecutive ciascuno). Pagina Debug: sezione podcast ("Trova episodio" separato da "Play" perché sul web il play deve seguire il clic entro pochi secondi).
+- [x] **Bug MAUI preesistente corretto (segnalato dall'utente il 2026-10-15, presente anche nelle versioni precedenti):** ascolto di un episodio → tab On Air → ritorno al podcast: la card non mostrava la posizione (giallo), si ripartiva da 0, il play "non faceva nulla" e su iOS l'app andava in crash. Il passaggio di tab lascia la pagina episodi nello stack della tab, ma `OnDisappearing` ferma la riproduzione e scollega il ViewModel. Tre cause, tre correzioni:
+  1. il ViewModel non si riagganciava agli eventi del player (aggancio solo nel costruttore) → `PodcastEpisodesViewModel.Activate()` idempotente, chiamato a ogni `OnAppearing` (nuova API tracciata in `parity/vm-surface.txt` e nella nota di `podcastepisodes.player`);
+  2. il `MediaElement` veniva agganciato al servizio solo la prima volta, mentre nel frattempo MAUI 9+ può aver scollegato il player nativo → `Initialize` a ogni `OnAppearing`;
+  3. lo stop all'uscita salvava la posizione letta da un `MediaElement` già scollegato (0), sovrascrivendo quella buona → `PodcastPlaybackService` salva l'ultima posizione nota quando il player riporta 0 (2 test).
+  - **Da verificare dall'utente** su Mac, iOS (crash), Windows e Android con lo stesso percorso.
+- [ ] **Web: podcast da provare a mano (utente)**, con la scheda visibile: nella sessione la finestra di automazione era in background e Chrome rimanda il caricamento dei media nelle schede nascoste (`visibilityState: hidden`), quindi le prove automatiche non sono conclusive.
+- Note:
+  - Test: **137** verdi.
+  - Il server demo `demo.azuracast.com` (unico con podcast nel catalogo) ha risposto più volte 521 durante la sessione: un "nessun episodio" può dipendere da quello.
+  - `dotnet build RadioE45.slnx` 0 avvisi/0 errori; **135 test** verdi; `ParityCheck` = 1.
 - [ ] **Regressione MAUI (utente), un solo giro a fine S7b:**
   - podcast su tutti gli ambienti (ascolto, pausa, ripresa dalla posizione salvata, fine episodio);
   - finestra 500×855 non ridimensionabile su Mac Catalyst e Windows (codice spostato in `DesktopWindowSize` in S7a; 7 test sui valori);
   - build della soluzione sul PC Windows (`global.json` con `Uno.Sdk` e `RadioE45.Uno` nella `.slnx` da S6a).
   - iOS e Android: nessuna modifica che agisca su quelle piattaforme oltre ai podcast.
+- [ ] Snap/CI x64: la verifica del fix SkiaSharp `NoDependencies` si sposta in S10 (serve la CI x64).
 - **Uscita:** podcast su desktop e web dalla pagina Debug; regressione MAUI ok.
 
 ### S8.x — Porting delle pagine (una o due pagine per sessione, con la skill `ui-parity-port`) · Mac (+ VM per le verifiche)
@@ -584,7 +606,7 @@ Decisioni prese con l'utente (2026-10-15):
 - [ ] S8.3 `SettingsPage`, menu app
 - [ ] S8.4 `SchedulePopup`
 - [ ] S8.5 `SongRequestPage`
-- [ ] S8.6 `PodcastListPage`, `PodcastEpisodesPage`
+- [ ] S8.6 `PodcastListPage`, `PodcastEpisodesPage` (rispettare il ciclo di vita corretto in S7b: `Activate()` in `OnNavigatedTo`, stop + `Cleanup()` in `OnNavigatedFrom`; vedi la nota di `podcastepisodes.player`)
 - [ ] S8.7 Layout desktop e web largo (due colonne), scorciatoie da tastiera
 - **Uscita di ogni sessione:** le feature della pagina sono `done` in `features.yaml` e `ParityCheck` non segnala errori per quella pagina.
 
@@ -640,6 +662,7 @@ Decisioni prese con l'utente (2026-10-15):
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-15 | S7b | Codice completato (attese regressione MAUI e prova podcast web dell'utente) | Motore podcast condiviso nel Core (14 test) con adattatori MAUI e Uno; 5 comportamenti di Uno 6.7 aggirati (macOS riapertura/Dispose/seek, web player multipli, libVLC fine episodio); radio senza rete ora mostra buffering (prova da 3 e 2 minuti nella VM); autotest podcast ok su macOS e VM; 135 test, soluzione verde, ParityCheck = 1. Prossima: S8.1 |
 | 2026-10-15 | S7a | Completata (ascolto da confermare) | Branch `S7` da `S6`. Finestra desktop come MAUI (`DesktopWindowSize` nel Core), `IAppPaths`, `INetworkMonitor` desktop/web, DB + catalogo, audio live Uno con `StreamStateDebouncer` (5 test); autotest 17/17 su macOS e VM, ciclo Play/Pausa/Riprendi/Stop ok in Chrome; 121 test, soluzione verde, ParityCheck = 1. Prossima: S7b |
 | 2026-10-15 | S6b | Completata (prova manuale utente ok) | Servizi condivisi Uno (dispatcher, dialog, impostazioni, ambiente, link, tema) + `UnoWindowHost`; pagina Debug e autotest `RADIOE45_SELFTEST=1`; 9/9 su macOS e VM, pagina Debug ok sul web; dati in `~/.local/share/RadioE45/`; `uno-check` verde; soluzione verde, 109 test, ParityCheck = 1. Prossima: S7 |
 | 2026-10-14 | S6a | Completata | Branch `S6` da `S5B`. `RadioE45.Uno` (Uno.Sdk 6.7.30, Fluent, `RootNamespace=RadioE45`), shell `NavigationView` + 3 pagine segnaposto, `TranslateExtension` (`Key=`), colori/font/icona; desktop macOS e web Chrome verificati; soluzione verde, 109 test, ParityCheck = 1. Prossima: S6b (servizi condivisi + VM) |
