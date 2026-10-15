@@ -42,6 +42,7 @@ dotnet build RadioE45.Uno -f net10.0-desktop
 dotnet build RadioE45.Uno -f net10.0-browserwasm
 dotnet run --project RadioE45.Uno -f net10.0-desktop             # anche su macOS (stesso renderer Skia)
 dotnet run --project RadioE45.Uno -f net10.0-browserwasm         # http://localhost:5045 (la 5000 è dell'AirPlay Receiver di macOS)
+RADIOE45_SELFTEST=1 dotnet run --project RadioE45.Uno -f net10.0-desktop   # DEBUG: autotest dei servizi di piattaforma, righe SELFTEST, poi esce
 ```
 
 Test Linux nella VM Parallels (`ssh radioe45-vm`, sorgenti sincronizzati con `rsync`): comandi in §2.2 del roadmap.

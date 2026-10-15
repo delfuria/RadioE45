@@ -1,8 +1,8 @@
 # RadioE45 su Linux e Web con Uno Platform — Piano operativo
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
-> Branch di lavoro attuale: `S6` (derivato da `S5B`). Ultimo aggiornamento: 2026-10-14 (app v0.44).
-> Stato: **S0–S6a completate; prossima sessione: S6b** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Branch di lavoro attuale: `S6` (derivato da `S5B`). Ultimo aggiornamento: 2026-10-15 (app v0.44).
+> Stato: **S0–S6 completate; prossima sessione: S7** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -68,7 +68,7 @@ Accesso da Claude Code sul Mac (da decidere in S0, consigliata la prima opzione)
 |---|---|
 | VM | Parallels `Ubuntu 24.04.3 ARM64`, hostname `ubuntu-gnu-linux-24-04-3`, utente `parallels`, IP `10.211.55.6` |
 | Sessione grafica | Wayland (`WAYLAND_DISPLAY=wayland-0`, `XDG_RUNTIME_DIR=/run/user/1000`) |
-| .NET nella VM | SDK `10.0.401` in `~/.dotnet` (script `dotnet-install.sh`) |
+| .NET nella VM | SDK `10.0.203` in `~/.dotnet` (script `dotnet-install.sh`; in S0 era 10.0.401) |
 | .NET sul Mac | SDK `10.0.101` (workload MAUI e `wasm-tools`) |
 | PATH via SSH | Export di `DOTNET_ROOT`/`PATH` **in cima** a `~/.bashrc` (marcatore `# radioe45-dotnet`), perché il `.bashrc` di Ubuntu esce subito nelle shell non interattive |
 | Parallels CLI sul Mac | `/usr/local/bin/prlctl` |
@@ -512,11 +512,26 @@ Fatti rilevati: `Uno.Sdk` 6.7.30 è ancora l'ultima stabile (come negli spike). 
 - Da sistemare in S8.1 (stili): l'indicatore della tab selezionata resta blu, l'override di `SystemAccentColor` non arriva alla `NavigationView`.
 - **Uscita:** ✅
 
-#### S6b — Servizi condivisi e Linux · Mac + VM
-- [ ] Implementazioni in `Services/Shared/`: `IUiDispatcher` (`DispatcherQueue`), `IDialogService` (`ContentDialog`), `ISettingsStore` (`ApplicationData.LocalSettings`), `IAppEnvironment`, `IUrlLauncher`, `IThemeService`.
-- [ ] Test (dove possibile senza UI) e verifica manuale da una pagina di debug: dialog, impostazione salvata e riletta dopo il riavvio, apertura di un link, cambio tema.
-- [ ] VM: rsync, build e avvio di `net10.0-desktop` (§2.2); ricontrollare `uno-check` con il `global.json` del repo (`unosdk`, vedi S0).
-- **Uscita:** l'app si apre su macOS (desktop), in Chrome (web) e nella VM; tutta la soluzione compila.
+#### S6b — Servizi condivisi e Linux · Mac + VM — ✅ completata 2026-10-15
+- [x] Implementazioni in `RadioE45.Uno/Services/Shared/`, registrate in `App`:
+  - `UnoWindowHost`: la finestra unica, da cui gli altri servizi prendono `DispatcherQueue`, l'elemento radice (tema) e lo `XamlRoot` (dialog);
+  - `UnoUiDispatcher` (`DispatcherQueue`; timer con lo stesso ciclo di vita di MAUI: `Stop()` stacca anche il tick);
+  - `UnoDialogService` (`ContentDialog`, chiamate serializzate perché WinUI ne ammette uno alla volta; nessun toast, come MAUI su desktop);
+  - `UnoSettingsStore` (`ApplicationData.LocalSettings`, con conversione dei tipi primitivi);
+  - `UnoAppEnvironment` (versione NBGV `0.45`, build = altezza git, commit, piattaforma `Linux`/`macOS`/`Windows`/`Web`, volume gestito dall'app);
+  - `UnoUrlLauncher` (`Launcher.LaunchUriAsync`), `UnoThemeService` (`RequestedTheme` sulla radice).
+- [x] Tema: tolto `RequestedTheme="Dark"` da `App.xaml`, così "System" segue davvero il sistema operativo o il browser; all'avvio si applica `theme_preference` (default `Dark`, come MAUI).
+- [x] `Uno.Extensions.Toolkit` (importato in automatico da Uno.Sdk) ha un suo `IThemeService`: alias globale in `GlobalUsings.cs`.
+- [x] `ApplicationPublisher` = `RadioE45` (il template metteva `CN=RadioE45`, che serve solo ai pacchetti MSIX e finiva nel percorso dei dati): dati desktop in `~/.local/share/RadioE45/com.radioe45.app/` (`LocalState`, `Settings`).
+- [x] Pagina **Debug** (solo DEBUG, voce in fondo alla `NavigationView`): info ambiente, contatore persistente, tema, alert, conferma, apertura link, dispatcher da thread di fondo, timer. Non è nel manifest di parità (nessuna controparte MAUI).
+- [x] Autotest DEBUG solo desktop: `RADIOE45_SELFTEST=1 dotnet run --project RadioE45.Uno -f net10.0-desktop` scrive una riga `SELFTEST` per controllo (ambiente, impostazioni persistenti tra due avvii, double, remove, dispatcher, `InvokeAsync` da thread di fondo, timer, tema, navigazione) ed esce. Costante `RADIOE45_DESKTOP` definita nel csproj (Uno non ne ha una che distingua desktop e web; `Application.Exit()` sul web non è implementato, Uno0001).
+- [x] Esiti:
+  - **macOS desktop:** autotest 9/9 in due avvii consecutivi (contatore 1 → 2);
+  - **VM Ubuntu arm64 (X11 via XWayland):** build ok, autotest 9/9 in due avvii, poi di nuovo dopo il cambio di `ApplicationPublisher`; `uno-check --target linux` ora tutto verde (`unosdk` compreso);
+  - **Web (Chrome):** pagina Debug ok: `ConfirmAsync` → True/False, link in una nuova scheda, tema Light applicato e mantenuto dopo il ricaricamento, contatore 1 → 2 (localStorage), timer ok. Il dispatcher da "thread di fondo" risulta UI thread: atteso, WASM è single-thread.
+- [ ] **Da verificare a mano dall'utente su desktop (macOS e VM):** pagina Debug → Alert, Conferma, Apri link (browser di sistema / `xdg-open`), cambio tema Light/System. Su desktop i clic sulla finestra nativa non sono automatizzabili da Claude.
+- Nota: l'ultima modifica (spostamento dell'autotest sotto `#if DEBUG && RADIOE45_DESKTOP`) è stata riprovata solo su macOS: la VM era irraggiungibile (timeout SSH) a fine sessione.
+- **Uscita:** l'app si apre su macOS, in Chrome e nella VM; `dotnet build RadioE45.slnx` 0 avvisi/0 errori; 109 test verdi; `ParityCheck` = 1. ✅
 
 ### S7 — Servizi di piattaforma Uno · Mac + VM
 - [ ] Audio: player Uno per radio e podcast (decisione S1).
@@ -589,6 +604,7 @@ Fatti rilevati: `Uno.Sdk` 6.7.30 è ancora l'ultima stabile (come negli spike). 
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-15 | S6b | Completata (manca la prova manuale dei dialog su desktop) | Servizi condivisi Uno (dispatcher, dialog, impostazioni, ambiente, link, tema) + `UnoWindowHost`; pagina Debug e autotest `RADIOE45_SELFTEST=1`; 9/9 su macOS e VM, pagina Debug ok sul web; dati in `~/.local/share/RadioE45/`; `uno-check` verde; soluzione verde, 109 test, ParityCheck = 1. Prossima: S7 |
 | 2026-10-14 | S6a | Completata | Branch `S6` da `S5B`. `RadioE45.Uno` (Uno.Sdk 6.7.30, Fluent, `RootNamespace=RadioE45`), shell `NavigationView` + 3 pagine segnaposto, `TranslateExtension` (`Key=`), colori/font/icona; desktop macOS e web Chrome verificati; soluzione verde, 109 test, ParityCheck = 1. Prossima: S6b (servizi condivisi + VM) |
 | 2026-10-14 | S5b | Completata | Branch `S5B` da `S5A`. `CLAUDE.md`, `docs/parity/MAUI-TO-UNO.md`, skill `ui-parity-port`, hook `PostToolUse`/`Stop` versionati (`.claude/settings.json` + `tools/parity-hook.sh`); blocco con exit 2 verificato e annullato; ParityCheck = 1. Prossima: S6 |
 | 2026-10-14 | S5a | Completata | Branch `S5A` da `main`. `tools/ParityCheck` (controlli §6.3 + integrità del manifest + code-behind), `parity/pages.yaml` (10), `features.yaml` (60 feature), `vm-surface.txt`; 15 nuovi test (109 totali); soluzione verde; ParityCheck = 1. Prossima: S5b |

@@ -46,16 +46,37 @@ public partial class App : Application
 
         Host = builder.Build();
         Services = Host.Services;
+        Services.GetRequiredService<UnoWindowHost>().Attach(MainWindow);
 
         MainWindow.Content ??= Services.GetRequiredService<ShellPage>();
+
+        var settings = Services.GetRequiredService<ISettingsStore>();
+        Services.GetRequiredService<IThemeService>()
+            .Apply(settings.Get(UnoThemeService.PreferenceKey, UnoThemeService.DefaultPreference));
+
         MainWindow.Activate();
+
+#if DEBUG && RADIOE45_DESKTOP
+        if (PlatformSelfTest.IsRequested)
+            MainWindow.DispatcherQueue.TryEnqueue(async () =>
+            {
+                await PlatformSelfTest.RunAsync(Services);
+                Exit();
+            });
+#endif
     }
 
     private static void ConfigureServices(IServiceCollection services)
     {
-        // Platform services (Services/Shared: desktop + web). Only navigation in S6a; dispatcher,
-        // dialogs, settings, app environment, URL launcher and theme follow in S6b, paths,
-        // network, audio and crash reporting in S7 (docs/LINUX-UNO-ROADMAP.md).
+        // Platform services shared by desktop and web (Services/Shared). App paths, network
+        // monitor, audio and crash reporting follow in S7 (docs/LINUX-UNO-ROADMAP.md).
+        services.AddSingleton<UnoWindowHost>();
+        services.AddSingleton<IUiDispatcher, UnoUiDispatcher>();
+        services.AddSingleton<IDialogService, UnoDialogService>();
+        services.AddSingleton<ISettingsStore, UnoSettingsStore>();
+        services.AddSingleton<IAppEnvironment, UnoAppEnvironment>();
+        services.AddSingleton<IUrlLauncher, UnoUrlLauncher>();
+        services.AddSingleton<IThemeService, UnoThemeService>();
         services.AddSingleton<UnoNavigationService>();
         services.AddSingleton<INavigationService>(sp => sp.GetRequiredService<UnoNavigationService>());
 

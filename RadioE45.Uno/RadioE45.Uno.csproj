@@ -17,7 +17,8 @@
 
         <ApplicationTitle>Radio E45</ApplicationTitle>
         <ApplicationId>com.radioe45.app</ApplicationId>
-        <ApplicationPublisher>CN=RadioE45</ApplicationPublisher>
+        <!-- Also the data folder name on desktop: ~/.local/share/RadioE45/com.radioe45.app/ -->
+        <ApplicationPublisher>RadioE45</ApplicationPublisher>
         <Description>Radio E45: AzuraCast web radio player.</Description>
         <!-- ApplicationDisplayVersion/ApplicationVersion come from version.json (NBGV) when
              packaging is set up in S10; the assembly version attributes already do. -->
@@ -47,6 +48,12 @@
         <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
         <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.13" />
     </ItemGroup>
+
+    <!-- Uno defines no constant that tells the desktop head from the web one. Use it only for
+         code that cannot run in the browser (e.g. Application.Exit in the DEBUG self-test). -->
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-desktop'">
+        <DefineConstants>$(DefineConstants);RADIOE45_DESKTOP</DefineConstants>
+    </PropertyGroup>
 
     <!-- linux-arm64: the libSkiaSharp.so brought by Uno fails at startup with
          "undefined symbol: FT_Get_BDF_Property"; the NoDependencies build fixes it (S1). -->

@@ -8,6 +8,7 @@ public enum ShellTab
     OnAir,
     Request,
     Podcasts,
+    Debug,
 }
 
 public sealed partial class ShellPage : Page
@@ -16,6 +17,9 @@ public sealed partial class ShellPage : Page
     {
         InitializeComponent();
         navigation.Attach(this);
+#if DEBUG
+        NavView.FooterMenuItems.Add(new NavigationViewItem { Content = "Debug", Tag = nameof(ShellTab.Debug) });
+#endif
         SelectTab(ShellTab.OnAir, clearHistory: true);
     }
 
@@ -50,6 +54,7 @@ public sealed partial class ShellPage : Page
         {
             ShellTab.Request => typeof(SongRequestPage),
             ShellTab.Podcasts => typeof(PodcastListPage),
+            ShellTab.Debug => typeof(DebugPage),
             _ => typeof(OnAirPage),
         };
 
