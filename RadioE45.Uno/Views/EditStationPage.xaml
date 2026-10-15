@@ -1,0 +1,195 @@
+<Page
+    x:Class="RadioE45.Views.EditStationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:loc="using:RadioE45.Services.Localization"
+    xmlns:conv="using:RadioE45.Converters"
+    Background="{ThemeResource PageBackgroundBrush}">
+
+    <!-- Port of RadioE45/Views/EditStationPage.xaml. The station id arrives as the navigation
+         parameter (MAUI: Shell query "id"). -->
+
+    <Grid Padding="0,0,0,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Style="{StaticResource PageTitleLabel}" Text="{x:Bind ViewModel.Title, Mode=OneWay}" />
+
+        <!-- Error message -->
+        <TextBlock
+            Grid.Row="1"
+            Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+            Foreground="Red"
+            FontSize="13"
+            TextWrapping="Wrap"
+            Margin="16,8,16,0"
+            Visibility="{x:Bind conv:Fn.IsNotNull(ViewModel.ErrorMessage), Mode=OneWay}" />
+
+        <!-- Form -->
+        <ScrollViewer Grid.Row="2">
+            <StackPanel Spacing="16" Padding="16">
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{loc:Translate Key=EditStation_UrlBase}" Style="{StaticResource CaptionLabel}" TextAlignment="Left" />
+                    <TextBlock
+                        Text="{x:Bind ViewModel.UrlBase, Mode=OneWay}"
+                        Foreground="{ThemeResource PrimaryTextBrush}"
+                        IsTextSelectionEnabled="True"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{loc:Translate Key=EditStation_StationId}" Style="{StaticResource CaptionLabel}" TextAlignment="Left" />
+                    <TextBlock
+                        Text="{x:Bind conv:Fn.Text(ViewModel.AzuraStationId), Mode=OneWay}"
+                        Foreground="{ThemeResource PrimaryTextBrush}" />
+                </StackPanel>
+
+                <Border Height="2" Background="{ThemeResource CardElevatedBrush}" />
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{loc:Translate Key=EditStation_Name}" Style="{StaticResource CaptionLabel}" TextAlignment="Left" />
+                    <TextBox Style="{StaticResource CardTextBox}" Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{loc:Translate Key=EditStation_ShortName}" Style="{StaticResource CaptionLabel}" TextAlignment="Left" />
+                    <TextBox Style="{StaticResource CardTextBox}" Text="{x:Bind ViewModel.ShortName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{loc:Translate Key=EditStation_Description}" Style="{StaticResource CaptionLabel}" TextAlignment="Left" />
+                    <TextBox
+                        Style="{StaticResource CardTextBox}"
+                        Text="{x:Bind ViewModel.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        AcceptsReturn="True"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <CheckBox
+                    IsChecked="{x:Bind ViewModel.HasCustomInfo, Mode=TwoWay}"
+                    Content="{loc:Translate Key=EditStation_UseCustomInfo}"
+                    Foreground="{ThemeResource PrimaryTextBrush}" />
+
+                <StackPanel Spacing="4">
+                    <CheckBox
+                        IsChecked="{x:Bind ViewModel.OverrideLatencyOffset, Mode=TwoWay}"
+                        Content="{loc:Translate Key=EditStation_OverrideLatencyOffset}"
+                        Foreground="{ThemeResource PrimaryTextBrush}" />
+                    <Grid Visibility="{x:Bind ViewModel.OverrideLatencyOffset, Mode=OneWay}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Slider
+                            Grid.Column="0"
+                            Minimum="0"
+                            Maximum="10"
+                            StepFrequency="1"
+                            Value="{x:Bind conv:Fn.ToDouble(ViewModel.LatencyOffsetSeconds), Mode=OneWay}"
+                            ValueChanged="OnLatencyChanged" />
+                        <TextBlock
+                            Grid.Column="1"
+                            Text="{x:Bind conv:Fn.Seconds(ViewModel.LatencyOffsetSeconds), Mode=OneWay}"
+                            Style="{StaticResource CaptionLabel}"
+                            VerticalAlignment="Center"
+                            Margin="8,0,0,0" />
+                    </Grid>
+                </StackPanel>
+
+                <Border Height="2" Background="{ThemeResource CardElevatedBrush}" />
+
+                <TextBlock
+                    Text="{loc:Translate Key=EditStation_Section_Links}"
+                    Style="{StaticResource CaptionLabel}"
+                    TextAlignment="Left"
+                    FontWeight="Bold" />
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{loc:Translate Key=EditStation_WebsiteUrl}" Style="{StaticResource CaptionLabel}" TextAlignment="Left" />
+                    <TextBox
+                        Style="{StaticResource CardTextBox}"
+                        Text="{x:Bind ViewModel.WebsiteUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        InputScope="Url"
+                        IsSpellCheckEnabled="False"
+                        PlaceholderText="https://" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{loc:Translate Key=EditStation_SocialUrl1}" Style="{StaticResource CaptionLabel}" TextAlignment="Left" />
+                    <TextBox
+                        Style="{StaticResource CardTextBox}"
+                        Text="{x:Bind ViewModel.SocialUrl1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        InputScope="Url"
+                        IsSpellCheckEnabled="False"
+                        PlaceholderText="https://instagram.com/…" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{loc:Translate Key=EditStation_SocialUrl2}" Style="{StaticResource CaptionLabel}" TextAlignment="Left" />
+                    <TextBox
+                        Style="{StaticResource CardTextBox}"
+                        Text="{x:Bind ViewModel.SocialUrl2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        InputScope="Url"
+                        IsSpellCheckEnabled="False"
+                        PlaceholderText="https://facebook.com/…" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{loc:Translate Key=EditStation_SocialUrl3}" Style="{StaticResource CaptionLabel}" TextAlignment="Left" />
+                    <TextBox
+                        Style="{StaticResource CardTextBox}"
+                        Text="{x:Bind ViewModel.SocialUrl3, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        InputScope="Url"
+                        IsSpellCheckEnabled="False"
+                        PlaceholderText="https://youtube.com/…" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{loc:Translate Key=EditStation_ContactEmail}" Style="{StaticResource CaptionLabel}" TextAlignment="Left" />
+                    <TextBox
+                        Style="{StaticResource CardTextBox}"
+                        Text="{x:Bind ViewModel.ContactEmail, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        InputScope="EmailSmtpAddress"
+                        IsSpellCheckEnabled="False"
+                        PlaceholderText="info@…" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{loc:Translate Key=EditStation_ContactPhone}" Style="{StaticResource CaptionLabel}" TextAlignment="Left" />
+                    <TextBox
+                        Style="{StaticResource CardTextBox}"
+                        Text="{x:Bind ViewModel.ContactPhone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        InputScope="TelephoneNumber"
+                        PlaceholderText="+39 …" />
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Cancel / Save -->
+        <Grid Grid.Row="3" ColumnSpacing="16" Margin="32,8,32,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                Grid.Column="0"
+                Style="{StaticResource PillCardButton}"
+                Content="{loc:Translate Key=Common_Cancel}"
+                Command="{x:Bind ViewModel.CancelCommand}"
+                IsEnabled="{x:Bind conv:Fn.Not(ViewModel.IsBusy), Mode=OneWay}" />
+            <Button
+                Grid.Column="1"
+                Style="{StaticResource PillAccentButton}"
+                Content="{loc:Translate Key=Common_Save}"
+                Command="{x:Bind ViewModel.SaveCommand}"
+                IsEnabled="{x:Bind conv:Fn.Not(ViewModel.IsBusy), Mode=OneWay}" />
+        </Grid>
+    </Grid>
+
+</Page>

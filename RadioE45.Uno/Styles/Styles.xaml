@@ -79,6 +79,50 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
+    <!-- Title of a page stacked above a tab (MAUI: Shell nav bar title). -->
+    <Style x:Key="PageTitleLabel" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{ThemeResource PrimaryTextBrush}" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="Margin" Value="16,12,16,4" />
+    </Style>
+
+    <!-- Round floating accent button (add station, refresh on Channels). -->
+    <Style x:Key="FabButton" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="FontFamily" Value="{StaticResource FaSolid}" />
+        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource PrimaryTextBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="28" />
+        <Setter Property="Height" Value="56" />
+        <Setter Property="Width" Value="56" />
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <!-- Wide accent button with rounded ends (save, add selected). -->
+    <Style x:Key="PillAccentButton" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource PrimaryTextBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="24" />
+        <Setter Property="Height" Value="50" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+
+    <Style x:Key="PillCardButton" TargetType="Button" BasedOn="{StaticResource PillAccentButton}">
+        <Setter Property="Background" Value="{ThemeResource CardElevatedBrush}" />
+    </Style>
+
+    <!-- Text input on the elevated card color (MAUI Entry with BackgroundColor CardElevated). -->
+    <Style x:Key="CardTextBox" TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
+        <Setter Property="Background" Value="{ThemeResource CardElevatedBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource PrimaryTextBrush}" />
+    </Style>
+
     <Style TargetType="ProgressRing">
         <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
     </Style>

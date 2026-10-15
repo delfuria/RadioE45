@@ -29,14 +29,31 @@ public sealed class UnoNavigationService(ILogger<UnoNavigationService> logger) :
         return Task.CompletedTask;
     }
 
-    public Task GoToAddStationAsync() => NotPorted(nameof(GoToAddStationAsync));
+    public Task GoToAddStationAsync()
+    {
+        _shell?.Push(typeof(AddStationPage));
+        return Task.CompletedTask;
+    }
 
-    public Task GoToEditStationAsync(int stationId) => NotPorted(nameof(GoToEditStationAsync));
+    public Task GoToEditStationAsync(int stationId)
+    {
+        _shell?.Push(typeof(EditStationPage), stationId);
+        return Task.CompletedTask;
+    }
 
     public Task GoToPodcastEpisodesAsync(string podcastId, string podcastTitle) =>
         NotPorted(nameof(GoToPodcastEpisodesAsync));
 
-    public Task OpenFromMenuAsync(MenuPage page) => NotPorted($"{nameof(OpenFromMenuAsync)}({page})");
+    // Like MAUI, menu pages are always stacked above the On Air tab.
+    public Task OpenFromMenuAsync(MenuPage page)
+    {
+        CloseMenu();
+        if (page != MenuPage.Channels)
+            return NotPorted($"{nameof(OpenFromMenuAsync)}({page})");
+
+        _shell?.Push(typeof(RadioListPage), clearHistory: true);
+        return Task.CompletedTask;
+    }
 
     public void CloseMenu()
     {

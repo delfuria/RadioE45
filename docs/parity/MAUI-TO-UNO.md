@@ -16,6 +16,10 @@ Le pagine Uno valgono sia per desktop sia per web: le differenze stanno nei serv
 - Immagini locali (`Resources/Images/*.svg` MAUI): copiare l'SVG in `RadioE45.Uno/Assets/Images/` (Resizetizer genera i PNG) e usare `ms-appx:///Assets/Images/<nome>.png`.
 - Stili con nome: stesse chiavi di MAUI in `RadioE45.Uno/Styles/Styles.xaml` (`HeadlineLabel`, `SubtitleLabel`, `CaptionLabel`, `PlayButton`, `CardBorder`…).
 - Layout orizzontale (pagine che in MAUI cambiano layout con `OnSizeAllocated`): sul web non va mai attivato, perché l'app è una colonna da 500 centrata (`UnoLayout.IsSingleColumn`, impostata in `ShellPage`).
+- Pagine impilate (route Shell MAUI aperte sopra una tab): `ShellPage.Push(typeof(Pagina), parametro)` dal servizio di navigazione; il titolo della barra MAUI diventa un `TextBlock` con stile `PageTitleLabel` in cima alla pagina (stessa stringa o `ViewModel.Title`), il pulsante indietro è quello della `NavigationView`.
+- Righe di una lista che si toccano e si trascinano: la riga è un `Button` (comando del modello) e il trascinamento parte da una maniglia separata (`CanDrag` + `DragStarting`), perché il `Button` cattura il puntatore. Destinazioni con `AllowDrop`, `DragOver` (`AcceptedOperation = Move`) e `Drop`.
+- `KeyboardAccelerator` sulla pagina: `KeyboardAcceleratorPlacementMode="Hidden"`, altrimenti compare il tooltip del tasto sopra la pagina.
+- `Slider` legato a una proprietà `int`: `Value` in OneWay con `Fn.ToDouble` e `ValueChanged` nel code-behind (`x:Bind` TwoWay non converte double → int).
 - Ciclo di vita: la logica di `OnAppearing` va nel ViewModel (es. `OnAirViewModel.ActivateAsync()`), chiamata da `OnAppearing` in MAUI e da `OnNavigatedTo` in Uno.
 
 ## Controlli e layout
@@ -35,7 +39,7 @@ Le pagine Uno valgono sia per desktop sia per web: le differenze stanno nei serv
 | `ActivityIndicator` | `ProgressRing` |
 | `ProgressBar` | `ProgressBar` (`Maximum="1"` per valori 0–1) |
 | `RefreshView` | `RefreshContainer` + `KeyboardAccelerator` F5 → `RequestRefresh()` (col mouse non si trascina) |
-| `SwipeView` | `SwipeControl`; su desktop `MenuFlyout` contestuale |
+| `SwipeView` | `MenuFlyout` contestuale (`ContextFlyout`: tasto destro, pressione lunga); lo swipe col mouse non funziona |
 | `MenuFlyout` (`FlyoutBase.ContextFlyout`) | `ContextFlyout` con `MenuFlyout` |
 | `DragGestureRecognizer` / `DropGestureRecognizer` | `CanDragItems` / `CanReorderItems` su `ListView` (oppure `AllowDrop` + `Drop`) |
 | `TapGestureRecognizer` | `Tapped` oppure `Button` con stile senza bordo |

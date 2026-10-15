@@ -27,6 +27,15 @@ public static class Fn
     public static Visibility IsNotEmpty(IEnumerable? items) =>
         Visible(items?.GetEnumerator() is { } e && e.MoveNext());
 
+    /// <summary>Counterpart of <c>CollectionView.EmptyView</c>: visible when there are no items.</summary>
+    public static Visibility IsEmpty(IEnumerable? items) =>
+        Visible(items?.GetEnumerator() is not { } e || !e.MoveNext());
+
+    public static double ToDouble(int value) => value;
+
+    /// <summary>MAUI <c>StringFormat='{}{0} s'</c>.</summary>
+    public static string Seconds(int value) => $"{value} s";
+
     public static string Text(object? value) => value?.ToString() ?? string.Empty;
 
     // Font Awesome Solid glyphs that replace the MAUI emoji/symbols (the web Skia renderer has

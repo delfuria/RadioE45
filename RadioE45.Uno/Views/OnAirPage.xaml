@@ -6,7 +6,8 @@
     xmlns:conv="using:RadioE45.Converters"
     xmlns:controls="using:RadioE45.Controls"
     xmlns:models="using:RadioE45.Models"
-    Background="{ThemeResource PageBackgroundBrush}">
+    Background="{ThemeResource PageBackgroundBrush}"
+    KeyboardAcceleratorPlacementMode="Hidden">
 
     <!-- Port of RadioE45/Views/OnAirPage.xaml. Not ported yet: the side menu button (S8.3) and
          the schedule entry (S8.4). Phone-only mute button: n/a (desktop and web have the slider).

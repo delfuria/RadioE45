@@ -31,7 +31,9 @@
   maui: RadioE45/Views/RadioListPage.xaml
   uno: RadioE45.Uno/Views/RadioListPage.xaml
   viewmodels: [RadioListViewModel]
-  ignore: []
+  ignore:
+    - name: Common_Delete
+      reason: "Label of the MAUI SwipeView delete item (touch only); on Uno edit/delete are in the context menu, which uses RadioList_DeleteStation as in MAUI"
 
 - page: AddStation
   maui: RadioE45/Views/AddStationPage.xaml

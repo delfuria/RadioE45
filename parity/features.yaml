@@ -216,56 +216,59 @@
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: radiolist.offline-indicator
   title: Indicatore di stazione offline
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: radiolist.select-and-play
   title: Selezione di una stazione e avvio della riproduzione
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: radiolist.edit-delete
   title: Modifica ed eliminazione (con conferma) da swipe o menu contestuale
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
+  notes: "Uno: menu contestuale (tasto destro, pressione lunga al tocco) al posto dello SwipeView, che è solo touch"
 
 - id: radiolist.reorder
   title: Riordino delle stazioni con trascinamento
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
+  notes: "Uno: si trascina dalla maniglia (la riga è un pulsante che cattura il puntatore); rilascio su una riga o sotto la lista come in MAUI"
 
 - id: radiolist.refresh
   title: Ricarica forzata del catalogo stazioni
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
+  notes: "Uno: anche F5"
 
 - id: radiolist.empty-seed-prompt
   title: Lista vuota e proposta delle stazioni predefinite (RadioE45, AzuraTest)
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: radiolist.add-button
   title: Pulsante flottante per aggiungere una stazione
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 # --- Add / edit station ----------------------------------------------------------------------
 
@@ -274,50 +277,50 @@
   since: "0.44"
   page: AddStation
   viewmodel: AddStationViewModel
-  status: { maui: done, desktop: todo, web: todo }
-  notes: "Web: funzionerà solo con server AzuraCast con CORS abilitato (diventerà limited, §5)"
+  status: { maui: done, desktop: done, web: limited }
+  notes: "Web: funziona solo con server AzuraCast che inviano gli header CORS (§5); Invio nella casella URL = cerca"
 
 - id: addstation.select-and-add
   title: Selezione multipla dei risultati, stazioni già aggiunte segnate, pulsante aggiungi/annulla
   since: "0.44"
   page: AddStation
   viewmodel: AddStationViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: addstation.errors
   title: Messaggi di stato (prompt iniziale, nessun risultato, errore del server)
   since: "0.44"
   page: AddStation
   viewmodel: AddStationViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: editstation.form
   title: Modifica di nome, URL, ID, short name e descrizione della stazione
   since: "0.44"
   page: EditStation
   viewmodel: EditStationViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: editstation.custom-links
   title: Informazioni personalizzate (sito, 3 social, email, telefono) con validazione dei link
   since: "0.44"
   page: EditStation
   viewmodel: EditStationViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: editstation.latency-override
   title: Ritardo di sincronizzazione personalizzato per la stazione
   since: "0.44"
   page: EditStation
   viewmodel: EditStationViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: editstation.save-cancel
   title: Salva e annulla, con messaggio d'errore
   since: "0.44"
   page: EditStation
   viewmodel: EditStationViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 # --- Settings --------------------------------------------------------------------------------
 

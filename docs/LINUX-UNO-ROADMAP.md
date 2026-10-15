@@ -1,8 +1,8 @@
 # RadioE45 su Linux e Web con Uno Platform — Piano operativo
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
-> Branch di lavoro attuale: `S8.1` (da `main`, dove sono state unite S0–S7b); da S8 un branch per ogni punto. Ultimo aggiornamento: 2026-10-15 (app v0.44).
-> Stato: **S0–S7b completate; S8.1 completata (attesa regressione MAUI dell'utente); prossima sessione: S8.2** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Branch di lavoro attuale: `S8.2` (da `S8.1`, non ancora unita a `main`); da S8 un branch per ogni punto. Ultimo aggiornamento: 2026-10-15 (app v0.44).
+> Stato: **S0–S8.1 completate (regressione MAUI ok); S8.2 codice completato (prove manuali dell'utente); prossima sessione: S8.3** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -570,7 +570,7 @@ Decisioni prese con l'utente (2026-10-15):
 - Da fare con l'utente: **ascolto reale** su macOS, nella VM e nel browser (gli autotest controllano lo stato del player, non l'audio). La prova del `NetworkMonitor` con la rete staccata è in S7b, insieme alle cadute lunghe.
 - **Uscita:** ✅ (salvo conferma d'ascolto dell'utente)
 
-#### S7b — Podcast, test di rete lunghi · Mac + VM — ✅ codice completato 2026-10-15 (manca la regressione MAUI dell'utente)
+#### S7b — Podcast, test di rete lunghi · Mac + VM — ✅ completata 2026-10-15 (regressione utente ok)
 - [x] **Motore podcast condiviso** `RadioE45.Core/Services/Audio/PodcastPlaybackService` (logica di `PodcastPlayerService` MAUI spostata senza modifiche di comportamento: retry all'avvio, ripresa silenziata con seek sul primo campione reale di posizione, guardia sull'episodio corrente, salvataggio ogni 5 s / pausa / stop / fine = completato) + interfaccia `IPodcastMediaPlayer`. `TimeProvider` per i ritardi, `IUiDispatcher` al posto di `MainThread`. **14 test** con player e tempo finti.
 - [x] MAUI: `MediaElementPodcastPlayer` (adattatore) e `PodcastPlayerService : PodcastPlaybackService, IMediaElementHost`, ridotto a un guscio (prima 285 righe). Pagina e ViewModel invariati.
 - [x] Uno: `MediaPlayerPodcastPlayer` + `UnoPodcastPlayerService`; `PodcastEpisodesViewModel` registrato. La posizione viene letta ogni 500 ms (il `MediaPlayer` Uno non ha un evento di posizione), gli stati passano dallo `StreamStateDebouncer`.
@@ -600,7 +600,7 @@ Decisioni prese con l'utente (2026-10-15):
   - Test: **141** verdi.
   - Il server demo `demo.azuracast.com` (unico con podcast nel catalogo) ha risposto più volte 521 durante la sessione: un "nessun episodio" può dipendere da quello.
   - `dotnet build RadioE45.slnx` 0 avvisi/0 errori; **135 test** verdi; `ParityCheck` = 1.
-- [ ] **Regressione MAUI (utente), un solo giro a fine S7b:**
+- [x] **Regressione MAUI (utente), un solo giro a fine S7b:** ok (confermato il 2026-10-15, insieme a quella di S8.1).
   - podcast su tutti gli ambienti (ascolto, pausa, ripresa dalla posizione salvata, fine episodio);
   - finestra 500×855 non ridimensionabile su Mac Catalyst e Windows (codice spostato in `DesktopWindowSize` in S7a; 7 test sui valori);
   - build della soluzione sul PC Windows (`global.json` con `Uno.Sdk` e `RadioE45.Uno` nella `.slnx` da S6a).
@@ -618,8 +618,16 @@ Decisioni prese con l'utente (2026-10-15):
   - Verifiche: macOS (tema scuro), VM Ubuntu (tema chiaro, simboli ok), Chrome (layout largo a due colonne, icone, storico espandibile, nessun autoplay). Soluzione 0 avvisi/0 errori, **148 test**, autotest desktop 0 errori, `ParityCheck` = 1.
   - **Web in colonna** (richiesta dell'utente dopo la prova): nel browser largo la pagina passava al layout orizzontale a due colonne, poco gradevole. Ora sul web tutta l'app (tab comprese) è una colonna centrata larga al massimo 500 (`DesktopWindowSize.PortraitWidth`) e le pagine restano sempre in verticale (`Services/Shared/UnoLayout`). Nuova feature `shell.web-column` (MAUI e desktop `n/a`). Le prossime pagine usano `UnoLayout.IsSingleColumn` per gli eventuali layout orizzontali.
   - **Limite accettato:** sul web la copertina generica di AzuraCast (jingle) non si vede per mancanza di CORS sul server (§5).
-  - Da fare con l'utente: **regressione MAUI** su In Onda (primo avvio, ritorno da Podcast con ripresa della radio, volume, VU meter) su tutti gli ambienti; ascolto web reale (Play dopo l'apertura); F5 su desktop (non provato in automatico).
-- [ ] S8.2 `RadioListPage`, `AddStationPage`, `EditStationPage`
+  - [x] **Regressione MAUI (utente)** su In Onda (primo avvio, ritorno da Podcast con ripresa della radio, volume, VU meter, cambio stazione) su tutti gli ambienti: ok (2026-10-15).
+  - Da fare con l'utente: ascolto web reale (Play dopo l'apertura); F5 su desktop (non provato in automatico).
+- [x] S8.2 `RadioListPage`, `AddStationPage`, `EditStationPage` — ✅ codice 2026-10-15, branch `S8.2` da `S8.1`
+  - **Navigazione Uno:** le tre pagine sono impilate nel `Frame` della shell sopra In Onda (come le route MAUI `//OnAirPage/RadioListPage`), con il pulsante indietro della `NavigationView`; un clic su una tab torna sempre alla sua pagina radice (`ItemInvoked`). `UnoNavigationService`: `GoToAddStationAsync`, `GoToEditStationAsync` (id come parametro di `Frame.Navigate`), `OpenFromMenuAsync(Channels)`; `Settings` resta per S8.3. Avvio senza stazioni → Canali, come `AppShell.OnNavigated` (i Termini d'uso arrivano con il menu, S8.3). Finché non c'è il menu, Canali si apre dal pulsante "Canali" della pagina Debug.
+  - **Canali:** modifica/elimina dal menu contestuale (tasto destro, pressione lunga): lo `SwipeView` MAUI è solo touch (`Common_Delete` in `ignore`). Riordino trascinando dalla maniglia ☰ (la riga è un pulsante e cattura il puntatore), rilascio su una riga o sotto la lista come in MAUI. Logo con segnaposto sempre sotto (sul web il logo di Radio E45 non si carica). F5 = ricarica. Icone Font Awesome.
+  - **Aggiungi:** Invio nella casella URL = cerca. **Modifica:** slider del ritardo con `ValueChanged` (int ↔ double non convertibile da `x:Bind` TwoWay).
+  - **Correzioni della shell:** sul web la colonna prendeva la larghezza di ogni pagina (`HorizontalAlignment=Center`): ora `Stretch` + `MaxWidth`, larghezza fissa. Tooltip "F5" nascosto (`KeyboardAcceleratorPlacementMode="Hidden"`) anche su In Onda.
+  - Verifiche: Chrome (Canali, menu contestuale, Modifica con ritardo, Annulla, Aggiungi con ricerca su `demo.azuracast.com` e Invio, selezione, pulsante indietro, tocco su una stazione → In Onda); autotest desktop 0 errori; build desktop e web 0 avvisi/0 errori; `ParityCheck` = 1. Core non modificato.
+  - Da fare con l'utente: **riordino a trascinamento** su macOS, nella VM e nel browser (il drag sintetico dell'automazione non arriva al rilascio); salvataggio reale di aggiunta, modifica ed eliminazione; avvio con database vuoto (proposta delle stazioni di prova).
+  - Nota (anche MAUI, non corretta): cercando `https://demo.azuracast.com` la stazione AzuraTest già presente non risulta "già aggiunta", perché il seed salva l'URL senza schema e il confronto è esatto.
 - [ ] S8.3 `SettingsPage`, menu app
 - [ ] S8.4 `SchedulePopup`
 - [ ] S8.5 `SongRequestPage`
@@ -679,6 +687,8 @@ Decisioni prese con l'utente (2026-10-15):
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-15 | S8.2 | Codice completato (prove manuali dell'utente) | Branch `S8.2` da `S8.1`. Canali, Aggiungi e Modifica stazione su Uno, impilate nel `Frame` della shell con pulsante indietro; menu contestuale al posto dello swipe, riordino dalla maniglia; avvio senza stazioni → Canali; colonna web a larghezza fissa; verificate in Chrome; autotest desktop ok; build verdi; ParityCheck = 1. Prossima: S8.3 |
+| 2026-10-15 | S7b + S8.1 | Regressione MAUI ok | Confermata dall'utente su tutti gli ambienti (podcast, finestra desktop, build Windows, In Onda). Branch `S8.2` da `S8.1`. Prossima: S8.2 |
 | 2026-10-15 | S8.1 | Completata (attesa regressione MAUI) | Branch `S8.1` da `main`. `OnAirPage` Uno completa (menu e palinsesto rinviati a S8.3/S8.4), stili, funzioni `x:Bind`, VU meter `SKCanvasElement` con livelli nel Core; `OnAirViewModel.ActivateAsync` + `CanAutoplay` (web senza autoplay); icone Font Awesome in Uno; ParityCheck legge gli argomenti delle funzioni `x:Bind`; verificata su macOS, VM e Chrome; 148 test, soluzione verde, ParityCheck = 1. Prossima: S8.2 |
 | 2026-10-15 | S7b | Codice completato (attese regressione MAUI e prova podcast web dell'utente) | Motore podcast condiviso nel Core (14 test) con adattatori MAUI e Uno; 5 comportamenti di Uno 6.7 aggirati (macOS riapertura/Dispose/seek, web player multipli, libVLC fine episodio); radio senza rete ora mostra buffering (prova da 3 e 2 minuti nella VM); autotest podcast ok su macOS e VM; 135 test, soluzione verde, ParityCheck = 1. Prossima: S8.1 |
 | 2026-10-15 | S7a | Completata (ascolto da confermare) | Branch `S7` da `S6`. Finestra desktop come MAUI (`DesktopWindowSize` nel Core), `IAppPaths`, `INetworkMonitor` desktop/web, DB + catalogo, audio live Uno con `StreamStateDebouncer` (5 test); autotest 17/17 su macOS e VM, ciclo Play/Pausa/Riprendi/Stop ok in Chrome; 121 test, soluzione verde, ParityCheck = 1. Prossima: S7b |

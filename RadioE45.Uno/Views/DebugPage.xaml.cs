@@ -102,6 +102,9 @@ public sealed partial class DebugPage : Page
         ResultText.Text = $"Thread di fondo: IsUiThread={result.before}; dentro InvokeAsync: IsUiThread={result.inside}";
     }
 
+    private async void OnOpenChannelsClick(object sender, RoutedEventArgs e) =>
+        await App.Services.GetRequiredService<INavigationService>().OpenFromMenuAsync(MenuPage.Channels);
+
     private async void OnLoadStationsClick(object sender, RoutedEventArgs e)
     {
         try

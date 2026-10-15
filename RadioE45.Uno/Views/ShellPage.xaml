@@ -5,15 +5,18 @@
     xmlns:loc="using:RadioE45.Services.Localization"
     Background="{ThemeResource PageBackgroundBrush}">
 
-    <!-- Counterpart of RadioE45/AppShell.xaml. Station pages are tabs; the side menu
-         (channels, settings, station links) is ported in S8.3. -->
+    <!-- Counterpart of RadioE45/AppShell.xaml. Station pages are tabs; Channels, Add station and
+         Edit station are stacked in the same Frame above On Air, with the back button (MAUI: Shell
+         routes pushed on the On Air tab). The side menu (channels, settings, station links) is
+         ported in S8.3. -->
     <NavigationView
         x:Name="NavView"
         PaneDisplayMode="Top"
-        IsBackButtonVisible="Collapsed"
+        IsBackButtonVisible="Auto"
         IsSettingsVisible="False"
         IsBackEnabled="False"
-        SelectionChanged="OnSelectionChanged">
+        BackRequested="OnBackRequested"
+        ItemInvoked="OnItemInvoked">
 
         <NavigationView.MenuItems>
             <NavigationViewItem x:Name="TabOnAir" Content="{loc:Translate Key=Tab_OnAir}" Tag="OnAir" />
@@ -21,7 +24,7 @@
             <NavigationViewItem x:Name="TabPodcasts" Content="{loc:Translate Key=Tab_Podcasts}" Tag="Podcasts" />
         </NavigationView.MenuItems>
 
-        <Frame x:Name="ContentFrame" />
+        <Frame x:Name="ContentFrame" Navigated="OnFrameNavigated" />
     </NavigationView>
 
 </Page>

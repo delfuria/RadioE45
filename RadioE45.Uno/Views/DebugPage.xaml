@@ -34,6 +34,8 @@
             <TextBlock x:Name="NetworkText" />
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Button Content="Carica stazioni" Click="OnLoadStationsClick" />
+                <!-- Until the side menu (S8.3): same intent as its Channels entry. -->
+                <Button Content="Canali" Click="OnOpenChannelsClick" />
                 <ComboBox x:Name="StationBox" MinWidth="200" DisplayMemberPath="Name" PlaceholderText="Stazione" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8">
