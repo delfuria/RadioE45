@@ -5,6 +5,7 @@ using RadioE45.Services.Data;
 using RadioE45.Services.Diagnostics;
 using RadioE45.Services.Legal;
 using RadioE45.Services.Logging;
+using RadioE45.Services.Platform;
 using RadioE45.Services.Radio;
 using RadioE45.ViewModels;
 
@@ -12,10 +13,6 @@ namespace RadioE45;
 
 public partial class App : Application
 {
-    internal const double PortraitWidth = 500;
-    internal const double PortraitHeight = 855;
-    internal const double LandscapeWidth = 900;
-    internal const double LandscapeHeight = 450;
     private readonly IAppSettingsRepository _settingsRepo;
     private readonly IRadioRepository _radioRepository;
     private readonly OnAirViewModel _onAirViewModel;
@@ -95,10 +92,8 @@ public partial class App : Application
         DevicePlatform platform = DeviceInfo.Current.Platform;
         if (platform == DevicePlatform.WinUI || platform == DevicePlatform.MacCatalyst)
         {
-            Enum.TryParse(Preferences.Default.Get("desktop_orientation", "Portrait"), out DesktopOrientationMode orientation);
-            bool isLandscape = orientation == DesktopOrientationMode.Landscape;
-            double w = isLandscape ? LandscapeWidth : PortraitWidth;
-            double h = isLandscape ? LandscapeHeight : PortraitHeight;
+            // Same sizes as the Uno desktop head (RadioE45.Core DesktopWindowSize).
+            (double w, double h) = DesktopWindowSize.For(Preferences.Default.Get(DesktopWindowSize.OrientationKey, "Portrait"));
             window.Width = w;
             window.Height = h;
             window.MinimumWidth = w;

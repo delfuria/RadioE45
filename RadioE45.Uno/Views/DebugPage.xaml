@@ -28,6 +28,22 @@
 
             <TextBlock x:Name="ResultText" Foreground="{ThemeResource MutedTextBrush}" TextWrapping="Wrap" />
             <TextBlock x:Name="TimerText" Foreground="{ThemeResource MutedTextBrush}" />
+
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="Audio live, database, rete (S7a)" />
+            <TextBlock x:Name="PathsText" IsTextSelectionEnabled="True" TextWrapping="Wrap" Foreground="{ThemeResource MutedTextBrush}" />
+            <TextBlock x:Name="NetworkText" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Carica stazioni" Click="OnLoadStationsClick" />
+                <ComboBox x:Name="StationBox" MinWidth="200" DisplayMemberPath="Name" PlaceholderText="Stazione" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Play" Click="OnPlayClick" />
+                <Button Content="Pausa" Click="OnPauseClick" />
+                <Button Content="Riprendi" Click="OnResumeClick" />
+                <Button Content="Stop" Click="OnStopClick" />
+            </StackPanel>
+            <Slider x:Name="VolumeSlider" Header="Volume" Minimum="0" Maximum="100" Value="100" MaxWidth="300" HorizontalAlignment="Left" ValueChanged="OnVolumeChanged" />
+            <TextBlock x:Name="AudioText" TextWrapping="Wrap" />
         </StackPanel>
     </ScrollViewer>
 

@@ -49,16 +49,27 @@
         <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.13" />
     </ItemGroup>
 
-    <!-- Uno defines no constant that tells the desktop head from the web one. Use it only for
-         code that cannot run in the browser (e.g. Application.Exit in the DEBUG self-test). -->
+    <!-- Uno defines no constant that tells the desktop head from the web one: these select the
+         head-specific services (Services/Desktop, Services/Browser) and desktop-only code. -->
     <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-desktop'">
         <DefineConstants>$(DefineConstants);RADIOE45_DESKTOP</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-browserwasm'">
+        <DefineConstants>$(DefineConstants);RADIOE45_BROWSER</DefineConstants>
+        <!-- Required by the JSImport source generator (Services/Browser). -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <!-- linux-arm64: the libSkiaSharp.so brought by Uno fails at startup with
          "undefined symbol: FT_Get_BDF_Property"; the NoDependencies build fixes it (S1). -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-desktop'">
         <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.2" />
+    </ItemGroup>
+
+    <!-- Extra browser scripts are loaded by the WASM bootstrapper only as embedded resources
+         (the template wires AppManifest.js alone). -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browserwasm'">
+        <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45Network.js" />
     </ItemGroup>
 
     <ItemGroup>

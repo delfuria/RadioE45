@@ -62,6 +62,13 @@
   status: { maui: done, desktop: todo, web: todo }
   notes: "Desktop: MPRIS; web: Media Session API (S9)"
 
+- id: shell.desktop-window-size
+  title: Finestra desktop fissa 500×855 (verticale) o 900×450 (orizzontale) da desktop_orientation, non ridimensionabile
+  since: "0.44"
+  page: Shell
+  status: { maui: done, desktop: done, web: n/a }
+  notes: "Web: la finestra è quella del browser. Dimensioni condivise in RadioE45.Core DesktopWindowSize"
+
 - id: shell.carplay
   title: Apple CarPlay
   since: "0.44"

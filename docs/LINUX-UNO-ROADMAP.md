@@ -1,8 +1,8 @@
 # RadioE45 su Linux e Web con Uno Platform — Piano operativo
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
-> Branch di lavoro attuale: `S6` (derivato da `S5B`). Ultimo aggiornamento: 2026-10-15 (app v0.44).
-> Stato: **S0–S6 completate; prossima sessione: S7** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Branch di lavoro attuale: `S7` (derivato da `S6`). Ultimo aggiornamento: 2026-10-15 (app v0.44).
+> Stato: **S0–S7a completate; prossima sessione: S7b** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -88,7 +88,7 @@ ssh radioe45-vm 'cd ~/RadioE45 && export DISPLAY=:0 XAUTHORITY=$(ls /run/user/10
   XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus && \
   nohup dotnet run --no-build --project RadioE45.Uno -f net10.0-desktop > /tmp/radioe45.log 2>&1 < /dev/null &'
 ssh radioe45-vm 'tail -50 /tmp/radioe45.log'
-ssh radioe45-vm 'pkill -f "net10.0-desktop/RadioE45.Uno"'   # chiusura
+ssh radioe45-vm 'pkill -f "[n]et10.0-desktop/RadioE45.Uno"'   # chiusura (le [] evitano che pkill chiuda anche la shell SSH, la cui riga di comando contiene lo stesso testo)
 ```
 
 Note:
@@ -533,14 +533,50 @@ Fatti rilevati: `Uno.Sdk` 6.7.30 è ancora l'ultima stabile (come negli spike). 
 - Nota: l'ultima modifica (spostamento dell'autotest sotto `#if DEBUG && RADIOE45_DESKTOP`) è stata riprovata solo su macOS: la VM era irraggiungibile (timeout SSH) a fine sessione.
 - **Uscita:** l'app si apre su macOS, in Chrome e nella VM; `dotnet build RadioE45.slnx` 0 avvisi/0 errori; 109 test verdi; `ParityCheck` = 1. ✅
 
-### S7 — Servizi di piattaforma Uno · Mac + VM
-- [ ] Audio: player Uno per radio e podcast (decisione S1).
-- [ ] Desktop: `XdgAppPaths`, `LinuxNetworkMonitor`, SQLite.
-- [ ] Web: storage (decisione S2), `BrowserNetworkMonitor`, `IStreamUrlProber` senza sonda.
-- [ ] Sentry base sul desktop.
-- [ ] Riconnessione: cadute di rete lunghe (2–5 min) nella VM, con il coordinatore e `INetworkMonitor`; verificare che l'audio riparta da solo e che la UI non resti su "in riproduzione" durante lo stallo.
-- [ ] Snap/CI x64: verificare se serve ancora il fix SkiaSharp `NoDependencies` (§S1).
-- **Uscita:** da una pagina di debug, play/stop della stazione E45 funziona su macOS desktop, VM e browser.
+### S7 — Servizi di piattaforma Uno · Mac + VM (divisa in S7a + S7b)
+
+Decisioni prese con l'utente (2026-10-15):
+- **Finestra desktop come MAUI:** 500×855 (verticale) o 900×450 (orizzontale) da `desktop_orientation`, non ridimensionabile (`RadioE45/App.xaml.cs`). Fatta in S7 (non in S8) perché i port delle pagine vanno progettati sulla stessa finestra di MAUI. Nuova feature `shell.desktop-window-size` (web `n/a`).
+- **Player podcast estratto nel Core** come in S4b (motore condiviso + adattatori MAUI e Uno): richiede una regressione podcast su MAUI.
+- **Sentry desktop rimandato** a S10 (insieme al web): `ICrashReportingService` non disponibile su Uno (`IsAvailable = false`).
+- Branch `S7` da `S6`.
+
+#### S7a — Finestra, percorsi, rete, database, audio live · Mac + VM — ✅ completata 2026-10-15
+- [x] **Finestra desktop come MAUI.** Dimensioni spostate nel Core (`Services/Platform/DesktopWindowSize`: 500×855 / 900×450 da `desktop_orientation`), usate da MAUI (`App.CreateWindow`, stesso comportamento) e da Uno (`App.ApplyDesktopWindowSize`).
+  - `AppWindow.Resize` vuole **pixel fisici dell'area client**: la dimensione si moltiplica per `XamlRoot.RasterizationScale`, noto solo dopo il caricamento del contenuto.
+  - Risultato: macOS Retina 500×855 punti + 28 di barra del titolo; VM (scala 1) client 500×855 + decorazioni GNOME.
+  - Presenter non ridimensionabile e non massimizzabile. Feature `shell.desktop-window-size` (desktop `done`, web `n/a`).
+- [x] `UnoAppPaths`: `LocalFolder/data`, inizializzato in modo asincrono in `App.OnLaunched` **prima** di creare la shell (sul web attende IDBFS). Percorsi: macOS `~/Library/Application Support/RadioE45/com.radioe45.app/LocalState/data`, Linux `~/.local/share/RadioE45/com.radioe45.app/LocalState/data`, web `/local/data`.
+- [x] `INetworkMonitor`:
+  - desktop: `DesktopNetworkMonitor`, su `NetworkChange` (disponibilità e cambi di indirizzo, evento solo quando il valore cambia);
+  - web: `BrowserNetworkMonitor`, `navigator.onLine` + eventi `online`/`offline` via `JSImport` (`WasmScripts/RadioE45Network.js`).
+  - Costanti `RADIOE45_DESKTOP`/`RADIOE45_BROWSER` nel csproj; `AllowUnsafeBlocks` sul web (lo richiede il generatore `JSImport`).
+  - Gli script extra in `WasmScripts` vanno dichiarati `EmbeddedResource`: il template collega solo `AppManifest.js`.
+- [x] DI come `MauiProgram`: `IDatabaseService`, `IAzuraStationCatalog`, `ICrashReportingService` non disponibile (`UnavailableCrashReportingService`), `IPlatformNowPlayingService`/`IAudioFocusManager` nulli, ViewModel con gli stessi cicli di vita (tranne `PodcastEpisodesViewModel`, che aspetta il player podcast di S7b). `ScheduleViewModel` registrato transient.
+- [x] Audio live:
+  - `MediaPlayerStreamPlayer` (Uno `MediaPlayer` senza elemento visuale) + `UnoAudioService : LiveStreamAudioService`;
+  - debounce degli stati in `RadioE45.Core/Services/Audio/StreamStateDebouncer` (400 ms, `TimeProvider`), 5 test con `FakeTimeProvider` (`Microsoft.Extensions.TimeProvider.Testing` 10.10.0);
+  - Close = `Pause()` + `Source = null` + stato `Stopped` immediato; `Position` non usata;
+  - sul web, togliere la sorgente fa scattare un `MediaFailed` senza messaggio dell'elemento `<audio>`: ignorato quando la sorgente è già `null`.
+- [x] Pagina Debug: sezione S7a (percorso dati, stato della rete, "Carica stazioni" = seed + catalogo, Play/Pausa/Riprendi/Stop, volume). Autotest desktop esteso: percorsi, rete, DB + catalogo, play, 5 s di riproduzione, pausa (stazione mantenuta), ripresa, stop. Il controllo del timer ora aspetta 3 tick entro 2 s: con una finestra fissa di 550 ms falliva al primo avvio a freddo nella VM.
+- [x] Esiti:
+  - **macOS:** autotest 17/17, in riproduzione in 0,7 s;
+  - **VM Ubuntu arm64:** 17/17, in riproduzione in 1,1–1,5 s;
+  - **Chrome:** catalogo caricato (SQLite su IDBFS + HTTP), Play → `playing=True`, Pausa (stazione mantenuta, nessun errore), Riprendi, Stop. Il primo clic su un pulsante dopo un altro controllo a volte va solo al focus del canvas (come in S2).
+- [x] `dotnet build RadioE45.slnx` 0 avvisi/0 errori (MAUI compreso); **121 test** verdi (compresi 7 su `DesktopWindowSize`); `ParityCheck` = 1.
+- Da fare con l'utente: **ascolto reale** su macOS, nella VM e nel browser (gli autotest controllano lo stato del player, non l'audio). La prova del `NetworkMonitor` con la rete staccata è in S7b, insieme alle cadute lunghe.
+- **Uscita:** ✅ (salvo conferma d'ascolto dell'utente)
+
+#### S7b — Podcast, test di rete lunghi · Mac + VM
+- [ ] Motore podcast condiviso nel Core (logica di `PodcastPlayerService` MAUI: posizione salvata, ripresa, fine episodio, errori) + adattatore MAUI (`MediaElement`) e Uno (`MediaPlayer`, pausa vera con ripresa dalla posizione); test; **regressione podcast MAUI (utente)**.
+- [ ] Riconnessione: cadute di rete lunghe (2–5 min) nella VM; l'audio riparte da solo e la UI non resta su "in riproduzione" durante lo stallo.
+- [ ] Snap/CI x64: la verifica del fix SkiaSharp `NoDependencies` si sposta in S10 (serve la CI x64).
+- [ ] **Regressione MAUI (utente), un solo giro a fine S7b:**
+  - podcast su tutti gli ambienti (ascolto, pausa, ripresa dalla posizione salvata, fine episodio);
+  - finestra 500×855 non ridimensionabile su Mac Catalyst e Windows (codice spostato in `DesktopWindowSize` in S7a; 7 test sui valori);
+  - build della soluzione sul PC Windows (`global.json` con `Uno.Sdk` e `RadioE45.Uno` nella `.slnx` da S6a).
+  - iOS e Android: nessuna modifica che agisca su quelle piattaforme oltre ai podcast.
+- **Uscita:** podcast su desktop e web dalla pagina Debug; regressione MAUI ok.
 
 ### S8.x — Porting delle pagine (una o due pagine per sessione, con la skill `ui-parity-port`) · Mac (+ VM per le verifiche)
 - [ ] S8.1 Stili, `TranslateExtension`, `OnAirPage` (incluso `VuMeterView` Skia)
@@ -604,6 +640,7 @@ Fatti rilevati: `Uno.Sdk` 6.7.30 è ancora l'ultima stabile (come negli spike). 
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-15 | S7a | Completata (ascolto da confermare) | Branch `S7` da `S6`. Finestra desktop come MAUI (`DesktopWindowSize` nel Core), `IAppPaths`, `INetworkMonitor` desktop/web, DB + catalogo, audio live Uno con `StreamStateDebouncer` (5 test); autotest 17/17 su macOS e VM, ciclo Play/Pausa/Riprendi/Stop ok in Chrome; 121 test, soluzione verde, ParityCheck = 1. Prossima: S7b |
 | 2026-10-15 | S6b | Completata (prova manuale utente ok) | Servizi condivisi Uno (dispatcher, dialog, impostazioni, ambiente, link, tema) + `UnoWindowHost`; pagina Debug e autotest `RADIOE45_SELFTEST=1`; 9/9 su macOS e VM, pagina Debug ok sul web; dati in `~/.local/share/RadioE45/`; `uno-check` verde; soluzione verde, 109 test, ParityCheck = 1. Prossima: S7 |
 | 2026-10-14 | S6a | Completata | Branch `S6` da `S5B`. `RadioE45.Uno` (Uno.Sdk 6.7.30, Fluent, `RootNamespace=RadioE45`), shell `NavigationView` + 3 pagine segnaposto, `TranslateExtension` (`Key=`), colori/font/icona; desktop macOS e web Chrome verificati; soluzione verde, 109 test, ParityCheck = 1. Prossima: S6b (servizi condivisi + VM) |
 | 2026-10-14 | S5b | Completata | Branch `S5B` da `S5A`. `CLAUDE.md`, `docs/parity/MAUI-TO-UNO.md`, skill `ui-parity-port`, hook `PostToolUse`/`Stop` versionati (`.claude/settings.json` + `tools/parity-hook.sh`); blocco con exit 2 verificato e annullato; ParityCheck = 1. Prossima: S6 |

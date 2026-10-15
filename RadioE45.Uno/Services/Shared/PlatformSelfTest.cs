@@ -1,5 +1,9 @@
 #if DEBUG && RADIOE45_DESKTOP
+using RadioE45.Models;
+using RadioE45.Services.Audio;
+using RadioE45.Services.Data;
 using RadioE45.Services.Platform;
+using RadioE45.Services.Radio;
 
 namespace RadioE45.Services.Shared;
 
@@ -14,6 +18,19 @@ public static class PlatformSelfTest
     private const string RunCountKey = "selftest_run_count";
 
     public static bool IsRequested => Environment.GetEnvironmentVariable("RADIOE45_SELFTEST") == "1";
+
+    private static async Task<bool> WaitAsync(Func<bool> condition, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (!condition())
+        {
+            if (DateTime.UtcNow > deadline)
+                return false;
+            await Task.Delay(100);
+        }
+
+        return true;
+    }
 
     public static async Task RunAsync(IServiceProvider services)
     {
@@ -57,11 +74,12 @@ public static class PlatformSelfTest
         var ticks = 0;
         var timer = dispatcher.CreateTimer(TimeSpan.FromMilliseconds(100), () => ticks++);
         timer?.Start();
-        await Task.Delay(550);
+        // Generous deadline: right after launch the UI thread can be busy for a while (cold start).
+        var ticked = await WaitAsync(() => ticks >= 3, TimeSpan.FromSeconds(2));
         timer?.Stop();
         var afterStop = ticks;
         await Task.Delay(250);
-        Report("timer", ticks >= 3 && ticks == afterStop, $"{afterStop} ticks in 550 ms, none after Stop");
+        Report("timer", ticked && ticks == afterStop, $"{afterStop} ticks at 100 ms, none after Stop");
 
         theme.Apply("Light");
         var light = host.Root?.ActualTheme;
@@ -74,6 +92,50 @@ public static class PlatformSelfTest
         await navigation.GoBackAsync();
         await navigation.ShowScheduleAsync(); // not ported yet: must only log a warning
         Report("navigation", true, "GoToOnAir, GoBack, ShowSchedule (not ported) without exceptions");
+
+        // S7a: paths, database, station catalog, network monitor and live audio.
+        var paths = services.GetRequiredService<IAppPaths>();
+        Report("paths", Directory.Exists(paths.AppDataDirectory), paths.AppDataDirectory);
+        var network = services.GetRequiredService<INetworkMonitor>();
+        Report("network", network.HasInternet, $"HasInternet={network.HasInternet}");
+
+        AzuraStation? station = null;
+        try
+        {
+            if (!await services.GetRequiredService<IRadioRepository>().HasStationsAsync())
+                await services.GetRequiredService<IDatabaseService>().SeedStationsAsync();
+            var catalog = services.GetRequiredService<IAzuraStationCatalog>();
+            await catalog.ReloadAsync();
+            station = catalog.Stations.FirstOrDefault(s => s.Name.Contains("E45", StringComparison.OrdinalIgnoreCase))
+                      ?? catalog.Stations.FirstOrDefault();
+            Report("database+catalog", station is not null, $"{catalog.Stations.Count} stations, using '{station?.Name}'");
+        }
+        catch (Exception ex)
+        {
+            Report("database+catalog", false, $"{ex.GetType().Name}: {ex.Message}");
+        }
+
+        if (station is not null)
+        {
+            var audio = services.GetRequiredService<IAudioService>();
+            var started = DateTime.UtcNow;
+            await audio.PlayAsync(station);
+            var playing = await WaitAsync(() => audio.IsPlaying, TimeSpan.FromSeconds(20));
+            Report("audio.play", playing,
+                $"playing after {(DateTime.UtcNow - started).TotalSeconds:F1} s, HLS={audio.IsHlsActive}");
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            Report("audio.steady", audio.IsPlaying, "still playing after 5 s");
+
+            await audio.PauseAsync();
+            var paused = await WaitAsync(() => !audio.IsPlaying, TimeSpan.FromSeconds(3));
+            Report("audio.pause", paused && audio.CurrentStation is not null, "live pause closes the stream, station kept");
+
+            await audio.ResumeAsync();
+            Report("audio.resume", await WaitAsync(() => audio.IsPlaying, TimeSpan.FromSeconds(20)), "reopened the live stream");
+
+            await audio.StopAsync();
+            Report("audio.stop", await WaitAsync(() => !audio.IsPlaying, TimeSpan.FromSeconds(3)), $"station after stop: {audio.CurrentStation?.Name ?? "none"}");
+        }
 
         Console.WriteLine($"SELFTEST DONE failures={failures}");
     }
