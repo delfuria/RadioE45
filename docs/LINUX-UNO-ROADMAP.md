@@ -529,7 +529,7 @@ Fatti rilevati: `Uno.Sdk` 6.7.30 è ancora l'ultima stabile (come negli spike). 
   - **macOS desktop:** autotest 9/9 in due avvii consecutivi (contatore 1 → 2);
   - **VM Ubuntu arm64 (X11 via XWayland):** build ok, autotest 9/9 in due avvii, poi di nuovo dopo il cambio di `ApplicationPublisher`; `uno-check --target linux` ora tutto verde (`unosdk` compreso);
   - **Web (Chrome):** pagina Debug ok: `ConfirmAsync` → True/False, link in una nuova scheda, tema Light applicato e mantenuto dopo il ricaricamento, contatore 1 → 2 (localStorage), timer ok. Il dispatcher da "thread di fondo" risulta UI thread: atteso, WASM è single-thread.
-- [ ] **Da verificare a mano dall'utente su desktop (macOS e VM):** pagina Debug → Alert, Conferma, Apri link (browser di sistema / `xdg-open`), cambio tema Light/System. Su desktop i clic sulla finestra nativa non sono automatizzabili da Claude.
+- [x] **Verifica manuale dell'utente su desktop (2026-10-15):** pagina Debug → Alert, Conferma, Apri link, cambio tema: tutto ok. Su Linux, avviando da terminale, Chrome lanciato da `xdg-open` scrive nel terminale dell'app `Opening in existing browser session` e due righe `zygote ... Broken pipe (32)`: rumore di Chrome (il processo passa l'URL alla sessione già aperta ed esce), innocuo; non compare con l'app avviata dal menu.
 - Nota: l'ultima modifica (spostamento dell'autotest sotto `#if DEBUG && RADIOE45_DESKTOP`) è stata riprovata solo su macOS: la VM era irraggiungibile (timeout SSH) a fine sessione.
 - **Uscita:** l'app si apre su macOS, in Chrome e nella VM; `dotnet build RadioE45.slnx` 0 avvisi/0 errori; 109 test verdi; `ParityCheck` = 1. ✅
 
@@ -604,7 +604,7 @@ Fatti rilevati: `Uno.Sdk` 6.7.30 è ancora l'ultima stabile (come negli spike). 
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
-| 2026-10-15 | S6b | Completata (manca la prova manuale dei dialog su desktop) | Servizi condivisi Uno (dispatcher, dialog, impostazioni, ambiente, link, tema) + `UnoWindowHost`; pagina Debug e autotest `RADIOE45_SELFTEST=1`; 9/9 su macOS e VM, pagina Debug ok sul web; dati in `~/.local/share/RadioE45/`; `uno-check` verde; soluzione verde, 109 test, ParityCheck = 1. Prossima: S7 |
+| 2026-10-15 | S6b | Completata (prova manuale utente ok) | Servizi condivisi Uno (dispatcher, dialog, impostazioni, ambiente, link, tema) + `UnoWindowHost`; pagina Debug e autotest `RADIOE45_SELFTEST=1`; 9/9 su macOS e VM, pagina Debug ok sul web; dati in `~/.local/share/RadioE45/`; `uno-check` verde; soluzione verde, 109 test, ParityCheck = 1. Prossima: S7 |
 | 2026-10-14 | S6a | Completata | Branch `S6` da `S5B`. `RadioE45.Uno` (Uno.Sdk 6.7.30, Fluent, `RootNamespace=RadioE45`), shell `NavigationView` + 3 pagine segnaposto, `TranslateExtension` (`Key=`), colori/font/icona; desktop macOS e web Chrome verificati; soluzione verde, 109 test, ParityCheck = 1. Prossima: S6b (servizi condivisi + VM) |
 | 2026-10-14 | S5b | Completata | Branch `S5B` da `S5A`. `CLAUDE.md`, `docs/parity/MAUI-TO-UNO.md`, skill `ui-parity-port`, hook `PostToolUse`/`Stop` versionati (`.claude/settings.json` + `tools/parity-hook.sh`); blocco con exit 2 verificato e annullato; ParityCheck = 1. Prossima: S6 |
 | 2026-10-14 | S5a | Completata | Branch `S5A` da `main`. `tools/ParityCheck` (controlli §6.3 + integrità del manifest + code-behind), `parity/pages.yaml` (10), `features.yaml` (60 feature), `vm-surface.txt`; 15 nuovi test (109 totali); soluzione verde; ParityCheck = 1. Prossima: S5b |
