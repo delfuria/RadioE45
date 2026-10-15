@@ -1,0 +1,307 @@
+<Page
+    x:Class="RadioE45.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:loc="using:RadioE45.Services.Localization"
+    xmlns:conv="using:RadioE45.Converters"
+    Background="{ThemeResource PageBackgroundBrush}">
+
+    <!-- Port of RadioE45/Views/SettingsPage.xaml. Picker → ComboBox; the Diagnostics card stays
+         hidden until a double tap on its title, as in MAUI. -->
+
+    <Page.Resources>
+        <Style x:Key="SectionLabel" TargetType="TextBlock" BasedOn="{StaticResource CaptionLabel}">
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="20,24,20,8" />
+        </Style>
+        <Style x:Key="SettingLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{ThemeResource PrimaryTextBrush}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="HintLabel" TargetType="TextBlock" BasedOn="{StaticResource CaptionLabel}">
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="Divider" TargetType="Border">
+            <Setter Property="Height" Value="1" />
+            <Setter Property="Background" Value="{ThemeResource DividerBrush}" />
+        </Style>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Style="{StaticResource PageTitleLabel}" Text="{loc:Translate Key=Tab_Settings}" />
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Padding="0,0,0,32">
+
+                <!-- Playback -->
+                <TextBlock Text="{loc:Translate Key=Settings_Section_Playback}" Style="{StaticResource SectionLabel}" Margin="20,8,20,8" />
+
+                <Border Style="{StaticResource CardBorder}" Margin="16,0">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                <TextBlock Text="{loc:Translate Key=Settings_StartWithFavorite}" Style="{StaticResource SettingLabel}" />
+                                <TextBlock Text="{loc:Translate Key=Settings_StartWithFavorite_Hint}" Style="{StaticResource HintLabel}" />
+                            </StackPanel>
+                            <CheckBox
+                                Grid.Column="1"
+                                MinWidth="0"
+                                VerticalAlignment="Center"
+                                IsChecked="{x:Bind ViewModel.StartWithFavorite, Mode=TwoWay}" />
+                        </Grid>
+
+                        <Border Style="{StaticResource Divider}" />
+
+                        <StackPanel Spacing="4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{loc:Translate Key=Settings_LatencyOffset}" Style="{StaticResource SettingLabel}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Text="{x:Bind conv:Fn.Seconds(ViewModel.PlaybackLatencyOffsetSeconds), Mode=OneWay}"
+                                    Style="{StaticResource CaptionLabel}" />
+                            </Grid>
+                            <TextBlock Text="{loc:Translate Key=Settings_LatencyOffset_Hint}" Style="{StaticResource HintLabel}" />
+                            <Slider
+                                Minimum="0"
+                                Maximum="10"
+                                StepFrequency="1"
+                                Value="{x:Bind conv:Fn.ToDouble(ViewModel.PlaybackLatencyOffsetSeconds), Mode=OneWay}"
+                                ValueChanged="OnLatencyChanged" />
+                        </StackPanel>
+
+                        <Border Style="{StaticResource Divider}" />
+
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                <TextBlock Text="{loc:Translate Key=Settings_PreferHls}" Style="{StaticResource SettingLabel}" />
+                                <TextBlock
+                                    Text="{loc:Translate Key=Settings_PreferHls_Hint}"
+                                    Style="{StaticResource HintLabel}"
+                                    Foreground="{StaticResource LiveRedBrush}" />
+                            </StackPanel>
+                            <CheckBox
+                                Grid.Column="1"
+                                MinWidth="0"
+                                VerticalAlignment="Center"
+                                IsChecked="{x:Bind ViewModel.PreferHlsStream, Mode=TwoWay}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Song requests -->
+                <TextBlock Text="{loc:Translate Key=Settings_Section_SongRequest}" Style="{StaticResource SectionLabel}" />
+
+                <Border Style="{StaticResource CardBorder}" Margin="16,0">
+                    <StackPanel Spacing="4">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{loc:Translate Key=Settings_RequestPageSize}" Style="{StaticResource SettingLabel}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="{x:Bind conv:Fn.Text(ViewModel.RequestPageSize), Mode=OneWay}"
+                                Style="{StaticResource CaptionLabel}" />
+                        </Grid>
+                        <TextBlock Text="{loc:Translate Key=Settings_RequestPageSize_Hint}" Style="{StaticResource HintLabel}" />
+                        <Slider
+                            Minimum="5"
+                            Maximum="50"
+                            StepFrequency="1"
+                            Value="{x:Bind conv:Fn.ToDouble(ViewModel.RequestPageSize), Mode=OneWay}"
+                            ValueChanged="OnRequestPageSizeChanged" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Theme -->
+                <TextBlock Text="{loc:Translate Key=Settings_Section_Theme}" Style="{StaticResource SectionLabel}" />
+
+                <Border Style="{StaticResource CardBorder}" Margin="16,0">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="{loc:Translate Key=Settings_ThemePreference}" Style="{StaticResource SettingLabel}" />
+                        <ComboBox
+                            x:Name="ThemePicker"
+                            HorizontalAlignment="Stretch"
+                            Background="{ThemeResource CardElevatedBrush}"
+                            Foreground="{ThemeResource PrimaryTextBrush}"
+                            SelectedItem="{x:Bind ViewModel.ThemePreference, Mode=OneWay}"
+                            SelectionChanged="OnThemeSelectionChanged">
+                            <x:String>Dark</x:String>
+                            <x:String>Light</x:String>
+                            <x:String>System</x:String>
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+
+                <!-- Save (disabled by the command's CanExecute until something changes) -->
+                <Button
+                    Style="{StaticResource PillAccentButton}"
+                    Content="{loc:Translate Key=Settings_Save}"
+                    Command="{x:Bind ViewModel.SaveSettingsCommand}"
+                    CornerRadius="12"
+                    Margin="16,20,16,0" />
+
+                <!-- Diagnostics: double tap on the title to show the card -->
+                <TextBlock
+                    Text="{loc:Translate Key=Settings_Section_Diagnostics}"
+                    Style="{StaticResource SectionLabel}"
+                    DoubleTapped="OnDiagnosticsDoubleTapped" />
+
+                <Border x:Name="DiagnosticsCard" Style="{StaticResource CardBorder}" Margin="16,0" Visibility="Collapsed">
+                    <StackPanel Spacing="12">
+                        <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.IsDebugBuild}">
+                            <Border Style="{StaticResource Divider}" />
+                            <TextBlock Text="{loc:Translate Key=Settings_ResetData}" Style="{StaticResource SettingLabel}" />
+                            <TextBlock Text="{loc:Translate Key=Settings_ResetData_Hint}" Style="{StaticResource HintLabel}" />
+                            <Button
+                                Content="{loc:Translate Key=Settings_ResetDatabase}"
+                                Command="{x:Bind ViewModel.ResetDatabaseCommand}"
+                                Background="{StaticResource LiveRedBrush}"
+                                Foreground="White"
+                                CornerRadius="8"
+                                Height="44"
+                                HorizontalAlignment="Stretch" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.IsCrashReportingAvailable}">
+                            <Border Style="{StaticResource Divider}" />
+                            <Grid ColumnSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="{loc:Translate Key=Settings_SendCrashes}" Style="{StaticResource SettingLabel}" />
+                                    <TextBlock Text="{loc:Translate Key=Settings_SendCrashes_Hint}" Style="{StaticResource HintLabel}" />
+                                </StackPanel>
+                                <CheckBox
+                                    Grid.Column="1"
+                                    MinWidth="0"
+                                    VerticalAlignment="Center"
+                                    IsChecked="{x:Bind ViewModel.CrashReportingEnabled, Mode=TwoWay}" />
+                            </Grid>
+                            <Button
+                                Content="{loc:Translate Key=Settings_SendTestCrash}"
+                                Command="{x:Bind ViewModel.SendCrashReportTestCommand}"
+                                IsEnabled="{x:Bind ViewModel.CrashReportingEnabled, Mode=OneWay}"
+                                Background="{StaticResource AccentBrush}"
+                                Foreground="{ThemeResource PrimaryTextBrush}"
+                                CornerRadius="8"
+                                Height="44"
+                                HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Info -->
+                <TextBlock Text="{loc:Translate Key=Settings_Section_Info}" Style="{StaticResource SectionLabel}" Margin="20,28,20,8" />
+
+                <Border Style="{StaticResource CardBorder}" Margin="16,0">
+                    <StackPanel Spacing="14">
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{loc:Translate Key=Settings_AppVersion}" Style="{StaticResource SettingLabel}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="{x:Bind ViewModel.AppVersion, Mode=OneWay}"
+                                Style="{StaticResource CaptionLabel}"
+                                VerticalAlignment="Center" />
+                        </Grid>
+
+                        <Border Style="{StaticResource Divider}" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{loc:Translate Key=Settings_DbVersion}" Style="{StaticResource SettingLabel}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="{x:Bind conv:Fn.F2(ViewModel.SeedVersion), Mode=OneWay}"
+                                Style="{StaticResource CaptionLabel}"
+                                VerticalAlignment="Center" />
+                        </Grid>
+
+                        <Border Style="{StaticResource Divider}" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{loc:Translate Key=Settings_UpdateRequired}" Style="{StaticResource SettingLabel}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="{loc:Translate Key=Common_Yes}"
+                                Foreground="{StaticResource LiveRedBrush}"
+                                FontSize="13"
+                                FontWeight="Bold"
+                                VerticalAlignment="Center"
+                                Visibility="{x:Bind ViewModel.MustUpdate, Mode=OneWay}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="{loc:Translate Key=Common_No}"
+                                Foreground="{ThemeResource MutedTextBrush}"
+                                FontSize="13"
+                                FontWeight="Bold"
+                                VerticalAlignment="Center"
+                                Visibility="{x:Bind conv:Fn.Collapsed(ViewModel.MustUpdate), Mode=OneWay}" />
+                        </Grid>
+
+                        <Border Style="{StaticResource Divider}" />
+
+                        <Button Style="{StaticResource RowButton}" Command="{x:Bind ViewModel.ShowTermsCommand}" MinHeight="32">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{loc:Translate Key=Settings_Terms}" Style="{StaticResource SettingLabel}" VerticalAlignment="Center" />
+                                <FontIcon
+                                    Grid.Column="1"
+                                    FontFamily="{StaticResource FaSolid}"
+                                    Glyph="&#xf054;"
+                                    FontSize="14"
+                                    Foreground="{ThemeResource MutedTextBrush}"
+                                    VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+
+                        <Border Style="{StaticResource Divider}" />
+
+                        <TextBlock Text="{loc:Translate Key=Settings_Copyright}" Style="{StaticResource HintLabel}" />
+
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+
+</Page>

@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
 > Branch di lavoro attuale: `S8.2` (da `S8.1`, non ancora unita a `main`); da S8 un branch per ogni punto. Ultimo aggiornamento: 2026-10-15 (app v0.44).
-> Stato: **S0–S8.1 completate (regressione MAUI ok); S8.2 codice completato (prove manuali dell'utente); prossima sessione: S8.3** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Stato: **S0–S8.1 completate (regressione MAUI ok); S8.2 e S8.3 codice completato (prove manuali dell'utente); prossima sessione: S8.4** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -628,7 +628,13 @@ Decisioni prese con l'utente (2026-10-15):
   - Verifiche: Chrome (Canali, menu contestuale, Modifica con ritardo, Annulla, Aggiungi con ricerca su `demo.azuracast.com` e Invio, selezione, pulsante indietro, tocco su una stazione → In Onda); autotest desktop 0 errori; build desktop e web 0 avvisi/0 errori; `ParityCheck` = 1. Core non modificato.
   - Da fare con l'utente: **riordino a trascinamento** su macOS, nella VM e nel browser (il drag sintetico dell'automazione non arriva al rilascio); salvataggio reale di aggiunta, modifica ed eliminazione; avvio con database vuoto (proposta delle stazioni di prova).
   - Nota (anche MAUI, non corretta): cercando `https://demo.azuracast.com` la stazione AzuraTest già presente non risulta "già aggiunta", perché il seed salva l'URL senza schema e il confronto è esatto.
-- [ ] S8.3 `SettingsPage`, menu app
+- [x] S8.3 `SettingsPage`, menu app — ✅ codice 2026-10-15, branch `S8.3` da `S8.2`
+  - **Menu laterale:** nella shell, pannello in sovrimpressione (280, come `FlyoutWidth` MAUI) sopra la `NavigationView`, con animazione propria (`TranslateTransform`) e strato scuro che chiude al clic; `ShellPage.ViewModel` = `AppMenuViewModel` (intestazione con logo e nome della stazione, Canali, Impostazioni, sito, social, contatti, versione). Si apre dal pulsante ☰ (`Controls/MenuButton`, stile `MenuButton`) sulla copertina di In Onda; si chiude con clic fuori, Esc o scelta di una voce (`UnoNavigationService.OpenMenu`/`CloseMenu`). Sul web il pannello sta nella colonna da 500; la shell ha un `Clip` sui propri bordi, altrimenti l'animazione di apertura mostrava il pannello a sinistra, fuori dalla colonna. All'inizio era una `SplitView` `Overlay`, ma su Uno il pannello compariva aperto per un frame prima dell'animazione (entrambi segnalati dall'utente sul web). I pulsanti dei link nei template passano lo `StationLink` in `Tag` (`x:Bind` nei template non vede la pagina). Tolto il pulsante provvisorio "Canali" dalla pagina Debug.
+  - **Termini d'uso:** `ShellPage.OnLoaded` chiama `ITermsService.EnsureAcceptedAsync()` prima del controllo delle stazioni, come `AppShell.OnNavigated` (verificato su macOS e Chrome).
+  - **Impostazioni:** pagina impilata sopra In Onda (`OpenFromMenuAsync(Settings)`); slider int con `ValueChanged`, tema con `ComboBox` + `SelectionChanged` (cambio live verificato), Diagnostica nascosta fino al doppio tocco sul titolo come in MAUI. Crash report: interfaccia portata ma nascosta (`UnavailableCrashReportingService`), `settings.diagnostics.crash-reports` resta `todo`.
+  - Verifiche: Chrome (termini, menu, Impostazioni, checkbox, Diagnostica, tema chiaro/scuro, Termini dalle Info, Salva → In Onda, menu → Canali); macOS (termini al primo avvio, ☰); autotest desktop 0 errori; build desktop e web 0 avvisi/0 errori; `ParityCheck` = 1. Core non modificato.
+  - Da fare con l'utente: menu e Impostazioni su macOS e nella VM (clic reali), link della stazione (sito, social, mailto/tel) su desktop e web.
+  - Nota (anche MAUI, non corretta): il tema è salvato in due posti (`AppSettings.ThemePreference` nel DB e `theme_preference` in `ISettingsStore`); se divergono la pagina mostra il valore del DB e l'app quello dello store (nel browser di prova: "Dark" nella casella, tema chiaro all'avvio).
 - [ ] S8.4 `SchedulePopup`
 - [ ] S8.5 `SongRequestPage`
 - [ ] S8.6 `PodcastListPage`, `PodcastEpisodesPage` (rispettare il ciclo di vita corretto in S7b: `Activate()` in `OnNavigatedTo`, stop + `Cleanup()` in `OnNavigatedFrom`; vedi la nota di `podcastepisodes.player`)
@@ -687,6 +693,7 @@ Decisioni prese con l'utente (2026-10-15):
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-15 | S8.3 | Codice completato (prove manuali dell'utente) | Branch `S8.3` da `S8.2`. Menu laterale Uno (pannello in sovrimpressione con animazione propria, pulsante ☰ su In Onda), Termini d'uso al primo avvio, `SettingsPage`; verificate in Chrome e su macOS; autotest desktop ok; build verdi; ParityCheck = 1 (crash report resta `todo`). Prossima: S8.4 |
 | 2026-10-15 | S8.2 | Codice completato (prove manuali dell'utente) | Branch `S8.2` da `S8.1`. Canali, Aggiungi e Modifica stazione su Uno, impilate nel `Frame` della shell con pulsante indietro; menu contestuale al posto dello swipe, riordino dalla maniglia; avvio senza stazioni → Canali; colonna web a larghezza fissa; verificate in Chrome; autotest desktop ok; build verdi; ParityCheck = 1. Prossima: S8.3 |
 | 2026-10-15 | S7b + S8.1 | Regressione MAUI ok | Confermata dall'utente su tutti gli ambienti (podcast, finestra desktop, build Windows, In Onda). Branch `S8.2` da `S8.1`. Prossima: S8.2 |
 | 2026-10-15 | S8.1 | Completata (attesa regressione MAUI) | Branch `S8.1` da `main`. `OnAirPage` Uno completa (menu e palinsesto rinviati a S8.3/S8.4), stili, funzioni `x:Bind`, VU meter `SKCanvasElement` con livelli nel Core; `OnAirViewModel.ActivateAsync` + `CanAutoplay` (web senza autoplay); icone Font Awesome in Uno; ParityCheck legge gli argomenti delle funzioni `x:Bind`; verificata su macOS, VM e Chrome; 148 test, soluzione verde, ParityCheck = 1. Prossima: S8.2 |

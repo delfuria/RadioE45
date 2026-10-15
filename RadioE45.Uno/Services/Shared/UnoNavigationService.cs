@@ -48,17 +48,19 @@ public sealed class UnoNavigationService(ILogger<UnoNavigationService> logger) :
     public Task OpenFromMenuAsync(MenuPage page)
     {
         CloseMenu();
-        if (page != MenuPage.Channels)
-            return NotPorted($"{nameof(OpenFromMenuAsync)}({page})");
-
-        _shell?.Push(typeof(RadioListPage), clearHistory: true);
+        var pageType = page switch
+        {
+            MenuPage.Settings => typeof(SettingsPage),
+            _ => typeof(RadioListPage),
+        };
+        _shell?.Push(pageType, clearHistory: true);
         return Task.CompletedTask;
     }
 
-    public void CloseMenu()
-    {
-        // The side menu is ported in S8.3.
-    }
+    /// <summary>Opens the side menu (Controls/MenuButton; MAUI: Shell.FlyoutIsPresented).</summary>
+    public void OpenMenu() => _shell?.OpenMenu();
+
+    public void CloseMenu() => _shell?.CloseMenu();
 
     public void ResetPodcastTabToRoot()
     {

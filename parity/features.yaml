@@ -25,21 +25,21 @@
   since: "0.44"
   page: Shell
   viewmodel: AppMenuViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: shell.menu.navigation
   title: Menu laterale, voci Canali e Impostazioni
   since: "0.44"
   page: Shell
   viewmodel: AppMenuViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: shell.menu.station-links
   title: Menu laterale, link della stazione (sito web, fino a 3 social, email e telefono)
   since: "0.44"
   page: Shell
   viewmodel: AppMenuViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
   notes: "Web: i link mailto/tel e i siti si aprono in una nuova scheda"
 
 - id: shell.menu.app-version
@@ -47,13 +47,13 @@
   since: "0.44"
   page: Shell
   viewmodel: AppMenuViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: shell.terms-of-use
   title: Termini d'uso mostrati una volta al primo avvio (App Review 5.2.3)
   since: "0.44"
   page: Shell
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: shell.system-media-controls
   title: Metadati e tasti multimediali di sistema (lock screen iOS, Centro di controllo macOS, SMTC Windows)
@@ -104,8 +104,8 @@
   title: Pulsante sopra la copertina che apre il menu laterale
   since: "0.44"
   page: OnAir
-  status: { maui: done, desktop: todo, web: todo }
-  notes: "Uno: arriva con il menu laterale (S8.3)"
+  status: { maui: done, desktop: done, web: done }
+  notes: "Uno: Controls/MenuButton apre il pannello del menu (SplitView in sovrimpressione nella shell)"
 
 - id: onair.live-indicator
   title: Indicatore LIVE in sovrimpressione con nome dello streamer
@@ -329,7 +329,7 @@
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
   notes: "Web: la stazione viene selezionata ma non avviata (nessun autoplay, §5)"
 
 - id: settings.playback.latency-offset
@@ -337,42 +337,42 @@
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: settings.playback.prefer-hls
   title: Preferenza per lo stream HLS
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: settings.song-request.page-size
   title: Numero di brani per pagina nelle richieste
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: settings.theme
   title: Tema (sistema, chiaro, scuro)
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: settings.save
   title: Salvataggio delle impostazioni con conferma (toast)
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: settings.diagnostics.reset-database
   title: Reset del database con conferma
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: settings.diagnostics.crash-reports
   title: Consenso all'invio dei crash report, crash di test, avviso di riavvio
@@ -380,14 +380,14 @@
   page: Settings
   viewmodel: SettingsViewModel
   status: { maui: done, desktop: todo, web: todo }
-  notes: "Web: Sentry .NET su WASM limitato, decisione rinviata (§5)"
+  notes: "Uno: interfaccia portata (S8.3) ma nascosta, perché manca il servizio (UnavailableCrashReportingService). Web: Sentry .NET su WASM limitato, decisione rinviata (§5)"
 
 - id: settings.info
   title: Versione app, versione del DB, aggiornamento richiesto, copyright, link ai Termini d'uso
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 # --- Schedule --------------------------------------------------------------------------------
 

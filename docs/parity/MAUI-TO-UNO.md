@@ -59,6 +59,11 @@ Le pagine Uno valgono sia per desktop sia per web: le differenze stanno nei serv
 | `[QueryProperty]` sulla pagina | parametro di `Frame.Navigate(typeof(Page), param)` letto in `OnNavigatedTo` e inoltrato al ViewModel |
 | `OnAppearing` / `OnDisappearing` | `OnNavigatedTo` / `OnNavigatedFrom` |
 | `{Binding}` compilato con `x:DataType` | `{x:Bind ViewModel.X, Mode=OneWay}` (`x:Bind` è `OneTime` di default: specificare sempre `Mode`) |
+| `Shell.FlyoutContent` (menu laterale) + `FlyoutIsPresented` | pannello sopra la `NavigationView` della shell (`Border` con `TranslateTransform` animata + strato scuro per chiudere con un clic fuori, Esc), aperto da `Controls/MenuButton` (`UnoNavigationService.OpenMenu`). Non `SplitView`: su Uno il suo pannello compare aperto per un frame prima dell'animazione. `Clip` sulla shell, se no sul web l'animazione si vede fuori dalla colonna |
+| `Picker` con `SelectedItem` stringa (TwoWay) | `ComboBox` con `<x:String>`, `SelectedItem` `OneWay` + `SelectionChanged` nel code-behind: `x:Bind` non riconverte `object` → `string` |
+| `Command` con `RelativeSource AncestorType` nei template | `Tag="{x:Bind}"` + `Click` nel code-behind che chiama `ViewModel.XCommand.Execute`: `x:Bind` in un `DataTemplate` non vede la pagina |
+| `FontFamily="{Binding Nome}"` (chiave del font) | `{x:Bind conv:Fn.Font(Nome)}`: la stringa è la chiave di `Fonts.xaml` |
+| `TapGestureRecognizer NumberOfTapsRequired="2"` | evento `DoubleTapped` |
 
 ## Ordine di porting
 

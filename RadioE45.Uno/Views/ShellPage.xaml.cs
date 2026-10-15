@@ -1,7 +1,11 @@
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
+using RadioE45.Models;
 using RadioE45.Services.Data;
+using RadioE45.Services.Legal;
 using RadioE45.Services.Shared;
+using RadioE45.ViewModels;
 
 namespace RadioE45.Views;
 
@@ -16,20 +20,31 @@ public enum ShellTab
 public sealed partial class ShellPage : Page
 {
     private readonly IRadioRepository _radioRepository;
+    private readonly ITermsService _termsService;
     private bool _startupCheckDone;
+    private Storyboard? _menuStoryboard;
+    private bool _menuOpening;
 
-    public ShellPage(UnoNavigationService navigation, IRadioRepository radioRepository)
+    public ShellPage(
+        UnoNavigationService navigation,
+        IRadioRepository radioRepository,
+        ITermsService termsService,
+        AppMenuViewModel menuViewModel)
     {
+        ViewModel = menuViewModel;
         InitializeComponent();
         _radioRepository = radioRepository;
+        _termsService = termsService;
         navigation.Attach(this);
         if (UnoLayout.IsSingleColumn)
         {
-            // Web: the app is a centered column as wide as the desktop window, tabs included.
-            // Stretch + MaxWidth centers it at a fixed width; Center would size it to each page.
-            NavView.MaxWidth = UnoLayout.ColumnMaxWidth;
-            NavView.HorizontalAlignment = HorizontalAlignment.Stretch;
+            // Web: the app is a centered column as wide as the desktop window, tabs and side menu
+            // included. Stretch + MaxWidth centers it at a fixed width; Center would size it to
+            // each page.
+            MenuHost.MaxWidth = UnoLayout.ColumnMaxWidth;
+            MenuHost.HorizontalAlignment = HorizontalAlignment.Stretch;
         }
+        MenuHost.SizeChanged += OnMenuHostSizeChanged;
 #if DEBUG
         NavView.FooterMenuItems.Add(new NavigationViewItem { Content = "Debug", Tag = nameof(ShellTab.Debug) });
 #endif
@@ -37,15 +52,95 @@ public sealed partial class ShellPage : Page
         Loaded += OnLoaded;
     }
 
-    // Same startup check as AppShell.OnNavigated: without stations the app opens Channels, whose
-    // ViewModel offers the default stations. (The terms of use come with the menu, S8.3.)
+    /// <summary>Side menu content (MAUI: Shell.FlyoutContent bound to AppMenuViewModel).</summary>
+    public AppMenuViewModel ViewModel { get; }
+
+    // Same startup check as AppShell.OnNavigated: terms of use on the first launch, then without
+    // stations the app opens Channels, whose ViewModel offers the default stations.
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         if (_startupCheckDone) return;
         _startupCheckDone = true;
 
+        await _termsService.EnsureAcceptedAsync();
         if (!await _radioRepository.HasStationsAsync())
             Push(typeof(RadioListPage), clearHistory: true);
+    }
+
+    // The menu pane slides in from outside the shell: without a clip the animation shows it to
+    // the left of the web column before it reaches its place.
+    private void OnMenuHostSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        MenuHost.Clip = new RectangleGeometry { Rect = new Windows.Foundation.Rect(0, 0, e.NewSize.Width, e.NewSize.Height) };
+    }
+
+    public void OpenMenu()
+    {
+        _menuOpening = true;
+        if (MenuPane.Visibility != Visibility.Visible)
+        {
+            // Off screen before it becomes visible, so the first frame never shows it open.
+            _menuStoryboard?.Stop();
+            _menuStoryboard = null;
+            MenuPaneTransform.X = -MenuPane.Width;
+            MenuDismissLayer.Opacity = 0;
+        }
+        MenuPane.Visibility = Visibility.Visible;
+        MenuDismissLayer.Visibility = Visibility.Visible;
+        AnimateMenu(open: true);
+    }
+
+    public void CloseMenu()
+    {
+        if (MenuPane.Visibility != Visibility.Visible)
+            return;
+        _menuOpening = false;
+        AnimateMenu(open: false);
+    }
+
+    private void AnimateMenu(bool open)
+    {
+        // Stop() puts back the local values: keep the animated ones, so a close (or a reopen
+        // while closing) starts from where the pane is.
+        if (_menuStoryboard is not null)
+        {
+            double x = MenuPaneTransform.X, opacity = MenuDismissLayer.Opacity;
+            _menuStoryboard.Stop();
+            MenuPaneTransform.X = x;
+            MenuDismissLayer.Opacity = opacity;
+        }
+
+        var duration = new Duration(TimeSpan.FromMilliseconds(open ? 250 : 200));
+        var easing = new CubicEase { EasingMode = open ? EasingMode.EaseOut : EasingMode.EaseIn };
+        var slide = new DoubleAnimation { To = open ? 0 : -MenuPane.Width, Duration = duration, EasingFunction = easing };
+        var fade = new DoubleAnimation { To = open ? 1 : 0, Duration = duration };
+        Storyboard.SetTarget(slide, MenuPaneTransform);
+        Storyboard.SetTargetProperty(slide, "X");
+        Storyboard.SetTarget(fade, MenuDismissLayer);
+        Storyboard.SetTargetProperty(fade, "Opacity");
+
+        var storyboard = new Storyboard { Children = { slide, fade } };
+        if (!open)
+        {
+            storyboard.Completed += (_, _) =>
+            {
+                if (_menuOpening) return; // reopened while closing
+                MenuPane.Visibility = Visibility.Collapsed;
+                MenuDismissLayer.Visibility = Visibility.Collapsed;
+            };
+        }
+        _menuStoryboard = storyboard;
+        storyboard.Begin();
+    }
+
+    private void OnDismissLayerTapped(object sender, TappedRoutedEventArgs e) => CloseMenu();
+
+    private void OnEscapeInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (MenuPane.Visibility != Visibility.Visible)
+            return;
+        CloseMenu();
+        args.Handled = true;
     }
 
     public void GoBack()
@@ -87,6 +182,13 @@ public sealed partial class ShellPage : Page
         // page is stacked above it.
         if (args.InvokedItemContainer is NavigationViewItem { Tag: string tag } && Enum.TryParse<ShellTab>(tag, out var tab))
             SelectTab(tab, clearHistory: true);
+    }
+
+    // Item template buttons cannot reach the page ViewModel with x:Bind: the link is in Tag.
+    private void OnLinkClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: StationLink link })
+            ViewModel.OpenLinkCommand.Execute(link);
     }
 
     private void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args) => GoBack();

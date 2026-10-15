@@ -38,6 +38,15 @@ public static class Fn
 
     public static string Text(object? value) => value?.ToString() ?? string.Empty;
 
+    /// <summary>MAUI <c>StringFormat='{}{0:F2}'</c>.</summary>
+    public static string F2(float value) => value.ToString("F2");
+
+    /// <summary>Font from its resource key in Fonts.xaml ("FaSolid", "FaBrands": StationLink.FontFamily).</summary>
+    public static FontFamily Font(string key) =>
+        Application.Current.Resources.TryGetValue(key, out var font) && font is FontFamily family
+            ? family
+            : FontFamily.XamlAutoFontFamily;
+
     // Font Awesome Solid glyphs that replace the MAUI emoji/symbols (the web Skia renderer has
     // no font for ▶ ⏸ 🔊 🔇 ▲ ▼). Here and not in XAML: entities inside x:Bind string literals
     // are not decoded.

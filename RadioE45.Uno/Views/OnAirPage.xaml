@@ -9,8 +9,7 @@
     Background="{ThemeResource PageBackgroundBrush}"
     KeyboardAcceleratorPlacementMode="Hidden">
 
-    <!-- Port of RadioE45/Views/OnAirPage.xaml. Not ported yet: the side menu button (S8.3) and
-         the schedule entry (S8.4). Phone-only mute button: n/a (desktop and web have the slider).
+    <!-- Port of RadioE45/Views/OnAirPage.xaml. Not ported yet: the schedule entry (S8.4). Phone-only mute button: n/a (desktop and web have the slider).
          Icons are Font Awesome glyphs instead of the MAUI emoji/symbols (▶ ⏸ ⏮ ⏭ 🔊 🔇 👥 ▲ ▼):
          the Skia renderer on the web has no font for them. -->
 
@@ -54,6 +53,15 @@
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Visibility="{x:Bind conv:Fn.IsNotNull(ViewModel.ArtworkUrl), Mode=OneWay}" />
+
+                            <!-- Opens the side menu. On the cover over a translucent dark background: icon
+                                 always white, whatever the theme -->
+                            <controls:MenuButton
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                Margin="8"
+                                Background="#66000000"
+                                Foreground="White" />
 
                             <!-- LIVE overlay, like TV shows: always white on red, whatever the theme -->
                             <Border
