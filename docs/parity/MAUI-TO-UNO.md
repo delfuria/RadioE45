@@ -10,6 +10,12 @@ Le pagine Uno valgono sia per desktop sia per web: le differenze stanno nei serv
 - Chiamate al ViewModel dal code-behind: `ViewModel.X` in Uno, `_viewModel.X` in MAUI; anche queste vengono confrontate.
 - Stringhe: `{loc:Translate Key=Tab_OnAir}` (`xmlns:loc="using:RadioE45.Services.Localization"`). Le markup extension WinUI non accettano argomenti posizionali, quindi `Key=` è obbligatorio; ParityCheck riconosce entrambe le forme. Il valore viene letto una volta al caricamento della pagina (l'app non cambia lingua a runtime).
 - Un membro usato solo in MAUI per una ragione di piattaforma va in `ignore` in `parity/pages.yaml`, con `reason`.
+- Conversioni di valore: funzioni statiche di `RadioE45.Uno/Converters/Fn.cs` dentro `x:Bind` (`{x:Bind conv:Fn.IsNotNull(ViewModel.X), Mode=OneWay}`, `xmlns:conv="using:RadioE45.Converters"`). ParityCheck legge anche i percorsi passati come argomenti. Nelle stringhe letterali di `x:Bind` le entità XML (`'&#xf04b;'`) **non** vengono decodificate: i glifi vanno restituiti da una funzione (`Fn.PlayPauseGlyph`).
+- Emoji e simboli Unicode delle pagine MAUI (▶ ⏸ ⏮ ⏭ 🔊 🔇 👥 ▲ ▼): sul web il renderer Skia non ha un font per mostrarli (quadratini). In Uno si usano i glifi Font Awesome (`FaSolid`).
+- Immagini da URL: segnaposto **sempre sotto** l'immagine (non con `IsNull`), così resta visibile anche quando il caricamento fallisce (sul web, immagini senza CORS, es. `/static/img/generic_song.jpg` di AzuraCast).
+- Immagini locali (`Resources/Images/*.svg` MAUI): copiare l'SVG in `RadioE45.Uno/Assets/Images/` (Resizetizer genera i PNG) e usare `ms-appx:///Assets/Images/<nome>.png`.
+- Stili con nome: stesse chiavi di MAUI in `RadioE45.Uno/Styles/Styles.xaml` (`HeadlineLabel`, `SubtitleLabel`, `CaptionLabel`, `PlayButton`, `CardBorder`…).
+- Ciclo di vita: la logica di `OnAppearing` va nel ViewModel (es. `OnAirViewModel.ActivateAsync()`), chiamata da `OnAppearing` in MAUI e da `OnNavigatedTo` in Uno.
 
 ## Controlli e layout
 
@@ -27,7 +33,7 @@ Le pagine Uno valgono sia per desktop sia per web: le differenze stanno nei serv
 | `Switch` / `Slider` / `Picker` / `CheckBox` | `ToggleSwitch` / `Slider` / `ComboBox` / `CheckBox` |
 | `ActivityIndicator` | `ProgressRing` |
 | `ProgressBar` | `ProgressBar` (`Maximum="1"` per valori 0–1) |
-| `RefreshView` | `RefreshContainer` (su desktop affiancare un pulsante o F5) |
+| `RefreshView` | `RefreshContainer` + `KeyboardAccelerator` F5 → `RequestRefresh()` (col mouse non si trascina) |
 | `SwipeView` | `SwipeControl`; su desktop `MenuFlyout` contestuale |
 | `MenuFlyout` (`FlyoutBase.ContextFlyout`) | `ContextFlyout` con `MenuFlyout` |
 | `DragGestureRecognizer` / `DropGestureRecognizer` | `CanDragItems` / `CanReorderItems` su `ListView` (oppure `AllowDrop` + `Drop`) |
@@ -41,7 +47,7 @@ Le pagine Uno valgono sia per desktop sia per web: le differenze stanno nei serv
 | `AppThemeBinding` | `{ThemeResource}` + `ThemeDictionaries` Light/Dark |
 | `StaticResource` colori (`Styles/Colors.xaml`) | `ThemeResource` in `RadioE45.Uno/Styles/` (stessi nomi di chiave dove possibile) |
 | `FontImageSource` Font Awesome | `FontIcon FontFamily="ms-appx:///Assets/Fonts/FaSolid.ttf#Font Awesome 6 Free Solid"` |
-| `GraphicsView` (`VuMeterView`) | `SKCanvasElement` |
+| `GraphicsView` (`VuMeterView`) | `SKCanvasElement` (`Uno.WinUI.Graphics2DSK`, `RenderOverride`); logica condivisa nel Core (`Visuals/VuMeterLevels`) |
 | `MediaElement` nascosto nella pagina | niente: l'audio Uno usa `MediaPlayer` senza elemento visuale (§4.3), il servizio non dipende dalla pagina |
 | `{Binding X, StringFormat='{0:HH:mm}'}` | `{x:Bind local:Format.Time(ViewModel.X)}` oppure proprietà formattata nel ViewModel (preferibile se serve a entrambe le UI) |
 | `OnPlatform` / `OnIdiom` | `VisualStateManager` con `AdaptiveTrigger` (larghezza), non per sistema operativo |

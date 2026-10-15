@@ -21,7 +21,11 @@
   maui: RadioE45/Views/OnAirPage.xaml
   uno: RadioE45.Uno/Views/OnAirPage.xaml
   viewmodels: [OnAirViewModel]
-  ignore: []
+  ignore:
+    - name: Tab_OnAir
+      reason: "MAUI page title; on Uno the tab label lives in ShellPage and the page has no title bar"
+    - name: IsBusy
+      reason: "MAUI RefreshView.IsRefreshing; the Uno RefreshContainer shows its indicator until the RefreshNowPlayingCommand deferral completes"
 
 - page: RadioList
   maui: RadioE45/Views/RadioListPage.xaml

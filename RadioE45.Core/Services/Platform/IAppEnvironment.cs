@@ -28,4 +28,11 @@ public interface IAppEnvironment
     /// </summary>
     bool HasLocalNetworkPrivacy =>
         OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS();
+
+    /// <summary>
+    /// False where playback may start only from a user gesture (web: browser autoplay policy,
+    /// docs/LINUX-UNO-ROADMAP.md §5). The app then never starts the radio on its own: at launch
+    /// the station is selected and its now playing shown, but the user presses Play.
+    /// </summary>
+    bool CanAutoplay => true;
 }

@@ -230,6 +230,24 @@ public partial class OnAirViewModel : BaseViewModel
         }, LocalizationResourceManager.Instance["Err_Init"]);
     }
 
+    /// <summary>
+    /// Called each time the On Air page appears (MAUI OnAppearing, Uno OnNavigatedTo). Applies
+    /// the volume, selects the default station on the first call and, on later visits, restarts
+    /// the station that was streaming if something else stopped it (a podcast episode): the
+    /// page may be a new instance while this ViewModel is the surviving singleton, so
+    /// InitializeAsync returns at once but the audio service has been cleared. Always the same
+    /// station that was streaming; the favorite/first choice applies only at app launch.
+    /// Without autoplay (web) nothing starts on its own: the user presses Play.
+    /// </summary>
+    public async Task ActivateAsync()
+    {
+        _audioService.SetVolume(Volume);
+        await InitializeAsync();
+
+        if (_environment.CanAutoplay && _audioService.CurrentStation is null && CurrentStation is not null)
+            await RestartAsync();
+    }
+
     public async Task RestartAsync()
     {
         if (CurrentStation is null)
@@ -247,7 +265,15 @@ public partial class OnAirViewModel : BaseViewModel
         if (station is not null)
         {
             CurrentStation = station;
-            await StartPlayAndNowPollingAsync(station);
+            if (_environment.CanAutoplay)
+            {
+                await StartPlayAndNowPollingAsync(station);
+            }
+            else
+            {
+                ApplyStationMetadata(station);
+                await StartNowPlayingPollingAsync(station);
+            }
         }
     }
 

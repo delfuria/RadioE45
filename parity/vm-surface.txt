@@ -44,6 +44,7 @@ EditStationViewModel.StationId : int { get; set; }
 EditStationViewModel.UrlBase : string { get; set; }
 EditStationViewModel.WebsiteUrl : string { get; set; }
 OnAirViewModel : type
+OnAirViewModel.ActivateAsync() : Task
 OnAirViewModel.ArtworkHeight : double { get; set; }
 OnAirViewModel.ArtworkUrl : string { get; set; }
 OnAirViewModel.ClearStationAsync() : Task

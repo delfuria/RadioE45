@@ -1,8 +1,8 @@
 # RadioE45 su Linux e Web con Uno Platform — Piano operativo
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
-> Branch di lavoro attuale: `S7` (derivato da `S6`). Ultimo aggiornamento: 2026-10-15 (app v0.44).
-> Stato: **S0–S7b completate (manca la regressione MAUI dell'utente); prossima sessione: S8.1** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Branch di lavoro attuale: `S8.1` (da `main`, dove sono state unite S0–S7b); da S8 un branch per ogni punto. Ultimo aggiornamento: 2026-10-15 (app v0.44).
+> Stato: **S0–S7b completate; S8.1 completata (attesa regressione MAUI dell'utente); prossima sessione: S8.2** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -90,6 +90,8 @@ ssh radioe45-vm 'cd ~/RadioE45 && export DISPLAY=:0 XAUTHORITY=$(ls /run/user/10
 ssh radioe45-vm 'tail -50 /tmp/radioe45.log'
 ssh radioe45-vm 'pkill -f "[n]et10.0-desktop/RadioE45.Uno"'   # chiusura (le [] evitano che pkill chiuda anche la shell SSH, la cui riga di comando contiene lo stesso testo)
 ```
+
+Dalla VM (anche per Rider): `~/RadioE45/tools/vm-sync.sh` (`--dry-run` per vedere le differenze) fa lo stesso rsync in locale dalla cartella condivisa `/media/psf/Lavori/RadioE45`. In Rider aprire **`~/RadioE45/RadioE45.slnx`**, mai la cartella condivisa (anche `~/Desktop/Parallels Shared Folders` punta lì): le sue `obj/` sono del Mac e la build fallisce con `NETSDK1064`.
 
 Note:
 - La VM è una **copia di lavoro sincronizzata a senso unico** (Mac → VM): non modificare i file nella VM. Il `--delete` di rsync sovrascrive.
@@ -606,7 +608,14 @@ Decisioni prese con l'utente (2026-10-15):
 - **Uscita:** podcast su desktop e web dalla pagina Debug; regressione MAUI ok.
 
 ### S8.x — Porting delle pagine (una o due pagine per sessione, con la skill `ui-parity-port`) · Mac (+ VM per le verifiche)
-- [ ] S8.1 Stili, `TranslateExtension`, `OnAirPage` (incluso `VuMeterView` Skia)
+- [x] S8.1 Stili, `TranslateExtension`, `OnAirPage` (incluso `VuMeterView` Skia) — ✅ 2026-10-15, branch `S8.1` da `main`
+  - Decisioni con l'utente: logica di `OnAppearing` nel ViewModel; icone Font Awesome in Uno se i simboli MAUI non si vedono (sul web non si vedono); pulsante menu e palinsesto **non mostrati** finché non arrivano S8.3 e S8.4 (`onair.menu-button`, `onair.schedule-entry` restano `todo`).
+  - **Core:** `OnAirViewModel.ActivateAsync()` (volume, stazione predefinita, ripresa della stazione fermata da un podcast), usata da MAUI (`OnAppearing`, code-behind ridotto) e Uno (`OnNavigatedTo`). `IAppEnvironment.CanAutoplay` (default `true`, Uno `false` sul web): sul web all'apertura stazione selezionata + now playing, niente play né ripresa automatica (§5). VU meter: simulazione dei livelli spostata in `RadioE45.Core/Visuals/VuMeterLevels` (MAUI `VuMeterView` invariato nell'aspetto). 6 test su `ActivateAsync`/autoplay.
+  - **Uno:** `Styles/Styles.xaml` (stesse chiavi MAUI), `Converters/Fn.cs` (funzioni `x:Bind`), `Controls/VuMeterView` (`SKCanvasElement`), `Assets/Images` (cuori e segnaposto da SVG), `OnAirPage` completa (layout verticale/orizzontale come MAUI, slider volume, F5 = aggiorna). Accento Fluent rosso anche nelle varianti `SystemAccentColorLight/Dark1-3` (prima slider e sottolineatura delle tab erano blu).
+  - Scoperte: sul web niente font per emoji/simboli (quadratini) → Font Awesome; entità XML nelle stringhe di `x:Bind` non decodificate; la copertina generica di AzuraCast (`/static/img/generic_song.jpg`, redirect) non ha CORS → segnaposto sempre sotto le immagini. Dettagli in `docs/parity/MAUI-TO-UNO.md`.
+  - **ParityCheck:** ora legge i percorsi passati alle funzioni di `x:Bind` (1 test). `ignore` di OnAir: `Tab_OnAir` (titolo della pagina, su Uno è nella shell), `IsBusy` (indicatore del `RefreshContainer`).
+  - Verifiche: macOS (tema scuro), VM Ubuntu (tema chiaro, simboli ok), Chrome (layout largo a due colonne, icone, storico espandibile, nessun autoplay). Soluzione 0 avvisi/0 errori, **148 test**, autotest desktop 0 errori, `ParityCheck` = 1.
+  - Da fare con l'utente: **regressione MAUI** su In Onda (primo avvio, ritorno da Podcast con ripresa della radio, volume, VU meter) su tutti gli ambienti; ascolto web reale (Play dopo l'apertura); F5 su desktop (non provato in automatico).
 - [ ] S8.2 `RadioListPage`, `AddStationPage`, `EditStationPage`
 - [ ] S8.3 `SettingsPage`, menu app
 - [ ] S8.4 `SchedulePopup`
@@ -667,6 +676,7 @@ Decisioni prese con l'utente (2026-10-15):
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-15 | S8.1 | Completata (attesa regressione MAUI) | Branch `S8.1` da `main`. `OnAirPage` Uno completa (menu e palinsesto rinviati a S8.3/S8.4), stili, funzioni `x:Bind`, VU meter `SKCanvasElement` con livelli nel Core; `OnAirViewModel.ActivateAsync` + `CanAutoplay` (web senza autoplay); icone Font Awesome in Uno; ParityCheck legge gli argomenti delle funzioni `x:Bind`; verificata su macOS, VM e Chrome; 148 test, soluzione verde, ParityCheck = 1. Prossima: S8.2 |
 | 2026-10-15 | S7b | Codice completato (attese regressione MAUI e prova podcast web dell'utente) | Motore podcast condiviso nel Core (14 test) con adattatori MAUI e Uno; 5 comportamenti di Uno 6.7 aggirati (macOS riapertura/Dispose/seek, web player multipli, libVLC fine episodio); radio senza rete ora mostra buffering (prova da 3 e 2 minuti nella VM); autotest podcast ok su macOS e VM; 135 test, soluzione verde, ParityCheck = 1. Prossima: S8.1 |
 | 2026-10-15 | S7a | Completata (ascolto da confermare) | Branch `S7` da `S6`. Finestra desktop come MAUI (`DesktopWindowSize` nel Core), `IAppPaths`, `INetworkMonitor` desktop/web, DB + catalogo, audio live Uno con `StreamStateDebouncer` (5 test); autotest 17/17 su macOS e VM, ciclo Play/Pausa/Riprendi/Stop ok in Chrome; 121 test, soluzione verde, ParityCheck = 1. Prossima: S7b |
 | 2026-10-15 | S6b | Completata (prova manuale utente ok) | Servizi condivisi Uno (dispatcher, dialog, impostazioni, ambiente, link, tema) + `UnoWindowHost`; pagina Debug e autotest `RADIOE45_SELFTEST=1`; 9/9 su macOS e VM, pagina Debug ok sul web; dati in `~/.local/share/RadioE45/`; `uno-check` verde; soluzione verde, 109 test, ParityCheck = 1. Prossima: S7 |

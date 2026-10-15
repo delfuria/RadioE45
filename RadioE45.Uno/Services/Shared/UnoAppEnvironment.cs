@@ -27,4 +27,7 @@ public sealed class UnoAppEnvironment : IAppEnvironment
 
     // Desktop and web own the volume (slider, value persisted), like MAUI on Mac/Windows.
     public bool UsesSystemVolume => false;
+
+    // Browsers block play() without a user gesture (roadmap §5): no radio at launch on the web.
+    public bool CanAutoplay => !OperatingSystem.IsBrowser();
 }

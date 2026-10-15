@@ -83,6 +83,21 @@ public sealed class ParityCheckerTests : IDisposable
     }
 
     [Fact]
+    public void Xbind_function_arguments_count_as_bindings()
+    {
+        WriteFeatures(desktop: "done");
+        WriteUnoPage("""
+            <Page>
+              <TextBlock Text="{x:Bind conv:Fn.Pick(ViewModel.NowPlaying.Title, 'a, b', '▶'), Mode=OneWay}" />
+              <TextBlock Text="{loc:Translate Key=Tab_OnAir}" />
+              <Button Command="{x:Bind ViewModel.PlayPauseCommand}" Visibility="{x:Bind conv:Fn.Not(conv:Fn.Id(ViewModel.IsBusy))}" />
+            </Page>
+            """);
+
+        Assert.Empty(Run());
+    }
+
+    [Fact]
     public void Missing_binding_without_declared_debt_is_an_error()
     {
         WriteFeatures(desktop: "done");

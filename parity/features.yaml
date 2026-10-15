@@ -90,55 +90,58 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
+  notes: "Web: la copertina generica di AzuraCast (/static/img) non ha CORS, resta il segnaposto"
 
 - id: onair.menu-button
   title: Pulsante sopra la copertina che apre il menu laterale
   since: "0.44"
   page: OnAir
   status: { maui: done, desktop: todo, web: todo }
+  notes: "Uno: arriva con il menu laterale (S8.3)"
 
 - id: onair.live-indicator
   title: Indicatore LIVE in sovrimpressione con nome dello streamer
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: onair.station-badge
   title: Badge della stazione con nome, preferito, numero di ascoltatori e badge HLS
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
+  notes: "Uno: icone Font Awesome al posto delle emoji MAUI (nessun font emoji nel renderer Skia web)"
 
 - id: onair.favorite
   title: Stazione preferita (toggle dalla pagina On Air)
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: onair.track-info
   title: Titolo e artista del brano in onda
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: onair.track-progress
   title: Avanzamento del brano con tempo trascorso e durata
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: onair.next-track
   title: Prossimo brano (copertina, titolo, artista)
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: onair.schedule-entry
   title: Accesso al palinsesto accanto al prossimo brano, o riga compatta se manca il prossimo brano
@@ -146,56 +149,58 @@
   page: OnAir
   viewmodel: OnAirViewModel
   status: { maui: done, desktop: todo, web: todo }
+  notes: "Uno: arriva con il palinsesto (S8.4)"
 
 - id: onair.playback-controls
   title: Play/pausa (pausa live = chiusura stream, ripresa in diretta) e indicatore di buffering
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
-  notes: "Web: nessun autoplay, ogni avvio parte da un gesto dell'utente (§5)"
+  status: { maui: done, desktop: done, web: done }
+  notes: "Web: nessun autoplay, ogni avvio parte da un gesto dell'utente (§5): all'apertura stazione selezionata e now playing, niente play né ripresa automatica (IAppEnvironment.CanAutoplay)"
 
 - id: onair.station-switch
   title: Stazione precedente e successiva con il nome della stazione
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: onair.volume
   title: Volume e mute (slider su desktop, mute su mobile con volume di sistema)
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: onair.error
   title: Messaggio d'errore della pagina On Air
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: onair.song-history
   title: Ultimi brani trasmessi, sezione espandibile
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: onair.pull-to-refresh
   title: Aggiornamento manuale del now playing (pull to refresh)
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
+  notes: "Desktop: F5 (RefreshContainer richiede il touch); web: trascinamento touch o F5"
 
 - id: onair.vu-meter
   title: VU meter animato durante la riproduzione
   since: "0.44"
   page: OnAir
-  status: { maui: done, desktop: todo, web: todo }
-  notes: "Uno: SKCanvasElement al posto di GraphicsView (§4.4)"
+  status: { maui: done, desktop: done, web: done }
+  notes: "Uno: SKCanvasElement al posto di GraphicsView; livelli condivisi in RadioE45.Core/Visuals/VuMeterLevels"
 
 # --- Radio list ------------------------------------------------------------------------------
 
