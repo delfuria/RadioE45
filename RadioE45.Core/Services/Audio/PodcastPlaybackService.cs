@@ -65,6 +65,8 @@ public class PodcastPlaybackService : IPodcastPlayerService
     public event EventHandler<TimeSpan>? PositionChanged;
     public event EventHandler? EpisodeCompleted;
     public event EventHandler<string?>? PlaybackFailed;
+    public event EventHandler<string>? EpisodeStopped;
+    public event EventHandler<PodcastProgressSavedEventArgs>? ProgressSaved;
 
     /// <summary>Connects the head's player (MAUI: the page's MediaElement; Uno: created once).</summary>
     public void AttachPlayer(IPodcastMediaPlayer player)
@@ -192,13 +194,17 @@ public class PodcastPlaybackService : IPodcastPlayerService
         if (player is null)
             return;
 
+        AzuraCastPodcastEpisode? episode = CurrentEpisode;
         await SaveProgressAsync();
 
+        // Unload before closing: samples the player emits while stopping (0) must be ignored.
+        CurrentEpisode = null;
         await _dispatcher.InvokeAsync(player.Close);
 
-        CurrentEpisode = null;
         IsPlaying = false;
         PlaybackStateChanged?.Invoke(this, false);
+        if (episode is not null)
+            EpisodeStopped?.Invoke(this, episode.Id);
     }
 
     public async Task SeekAsync(TimeSpan position)
@@ -217,6 +223,11 @@ public class PodcastPlaybackService : IPodcastPlayerService
 
     private void OnMediaPositionChanged(object? sender, TimeSpan position)
     {
+        // No episode loaded (stopped): the player may still report a last sample (0 after Stop);
+        // forwarding it would show 0:00 and, worse, be saved over the real position.
+        if (CurrentEpisode is null)
+            return;
+
         // Primo campione di posizione reale dopo il play: qui il player sta davvero decodificando,
         // non più solo "aperto" — il seek ha effetto reale solo a questo punto (vedi commento su
         // OpenAndPlayWithRetryAsync). Token-guard: ignora se nel frattempo è stato selezionato
@@ -290,6 +301,7 @@ public class PodcastPlaybackService : IPodcastPlayerService
         {
             await _progressRepository.SaveAsync(station.StationId, station.Id, episode.PodcastId, episode.Id,
                 (int)position.TotalSeconds, completed);
+            ProgressSaved?.Invoke(this, new PodcastProgressSavedEventArgs(station.StationId, episode.Id, (int)position.TotalSeconds, completed));
         }
         catch (Exception ex)
         {

@@ -67,8 +67,12 @@ public partial class AzuraCastPodcastEpisode : ObservableObject
 
     // Valorizzati da PodcastEpisodesViewModel dopo il fetch, leggendo PodcastEpisodeProgress —
     // non fanno parte del JSON dell'episodio.
+    // Observable: also updated live when the player saves progress (pause, stop, periodic), so the
+    // card reflects it without waiting for the list to be reloaded.
     [JsonIgnore]
-    public int ResumePositionSeconds { get; set; }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ResumePositionText))]
+    public partial int ResumePositionSeconds { get; set; }
 
     // ObservableProperty: il ViewModel aggiorna questo valore anche in diretta durante la
     // riproduzione (avvio episodio, fine episodio), non solo al caricamento della lista — il

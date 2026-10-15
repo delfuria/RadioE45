@@ -582,14 +582,19 @@ Decisioni prese con l'utente (2026-10-15):
   - 2 minuti con la correzione: subito `buffering=True`, il watchdog ritenta ogni 10 s in silenzio, al ritorno della rete radio di nuovo in riproduzione in circa 2 s.
   - Modalità di prova: `RADIOE45_SELFTEST=network RADIOE45_SELFTEST_MINUTES=n` (stato ogni 5 s, righe `NETTEST`).
 - [x] Autotest desktop esteso ai podcast (episodio demo AzuraTest): radio → podcast (la radio si ferma), avanzamento, pausa vera, seek + ripresa, posizione salvata, ripartenza dalla posizione salvata, fine episodio = completato. **macOS e VM: tutto ok** (due esecuzioni consecutive ciascuno). Pagina Debug: sezione podcast ("Trova episodio" separato da "Play" perché sul web il play deve seguire il clic entro pochi secondi).
-- [x] **Bug MAUI preesistente corretto (segnalato dall'utente il 2026-10-15, presente anche nelle versioni precedenti):** ascolto di un episodio → tab On Air → ritorno al podcast: la card non mostrava la posizione (giallo), si ripartiva da 0, il play "non faceva nulla" e su iOS l'app andava in crash. Il passaggio di tab lascia la pagina episodi nello stack della tab, ma `OnDisappearing` ferma la riproduzione e scollega il ViewModel. Tre cause, tre correzioni:
-  1. il ViewModel non si riagganciava agli eventi del player (aggancio solo nel costruttore) → `PodcastEpisodesViewModel.Activate()` idempotente, chiamato a ogni `OnAppearing` (nuova API tracciata in `parity/vm-surface.txt` e nella nota di `podcastepisodes.player`);
-  2. il `MediaElement` veniva agganciato al servizio solo la prima volta, mentre nel frattempo MAUI 9+ può aver scollegato il player nativo → `Initialize` a ogni `OnAppearing`;
-  3. lo stop all'uscita salvava la posizione letta da un `MediaElement` già scollegato (0), sovrascrivendo quella buona → `PodcastPlaybackService` salva l'ultima posizione nota quando il player riporta 0 (2 test).
-  - **Da verificare dall'utente** su Mac, iOS (crash), Windows e Android con lo stesso percorso.
+- [x] **Bug preesistente (MAUI, quindi anche Uno) corretto il 2026-10-15:** ascolto di un episodio → In Onda → ritorno alla pagina episodi: il play non ripartiva e il mini player mostrava 0, anche se la posizione era salvata bene nel DB (verificato: 11 s); con freccia indietro + nuova apertura funzionava. In iOS crash.
+  - **Causa:** tornando su In Onda, `OnAirPage.OnAppearing` → `RestartAsync` → `StartPlayAndNowPollingAsync` ferma l'episodio **direttamente sul servizio podcast**. Il ViewModel degli episodi (stessa istanza, la pagina resta nello stack della tab) non lo sapeva: `CurrentEpisode` restava valorizzato, quindi il tocco sull'episodio andava nel ramo "stesso episodio → pausa/ripresa" e chiamava `ResumeAsync` su un player chiuso (nulla; probabile causa del crash iOS). Il player emetteva poi un campione 0 dopo lo stop, mostrato dal mini player. Shell non garantisce `OnDisappearing`/`OnAppearing` per una pagina impilata sopra la radice della tab, quindi il ViewModel non può affidarsi al ciclo di vita della pagina.
+  - **Correzione (Core, vale anche per Uno):**
+    - `IPodcastPlayerService` ha gli eventi `EpisodeStopped` (episodio fermato da chiunque) e `ProgressSaved` (dopo ogni salvataggio);
+    - il servizio ignora i campioni di posizione senza episodio caricato e scarica l'episodio prima di chiudere il player;
+    - il ViewModel decide "stesso episodio" solo se il player lo ha davvero caricato (altrimenti riapre dalla posizione salvata, anche dal pulsante del mini player), azzera il mini player su `EpisodeStopped`, aggiorna la card da `ProgressSaved`, e `Activate()` riallinea lo stato;
+    - `AzuraCastPodcastEpisode.ResumePositionSeconds` è osservabile.
+    - Restano anche le correzioni precedenti (`Activate`/`Initialize` a ogni `OnAppearing`, salvataggio dell'ultima posizione nota se il player riporta 0).
+  - **Test:** `PodcastEpisodesViewModelTabSwitchTests` riproduce lo scenario con servizio reale e player finto, nelle due varianti (con e senza ciclo di vita della pagina): falliva prima della correzione, ora passa. Totale **141** test.
+  - **Da verificare dall'utente** su Mac, iOS (crash), Windows e Android.
 - [ ] **Web: podcast da provare a mano (utente)**, con la scheda visibile: nella sessione la finestra di automazione era in background e Chrome rimanda il caricamento dei media nelle schede nascoste (`visibilityState: hidden`), quindi le prove automatiche non sono conclusive.
 - Note:
-  - Test: **137** verdi.
+  - Test: **141** verdi.
   - Il server demo `demo.azuracast.com` (unico con podcast nel catalogo) ha risposto più volte 521 durante la sessione: un "nessun episodio" può dipendere da quello.
   - `dotnet build RadioE45.slnx` 0 avvisi/0 errori; **135 test** verdi; `ParityCheck` = 1.
 - [ ] **Regressione MAUI (utente), un solo giro a fine S7b:**

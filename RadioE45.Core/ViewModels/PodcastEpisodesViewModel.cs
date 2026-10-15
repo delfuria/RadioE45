@@ -101,21 +101,38 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
     private bool _isActive;
 
     /// <summary>
-    /// Subscribes to the player events. Called again by the page every time it appears: leaving
-    /// the Podcast tab (e.g. to On Air) keeps this page and ViewModel alive in the tab's stack
-    /// while <see cref="Cleanup"/> unsubscribed them, so without this the page stopped reacting
-    /// to the player when the user came back (play seemed to do nothing). Idempotent.
+    /// Subscribes to the player events and realigns with the player. Called by the page every time
+    /// it appears: the page and this ViewModel stay alive in the Podcast tab's stack when the user
+    /// switches tab, and Shell does not guarantee OnDisappearing/OnAppearing for a page pushed
+    /// above the tab root, so the ViewModel must never rely on them to know what the player holds.
+    /// Idempotent.
     /// </summary>
     public void Activate()
     {
-        if (_isActive)
-            return;
-        _isActive = true;
+        if (!_isActive)
+        {
+            _isActive = true;
+            _podcastPlayerService.PlaybackStateChanged += OnPlaybackStateChanged;
+            _podcastPlayerService.PositionChanged += OnPositionChanged;
+            _podcastPlayerService.EpisodeCompleted += OnEpisodeCompleted;
+            _podcastPlayerService.PlaybackFailed += OnPlaybackFailed;
+            _podcastPlayerService.EpisodeStopped += OnEpisodeStopped;
+            _podcastPlayerService.ProgressSaved += OnProgressSaved;
+        }
 
-        _podcastPlayerService.PlaybackStateChanged += OnPlaybackStateChanged;
-        _podcastPlayerService.PositionChanged += OnPositionChanged;
-        _podcastPlayerService.EpisodeCompleted += OnEpisodeCompleted;
-        _podcastPlayerService.PlaybackFailed += OnPlaybackFailed;
+        // The episode may have been stopped while unsubscribed (e.g. by the live radio).
+        if (CurrentEpisode is not null && !IsLoadedInPlayer(CurrentEpisode))
+            ResetMiniPlayer();
+    }
+
+    private bool IsLoadedInPlayer(AzuraCastPodcastEpisode episode) =>
+        _podcastPlayerService.CurrentEpisode?.Id == episode.Id;
+
+    private void ResetMiniPlayer()
+    {
+        CurrentEpisode = null;
+        IsPlaying = false;
+        PlaybackProgress = 0;
     }
 
     // La pagina resta viva nello stack Shell del tab anche quando non è quella visibile: se la
@@ -243,12 +260,20 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
         if (station is null)
             return;
 
-        if (CurrentEpisode?.Id == episode.Id)
+        // Same episode AND still loaded in the player: toggle pause/resume. If the player no longer
+        // holds it (stopped meanwhile, e.g. by the live radio on returning to On Air), it must be
+        // reopened from the saved position — Resume on a closed player does nothing.
+        if (CurrentEpisode?.Id == episode.Id && IsLoadedInPlayer(episode))
         {
             await PlayPauseAsync();
             return;
         }
 
+        await StartEpisodeAsync(station, episode);
+    }
+
+    private async Task StartEpisodeAsync(AzuraStation station, AzuraCastPodcastEpisode episode)
+    {
         CurrentEpisode = episode;
 
         // Aggiorna subito l'indicatore (verde -> giallo): non aspettare il prossimo OnAppearing.
@@ -273,6 +298,14 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
     {
         if (CurrentEpisode is null)
             return;
+
+        if (!IsLoadedInPlayer(CurrentEpisode))
+        {
+            // Mini player of an episode the player no longer holds: start it again.
+            if (_onAirViewModel.CurrentStation is { } station)
+                await StartEpisodeAsync(station, CurrentEpisode);
+            return;
+        }
 
         if (IsPlaying)
             await _podcastPlayerService.PauseAsync();
@@ -330,6 +363,33 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
             : 0.0;
     }
 
+    private void OnEpisodeStopped(object? sender, string episodeId)
+    {
+        _dispatcher.Post(() =>
+        {
+            if (CurrentEpisode?.Id == episodeId && !IsLoadedInPlayer(CurrentEpisode))
+                ResetMiniPlayer();
+        });
+    }
+
+    // Keeps the card (resume time, yellow/red dot) in sync with what was just saved, whoever
+    // triggered the save, without waiting for the list to be reloaded.
+    private void OnProgressSaved(object? sender, PodcastProgressSavedEventArgs e)
+    {
+        _dispatcher.Post(() =>
+        {
+            AzuraCastPodcastEpisode? episode = _allEpisodes.FirstOrDefault(x => x.Id == e.EpisodeId);
+            if (episode is null)
+                return;
+
+            episode.ResumePositionSeconds = e.PositionSeconds;
+            if (e.IsCompleted)
+                episode.ProgressState = PodcastEpisodeProgressState.Completed;
+            else if (e.PositionSeconds > 3)
+                episode.ProgressState = PodcastEpisodeProgressState.InProgress;
+        });
+    }
+
     private void OnEpisodeCompleted(object? sender, EventArgs e)
     {
         _dispatcher.Post(() =>
@@ -375,5 +435,7 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
         _podcastPlayerService.PositionChanged -= OnPositionChanged;
         _podcastPlayerService.EpisodeCompleted -= OnEpisodeCompleted;
         _podcastPlayerService.PlaybackFailed -= OnPlaybackFailed;
+        _podcastPlayerService.EpisodeStopped -= OnEpisodeStopped;
+        _podcastPlayerService.ProgressSaved -= OnProgressSaved;
     }
 }

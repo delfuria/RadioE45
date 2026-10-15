@@ -450,7 +450,7 @@
   page: PodcastEpisodes
   viewmodel: PodcastEpisodesViewModel
   status: { maui: done, desktop: todo, web: todo }
-  notes: "Uno: UnoPodcastPlayerService (S7b). Ciclo di vita (fix 2026-10-15, bug presente da sempre): la pagina resta nello stack della tab Podcast quando si passa a On Air; a ogni ritorno va richiamato PodcastEpisodesViewModel.Activate() (MAUI: OnAppearing; Uno: OnNavigatedTo) dopo Cleanup() all'uscita"
+  notes: "Uno: UnoPodcastPlayerService (S7b). Il ViewModel non deve dipendere dal ciclo di vita della pagina: lo stato del mini player segue il servizio (EpisodeStopped, ProgressSaved, fix 2026-10-15); la pagina chiama Activate() quando appare (MAUI OnAppearing, Uno OnNavigatedTo)"
 
 - id: podcastepisodes.resume
   title: Ripresa dalla posizione salvata
