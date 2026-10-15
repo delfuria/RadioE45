@@ -26,7 +26,7 @@ Le pagine Uno valgono sia per desktop sia per web: le differenze stanno nei serv
 
 | MAUI | Uno/WinUI |
 |---|---|
-| `Shell` + `TabBar` (OnAir, SongRequest, Podcast) + flyout menu | `NavigationView` (top su desktop e web largo, `LeftCompact` su schermi stretti) + `Frame`, tramite `INavigationService` (`ShellPage.xaml`) |
+| `Shell` + `TabBar` (OnAir, SongRequest, Podcast) + flyout menu | `NavigationView` con tab in alto + `Frame`, tramite `INavigationService` (`ShellPage.xaml`); nessun layout adattivo (roadmap D9) |
 | `ContentPage` | `Page` |
 | `VerticalStackLayout` / `HorizontalStackLayout` | `StackPanel` (`Orientation`, `Spacing`) |
 | `Grid` (`RowDefinitions="Auto,*"`) | `Grid` con `RowDefinitions` espliciti (in WinUI la sintassi abbreviata non esiste: `<RowDefinition Height="Auto" />`) |
@@ -55,7 +55,7 @@ Le pagine Uno valgono sia per desktop sia per web: le differenze stanno nei serv
 | `GraphicsView` (`VuMeterView`) | `SKCanvasElement` (`Uno.WinUI.Graphics2DSK`, `RenderOverride`); logica condivisa nel Core (`Visuals/VuMeterLevels`) |
 | `MediaElement` nascosto nella pagina | niente: l'audio Uno usa `MediaPlayer` senza elemento visuale (§4.3), il servizio non dipende dalla pagina |
 | `{Binding X, StringFormat='{0:HH:mm}'}` | `{x:Bind local:Format.Time(ViewModel.X)}` oppure proprietà formattata nel ViewModel (preferibile se serve a entrambe le UI) |
-| `OnPlatform` / `OnIdiom` | `VisualStateManager` con `AdaptiveTrigger` (larghezza), non per sistema operativo |
+| `OnPlatform` / `OnIdiom` | niente `AdaptiveTrigger`: su desktop la finestra è fissa come in MAUI desktop (verticale 500×855 o orizzontale 900×450, il layout segue `width > height`); sul web sempre verticale (`UnoLayout.IsSingleColumn`). Mai rami per sistema operativo |
 | `[QueryProperty]` sulla pagina | parametro di `Frame.Navigate(typeof(Page), param)` letto in `OnNavigatedTo` e inoltrato al ViewModel |
 | `OnAppearing` / `OnDisappearing` | `OnNavigatedTo` / `OnNavigatedFrom` |
 | `{Binding}` compilato con `x:DataType` | `{x:Bind ViewModel.X, Mode=OneWay}` (`x:Bind` è `OneTime` di default: specificare sempre `Mode`) |

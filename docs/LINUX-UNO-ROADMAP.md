@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
 > Branch di lavoro attuale: `S8.2` (da `S8.1`, non ancora unita a `main`); da S8 un branch per ogni punto. Ultimo aggiornamento: 2026-10-15 (app v0.44).
-> Stato: **S0–S8.1 completate (regressione MAUI ok); S8.2 e S8.3 codice completato (prove manuali dell'utente); prossima sessione: S8.4** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Stato: **S0–S8.1 completate (regressione MAUI ok); S8.2 codice completato (prove manuali dell'utente); S8.3 completata; prossima sessione: S8.4** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -323,7 +323,7 @@ Input: feature id oppure range git. Passi:
 
 | MAUI | Uno/WinUI |
 |---|---|
-| `Shell` + `TabBar` (OnAir, SongRequest, Podcast) | `NavigationView` (top su desktop e web largo, `LeftCompact` su schermi stretti) + `Frame`, tramite `INavigationService` |
+| `Shell` + `TabBar` (OnAir, SongRequest, Podcast) | `NavigationView` con tab in alto (desktop a finestra fissa e colonna web, nessun layout adattivo) + `Frame`, tramite `INavigationService` |
 | `ContentPage` | `Page` |
 | `VerticalStackLayout` / `HorizontalStackLayout` | `StackPanel` (`Orientation`, `Spacing`) |
 | `Label` | `TextBlock` |
@@ -633,12 +633,16 @@ Decisioni prese con l'utente (2026-10-15):
   - **Termini d'uso:** `ShellPage.OnLoaded` chiama `ITermsService.EnsureAcceptedAsync()` prima del controllo delle stazioni, come `AppShell.OnNavigated` (verificato su macOS e Chrome).
   - **Impostazioni:** pagina impilata sopra In Onda (`OpenFromMenuAsync(Settings)`); slider int con `ValueChanged`, tema con `ComboBox` + `SelectionChanged` (cambio live verificato), Diagnostica nascosta fino al doppio tocco sul titolo come in MAUI. Crash report: interfaccia portata ma nascosta (`UnavailableCrashReportingService`), `settings.diagnostics.crash-reports` resta `todo`.
   - Verifiche: Chrome (termini, menu, Impostazioni, checkbox, Diagnostica, tema chiaro/scuro, Termini dalle Info, Salva → In Onda, menu → Canali); macOS (termini al primo avvio, ☰); autotest desktop 0 errori; build desktop e web 0 avvisi/0 errori; `ParityCheck` = 1. Core non modificato.
-  - Da fare con l'utente: menu e Impostazioni su macOS e nella VM (clic reali), link della stazione (sito, social, mailto/tel) su desktop e web.
+  - [x] **Prova dell'utente:** ok (2026-10-15), dopo le due correzioni dell'animazione del menu sul web.
   - Nota (anche MAUI, non corretta): il tema è salvato in due posti (`AppSettings.ThemePreference` nel DB e `theme_preference` in `ISettingsStore`); se divergono la pagina mostra il valore del DB e l'app quello dello store (nel browser di prova: "Dark" nella casella, tema chiaro all'avvio).
 - [ ] S8.4 `SchedulePopup`
 - [ ] S8.5 `SongRequestPage`
 - [ ] S8.6 `PodcastListPage`, `PodcastEpisodesPage` (rispettare il ciclo di vita corretto in S7b: `Activate()` in `OnNavigatedTo`, stop + `Cleanup()` in `OnNavigatedFrom`; vedi la nota di `podcastepisodes.player`)
-- [ ] S8.7 Layout desktop e web largo (due colonne), scorciatoie da tastiera
+- [ ] S8.7 Verifica dei layout fissi, scorciatoie da tastiera
+  - **Layout deciso (utente, 2026-10-15), niente layout adattivi:**
+    - **Desktop:** finestra non ridimensionabile (né massimizzabile) che parte sempre con la stessa dimensione delle app MAUI desktop (Mac Catalyst, Windows): 500×855 in verticale o 900×450 in orizzontale, da `desktop_orientation` (`DesktopWindowSize` nel Core, `shell.desktop-window-size`, fatto in S7a). Nessuna dimensione salvata o ripristinata.
+    - **Web:** solo la colonna centrata a larghezza fissa 500, pagine sempre in verticale (`UnoLayout.IsSingleColumn`, `shell.web-column`, fatto in S8.1). Il "web largo" a due colonne non esiste più.
+  - Da fare: controllare che tutte le pagine stiano nelle due finestre desktop (anche 900×450) e nella colonna web; scorciatoie da tastiera.
 - **Uscita di ogni sessione:** le feature della pagina sono `done` in `features.yaml` e `ParityCheck` non segnala errori per quella pagina.
 
 ### S9 — Integrazione di piattaforma · VM + Mac
@@ -684,6 +688,7 @@ Decisioni prese con l'utente (2026-10-15):
 | D6 | Navigazione: `Frame` scritto a mano o `Uno.Extensions.Navigation` | S6 | ✅ A mano (confermato 2026-10-14); tema Fluent |
 | D7 | Canali desktop: Snap Store, Flathub, AppImage | S10 | Snap + AppImage, Flathub dopo |
 | D8 | Hosting e dominio web | S10 | Da decidere con l'utente |
+| D9 | Layout desktop e web | S8.7 | ✅ Desktop: finestra fissa non ridimensionabile, stessa dimensione delle app MAUI desktop all'avvio (500×855 o 900×450). Web: una sola colonna larga 500, niente layout largo (2026-10-15) |
 | D9 | Hook Stop bloccante o solo avviso | S5 | ✅ Bloccante solo per exit 2; drift della superficie VM non tracciato = exit 2 |
 | D10 | Rilascio delle app Uno legato alle versioni MAUI (stesso `version.json`) | S10 | Sì, stessa versione |
 
@@ -693,7 +698,7 @@ Decisioni prese con l'utente (2026-10-15):
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
-| 2026-10-15 | S8.3 | Codice completato (prove manuali dell'utente) | Branch `S8.3` da `S8.2`. Menu laterale Uno (pannello in sovrimpressione con animazione propria, pulsante ☰ su In Onda), Termini d'uso al primo avvio, `SettingsPage`; verificate in Chrome e su macOS; autotest desktop ok; build verdi; ParityCheck = 1 (crash report resta `todo`). Prossima: S8.4 |
+| 2026-10-15 | S8.3 | Completata (prova dell'utente ok) | Branch `S8.3` da `S8.2`. Menu laterale Uno (pannello in sovrimpressione con animazione propria, pulsante ☰ su In Onda), Termini d'uso al primo avvio, `SettingsPage`; verificate in Chrome e su macOS; autotest desktop ok; build verdi; ParityCheck = 1 (crash report resta `todo`). Deciso il layout per S8.7 (D9): desktop a finestra fissa come MAUI, web solo colonna fissa. Prossima: S8.4 |
 | 2026-10-15 | S8.2 | Codice completato (prove manuali dell'utente) | Branch `S8.2` da `S8.1`. Canali, Aggiungi e Modifica stazione su Uno, impilate nel `Frame` della shell con pulsante indietro; menu contestuale al posto dello swipe, riordino dalla maniglia; avvio senza stazioni → Canali; colonna web a larghezza fissa; verificate in Chrome; autotest desktop ok; build verdi; ParityCheck = 1. Prossima: S8.3 |
 | 2026-10-15 | S7b + S8.1 | Regressione MAUI ok | Confermata dall'utente su tutti gli ambienti (podcast, finestra desktop, build Windows, In Onda). Branch `S8.2` da `S8.1`. Prossima: S8.2 |
 | 2026-10-15 | S8.1 | Completata (attesa regressione MAUI) | Branch `S8.1` da `main`. `OnAirPage` Uno completa (menu e palinsesto rinviati a S8.3/S8.4), stili, funzioni `x:Bind`, VU meter `SKCanvasElement` con livelli nel Core; `OnAirViewModel.ActivateAsync` + `CanAutoplay` (web senza autoplay); icone Font Awesome in Uno; ParityCheck legge gli argomenti delle funzioni `x:Bind`; verificata su macOS, VM e Chrome; 148 test, soluzione verde, ParityCheck = 1. Prossima: S8.2 |
