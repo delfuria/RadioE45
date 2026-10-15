@@ -17,6 +17,12 @@ public sealed partial class ShellPage : Page
     {
         InitializeComponent();
         navigation.Attach(this);
+        if (UnoLayout.IsSingleColumn)
+        {
+            // Web: the app is a centered column as wide as the desktop window, tabs included.
+            NavView.MaxWidth = UnoLayout.ColumnMaxWidth;
+            NavView.HorizontalAlignment = HorizontalAlignment.Center;
+        }
 #if DEBUG
         NavView.FooterMenuItems.Add(new NavigationViewItem { Content = "Debug", Tag = nameof(ShellTab.Debug) });
 #endif

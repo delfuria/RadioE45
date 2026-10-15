@@ -15,6 +15,7 @@ Le pagine Uno valgono sia per desktop sia per web: le differenze stanno nei serv
 - Immagini da URL: segnaposto **sempre sotto** l'immagine (non con `IsNull`), così resta visibile anche quando il caricamento fallisce (sul web, immagini senza CORS, es. `/static/img/generic_song.jpg` di AzuraCast).
 - Immagini locali (`Resources/Images/*.svg` MAUI): copiare l'SVG in `RadioE45.Uno/Assets/Images/` (Resizetizer genera i PNG) e usare `ms-appx:///Assets/Images/<nome>.png`.
 - Stili con nome: stesse chiavi di MAUI in `RadioE45.Uno/Styles/Styles.xaml` (`HeadlineLabel`, `SubtitleLabel`, `CaptionLabel`, `PlayButton`, `CardBorder`…).
+- Layout orizzontale (pagine che in MAUI cambiano layout con `OnSizeAllocated`): sul web non va mai attivato, perché l'app è una colonna da 500 centrata (`UnoLayout.IsSingleColumn`, impostata in `ShellPage`).
 - Ciclo di vita: la logica di `OnAppearing` va nel ViewModel (es. `OnAirViewModel.ActivateAsync()`), chiamata da `OnAppearing` in MAUI e da `OnNavigatedTo` in Uno.
 
 ## Controlli e layout

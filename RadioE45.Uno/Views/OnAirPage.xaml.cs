@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
+using RadioE45.Services.Shared;
 using RadioE45.ViewModels;
 
 namespace RadioE45.Views;
@@ -32,13 +33,15 @@ public sealed partial class OnAirPage : Page
         double height = e.NewSize.Height;
         if (width <= 0 || height <= 0) return;
 
+        // Web: always portrait, the app is a narrow column whatever the browser size (UnoLayout).
+        bool shouldBeWide = width > height && !UnoLayout.IsSingleColumn;
+
         // Same sizing as the MAUI page: the cover takes the height left by the fixed elements in
         // portrait, and sits beside the controls (bound to the shorter side) in landscape.
-        ViewModel.ArtworkHeight = width > height
+        ViewModel.ArtworkHeight = shouldBeWide
             ? Math.Clamp(height - 220, 140, 300)
             : Math.Clamp(height - 458, 150, 300);
 
-        bool shouldBeWide = width > height;
         if (shouldBeWide == _isWideLayout) return;
         _isWideLayout = shouldBeWide;
 
