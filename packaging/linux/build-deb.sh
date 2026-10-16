@@ -50,7 +50,14 @@ mkdir -p "$ROOT/DEBIAN" "$ROOT/opt" "$ROOT/usr/bin" \
 cp -R "$PUBLISH_DIR" "$ROOT/opt/radioe45"
 # Static SQLite library, only used to link native AOT builds.
 find "$ROOT/opt/radioe45" -name '*.a' -delete
-ln -s /opt/radioe45/RadioE45.Uno "$ROOT/usr/bin/radioe45"
+# Launcher instead of a symlink: the NoDependencies libSkiaSharp.so (needed on linux-arm64) calls
+# uuid_generate_random without linking libuuid ("symbol lookup error" at startup on a clean
+# system), so libuuid is preloaded.
+cat > "$ROOT/usr/bin/radioe45" <<'LAUNCHER'
+#!/bin/sh
+export LD_PRELOAD="libuuid.so.1${LD_PRELOAD:+ $LD_PRELOAD}"
+exec /opt/radioe45/RadioE45.Uno "$@"
+LAUNCHER
 
 cp "$PACKAGING_DIR/com.radioe45.app.desktop" "$ROOT/usr/share/applications/"
 cp "$PACKAGING_DIR/com.radioe45.app.metainfo.xml" "$ROOT/usr/share/metainfo/"
@@ -63,7 +70,7 @@ done
 # Normalized permissions: the files come from a macOS or CI checkout with any umask.
 find "$ROOT" -type d -exec chmod 755 {} +
 find "$ROOT" -type f -exec chmod 644 {} +
-chmod 755 "$ROOT/opt/radioe45/RadioE45.Uno"
+chmod 755 "$ROOT/opt/radioe45/RadioE45.Uno" "$ROOT/usr/bin/radioe45"
 
 INSTALLED_SIZE="$(du -sk "$ROOT" | cut -f1)"
 sed -e "s/@VERSION@/$VERSION/" -e "s/@ARCH@/$ARCH/" -e "s/@INSTALLED_SIZE@/$INSTALLED_SIZE/" \

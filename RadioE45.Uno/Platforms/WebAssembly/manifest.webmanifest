@@ -1,5 +1,5 @@
 {
-  "id": "/",
+  "id": "./",
   "name": "Radio E45",
   "short_name": "Radio E45",
   "description": "Radio E45: AzuraCast web radio player",
@@ -9,8 +9,8 @@
     "music",
     "entertainment"
   ],
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#FFFFFF",
   "theme_color": "#E63946",
