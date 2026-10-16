@@ -69,6 +69,13 @@
   status: { maui: done, desktop: done, web: done }
   notes: "MAUI: immagini tab_onair/tab_request/tab_podcast; Uno: glifi Font Awesome (play, nota musicale, microfono) nella NavigationView, seguono tema e selezione"
 
+- id: shell.pwa
+  title: App web installabile (PWA) con icone, finestra propria e avvio della shell senza il server web
+  since: "0.45"
+  page: Shell
+  status: { maui: n/a, desktop: n/a, web: done }
+  notes: "Solo web (le app native si installano dagli store e dai pacchetti). Platforms/WebAssembly/manifest.webmanifest, icone in Platforms/WebAssembly/Pwa (bianche, logo nella zona sicura maskable); service worker generato da Uno (network-first) più RadioE45Pwa.js che mette in cache uno-assets.txt. Lo stream e le API richiedono comunque la rete"
+
 - id: shell.desktop-window-size
   title: Finestra desktop fissa 500×855 (verticale) o 900×450 (orizzontale) da desktop_orientation, non ridimensionabile
   since: "0.44"
