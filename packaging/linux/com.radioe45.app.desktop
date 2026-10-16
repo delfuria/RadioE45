@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Radio E45
+GenericName=Web Radio
+Comment=AzuraCast web radio player
+Exec=radioe45
+Icon=radioe45
+Terminal=false
+Categories=AudioVideo;Audio;Player;
+Keywords=radio;webradio;azuracast;podcast;
+StartupWMClass=com.radioe45.app

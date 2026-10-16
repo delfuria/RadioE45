@@ -364,6 +364,7 @@ Ordine di porting delle pagine: OnAir → RadioList / Add / Edit → Settings �
 | Target | Comando o strumento | Note |
 |---|---|---|
 | Snap (Linux, primo canale) | `dotnet publish RadioE45.Uno -f net10.0-desktop -c Release -p:SelfContained=true -p:PackageFormat=snap` | Classic per default: lo Snap Store richiede una review per classic. Valutare `strict` con le plug `audio-playback network desktop wayland x11` e libVLC nello snap. In CI: `-p:UnoSnapcraftAdditionalParameters=--destructive-mode`. Uno non supporta ancora NativeAOT, R2R e single-file per Linux. |
+| `.deb` (S10.0, primo canale) | `packaging/linux/build-deb.sh linux-x64\|linux-arm64 <out>` (dal Mac: `build-deb-linux.sh`) | GitHub Releases; libVLC dalle dipendenze del pacchetto; verifica con `.github/workflows/linux-deb.yml`. |
 | AppImage | Publish self-contained + `appimagetool` | GitHub Releases; libVLC richiesto al sistema o incluso. |
 | Flatpak | Manifest + `metainfo.xml` | Dopo lo snap; review su Flathub. |
 | Web | `dotnet publish RadioE45.Uno -f net10.0-browserwasm -c Release -o ./publish` | Sito statico con MIME configurati e Brotli; PWA. |
@@ -704,12 +705,30 @@ Divisa con l'utente il 2026-10-16, un branch per fase come in S8.
   - **Da fare con l'utente:** installazione in Chrome/Edge (icona nella barra degli indirizzi) e avvio in finestra propria; Safari (Archivio → Aggiungi al Dock).
   - Nota: in console `ManagedError: Overflow_TimeSpanTooLong` da `ondurationchange` (durata infinita dello stream live nel player Uno), innocuo, già presente.
 
-#### S9c — Test sugli ambienti · VM + Mac
+#### S9c — Test sugli ambienti · VM + Mac — ⏸ in sospeso (2026-10-16: si passa a S10.0, da riprendere prima di S11)
 - [ ] Linux: GNOME Wayland, KDE, Xfce su X11 puro ("Ubuntu on Xorg", in sospeso da S1).
 - [ ] Browser: Chrome, Firefox (audio mai provato, §S2), Safari.
 - [ ] Correzioni emerse; regressione MAUI se toccato il Core.
 
-### S10 — Packaging, CI, hosting · Mac + VM + GitHub
+### S10 — Packaging, CI, hosting (divisa in S10.0 + S10.1)
+
+#### S10.0 — Pacchetti `.deb` per Linux su GitHub Releases · Mac + VM + GitHub — 🔧 codice 2026-10-16, branch `S9b`
+Obiettivo: installabili Linux x64 e arm64 nella pagina delle release di GitHub, accanto ad APK, DMG e installer Windows; dicitura "Linux (preview)" finché S9c e il debito di parità restano aperti. macOS e Windows continuano a usare l'app MAUI.
+- [x] `packaging/linux/` (repo): `build-deb.sh <linux-x64|linux-arm64> <output>`, `control.in`, `com.radioe45.app.desktop`, `com.radioe45.app.metainfo.xml`, icone 48…512 (dall'icona PWA). Gira su macOS (`brew install dpkg`) e su Linux.
+  - Publish self-contained in `/opt/radioe45`, link `/usr/bin/radioe45`; versione NBGV `BuildVersionSimple` (`radioe45_0.45.29_amd64.deb`).
+  - Dipendenze: `libvlc5`, `vlc-plugin-base` (Recommends `vlc`), `libfontconfig1`, `libx11-6`, `libgl1`, `libicu78 | … | libicu70`, `libssl3t64 | libssl3`, `ca-certificates`.
+  - `WM_CLASS` della finestra Uno = `com.radioe45.app` (letto con `xprop` nella VM): nome del `.desktop` e `StartupWMClass` allineati.
+- [x] `RadioE45.Uno.csproj`: per i RID `linux-*` niente libVLC Windows (`VlcWindows*Enabled=false`): il publish passava da 444 MB a circa 165 MB; `.deb` di 44 MB (amd64) e 41 MB (arm64). `DirectN.dll` (assembly di Uno per Windows, 21 MB) resta.
+- [x] Script esterno `RadioE45-Scripts/scripts/build-deb-linux.sh` (entrambe le architetture in `installer/`, `--upload <tag>` per `gh release upload` e avvio della verifica in CI), aggiunto a `0.build-all.sh`.
+- [x] Workflow `.github/workflows/linux-deb.yml` (nessuna macchina Linux x64 disponibile): runner `ubuntu-24.04` e `ubuntu-24.04-arm`; pacchetti dalla release (`release_tag`) o build dal branch (anche a ogni push su `packaging/linux/`); `apt install`, avvio sotto Xvfb con controllo della finestra e screenshot, installazione su Ubuntu 22.04, Debian 12 e 13; artefatti.
+- [x] `docs/VERSION-BUMP.md` e `docs/STORE-DISTRIBUTION.md` (sezione Linux, testo inglese per la release).
+- [x] Pacchetto arm64 estratto nella VM: l'app parte dal percorso `/opt/radioe45`.
+- [ ] **Utente, VM:** `sudo apt install /tmp/radioe45_0.45.29_arm64.deb`; voce "Radio E45" nel menu con icona, icona giusta nella dock, audio Radio E45, podcast, MPRIS; `sudo apt remove radioe45`.
+- [ ] **CI:** primo giro verde del workflow (push del branch), screenshot x64 e arm64 controllati.
+- [ ] Prima release con i `.deb` (`build-deb-linux.sh --upload <tag>`) e verifica in CI sui file della release (workflow su `main`).
+- **Uscita:** i due `.deb` nella release, installazione e avvio verificati su arm64 (VM) e x64 (CI).
+
+#### S10.1 — Snap, AppImage, CI completa, hosting web · Mac + VM + GitHub
 - [ ] Snap arm64 nella VM; snap x64 in CI.
 - [ ] AppImage x64 e arm64.
 - [ ] Workflow GitHub Actions: build, test, `ParityCheck`, publish desktop e web, artefatti.
@@ -745,7 +764,7 @@ Divisa con l'utente il 2026-10-16, un branch per fase come in S8.
 | D4 | Player desktop: Uno `MediaPlayer` o `LibVLCSharp` | Fine S1 | ✅ Uno `MediaPlayer` |
 | D5 | Storage web: SQLite WASM o repository dedicati | Fine S2 | ✅ SQLite (verificato) |
 | D6 | Navigazione: `Frame` scritto a mano o `Uno.Extensions.Navigation` | S6 | ✅ A mano (confermato 2026-10-14); tema Fluent |
-| D7 | Canali desktop: Snap Store, Flathub, AppImage | S10 | Snap + AppImage, Flathub dopo |
+| D7 | Canali desktop: Snap Store, Flathub, AppImage | S10 | ✅ Primo canale: `.deb` x64 e arm64 nelle GitHub Releases, "preview" (S10.0, 2026-10-16). Poi snap + AppImage (S10.1), Flathub dopo |
 | D8 | Hosting e dominio web | S10 | Da decidere con l'utente |
 | D9 | Layout desktop e web | S8.7 | ✅ Desktop: finestra fissa non ridimensionabile, stessa dimensione delle app MAUI desktop all'avvio (500×855 o 900×450). Web: una sola colonna larga 500, niente layout largo (2026-10-15) |
 | D9 | Hook Stop bloccante o solo avviso | S5 | ✅ Bloccante solo per exit 2; drift della superficie VM non tracciato = exit 2 |
@@ -757,6 +776,7 @@ Divisa con l'utente il 2026-10-16, un branch per fase come in S8.
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-16 | S10.0 | Codice completato (installazione nella VM e primo giro CI da fare) | S9c sospesa, S10 divisa in S10.0 (`.deb`) e S10.1. `packaging/linux/` con `build-deb.sh` (macOS e Linux), script esterno `build-deb-linux.sh` in `0.build-all.sh`, workflow `linux-deb.yml` (x64 e arm64 nativi, Xvfb, Ubuntu 22.04/Debian 12/13). libVLC Windows esclusa dai publish Linux. `.deb` 44 MB (amd64) e 41 MB (arm64), avvio dell'arm64 estratto nella VM ok, `WM_CLASS` `com.radioe45.app`. Build verde; ParityCheck = 1. Prossima: prove utente + CI, poi S10.1 o S9c |
 | 2026-10-16 | S9b | Codice completato (installazione e Safari da provare con l'utente) | Branch `S9b` da `S9a`. Manifest completo con icone proprie (`Platforms/WebAssembly/Pwa`), offline con il service worker di Uno avvolto da `radioe45-sw.js` (stream e altre origini fuori dal worker: Safari muto su Radio E45) e `RadioE45Pwa.js` (`uno-assets.txt` in cache); trovata e corretta la Release web senza dati (reflection JSON disattivata dal trimming); verificata in Chrome sulla Release (stream attraverso il worker, avvio con il server spento); build verdi; ParityCheck = 1 (solo crash report). Core e MAUI invariati. Prossima: S9c |
 | 2026-10-16 | S9a | Codice completato (prove manuali dell'utente) | Branch `S9a` da `S8.7`. S9 divisa in S9a/S9b/S9c. MPRIS su Linux (`Tmds.DBus.Protocol`) e Media Session sul web, comandi play/pausa come MAUI iOS; verificati con `playerctl` nella VM e in Chrome; autotest macOS ok; build verdi; ParityCheck = 1 (solo crash report). Core e MAUI invariati. Prossima: S9b |
 | 2026-10-16 | S8.7 | Completata (prova dell'utente da fare) | Branch `S8.7` da `S8.6.5`. Layout verificati su tutte le pagine a 500×855, 900×450 e nella colonna web: nessuna correzione. Niente nuove scorciatoie (decisione dell'utente). Icone delle tab su Uno (glifi Font Awesome, `shell.tab-icons`). Build verdi; ParityCheck = 1. Prossima: S9 |

@@ -64,6 +64,15 @@
         <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     </PropertyGroup>
 
+    <!-- Linux publish (.deb, S10.0): VideoLAN.LibVLC.Windows (through Uno MediaPlayerElement)
+         copies libVLC for win-x64, win-x86 and win-arm64 (about 280 MB) into every output.
+         Linux uses the system libVLC (package dependency), so leave them out there. -->
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-desktop' and $(RuntimeIdentifier.StartsWith('linux-'))">
+        <VlcWindowsX64Enabled>false</VlcWindowsX64Enabled>
+        <VlcWindowsX86Enabled>false</VlcWindowsX86Enabled>
+        <VlcWindowsArm64Enabled>false</VlcWindowsArm64Enabled>
+    </PropertyGroup>
+
     <!-- linux-arm64: the libSkiaSharp.so brought by Uno fails at startup with
          "undefined symbol: FT_Get_BDF_Property"; the NoDependencies build fixes it (S1). -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-desktop'">

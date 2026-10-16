@@ -190,6 +190,48 @@ Una volta caricato, vai su [appstoreconnect.apple.com](https://appstoreconnect.a
 
 ---
 
+## Linux (`.deb` su GitHub Releases, preview)
+
+App Uno (`RadioE45.Uno`, desktop Skia), due pacchetti: `radioe45_<versione>_amd64.deb` (x64) e `radioe45_<versione>_arm64.deb` (arm64, anche Raspberry Pi). Nessuno store: i file vanno nella release di GitHub.
+
+### Prerequisiti
+
+1. **.NET 10 SDK**
+2. **dpkg** sul Mac: `brew install dpkg` (fornisce `dpkg-deb`)
+3. **gh** autenticato, solo per il caricamento
+
+### Build
+
+```bash
+./build-deb-linux.sh                 # crea i due .deb in installer/ (anche dentro 0.build-all.sh)
+./build-deb-linux.sh --upload v0.45  # li crea e li carica nella release v0.45 (che deve esistere)
+```
+
+Lo script chiama `packaging/linux/build-deb.sh` del repo (publish self-contained per `linux-x64` e `linux-arm64`, pacchetto in `/opt/radioe45`, comando `radioe45`, voce di menu e icone). libVLC arriva dalla distribuzione tramite le dipendenze del pacchetto.
+
+### Verifica (GitHub Actions)
+
+Workflow **Linux .deb** (`.github/workflows/linux-deb.yml`), su runner x64 e arm64: installa il pacchetto con `apt`, avvia l'app sotto Xvfb (screenshot negli artefatti) e prova l'installazione su Ubuntu 22.04, Debian 12 e Debian 13.
+
+- Con `--upload` lo script avvia il workflow sui pacchetti della release (serve il workflow su `main`).
+- A mano: Actions → Linux .deb → Run workflow, con il tag (vuoto = build dal branch).
+- Ogni push che modifica `packaging/linux/` lo avvia sul branch.
+
+### Testo per la release (in inglese)
+
+```markdown
+### Linux (preview)
+Download `radioe45_<version>_amd64.deb` (x64) or `radioe45_<version>_arm64.deb` (ARM64, e.g. Raspberry Pi), then:
+
+    sudo apt install ./radioe45_<version>_amd64.deb
+
+Tested on Ubuntu 24.04. Requires a distribution with apt (Ubuntu 22.04+, Debian 12+, Linux Mint, …). This is a preview: please report issues on GitHub.
+```
+
+Disinstallazione: `sudo apt remove radioe45` (i dati restano in `~/.local/share/RadioE45/`).
+
+---
+
 ## Note generali
 
 - La cartella `store-packages/` è esclusa da Git tramite `.gitignore`.
