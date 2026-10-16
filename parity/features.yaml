@@ -452,7 +452,7 @@
   status: { maui: done, desktop: done, web: done }
 
 - id: podcastepisodes.filters
-  title: Filtri per stagione, episodio e stato di ascolto (stagione/episodio solo se presenti nel feed)
+  title: Filtri per stato di ascolto, stagione ed episodio, sempre visibili (stato per primo)
   since: "0.44"
   page: PodcastEpisodes
   viewmodel: PodcastEpisodesViewModel

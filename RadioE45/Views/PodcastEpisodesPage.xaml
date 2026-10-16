@@ -24,14 +24,27 @@
 
         <Grid Grid.Row="0" RowDefinitions="Auto,*">
 
-        <!-- Filtri episodi: Stagione/Episodio compaiono solo se il feed valorizza quei campi. -->
+        <!-- Filtri episodi, sempre visibili: Stato, Stagione, Episodio. -->
         <Grid
             Grid.Row="0"
             ColumnDefinitions="*,*,*"
             ColumnSpacing="8"
             Margin="16,4,16,0">
 
-            <VerticalStackLayout Grid.Column="0" Spacing="2" IsVisible="{Binding IsSeasonFilterVisible}">
+            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                <Label
+                    Text="{loc:Translate Podcast_FilterStatusLabel}"
+                    FontSize="11"
+                    TextColor="{DynamicResource MutedText}" />
+                <Picker
+                    ItemsSource="{Binding StatusOptions}"
+                    SelectedItem="{Binding SelectedStatus}"
+                    TextColor="{DynamicResource PrimaryText}"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    FontSize="13" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Column="1" Spacing="2">
                 <Label
                     Text="{loc:Translate Podcast_FilterSeasonLabel}"
                     FontSize="11"
@@ -44,7 +57,7 @@
                     FontSize="13" />
             </VerticalStackLayout>
 
-            <VerticalStackLayout Grid.Column="1" Spacing="2" IsVisible="{Binding IsEpisodeFilterVisible}">
+            <VerticalStackLayout Grid.Column="2" Spacing="2">
                 <Label
                     Text="{loc:Translate Podcast_FilterEpisodeLabel}"
                     FontSize="11"
@@ -52,19 +65,6 @@
                 <Picker
                     ItemsSource="{Binding EpisodeNumberOptions}"
                     SelectedItem="{Binding SelectedEpisodeNumber}"
-                    TextColor="{DynamicResource PrimaryText}"
-                    BackgroundColor="{DynamicResource CardElevated}"
-                    FontSize="13" />
-            </VerticalStackLayout>
-
-            <VerticalStackLayout Grid.Column="2" Spacing="2">
-                <Label
-                    Text="{loc:Translate Podcast_FilterStatusLabel}"
-                    FontSize="11"
-                    TextColor="{DynamicResource MutedText}" />
-                <Picker
-                    ItemsSource="{Binding StatusOptions}"
-                    SelectedItem="{Binding SelectedStatus}"
                     TextColor="{DynamicResource PrimaryText}"
                     BackgroundColor="{DynamicResource CardElevated}"
                     FontSize="13" />

@@ -27,7 +27,7 @@
         <!-- MAUI: Shell nav bar title -->
         <TextBlock Grid.Row="0" Text="{x:Bind ViewModel.PodcastTitle, Mode=OneWay}" Style="{StaticResource PageTitleLabel}" />
 
-        <!-- Filters: season and episode appear only when the feed fills those fields -->
+        <!-- Filters, always visible: status, season, episode -->
         <Grid Grid.Row="1" ColumnSpacing="8" Margin="16,4,16,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -48,7 +48,17 @@
                 </Style>
             </Grid.Resources>
 
-            <StackPanel Grid.Column="0" Spacing="2" Visibility="{x:Bind ViewModel.IsSeasonFilterVisible, Mode=OneWay}">
+            <StackPanel Grid.Column="0" Spacing="2">
+                <TextBlock Text="{loc:Translate Key=Podcast_FilterStatusLabel}" Style="{StaticResource FilterLabel}" />
+                <ComboBox
+                    x:Name="StatusPicker"
+                    Style="{StaticResource FilterBox}"
+                    ItemsSource="{x:Bind ViewModel.StatusOptions, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.SelectedStatus, Mode=OneWay}"
+                    SelectionChanged="OnStatusSelectionChanged" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="2">
                 <TextBlock Text="{loc:Translate Key=Podcast_FilterSeasonLabel}" Style="{StaticResource FilterLabel}" />
                 <ComboBox
                     x:Name="SeasonPicker"
@@ -58,7 +68,7 @@
                     SelectionChanged="OnSeasonSelectionChanged" />
             </StackPanel>
 
-            <StackPanel Grid.Column="1" Spacing="2" Visibility="{x:Bind ViewModel.IsEpisodeFilterVisible, Mode=OneWay}">
+            <StackPanel Grid.Column="2" Spacing="2">
                 <TextBlock Text="{loc:Translate Key=Podcast_FilterEpisodeLabel}" Style="{StaticResource FilterLabel}" />
                 <ComboBox
                     x:Name="EpisodeNumberPicker"
@@ -68,15 +78,6 @@
                     SelectionChanged="OnEpisodeNumberSelectionChanged" />
             </StackPanel>
 
-            <StackPanel Grid.Column="2" Spacing="2">
-                <TextBlock Text="{loc:Translate Key=Podcast_FilterStatusLabel}" Style="{StaticResource FilterLabel}" />
-                <ComboBox
-                    x:Name="StatusPicker"
-                    Style="{StaticResource FilterBox}"
-                    ItemsSource="{x:Bind ViewModel.StatusOptions, Mode=OneWay}"
-                    SelectedItem="{x:Bind ViewModel.SelectedStatus, Mode=OneWay}"
-                    SelectionChanged="OnStatusSelectionChanged" />
-            </StackPanel>
         </Grid>
 
         <RefreshContainer x:Name="Refresher" Grid.Row="2" Margin="0,12,0,0" RefreshRequested="OnRefreshRequested">
