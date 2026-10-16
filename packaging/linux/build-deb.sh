@@ -50,12 +50,12 @@ mkdir -p "$ROOT/DEBIAN" "$ROOT/opt" "$ROOT/usr/bin" \
 cp -R "$PUBLISH_DIR" "$ROOT/opt/radioe45"
 # Static SQLite library, only used to link native AOT builds.
 find "$ROOT/opt/radioe45" -name '*.a' -delete
-# Launcher instead of a symlink: the NoDependencies libSkiaSharp.so (needed on linux-arm64) calls
-# uuid_generate_random without linking libuuid ("symbol lookup error" at startup on a clean
-# system), so libuuid is preloaded.
+# Launcher instead of a symlink: libSkiaSharp.so on linux-arm64 calls uuid_generate_random and
+# FT_Get_BDF_Property without linking libuuid and libfreetype ("symbol lookup error" at startup
+# on a clean system), so both are preloaded.
 cat > "$ROOT/usr/bin/radioe45" <<'LAUNCHER'
 #!/bin/sh
-export LD_PRELOAD="libuuid.so.1${LD_PRELOAD:+ $LD_PRELOAD}"
+export LD_PRELOAD="libuuid.so.1 libfreetype.so.6${LD_PRELOAD:+ $LD_PRELOAD}"
 exec /opt/radioe45/RadioE45.Uno "$@"
 LAUNCHER
 

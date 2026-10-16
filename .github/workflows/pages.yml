@@ -38,6 +38,10 @@ jobs:
         with:
           global-json-file: global.json
 
+      # Native assets (SQLite) need the WebAssembly build tools (UNOWA0001).
+      - name: Install wasm-tools
+        run: dotnet workload install wasm-tools
+
       - name: Publish
         run: >
           dotnet publish RadioE45.Uno -f net10.0-browserwasm -c Release
