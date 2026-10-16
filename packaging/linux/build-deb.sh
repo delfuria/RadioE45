@@ -25,7 +25,9 @@ REPO_ROOT="$(cd "$PACKAGING_DIR/../.." && pwd)"
 PROJECT="$REPO_ROOT/RadioE45.Uno/RadioE45.Uno.csproj"
 TFM=net10.0-desktop
 
-# NBGV needs the full git history (CI: fetch-depth 0).
+# NBGV needs the full git history (CI: fetch-depth 0). Its GetBuildVersion target comes from the
+# restored package, so a clean checkout has to restore first.
+dotnet restore "$PROJECT" -nologo -v quiet
 VERSION="$(dotnet msbuild "$PROJECT" -nologo -target:GetBuildVersion \
     -getProperty:BuildVersionSimple -p:TargetFramework=$TFM | tr -d '[:space:]')"
 [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "unexpected version '$VERSION'" >&2; exit 1; }

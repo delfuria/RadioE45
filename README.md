@@ -22,6 +22,7 @@ Want to try RadioE45 before the public release? Join the preliminary tests:
 - Android 8.0+ (API 26)
 - macOS (Mac Catalyst) 15+
 - Windows 10 (build 17763+)
+- Linux (preview): Debian/Ubuntu-based distributions, `.deb` package for x64 and arm64
 
 ## Features
 - Background audio streaming with `CommunityToolkit.Maui.MediaElement`
