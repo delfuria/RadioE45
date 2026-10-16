@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
 > Branch di lavoro attuale: `S8.7` (da `S8.6.5`, non ancora unita a `main`); da S8 un branch per ogni punto. Ultimo aggiornamento: 2026-10-16 (app v0.45).
-> Stato: **S0–S8.1 completate (regressione MAUI ok); S8.2 codice completato (prove manuali dell'utente); S8.3 completata; S8.4, S8.5 e S8.6 codice completato; S8.7 completata (prova dell'utente da fare); prossima sessione: S9** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Stato: **S0–S8.1 completate (regressione MAUI ok); S8 (S8.1–S8.7) completata (conferma dell'utente 2026-10-16); prossima sessione: S9** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
