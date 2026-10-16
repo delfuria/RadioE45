@@ -1,6 +1,6 @@
 # RadioE45
 
-Cross-platform .NET MAUI 10 app for AzuraCast webradio streaming.
+Cross-platform .NET MAUI 10 and Uno Platform app for AzuraCast webradio streaming.
 
 ## Download
 
@@ -191,9 +191,55 @@ Output: `RadioE45/bin/Release/net10.0-android/publish/`
 > -p:AndroidSigningStorePass=<pass>
 > ```
 
+### Linux and Web (Uno Platform)
+
+> The Linux desktop app and the web app are built with **Uno Platform** from the `RadioE45.Uno` project, which shares the logic in `RadioE45.Core`. Build them on Linux (Ubuntu/Debian recommended) or on macOS for the desktop and web targets.  
+> `AppSecrets.cs` is not needed: the Uno projects do not use it.
+
+Requirements (Ubuntu/Debian):
+
+```bash
+# System packages (libVLC for playback, X11 and fontconfig for the desktop renderer)
+sudo apt update && sudo apt install -y git curl \
+  vlc libvlc-dev libvlc5 libx11-dev libfontconfig1 libice6 libsm6
+
+# .NET 10 SDK (or: dotnet-install.sh --channel 10.0)
+sudo apt install -y dotnet-sdk-10.0
+
+# Uno Platform checks and WebAssembly workload (web target)
+dotnet tool install -g uno.check && uno-check --target linux --non-interactive
+dotnet workload install wasm-tools
+```
+
+Packaging a `.deb` also needs `dpkg-deb` (included in `dpkg` on Linux; on macOS: `brew install dpkg`).
+
+```bash
+# Restore packages
+dotnet restore RadioE45.Uno/RadioE45.Uno.csproj
+
+# Desktop debug build and run
+dotnet build RadioE45.Uno -f net10.0-desktop
+dotnet run --project RadioE45.Uno -f net10.0-desktop
+
+# Web debug build and run (http://localhost:5045)
+dotnet build RadioE45.Uno -f net10.0-browserwasm
+dotnet run --project RadioE45.Uno -f net10.0-browserwasm
+
+# Release .deb package (x64 or arm64)
+packaging/linux/build-deb.sh linux-x64 <output-dir>
+packaging/linux/build-deb.sh linux-arm64 <output-dir>
+```
+
+Output: `<output-dir>/radioe45_<version>_<amd64|arm64>.deb`. The `.deb` is self-contained for .NET; libVLC and the other libraries come from the system and are declared as package dependencies.
+
+> The Windows libVLC binaries (pulled in by the Uno media player package) are excluded from the Linux publish, so the `.deb` stays around 40–45 MB.  
+> The Linux package is a preview; the MAUI app remains the main app on macOS and Windows.
+
 ## Tech stack
+- **Uno Platform** — Linux desktop and web app (shares `RadioE45.Core` with the MAUI app)
 - **.NET MAUI 10** — cross-platform framework
 - **CommunityToolkit.Mvvm** — MVVM with source generators
 - **CommunityToolkit.Maui.MediaElement** — audio streaming + background
 - **Refit** — typed HTTP client for the AzuraCast API
 - **sqlite-net-pcl** — local station persistence
+- **Uno Platform** — Linux desktop and web app (shares `RadioE45.Core` with the MAUI app)
