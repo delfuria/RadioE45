@@ -74,7 +74,7 @@
   since: "0.45"
   page: Shell
   status: { maui: n/a, desktop: n/a, web: done }
-  notes: "Solo web (le app native si installano dagli store e dai pacchetti). Platforms/WebAssembly/manifest.webmanifest, icone in Platforms/WebAssembly/Pwa (bianche, logo nella zona sicura maskable); service worker generato da Uno (network-first) più RadioE45Pwa.js che mette in cache uno-assets.txt. Lo stream e le API richiedono comunque la rete"
+  notes: "Solo web (le app native si installano dagli store e dai pacchetti). Platforms/WebAssembly/manifest.webmanifest, icone in Platforms/WebAssembly/Pwa (bianche, logo nella zona sicura maskable); service worker di Uno (network-first) avvolto da wwwroot/radioe45-sw.js, che lascia al browser stream e richieste verso altre origini (Safari rifiuta la fetch del worker sulla porta Icecast); RadioE45Pwa.js lo registra e mette in cache uno-assets.txt. Lo stream e le API richiedono comunque la rete"
 
 - id: shell.desktop-window-size
   title: Finestra desktop fissa 500×855 (verticale) o 900×450 (orizzontale) da desktop_orientation, non ridimensionabile
