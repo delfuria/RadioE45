@@ -28,11 +28,12 @@ public sealed class UnoAppEnvironment : IAppEnvironment
     // Desktop and web own the volume (slider, value persisted), like MAUI on Mac/Windows.
     public bool UsesSystemVolume => false;
 
-    // Browsers block play() until the user has interacted with the page (roadmap §5): no radio at
-    // launch on the web, but after a click (e.g. back from a podcast) the radio restarts as on
-    // desktop. Read at every use, the activation comes later.
+    // Browsers block play() until the user has interacted with the page, unless they allow
+    // autoplay for the site (roadmap §5): the radio starts at launch where the browser allows it
+    // (probe at launch), otherwise after a click (e.g. back from a podcast) as on desktop. Read at
+    // every use, the activation comes later.
 #if RADIOE45_BROWSER
-    public bool CanAutoplay => Browser.BrowserUserActivation.HasBeenActive();
+    public bool CanAutoplay => Browser.BrowserUserActivation.CanAutoplay();
 #else
     public bool CanAutoplay => true;
 #endif

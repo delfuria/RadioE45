@@ -42,6 +42,9 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
         _player.MediaFailed += OnMediaFailed;
         _player.MediaEnded += OnMediaEnded;
         _player.PlaybackSession.PlaybackStateChanged += OnPlaybackStateChanged;
+#if RADIOE45_BROWSER
+        Browser.BrowserUserActivation.Blocked += OnPlayBlocked;
+#endif
     }
 
     public bool HasSource => !_closed && _player.Source is not null;
@@ -49,6 +52,14 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
     public event EventHandler<StreamPlayerStateChangedEventArgs>? StateChanged;
     public event EventHandler<string?>? Failed;
     public event EventHandler? Ended;
+
+#if RADIOE45_BROWSER
+    /// <summary>
+    /// Web: the browser refused to start the audio without a user gesture (NotAllowedError).
+    /// Not a stream failure: retrying cannot succeed until the user interacts with the page.
+    /// </summary>
+    public event EventHandler? AutoplayBlocked;
+#endif
 
     public void Open(string url)
     {
@@ -91,6 +102,9 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
         _player.MediaFailed -= OnMediaFailed;
         _player.MediaEnded -= OnMediaEnded;
         _player.PlaybackSession.PlaybackStateChanged -= OnPlaybackStateChanged;
+#if RADIOE45_BROWSER
+        Browser.BrowserUserActivation.Blocked -= OnPlayBlocked;
+#endif
         _states.Dispose();
         _player.Dispose();
     }
@@ -127,11 +141,24 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
         if (_closed || _player.Source is null)
             return;
 
-        // The web reports a play() without a user gesture as NotAllowedError (§5).
         _logger.LogWarning("MediaFailed {Error}: {Message}", args.Error, args.ErrorMessage);
         _states.ReportNow(StreamPlayerState.Failed);
         Failed?.Invoke(this, args.ErrorMessage);
     }
+
+#if RADIOE45_BROWSER
+    // The probe at launch (BrowserUserActivation) can say yes where the stream is still refused:
+    // Safari lets a short silent clip play but not the stream. Only the open radio source counts
+    // (the podcast player has its own element).
+    private void OnPlayBlocked(string src)
+    {
+        if (_closed || _player.Source is not MediaSource { Uri: { } uri } || !src.StartsWith(uri.GetLeftPart(UriPartial.Path), StringComparison.Ordinal))
+            return;
+
+        _logger.LogInformation("Autoplay blocked by the browser: waiting for Play");
+        AutoplayBlocked?.Invoke(this, EventArgs.Empty);
+    }
+#endif
 
     private void OnMediaEnded(MediaPlayer sender, object args)
     {

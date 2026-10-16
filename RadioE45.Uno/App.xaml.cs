@@ -54,6 +54,11 @@ public partial class App : Application
 
         // Before anything touches the file system (SQLite): on the web this waits for IDBFS.
         await Services.GetRequiredService<UnoAppPaths>().InitializeAsync();
+#if RADIOE45_BROWSER
+        // Before On Air starts: whether the browser lets the radio start without a click.
+        await RadioE45.Services.Browser.BrowserUserActivation.ProbeAsync();
+        RadioE45.Services.Browser.BrowserUserActivation.WatchBlockedPlays();
+#endif
 
         MainWindow.Content ??= Services.GetRequiredService<ShellPage>();
 
