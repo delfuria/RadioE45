@@ -48,6 +48,7 @@
                                 Stretch="Uniform"
                                 Margin="48" />
                             <Image
+                                controls:ArtworkFallback.IsEnabled="True"
                                 Source="{x:Bind conv:Fn.Image(ViewModel.ArtworkUrl), Mode=OneWay}"
                                 Stretch="UniformToFill"
                                 HorizontalAlignment="Center"
@@ -230,6 +231,7 @@
                                         Source="ms-appx:///Assets/Images/radio_placeholder.png"
                                         Stretch="Uniform" />
                                     <Image
+                                        controls:ArtworkFallback.IsEnabled="True"
                                         Source="{x:Bind conv:Fn.Image(ViewModel.NowPlaying.Next.ArtworkUrl), Mode=OneWay}"
                                         Stretch="UniformToFill"
                                         Visibility="{x:Bind conv:Fn.IsNotNull(ViewModel.NowPlaying.Next.ArtworkUrl), Mode=OneWay}" />
@@ -459,6 +461,7 @@
                                                         Source="ms-appx:///Assets/Images/radio_placeholder.png"
                                                         Stretch="Uniform" />
                                                     <Image
+                                                        controls:ArtworkFallback.IsEnabled="True"
                                                         Source="{x:Bind conv:Fn.Image(ArtworkUrl)}"
                                                         Stretch="UniformToFill"
                                                         Visibility="{x:Bind conv:Fn.IsNotNull(ArtworkUrl)}" />

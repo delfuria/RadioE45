@@ -104,6 +104,7 @@
                                         <!-- Placeholder always underneath: it also shows when the cover fails to load (web, CORS) -->
                                         <Image Source="ms-appx:///Assets/Images/radio_placeholder.png" Stretch="Uniform" />
                                         <Image
+                                            controls:ArtworkFallback.IsEnabled="True"
                                             Source="{x:Bind conv:Fn.Image(ArtworkUrl)}"
                                             Stretch="UniformToFill"
                                             Visibility="{x:Bind conv:Fn.IsNotNull(ArtworkUrl)}" />

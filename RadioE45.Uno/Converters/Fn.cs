@@ -91,22 +91,6 @@ public static class Fn
     public static string ChevronGlyph(bool isExpanded) => isExpanded ? "\uf077" : "\uf078";
 
     /// <summary>Image from a URL; null (no image) when the URL is missing or invalid.</summary>
-    public static ImageSource? Image(string? url)
-    {
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
-        {
-            return null;
-        }
-#if RADIOE45_BROWSER
-        // The browser app downloads images with fetch(), which needs CORS headers. AzuraCast
-        // answers a song without artwork (".../art/<id>", no file extension) with a redirect to
-        // /static/img/generic_song.jpg, served without them: the image would stay blocked, so
-        // the app's own picture is shown instead.
-        if (!Path.HasExtension(uri.AbsolutePath))
-        {
-            return new BitmapImage(new Uri("ms-appx:///Assets/Images/generic_song.png"));
-        }
-#endif
-        return new BitmapImage(uri);
-    }
+    public static ImageSource? Image(string? url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri) ? new BitmapImage(uri) : null;
 }
