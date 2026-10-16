@@ -154,6 +154,8 @@ public partial class App : Application
         services.AddSingleton<IPlatformNowPlayingService, Services.Desktop.MprisNowPlayingService>();
 #elif RADIOE45_BROWSER
         services.AddSingleton<IPlatformNowPlayingService, Services.Browser.BrowserMediaSession>();
+        // Replaces the Core prober: a fetch can be refused where the audio element plays.
+        services.AddSingleton<IStreamUrlProber, Services.Browser.BrowserStreamUrlProber>();
 #endif
         services.AddSingleton<IAudioFocusManager, NullAudioFocusManager>();
 
