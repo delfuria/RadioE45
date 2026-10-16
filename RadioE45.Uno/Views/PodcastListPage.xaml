@@ -3,14 +3,125 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:loc="using:RadioE45.Services.Localization"
+    xmlns:conv="using:RadioE45.Converters"
+    xmlns:controls="using:RadioE45.Controls"
+    xmlns:models="using:RadioE45.Models"
     Background="{ThemeResource PageBackgroundBrush}">
 
-    <!-- Placeholder (S6a): the page is ported from RadioE45/Views/PodcastListPage.xaml in S8.6. -->
-    <TextBlock
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        Foreground="{ThemeResource MutedTextBrush}"
-        Style="{StaticResource SubtitleTextBlockStyle}"
-        Text="{loc:Translate Key=Tab_Podcasts}" />
+    <!-- Port of RadioE45/Views/PodcastListPage.xaml. RefreshView → RefreshContainer + F5; a card
+         is a button that opens the episodes (MAUI: TapGestureRecognizer). -->
+
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Key="F5" Invoked="OnRefreshAccelerator" />
+    </Page.KeyboardAccelerators>
+
+    <Grid KeyboardAcceleratorPlacementMode="Hidden">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" ColumnSpacing="8" Padding="8,8,16,0" MinHeight="50">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <controls:MenuButton Grid.Column="0" VerticalAlignment="Center" />
+            <TextBlock
+                Grid.Column="1"
+                Text="{loc:Translate Key=Tab_Podcasts}"
+                Foreground="{ThemeResource PrimaryTextBrush}"
+                FontSize="20"
+                FontWeight="Bold"
+                VerticalAlignment="Center" />
+        </Grid>
+
+        <RefreshContainer x:Name="Refresher" Grid.Row="1" RefreshRequested="OnRefreshRequested">
+            <ListView
+                ItemsSource="{x:Bind ViewModel.Podcasts, Mode=OneWay}"
+                SelectionMode="None"
+                IsItemClickEnabled="False">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="0" />
+                        <Setter Property="MinHeight" Value="0" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:AzuraCastPodcast">
+                        <Button
+                            Style="{StaticResource RowButton}"
+                            Margin="16,8,16,0"
+                            Command="{x:Bind SelectCommand}"
+                            CommandParameter="{x:Bind}">
+                            <Border Style="{StaticResource CardBorder}">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Width="56" Height="56" CornerRadius="8">
+                                        <Grid>
+                                            <!-- Placeholder always underneath: it also shows when the cover fails to load (web, CORS) -->
+                                            <Image Source="ms-appx:///Assets/Images/radio_placeholder.png" Stretch="Uniform" />
+                                            <Image
+                                                Source="{x:Bind conv:Fn.Image(ArtworkUrl)}"
+                                                Stretch="UniformToFill"
+                                                Visibility="{x:Bind conv:Fn.IsNotNull(ArtworkUrl)}" />
+                                        </Grid>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
+                                        <TextBlock
+                                            Text="{x:Bind Title}"
+                                            Foreground="{ThemeResource PrimaryTextBrush}"
+                                            FontSize="16"
+                                            FontWeight="Bold"
+                                            TextTrimming="CharacterEllipsis"
+                                            MaxLines="1" />
+                                        <!-- MAUI uses the raw TextSecondary color, which does not follow the light theme -->
+                                        <TextBlock
+                                            Text="{x:Bind Description}"
+                                            Foreground="{ThemeResource SecondaryTextBrush}"
+                                            FontSize="13"
+                                            TextWrapping="Wrap"
+                                            TextTrimming="CharacterEllipsis"
+                                            MaxLines="2" />
+                                        <TextBlock Foreground="{ThemeResource MutedTextBrush}" FontSize="12">
+                                            <Run Text="{x:Bind conv:Fn.Text(EpisodeCount)}" /><Run Text=" " /><Run Text="{loc:Translate Key=Podcast_Episodes}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Button>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.Footer>
+                    <Border Height="20" />
+                </ListView.Footer>
+            </ListView>
+        </RefreshContainer>
+
+        <!-- MAUI CollectionView.EmptyView; hidden while loading -->
+        <StackPanel
+            Grid.Row="1"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            Spacing="12"
+            Padding="32"
+            IsHitTestVisible="False"
+            Visibility="{x:Bind conv:Fn.IsEmptyAndIdle(ViewModel.Podcasts, ViewModel.IsBusy), Mode=OneWay}">
+            <!-- 🎙️ in MAUI: no emoji font on the web -->
+            <FontIcon
+                Glyph="&#xf130;"
+                FontFamily="{StaticResource FaSolid}"
+                FontSize="48"
+                Foreground="{ThemeResource MutedTextBrush}" />
+            <TextBlock Text="{loc:Translate Key=Podcast_Empty}" Style="{StaticResource SubtitleLabel}" TextWrapping="Wrap" />
+        </StackPanel>
+    </Grid>
 
 </Page>

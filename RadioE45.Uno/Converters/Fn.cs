@@ -1,5 +1,6 @@
 using System.Collections;
 using Microsoft.UI.Xaml.Media.Imaging;
+using RadioE45.Models;
 
 namespace RadioE45.Converters;
 
@@ -31,6 +32,18 @@ public static class Fn
     public static Visibility IsEmpty(IEnumerable? items) =>
         Visible(items?.GetEnumerator() is not { } e || !e.MoveNext());
 
+    /// <summary>Empty view of a list that is loaded asynchronously: not shown while loading.</summary>
+    public static Visibility IsEmptyAndIdle(IEnumerable? items, bool isBusy) =>
+        isBusy ? Visibility.Collapsed : IsEmpty(items);
+
+    /// <summary>Schedule: accent frame around streamer names (MAUI DataTrigger on IsStreamer).</summary>
+    public static Thickness StreamerFrame(bool isStreamer) => new(isStreamer ? 1.5 : 0);
+
+    public static Thickness StreamerPadding(bool isStreamer) => isStreamer ? new Thickness(10, 4, 10, 4) : new Thickness(0);
+
+    /// <summary>MAUI DataTrigger that sets Opacity 0.5 (e.g. a song already requested).</summary>
+    public static double DimmedIf(bool value) => value ? 0.5 : 1.0;
+
     public static double ToDouble(int value) => value;
 
     /// <summary>MAUI <c>StringFormat='{}{0} s'</c>.</summary>
@@ -40,6 +53,27 @@ public static class Fn
 
     /// <summary>MAUI <c>StringFormat='{}{0:F2}'</c>.</summary>
     public static string F2(float value) => value.ToString("F2");
+
+    /// <summary>MAUI <c>StringFormat='{0:HH:mm}'</c>.</summary>
+    public static string Time(DateTimeOffset value) => value.ToString("HH:mm");
+
+    /// <summary>MAUI <c>StringFormat='{0:dddd d MMMM}'</c> (current culture).</summary>
+    public static string DayDate(DateTimeOffset value) => value.ToString("dddd d MMMM");
+
+    /// <summary>MAUI <c>StringFormat='{0:dd MMM yyyy}'</c>.</summary>
+    public static string ShortDate(DateTimeOffset value) => value.ToString("dd MMM yyyy");
+
+    /// <summary>
+    /// Podcast episode dot (MAUI PodcastProgressStateToColorConverter): green = not started,
+    /// yellow = in progress, red = completed.
+    /// </summary>
+    public static Brush ProgressStateBrush(PodcastEpisodeProgressState state) =>
+        (Brush)Application.Current.Resources[state switch
+        {
+            PodcastEpisodeProgressState.InProgress => "AmberYellowBrush",
+            PodcastEpisodeProgressState.Completed => "LiveRedBrush",
+            _ => "HlsGreenBrush",
+        }];
 
     /// <summary>Font from its resource key in Fonts.xaml ("FaSolid", "FaBrands": StationLink.FontFamily).</summary>
     public static FontFamily Font(string key) =>

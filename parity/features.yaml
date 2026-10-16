@@ -17,8 +17,8 @@
   since: "0.44"
   page: Shell
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
-  notes: "Uno: NavigationView (§8)"
+  status: { maui: done, desktop: done, web: done }
+  notes: "Uno: NavigationView (§8); tab Richieste (S8.5) e Podcast (S8.6) legate a OnAirViewModel tramite ShellPage.OnAirViewModel"
 
 - id: shell.menu.station-header
   title: Menu laterale, intestazione con logo e nome della stazione corrente
@@ -155,8 +155,7 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: todo, web: todo }
-  notes: "Uno: arriva con il palinsesto (S8.4)"
+  status: { maui: done, desktop: done, web: done }
 
 - id: onair.playback-controls
   title: Play/pausa (pausa live = chiusura stream, ripresa in diretta) e indicatore di buffering
@@ -396,15 +395,15 @@
   since: "0.44"
   page: Schedule
   viewmodel: ScheduleViewModel
-  status: { maui: done, desktop: todo, web: todo }
-  notes: "Uno: ContentDialog (§8)"
+  status: { maui: done, desktop: done, web: done }
+  notes: "Uno: ScheduleDialog in un pannello della shell che sale dal basso (S8.4); chiusura con ✕, clic fuori, Esc o trascinamento verso il basso della maniglia"
 
 - id: schedule.live-badge
   title: Palinsesto distingue live (streamer) da playlist, badge LIVE / In orario / In onda
   since: "0.44"
   page: Schedule
   viewmodel: ScheduleViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 # --- Song requests ---------------------------------------------------------------------------
 
@@ -413,28 +412,28 @@
   since: "0.44"
   page: SongRequest
   viewmodel: SongRequestViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: songrequest.list
   title: Elenco brani con copertina, titolo, artista e stato della richiesta
   since: "0.44"
   page: SongRequest
   viewmodel: SongRequestViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: songrequest.submit
   title: Invio della richiesta con messaggi d'errore dedicati (troppo recente, già in coda, non richiedibile…)
   since: "0.44"
   page: SongRequest
   viewmodel: SongRequestViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: songrequest.pagination
   title: Paginazione (pagina precedente/successiva, numero di pagina)
   since: "0.44"
   page: SongRequest
   viewmodel: SongRequestViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 # --- Podcasts --------------------------------------------------------------------------------
 
@@ -443,28 +442,28 @@
   since: "0.44"
   page: PodcastList
   viewmodel: PodcastListViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: podcastepisodes.list
   title: Elenco episodi con data, stagione/episodio, durata e stato di ascolto
   since: "0.44"
   page: PodcastEpisodes
   viewmodel: PodcastEpisodesViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: podcastepisodes.filters
   title: Filtri per stagione, episodio e stato di ascolto (stagione/episodio solo se presenti nel feed)
   since: "0.44"
   page: PodcastEpisodes
   viewmodel: PodcastEpisodesViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
 
 - id: podcastepisodes.player
   title: Mini player dell'episodio con play/pausa, seek e tempi
   since: "0.44"
   page: PodcastEpisodes
   viewmodel: PodcastEpisodesViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }
   notes: "Uno: UnoPodcastPlayerService (S7b). Il ViewModel non deve dipendere dal ciclo di vita della pagina: lo stato del mini player segue il servizio (EpisodeStopped, ProgressSaved, fix 2026-10-15); la pagina chiama Activate() quando appare (MAUI OnAppearing, Uno OnNavigatedTo)"
 
 - id: podcastepisodes.resume
@@ -472,4 +471,4 @@
   since: "0.44"
   page: PodcastEpisodes
   viewmodel: PodcastEpisodesViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: done, web: done }

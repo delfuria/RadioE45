@@ -132,8 +132,9 @@ public static class PlatformSelfTest
 
         await navigation.GoToOnAirAsync();
         await navigation.GoBackAsync();
-        await navigation.ShowScheduleAsync(); // not ported yet: must only log a warning
-        Report("navigation", true, "GoToOnAir, GoBack, ShowSchedule (not ported) without exceptions");
+        await navigation.ShowScheduleAsync();
+        services.GetRequiredService<UnoNavigationService>().CloseSchedule();
+        Report("navigation", true, "GoToOnAir, GoBack, ShowSchedule + close without exceptions");
 
         // S7a: paths, database, station catalog, network monitor and live audio.
         var paths = services.GetRequiredService<IAppPaths>();

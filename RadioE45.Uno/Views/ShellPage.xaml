@@ -12,7 +12,8 @@
          (MAUI: Shell routes pushed on the On Air tab). The side menu (MAUI: Shell.FlyoutContent)
          is a pane that slides in over the pages, opened by the ☰ button of the pages
          (Controls/MenuButton) and closed by a click outside or Esc. Not a SplitView: on Uno its
-         pane shows fully open for a frame before the opening animation. -->
+         pane shows fully open for a frame before the opening animation. The schedule
+         (MAUI: SchedulePopup) is a sheet that slides up from the bottom in the same way. -->
     <Grid x:Name="MenuHost" KeyboardAcceleratorPlacementMode="Hidden">
         <Grid.KeyboardAccelerators>
             <KeyboardAccelerator Key="Escape" Invoked="OnEscapeInvoked" />
@@ -28,8 +29,16 @@
 
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Name="TabOnAir" Content="{loc:Translate Key=Tab_OnAir}" Tag="OnAir" />
-                <NavigationViewItem x:Name="TabRequest" Content="{loc:Translate Key=Tab_Request}" Tag="Request" />
-                <NavigationViewItem x:Name="TabPodcasts" Content="{loc:Translate Key=Tab_Podcasts}" Tag="Podcasts" />
+                <NavigationViewItem
+                    x:Name="TabRequest"
+                    Content="{loc:Translate Key=Tab_Request}"
+                    Tag="Request"
+                    Visibility="{x:Bind OnAirViewModel.NowPlaying.RequestsEnabled, Mode=OneWay}" />
+                <NavigationViewItem
+                    x:Name="TabPodcasts"
+                    Content="{loc:Translate Key=Tab_Podcasts}"
+                    Tag="Podcasts"
+                    Visibility="{x:Bind OnAirViewModel.HasPodcasts, Mode=OneWay}" />
             </NavigationView.MenuItems>
 
             <Frame x:Name="ContentFrame" Navigated="OnFrameNavigated" />
@@ -217,6 +226,26 @@
 
                 </StackPanel>
             </ScrollViewer>
+        </Border>
+
+        <!-- Bottom sheet (MAUI: toolkit Popup at the bottom, e.g. the schedule), same light
+             dismiss and animation approach as the side menu, sliding up -->
+        <Rectangle
+            x:Name="SheetDismissLayer"
+            Fill="#80000000"
+            Opacity="0"
+            Visibility="Collapsed"
+            Tapped="OnSheetDismissLayerTapped" />
+
+        <Border
+            x:Name="SheetPane"
+            VerticalAlignment="Bottom"
+            CornerRadius="20,20,0,0"
+            Background="{ThemeResource PageBackgroundBrush}"
+            Visibility="Collapsed">
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="SheetPaneTransform" />
+            </Border.RenderTransform>
         </Border>
     </Grid>
 

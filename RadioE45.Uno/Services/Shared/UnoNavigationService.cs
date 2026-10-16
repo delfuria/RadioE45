@@ -7,10 +7,8 @@ namespace RadioE45.Services.Shared;
 /// <see cref="INavigationService"/> on the Uno shell: a NavigationView whose tabs (On Air,
 /// requests, podcasts) drive a Frame (docs/LINUX-UNO-ROADMAP.md §8, D6: hand-written, no
 /// Uno.Extensions.Navigation). Same for desktop and web.
-/// Pages not ported yet (S8.x) are logged and ignored, so the shared ViewModels can already
-/// call every intent.
 /// </summary>
-public sealed class UnoNavigationService(ILogger<UnoNavigationService> logger) : INavigationService
+public sealed class UnoNavigationService : INavigationService
 {
     private ShellPage? _shell;
 
@@ -41,8 +39,12 @@ public sealed class UnoNavigationService(ILogger<UnoNavigationService> logger) :
         return Task.CompletedTask;
     }
 
-    public Task GoToPodcastEpisodesAsync(string podcastId, string podcastTitle) =>
-        NotPorted(nameof(GoToPodcastEpisodesAsync));
+    // Stacked above the Podcast tab (MAUI: "PodcastEpisodesPage?podcastId=…&podcastTitle=…").
+    public Task GoToPodcastEpisodesAsync(string podcastId, string podcastTitle)
+    {
+        _shell?.Push(typeof(PodcastEpisodesPage), new PodcastEpisodesParameter(podcastId, podcastTitle));
+        return Task.CompletedTask;
+    }
 
     // Like MAUI, menu pages are always stacked above the On Air tab.
     public Task OpenFromMenuAsync(MenuPage page)
@@ -62,16 +64,20 @@ public sealed class UnoNavigationService(ILogger<UnoNavigationService> logger) :
 
     public void CloseMenu() => _shell?.CloseMenu();
 
+    // Nothing to do: the tabs share one Frame and a tab change clears its history, so the
+    // episodes of the previous station are never kept above the Podcast tab (in MAUI each tab
+    // keeps its own stack, which is emptied here when the station changes).
     public void ResetPodcastTabToRoot()
     {
-        // PodcastEpisodesPage is ported in S8.6; until then the Podcast tab has no stack.
     }
 
-    public Task ShowScheduleAsync() => NotPorted(nameof(ShowScheduleAsync));
-
-    private Task NotPorted(string intent)
+    // MAUI: SchedulePopup through IPopupService; here a sheet of the shell. Like the MAUI popup
+    // service, it returns once the sheet is shown.
+    public Task ShowScheduleAsync()
     {
-        logger.LogWarning("Navigation {Intent} not available yet in the Uno app (page not ported)", intent);
+        _shell?.ShowSheet(new ScheduleDialog());
         return Task.CompletedTask;
     }
+
+    public void CloseSchedule() => _shell?.CloseSheet();
 }

@@ -210,11 +210,20 @@
                         Visibility="{x:Bind conv:Fn.IsNotNull(ViewModel.NowPlaying.Next), Mode=OneWay}">
                         <Grid ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="52" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <Border Grid.Column="0" Height="52" Width="52" CornerRadius="10">
+                            <!-- Schedule (only when the station has one) -->
+                            <Button
+                                Grid.Column="0"
+                                Style="{StaticResource ScheduleButton}"
+                                AutomationProperties.Name="{loc:Translate Key=Tab_Schedule}"
+                                Visibility="{x:Bind ViewModel.HasSchedule, Mode=OneWay}"
+                                Command="{x:Bind ViewModel.ShowScheduleCommand}" />
+
+                            <Border Grid.Column="1" Height="52" Width="52" CornerRadius="10">
                                 <Grid>
                                     <!-- Placeholder underneath, as for the cover -->
                                     <Image
@@ -227,7 +236,7 @@
                                 </Grid>
                             </Border>
 
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="4">
                                 <TextBlock
                                     Text="{x:Bind ViewModel.NowPlaying.Next.Title, Mode=OneWay}"
                                     Style="{StaticResource SubtitleLabel}"
@@ -242,6 +251,46 @@
 
                         </Grid>
                     </Border>
+
+                    <!-- Schedule without a next track: compact row with the icon only -->
+                    <Button
+                        Margin="24,12,24,0"
+                        Padding="8"
+                        CornerRadius="16"
+                        BorderBrush="{ThemeResource CardElevatedBrush}"
+                        BorderThickness="1"
+                        Background="{ThemeResource CardBackgroundBrush}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        Visibility="{x:Bind ViewModel.ShowScheduleOnlyRow, Mode=OneWay}"
+                        Command="{x:Bind ViewModel.ShowScheduleCommand}">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <!-- Not a nested button: the whole row is the button (MAUI: TapGestureRecognizer + Button) -->
+                            <Border
+                                Grid.Column="0"
+                                Width="52"
+                                Height="52"
+                                CornerRadius="26"
+                                Background="{ThemeResource CardElevatedBrush}">
+                                <FontIcon
+                                    Glyph="&#xf073;"
+                                    FontFamily="{StaticResource FaSolid}"
+                                    FontSize="24"
+                                    Foreground="{StaticResource AccentBrush}" />
+                            </Border>
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="{loc:Translate Key=Tab_Schedule}"
+                                Style="{StaticResource SubtitleLabel}"
+                                FontSize="16"
+                                TextAlignment="Left"
+                                VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
 
                     <!-- Buffering -->
                     <ProgressRing

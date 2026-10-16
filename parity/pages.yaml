@@ -63,7 +63,9 @@
   maui: RadioE45/Views/SongRequestPage.xaml
   uno: RadioE45.Uno/Views/SongRequestPage.xaml
   viewmodels: [SongRequestViewModel]
-  ignore: []
+  ignore:
+    - name: Tab_Request
+      reason: "MAUI page title; on Uno the tab label lives in ShellPage and the page has no title bar"
 
 - page: PodcastList
   maui: RadioE45/Views/PodcastListPage.xaml

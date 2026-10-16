@@ -98,6 +98,21 @@ public sealed class ParityCheckerTests : IDisposable
     }
 
     [Fact]
+    public void Xbind_through_a_second_named_viewmodel_counts_as_binding()
+    {
+        WriteFeatures(desktop: "done");
+        WriteUnoPage("""
+            <Page>
+              <TextBlock Text="{x:Bind OnAirViewModel.NowPlaying.Title, Mode=OneWay}" />
+              <TextBlock Text="{loc:Translate Key=Tab_OnAir}" />
+              <Button Command="{x:Bind ViewModel.PlayPauseCommand}" Visibility="{x:Bind conv:Fn.Not(OnAirViewModel.IsBusy)}" />
+            </Page>
+            """);
+
+        Assert.Empty(Run());
+    }
+
+    [Fact]
     public void Missing_binding_without_declared_debt_is_an_error()
     {
         WriteFeatures(desktop: "done");

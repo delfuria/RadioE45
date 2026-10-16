@@ -111,8 +111,12 @@ public static partial class XamlScanner
         return parts;
     }
 
+    // ViewModel.X, or OnAirViewModel.X on pages that bind a second ViewModel (the shell).
     private static string StripViewModelPrefix(string path) =>
-        path.StartsWith("ViewModel.", StringComparison.Ordinal) ? path["ViewModel.".Length..] : path;
+        ViewModelPrefixRegex().Match(path) is { Success: true } prefix ? path[prefix.Length..] : path;
+
+    [GeneratedRegex(@"^(?:[A-Z]\w*)?ViewModel\.")]
+    private static partial Regex ViewModelPrefixRegex();
 
     [GeneratedRegex(@"\{Binding\b([^{}]*(?:\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}[^{}]*)*)\}")]
     private static partial Regex BindingRegex();

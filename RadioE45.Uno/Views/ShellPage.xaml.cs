@@ -24,14 +24,18 @@ public sealed partial class ShellPage : Page
     private bool _startupCheckDone;
     private Storyboard? _menuStoryboard;
     private bool _menuOpening;
+    private Storyboard? _sheetStoryboard;
+    private ScheduleDialog? _sheet;
 
     public ShellPage(
         UnoNavigationService navigation,
         IRadioRepository radioRepository,
         ITermsService termsService,
-        AppMenuViewModel menuViewModel)
+        AppMenuViewModel menuViewModel,
+        OnAirViewModel onAirViewModel)
     {
         ViewModel = menuViewModel;
+        OnAirViewModel = onAirViewModel;
         InitializeComponent();
         _radioRepository = radioRepository;
         _termsService = termsService;
@@ -45,6 +49,8 @@ public sealed partial class ShellPage : Page
             MenuHost.HorizontalAlignment = HorizontalAlignment.Stretch;
         }
         MenuHost.SizeChanged += OnMenuHostSizeChanged;
+        TabRequest.RegisterPropertyChangedCallback(VisibilityProperty, OnTabVisibilityChanged);
+        TabPodcasts.RegisterPropertyChangedCallback(VisibilityProperty, OnTabVisibilityChanged);
 #if DEBUG
         NavView.FooterMenuItems.Add(new NavigationViewItem { Content = "Debug", Tag = nameof(ShellTab.Debug) });
 #endif
@@ -54,6 +60,16 @@ public sealed partial class ShellPage : Page
 
     /// <summary>Side menu content (MAUI: Shell.FlyoutContent bound to AppMenuViewModel).</summary>
     public AppMenuViewModel ViewModel { get; }
+
+    /// <summary>Visibility of the station tabs (MAUI: AppShell.BindingContext).</summary>
+    public OnAirViewModel OnAirViewModel { get; }
+
+    // A station without requests (or podcasts) hides its tab: if it was the current one, go to On Air.
+    private void OnTabVisibilityChanged(DependencyObject sender, DependencyProperty property)
+    {
+        if (sender is NavigationViewItem { Visibility: Visibility.Collapsed } tab && NavView.SelectedItem == tab)
+            SelectTab(ShellTab.OnAir, clearHistory: true);
+    }
 
     // Same startup check as AppShell.OnNavigated: terms of use on the first launch, then without
     // stations the app opens Channels, whose ViewModel offers the default stations.
@@ -137,10 +153,86 @@ public sealed partial class ShellPage : Page
 
     private void OnEscapeInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
-        if (MenuPane.Visibility != Visibility.Visible)
+        if (_sheet is not null)
+            CloseSheet();
+        else if (MenuPane.Visibility == Visibility.Visible)
+            CloseMenu();
+        else
             return;
-        CloseMenu();
         args.Handled = true;
+    }
+
+    /// <summary>
+    /// Shows the schedule as a sheet sliding up from the bottom (MAUI: SchedulePopup at the
+    /// bottom of the window, at most ~70% of its height; above that the list scrolls).
+    /// </summary>
+    public void ShowSheet(ScheduleDialog sheet)
+    {
+        if (_sheet is not null)
+            return;
+        _sheet = sheet;
+        sheet.CloseRequested += OnSheetCloseRequested;
+
+        _sheetStoryboard?.Stop();
+        _sheetStoryboard = null;
+        double hostHeight = MenuHost.ActualHeight;
+        SheetPane.MaxHeight = hostHeight * 0.7;
+        SheetPane.Child = sheet;
+        // Below the shell before it becomes visible, so the first frame never shows it open.
+        SheetPaneTransform.Y = hostHeight;
+        SheetDismissLayer.Opacity = 0;
+        SheetPane.Visibility = Visibility.Visible;
+        SheetDismissLayer.Visibility = Visibility.Visible;
+        AnimateSheet(open: true);
+        sheet.Load();
+    }
+
+    public void CloseSheet()
+    {
+        if (_sheet is not { } sheet)
+            return;
+        sheet.CloseRequested -= OnSheetCloseRequested;
+        _sheet = null;
+        AnimateSheet(open: false);
+    }
+
+    private void OnSheetCloseRequested(object? sender, EventArgs e) => CloseSheet();
+
+    private void OnSheetDismissLayerTapped(object sender, TappedRoutedEventArgs e) => CloseSheet();
+
+    private void AnimateSheet(bool open)
+    {
+        // As for the menu: keep the animated values when an animation is interrupted.
+        if (_sheetStoryboard is not null)
+        {
+            double y = SheetPaneTransform.Y, opacity = SheetDismissLayer.Opacity;
+            _sheetStoryboard.Stop();
+            SheetPaneTransform.Y = y;
+            SheetDismissLayer.Opacity = opacity;
+        }
+
+        var duration = new Duration(TimeSpan.FromMilliseconds(open ? 250 : 200));
+        var easing = new CubicEase { EasingMode = open ? EasingMode.EaseOut : EasingMode.EaseIn };
+        var slide = new DoubleAnimation { To = open ? 0 : MenuHost.ActualHeight, Duration = duration, EasingFunction = easing };
+        var fade = new DoubleAnimation { To = open ? 1 : 0, Duration = duration };
+        Storyboard.SetTarget(slide, SheetPaneTransform);
+        Storyboard.SetTargetProperty(slide, "Y");
+        Storyboard.SetTarget(fade, SheetDismissLayer);
+        Storyboard.SetTargetProperty(fade, "Opacity");
+
+        var storyboard = new Storyboard { Children = { slide, fade } };
+        if (!open)
+        {
+            storyboard.Completed += (_, _) =>
+            {
+                if (_sheet is not null) return; // another sheet opened while closing
+                SheetPane.Visibility = Visibility.Collapsed;
+                SheetDismissLayer.Visibility = Visibility.Collapsed;
+                SheetPane.Child = null;
+            };
+        }
+        _sheetStoryboard = storyboard;
+        storyboard.Begin();
     }
 
     public void GoBack()
