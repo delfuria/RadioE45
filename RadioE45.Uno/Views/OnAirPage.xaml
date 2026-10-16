@@ -3,14 +3,493 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:loc="using:RadioE45.Services.Localization"
-    Background="{ThemeResource PageBackgroundBrush}">
+    xmlns:conv="using:RadioE45.Converters"
+    xmlns:controls="using:RadioE45.Controls"
+    xmlns:models="using:RadioE45.Models"
+    Background="{ThemeResource PageBackgroundBrush}"
+    KeyboardAcceleratorPlacementMode="Hidden">
 
-    <!-- Placeholder (S6a): the page is ported from RadioE45/Views/OnAirPage.xaml in S8.1. -->
-    <TextBlock
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        Foreground="{ThemeResource MutedTextBrush}"
-        Style="{StaticResource SubtitleTextBlockStyle}"
-        Text="{loc:Translate Key=Tab_OnAir}" />
+    <!-- Port of RadioE45/Views/OnAirPage.xaml. Not ported yet: the schedule entry (S8.4). Phone-only mute button: n/a (desktop and web have the slider).
+         Icons are Font Awesome glyphs instead of the MAUI emoji/symbols (▶ ⏸ ⏮ ⏭ 🔊 🔇 👥 ▲ ▼):
+         the Skia renderer on the web has no font for them. -->
+
+    <Page.KeyboardAccelerators>
+        <!-- Desktop counterpart of pull to refresh (no touch drag with a mouse). -->
+        <KeyboardAccelerator Key="F5" Invoked="OnRefreshAccelerator" />
+    </Page.KeyboardAccelerators>
+
+    <RefreshContainer x:Name="Refresher" RefreshRequested="OnRefreshRequested">
+        <ScrollViewer>
+            <Grid x:Name="MainGrid">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- LEFT: artwork · badge · title · artist · progress -->
+                <StackPanel x:Name="LeftPanel" Grid.Row="0" Grid.Column="0" Padding="0,0,0,8">
+
+                    <!-- Artwork -->
+                    <Border
+                        Margin="24,16,24,0"
+                        Height="{x:Bind ViewModel.ArtworkHeight, Mode=OneWay}"
+                        CornerRadius="20"
+                        BorderBrush="{ThemeResource CardElevatedBrush}"
+                        BorderThickness="1"
+                        Background="{ThemeResource CardBackgroundBrush}">
+                        <Grid>
+                            <!-- Placeholder always underneath: it also shows when the image fails to load (web: AzuraCast's
+                                 generic art /static/img/generic_song.jpg has no CORS header) -->
+                            <Image
+                                Source="ms-appx:///Assets/Images/radio_placeholder.png"
+                                Stretch="Uniform"
+                                Margin="48" />
+                            <Image
+                                Source="{x:Bind conv:Fn.Image(ViewModel.ArtworkUrl), Mode=OneWay}"
+                                Stretch="UniformToFill"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Visibility="{x:Bind conv:Fn.IsNotNull(ViewModel.ArtworkUrl), Mode=OneWay}" />
+
+                            <!-- Opens the side menu. On the cover over a translucent dark background: icon
+                                 always white, whatever the theme -->
+                            <controls:MenuButton
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                Margin="8"
+                                Background="#66000000"
+                                Foreground="White" />
+
+                            <!-- LIVE overlay, like TV shows: always white on red, whatever the theme -->
+                            <Border
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Margin="12"
+                                Background="{StaticResource LiveRedBrush}"
+                                CornerRadius="6"
+                                Padding="10,4"
+                                Visibility="{x:Bind ViewModel.NowPlaying.IsLive, Mode=OneWay}">
+                                <TextBlock
+                                    Text="• LIVE"
+                                    Style="{StaticResource LiveBadgeLabel}"
+                                    Foreground="White" />
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Station badge -->
+                    <Grid Margin="24,14,24,0">
+
+                        <Border
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="{StaticResource AccentBrush}"
+                            CornerRadius="12"
+                            Padding="8,2">
+                            <TextBlock
+                                Text="{x:Bind ViewModel.CurrentStation.Name, Mode=OneWay}"
+                                Foreground="{ThemeResource PrimaryTextBrush}"
+                                FontSize="11"
+                                FontWeight="Bold" />
+                        </Border>
+
+                        <StackPanel
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Spacing="10">
+
+                            <!-- Favorite -->
+                            <Button
+                                Style="{StaticResource IconButton}"
+                                Height="36"
+                                Width="36"
+                                Padding="4"
+                                Command="{x:Bind ViewModel.ToggleFavoriteCommand}">
+                                <Grid>
+                                    <Image
+                                        Source="ms-appx:///Assets/Images/heart_filled.png"
+                                        Visibility="{x:Bind ViewModel.IsFavorite, Mode=OneWay}" />
+                                    <Image
+                                        Source="ms-appx:///Assets/Images/heart_outline.png"
+                                        Visibility="{x:Bind conv:Fn.Collapsed(ViewModel.IsFavorite), Mode=OneWay}" />
+                                </Grid>
+                            </Button>
+
+                            <!-- Listeners -->
+                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                <FontIcon
+                                    Glyph="&#xf0c0;"
+                                    FontFamily="{StaticResource FaSolid}"
+                                    FontSize="11"
+                                    Foreground="{ThemeResource MutedTextBrush}" />
+                                <TextBlock
+                                    Text="{x:Bind conv:Fn.Text(ViewModel.NowPlaying.ListenerCount), Mode=OneWay}"
+                                    Style="{StaticResource CaptionLabel}"
+                                    VerticalAlignment="Center" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Spacing="8">
+
+                            <Border
+                                Background="{StaticResource HlsGreenBrush}"
+                                CornerRadius="12"
+                                Padding="8,2"
+                                VerticalAlignment="Center"
+                                Visibility="{x:Bind ViewModel.IsHlsActive, Mode=OneWay}">
+                                <TextBlock
+                                    Text="HLS"
+                                    Foreground="{ThemeResource PrimaryTextBrush}"
+                                    FontSize="11"
+                                    FontWeight="Bold" />
+                            </Border>
+
+                            <controls:VuMeterView
+                                Width="32"
+                                Height="28"
+                                IsActive="{x:Bind ViewModel.IsPlaying, Mode=OneWay}" />
+
+                        </StackPanel>
+
+                    </Grid>
+
+                    <!-- Track title -->
+                    <TextBlock
+                        Text="{x:Bind ViewModel.NowPlaying.Title, Mode=OneWay}"
+                        Style="{StaticResource HeadlineLabel}"
+                        Margin="24,12,24,0"
+                        TextTrimming="CharacterEllipsis"
+                        MaxLines="2" />
+
+                    <!-- Artist -->
+                    <TextBlock
+                        Text="{x:Bind ViewModel.NowPlaying.Artist, Mode=OneWay}"
+                        Style="{StaticResource SubtitleLabel}"
+                        FontSize="15"
+                        Margin="24,4,24,0"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <!-- Track progress -->
+                    <ProgressBar
+                        Value="{x:Bind ViewModel.TrackProgress, Mode=OneWay}"
+                        Maximum="1"
+                        Foreground="{StaticResource AccentBrush}"
+                        Margin="24,12,24,0" />
+                    <Grid Margin="24,4,24,0">
+                        <TextBlock
+                            Text="{x:Bind ViewModel.ElapsedTimeText, Mode=OneWay}"
+                            Style="{StaticResource CaptionLabel}"
+                            HorizontalAlignment="Left" />
+                        <TextBlock
+                            Text="{x:Bind ViewModel.TotalTimeText, Mode=OneWay}"
+                            Style="{StaticResource CaptionLabel}"
+                            HorizontalAlignment="Right" />
+                    </Grid>
+
+                </StackPanel>
+
+                <!-- RIGHT: next track · controls · error · history -->
+                <StackPanel x:Name="RightPanel" Grid.Row="1" Grid.Column="0" Padding="0,0,0,20">
+
+                    <!-- Next track -->
+                    <Border
+                        Margin="24,12,24,0"
+                        Padding="8"
+                        CornerRadius="16"
+                        BorderBrush="{ThemeResource CardElevatedBrush}"
+                        BorderThickness="1"
+                        Background="{ThemeResource CardBackgroundBrush}"
+                        Visibility="{x:Bind conv:Fn.IsNotNull(ViewModel.NowPlaying.Next), Mode=OneWay}">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="52" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Schedule (only when the station has one) -->
+                            <Button
+                                Grid.Column="0"
+                                Style="{StaticResource ScheduleButton}"
+                                AutomationProperties.Name="{loc:Translate Key=Tab_Schedule}"
+                                Visibility="{x:Bind ViewModel.HasSchedule, Mode=OneWay}"
+                                Command="{x:Bind ViewModel.ShowScheduleCommand}" />
+
+                            <Border Grid.Column="1" Height="52" Width="52" CornerRadius="10">
+                                <Grid>
+                                    <!-- Placeholder underneath, as for the cover -->
+                                    <Image
+                                        Source="ms-appx:///Assets/Images/radio_placeholder.png"
+                                        Stretch="Uniform" />
+                                    <Image
+                                        Source="{x:Bind conv:Fn.Image(ViewModel.NowPlaying.Next.ArtworkUrl), Mode=OneWay}"
+                                        Stretch="UniformToFill"
+                                        Visibility="{x:Bind conv:Fn.IsNotNull(ViewModel.NowPlaying.Next.ArtworkUrl), Mode=OneWay}" />
+                                </Grid>
+                            </Border>
+
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="4">
+                                <TextBlock
+                                    Text="{x:Bind ViewModel.NowPlaying.Next.Title, Mode=OneWay}"
+                                    Style="{StaticResource SubtitleLabel}"
+                                    TextTrimming="CharacterEllipsis"
+                                    MaxLines="1" />
+                                <TextBlock
+                                    Text="{x:Bind ViewModel.NowPlaying.Next.Artist, Mode=OneWay}"
+                                    Style="{StaticResource CaptionLabel}"
+                                    FontSize="15"
+                                    TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+
+                        </Grid>
+                    </Border>
+
+                    <!-- Schedule without a next track: compact row with the icon only -->
+                    <Button
+                        Margin="24,12,24,0"
+                        Padding="8"
+                        CornerRadius="16"
+                        BorderBrush="{ThemeResource CardElevatedBrush}"
+                        BorderThickness="1"
+                        Background="{ThemeResource CardBackgroundBrush}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        Visibility="{x:Bind ViewModel.ShowScheduleOnlyRow, Mode=OneWay}"
+                        Command="{x:Bind ViewModel.ShowScheduleCommand}">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <!-- Not a nested button: the whole row is the button (MAUI: TapGestureRecognizer + Button) -->
+                            <Border
+                                Grid.Column="0"
+                                Width="52"
+                                Height="52"
+                                CornerRadius="26"
+                                Background="{ThemeResource CardElevatedBrush}">
+                                <FontIcon
+                                    Glyph="&#xf073;"
+                                    FontFamily="{StaticResource FaSolid}"
+                                    FontSize="24"
+                                    Foreground="{StaticResource AccentBrush}" />
+                            </Border>
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="{loc:Translate Key=Tab_Schedule}"
+                                Style="{StaticResource SubtitleLabel}"
+                                FontSize="16"
+                                TextAlignment="Left"
+                                VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+
+                    <!-- Buffering -->
+                    <ProgressRing
+                        IsActive="{x:Bind ViewModel.IsBuffering, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.IsBuffering, Mode=OneWay}"
+                        HorizontalAlignment="Center"
+                        Margin="0,10,0,0"
+                        Height="32"
+                        Width="32" />
+
+                    <!-- Playback: previous station · play/pause · next station -->
+                    <StackPanel
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Spacing="14"
+                        Margin="0,16,0,0">
+
+                        <!-- Previous station: button + name (max 2 lines). The top margin centers the
+                             button (44) on the play button (68) -->
+                        <StackPanel
+                            Width="76"
+                            Spacing="4"
+                            VerticalAlignment="Top"
+                            Margin="0,12,0,0"
+                            Visibility="{x:Bind ViewModel.HasMultipleStations, Mode=OneWay}">
+                            <Button
+                                Content="&#xf048;"
+                                Style="{StaticResource RoundCardButton}"
+                                HorizontalAlignment="Center"
+                                Command="{x:Bind ViewModel.PreviousStationCommand}" />
+                            <TextBlock
+                                Text="{x:Bind ViewModel.PreviousStationName, Mode=OneWay}"
+                                Style="{StaticResource CaptionLabel}"
+                                Foreground="{ThemeResource SecondaryTextBrush}"
+                                FontSize="11"
+                                TextWrapping="Wrap"
+                                TextTrimming="CharacterEllipsis"
+                                MaxLines="2" />
+                        </StackPanel>
+
+                        <Button
+                            Content="{x:Bind conv:Fn.PlayPauseGlyph(ViewModel.IsPlaying), Mode=OneWay}"
+                            Style="{StaticResource PlayButton}"
+                            VerticalAlignment="Top"
+                            Command="{x:Bind ViewModel.PlayPauseCommand}"
+                            IsEnabled="{x:Bind conv:Fn.Not(ViewModel.IsBuffering), Mode=OneWay}" />
+
+                        <!-- Next station -->
+                        <StackPanel
+                            Width="76"
+                            Spacing="4"
+                            VerticalAlignment="Top"
+                            Margin="0,12,0,0"
+                            Visibility="{x:Bind ViewModel.HasMultipleStations, Mode=OneWay}">
+                            <Button
+                                Content="&#xf051;"
+                                Style="{StaticResource RoundCardButton}"
+                                HorizontalAlignment="Center"
+                                Command="{x:Bind ViewModel.NextStationCommand}" />
+                            <TextBlock
+                                Text="{x:Bind ViewModel.NextStationName, Mode=OneWay}"
+                                Style="{StaticResource CaptionLabel}"
+                                Foreground="{ThemeResource SecondaryTextBrush}"
+                                FontSize="11"
+                                TextWrapping="Wrap"
+                                TextTrimming="CharacterEllipsis"
+                                MaxLines="2" />
+                        </StackPanel>
+
+                    </StackPanel>
+
+                    <!-- Volume (desktop and web: the app owns the volume) -->
+                    <Grid Margin="24,18,24,0" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            Grid.Column="0"
+                            Content="{x:Bind conv:Fn.MuteGlyph(ViewModel.IsMuted), Mode=OneWay}"
+                            Command="{x:Bind ViewModel.ToggleMuteCommand}"
+                            Style="{StaticResource IconButton}"
+                            FontFamily="{StaticResource FaSolid}"
+                            FontSize="18"
+                            Height="36"
+                            Width="36"
+                            VerticalAlignment="Center" />
+                        <Slider
+                            Grid.Column="1"
+                            Minimum="0"
+                            Maximum="1"
+                            StepFrequency="0.01"
+                            IsThumbToolTipEnabled="False"
+                            VerticalAlignment="Center"
+                            Value="{x:Bind ViewModel.Volume, Mode=OneWay}"
+                            ValueChanged="OnVolumeChanged" />
+                    </Grid>
+
+                    <!-- Error -->
+                    <TextBlock
+                        Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                        Visibility="{x:Bind conv:Fn.IsNotNullOrEmpty(ViewModel.ErrorMessage), Mode=OneWay}"
+                        Foreground="{StaticResource LiveRedBrush}"
+                        FontSize="13"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap"
+                        Margin="24,12,24,0" />
+
+                    <!-- Recently played -->
+                    <StackPanel
+                        Margin="24,16,24,0"
+                        Spacing="8"
+                        Visibility="{x:Bind conv:Fn.IsNotEmpty(ViewModel.NowPlaying.SongHistory), Mode=OneWay}">
+
+                        <Button
+                            Style="{StaticResource IconButton}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Command="{x:Bind ViewModel.ToggleSongHistoryCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    Grid.Column="0"
+                                    Text="{loc:Translate Key=OnAir_RecentlyPlayed}"
+                                    Style="{StaticResource CaptionLabel}"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Text="{x:Bind conv:Fn.ChevronGlyph(ViewModel.IsSongHistoryExpanded), Mode=OneWay}"
+                                    Style="{StaticResource CaptionLabel}"
+                                    FontFamily="{StaticResource FaSolid}"
+                                    VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+
+                        <ItemsControl
+                            Visibility="{x:Bind ViewModel.IsSongHistoryExpanded, Mode=OneWay}"
+                            ItemsSource="{x:Bind ViewModel.NowPlaying.SongHistory, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="10" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:PlayedTrackInfo">
+                                    <Border
+                                        Padding="8"
+                                        CornerRadius="16"
+                                        BorderBrush="{ThemeResource CardElevatedBrush}"
+                                        BorderThickness="1"
+                                        Background="{ThemeResource CardBackgroundBrush}">
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="52" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Border Grid.Column="0" Height="52" Width="52" CornerRadius="10">
+                                                <Grid>
+                                                    <!-- Placeholder underneath, as for the cover -->
+                                                    <Image
+                                                        Source="ms-appx:///Assets/Images/radio_placeholder.png"
+                                                        Stretch="Uniform" />
+                                                    <Image
+                                                        Source="{x:Bind conv:Fn.Image(ArtworkUrl)}"
+                                                        Stretch="UniformToFill"
+                                                        Visibility="{x:Bind conv:Fn.IsNotNull(ArtworkUrl)}" />
+                                                </Grid>
+                                            </Border>
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                                <TextBlock
+                                                    Text="{x:Bind Title}"
+                                                    Style="{StaticResource SubtitleLabel}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    MaxLines="1" />
+                                                <TextBlock
+                                                    Text="{x:Bind Artist}"
+                                                    Style="{StaticResource CaptionLabel}"
+                                                    FontSize="15"
+                                                    TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+            </Grid>
+        </ScrollViewer>
+    </RefreshContainer>
 
 </Page>

@@ -26,6 +26,7 @@ Il campo `version` è l'unico punto da toccare per alzare la versione pubblica (
   - **Android**: `ApplicationVersion` → `versionCode` (bit-packed da NBGV).
   - **iOS/macOS**: build counter incrementale.
   - **Windows**: NBGV produrrebbe di default `ApplicationVersion` vuoto e display version a 4 parti — non valido per lo Store, che richiede revision `0`. Per questo `RadioE45.csproj` (target `RestoreWindowsVersionConvention`, dopo `NBGV_SetVersionForMauiWindows` e prima di `MauiGeneratePackageAppxManifest`) forza `ApplicationVersion=0` e `ApplicationDisplayVersion=$(MajorMinorVersion)` (preso da `version.json`).
+- **Linux (`.deb`, app Uno)**: `RadioE45.Uno` usa lo stesso `version.json`. `packaging/linux/build-deb.sh` legge `BuildVersionSimple` (target `GetBuildVersion` di NBGV) e la usa come versione del pacchetto: `radioe45_0.45.<altezza>_<amd64|arm64>.deb`.
 - La pagina Impostazioni (`SettingsViewModel.cs`) mostra versione, build e hash commit corto (`ThisAssembly.GitCommitId`) automaticamente — nessun aggiornamento manuale necessario lì.
 
 ---
@@ -65,3 +66,4 @@ Questi file vengono rigenerati ad ogni build: modificarli manualmente è inutile
 - [ ] Build Android
 - [ ] Build Windows MSIX
 - [ ] Build macOS
+- [ ] Pacchetti Linux `.deb` (x64 e arm64): `build-deb-linux.sh --upload <tag>` dopo aver creato la release (vedi `STORE-DISTRIBUTION.md`)

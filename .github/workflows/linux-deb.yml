@@ -1,0 +1,120 @@
+# Smoke test of the Linux .deb packages (S10.0, docs/LINUX-UNO-ROADMAP.md).
+#
+# The packages are built on the Mac (packaging/linux/build-deb.sh, called by the build scripts)
+# and attached to the GitHub release. This workflow checks them on real x64 and arm64 Linux:
+#   - release_tag set:   downloads radioe45_*_<arch>.deb from that release (what users get);
+#   - release_tag empty: builds the packages from the selected branch;
+#   - push touching the packaging (any branch): builds from that commit. Manual runs need the
+#     workflow on the default branch, pushes do not.
+# For each architecture: apt install, start under Xvfb, window and screenshot, dependency
+# resolution on older and newer distributions. Packages, screenshots and logs are artifacts.
+name: Linux .deb
+
+on:
+  push:
+    paths:
+      - packaging/linux/**
+      - .github/workflows/linux-deb.yml
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Release tag to test (e.g. v0.45); empty = build from this branch
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  deb:
+    name: ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, rid: linux-x64,   runner: ubuntu-24.04 }
+          - { arch: arm64, rid: linux-arm64, runner: ubuntu-24.04-arm }
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # NBGV computes the version from the git height
+
+      - name: Download from the release
+        if: env.RELEASE_TAG != ''
+        run: |
+          mkdir -p dist
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "radioe45_*_${{ matrix.arch }}.deb" --dir dist
+          ls -l dist
+
+      - uses: actions/setup-dotnet@v4
+        if: env.RELEASE_TAG == ''
+        with:
+          global-json-file: global.json
+
+      - name: Build
+        if: env.RELEASE_TAG == ''
+        run: packaging/linux/build-deb.sh ${{ matrix.rid }} dist
+
+      - name: Package info
+        run: |
+          DEB=$(ls dist/radioe45_*_${{ matrix.arch }}.deb)
+          echo "DEB=$DEB" >> "$GITHUB_ENV"
+          dpkg-deb --info "$DEB"
+          dpkg-deb --contents "$DEB" | grep -v '/opt/radioe45/.' || true
+          if dpkg-deb --contents "$DEB" | grep -q 'opt/radioe45/libvlc/'; then
+            echo "::error::Windows libVLC is inside the package"; exit 1
+          fi
+
+      - name: Install
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y "./$DEB" xvfb x11-utils imagemagick
+          dpkg -s radioe45 | grep -E '^(Status|Version)'
+          test -x /usr/bin/radioe45
+          desktop-file-validate /usr/share/applications/com.radioe45.app.desktop || true
+
+      - name: Start under Xvfb
+        run: |
+          mkdir -p smoke
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" bash -c '
+            radioe45 > smoke/radioe45.log 2>&1 &
+            PID=$!
+            sleep 30
+            if ! kill -0 $PID 2>/dev/null; then
+              echo "::error::Radio E45 exited during startup"; cat smoke/radioe45.log; exit 1
+            fi
+            WINDOWS=$(xwininfo -root -tree | grep -i "Radio E45" || true)
+            echo "$WINDOWS"
+            import -window root smoke/screenshot-${{ matrix.arch }}.png
+            kill $PID
+            [ -n "$WINDOWS" ] || { echo "::error::no Radio E45 window"; exit 1; }
+          '
+          cat smoke/radioe45.log
+          if grep -E "Unhandled exception|DllNotFoundException|FileNotFoundException" smoke/radioe45.log; then
+            echo "::error::errors in the startup log"; exit 1
+          fi
+
+      - name: Dependencies on other distributions
+        run: |
+          for image in ubuntu:22.04 debian:12 debian:13; do
+            echo "::group::$image"
+            docker run --rm -v "$PWD/dist:/dist:ro" "$image" bash -c \
+              "apt-get update -qq && apt-get install -y -qq --no-install-recommends /dist/$(basename "$DEB") > /dev/null \
+               && dpkg -s radioe45 | grep -E '^Status' && test -x /opt/radioe45/RadioE45.Uno" \
+              || { echo "::error::install failed on $image"; exit 1; }
+            echo "::endgroup::"
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radioe45-deb-${{ matrix.arch }}
+          path: |
+            dist/*.deb
+            smoke/
+          if-no-files-found: ignore

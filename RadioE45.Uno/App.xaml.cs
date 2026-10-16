@@ -54,6 +54,11 @@ public partial class App : Application
 
         // Before anything touches the file system (SQLite): on the web this waits for IDBFS.
         await Services.GetRequiredService<UnoAppPaths>().InitializeAsync();
+#if RADIOE45_BROWSER
+        // Before On Air starts: whether the browser lets the radio start without a click.
+        await RadioE45.Services.Browser.BrowserUserActivation.ProbeAsync();
+        RadioE45.Services.Browser.BrowserUserActivation.WatchBlockedPlays();
+#endif
 
         MainWindow.Content ??= Services.GetRequiredService<ShellPage>();
 
@@ -145,11 +150,18 @@ public partial class App : Application
 
         services.AddRadioE45Core();
 
-        // Audio: shared live and podcast engines on the Uno MediaPlayer. System media controls
-        // (MPRIS, Media Session) arrive in S9.
+        // Audio: shared live and podcast engines on the Uno MediaPlayer. System media controls:
+        // MPRIS on Linux (nothing on macOS and Windows), Media Session on the web.
         services.AddSingleton<IAudioService, UnoAudioService>();
         services.AddSingleton<IPodcastPlayerService, UnoPodcastPlayerService>();
-        services.AddSingleton<IPlatformNowPlayingService, NullPlatformNowPlayingService>();
+        services.AddSingleton<SystemMediaCommands>();
+#if RADIOE45_DESKTOP
+        services.AddSingleton<IPlatformNowPlayingService, Services.Desktop.MprisNowPlayingService>();
+#elif RADIOE45_BROWSER
+        services.AddSingleton<IPlatformNowPlayingService, Services.Browser.BrowserMediaSession>();
+        // Replaces the Core prober: a fetch can be refused where the audio element plays.
+        services.AddSingleton<IStreamUrlProber, Services.Browser.BrowserStreamUrlProber>();
+#endif
         services.AddSingleton<IAudioFocusManager, NullAudioFocusManager>();
 
         services.AddSingleton<IAzuraStationCatalog, AzuraStationCatalog>();
@@ -162,7 +174,9 @@ public partial class App : Application
         services.AddTransient<AddStationViewModel>();
         services.AddTransient<EditStationViewModel>();
         services.AddTransient<SettingsViewModel>();
-        services.AddTransient<PodcastListViewModel>();
+        // One instance like the MAUI tab page: it subscribes to OnAirViewModel to follow the
+        // station, so a new one at every visit of the tab would stay subscribed forever.
+        services.AddSingleton<PodcastListViewModel>();
         services.AddTransient<PodcastEpisodesViewModel>();
         services.AddTransient<SongRequestViewModel>();
         services.AddTransient<ScheduleViewModel>();

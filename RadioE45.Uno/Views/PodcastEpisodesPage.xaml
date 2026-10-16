@@ -1,0 +1,283 @@
+<Page
+    x:Class="RadioE45.Views.PodcastEpisodesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:loc="using:RadioE45.Services.Localization"
+    xmlns:conv="using:RadioE45.Converters"
+    xmlns:models="using:RadioE45.Models"
+    Background="{ThemeResource PageBackgroundBrush}">
+
+    <!-- Port of RadioE45/Views/PodcastEpisodesPage.xaml, stacked above the Podcast tab. Picker →
+         ComboBox; the episode audio is played by UnoPodcastPlayerService, no element in the page.
+         Lifecycle as in MAUI (S7b): Activate() when the page appears, stop + Cleanup() when it
+         goes away. -->
+
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Key="F5" Invoked="OnRefreshAccelerator" />
+    </Page.KeyboardAccelerators>
+
+    <Grid KeyboardAcceleratorPlacementMode="Hidden">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- MAUI: Shell nav bar title -->
+        <TextBlock Grid.Row="0" Text="{x:Bind ViewModel.PodcastTitle, Mode=OneWay}" Style="{StaticResource PageTitleLabel}" />
+
+        <!-- Filters, always visible: status, season, episode -->
+        <Grid Grid.Row="1" ColumnSpacing="8" Margin="16,4,16,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.Resources>
+                <Style x:Key="FilterLabel" TargetType="TextBlock">
+                    <Setter Property="FontSize" Value="11" />
+                    <Setter Property="Foreground" Value="{ThemeResource MutedTextBrush}" />
+                </Style>
+                <Style x:Key="FilterBox" TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    <Setter Property="FontSize" Value="13" />
+                    <Setter Property="Background" Value="{ThemeResource CardElevatedBrush}" />
+                    <Setter Property="Foreground" Value="{ThemeResource PrimaryTextBrush}" />
+                    <Setter Property="DisplayMemberPath" Value="Label" />
+                </Style>
+            </Grid.Resources>
+
+            <StackPanel Grid.Column="0" Spacing="2">
+                <TextBlock Text="{loc:Translate Key=Podcast_FilterStatusLabel}" Style="{StaticResource FilterLabel}" />
+                <ComboBox
+                    x:Name="StatusPicker"
+                    Style="{StaticResource FilterBox}"
+                    ItemsSource="{x:Bind ViewModel.StatusOptions, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.SelectedStatus, Mode=OneWay}"
+                    SelectionChanged="OnStatusSelectionChanged" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="2">
+                <TextBlock Text="{loc:Translate Key=Podcast_FilterSeasonLabel}" Style="{StaticResource FilterLabel}" />
+                <ComboBox
+                    x:Name="SeasonPicker"
+                    Style="{StaticResource FilterBox}"
+                    ItemsSource="{x:Bind ViewModel.SeasonOptions, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.SelectedSeason, Mode=OneWay}"
+                    SelectionChanged="OnSeasonSelectionChanged" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Spacing="2">
+                <TextBlock Text="{loc:Translate Key=Podcast_FilterEpisodeLabel}" Style="{StaticResource FilterLabel}" />
+                <ComboBox
+                    x:Name="EpisodeNumberPicker"
+                    Style="{StaticResource FilterBox}"
+                    ItemsSource="{x:Bind ViewModel.EpisodeNumberOptions, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.SelectedEpisodeNumber, Mode=OneWay}"
+                    SelectionChanged="OnEpisodeNumberSelectionChanged" />
+            </StackPanel>
+
+        </Grid>
+
+        <RefreshContainer x:Name="Refresher" Grid.Row="2" Margin="0,12,0,0" RefreshRequested="OnRefreshRequested">
+            <ListView
+                ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
+                SelectionMode="None"
+                IsItemClickEnabled="False">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="0" />
+                        <Setter Property="MinHeight" Value="0" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.Header>
+                    <TextBlock
+                        Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                        Visibility="{x:Bind conv:Fn.IsNotNull(ViewModel.ErrorMessage), Mode=OneWay}"
+                        Foreground="{StaticResource LiveRedBrush}"
+                        FontSize="13"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap"
+                        Margin="16,8,16,0" />
+                </ListView.Header>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:AzuraCastPodcastEpisode">
+                        <!-- A click plays the episode, or pauses/resumes it when it is the current one -->
+                        <Button
+                            Style="{StaticResource RowButton}"
+                            Margin="16,8,16,0"
+                            Command="{x:Bind PlayCommand}"
+                            CommandParameter="{x:Bind}">
+                            <Border Style="{StaticResource CardBorder}">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Width="56" Height="56" CornerRadius="8" VerticalAlignment="Top">
+                                        <Grid>
+                                            <!-- Placeholder always underneath: it also shows when the cover fails to load (web, CORS) -->
+                                            <Image Source="ms-appx:///Assets/Images/radio_placeholder.png" Stretch="Uniform" />
+                                            <Image
+                                                Source="{x:Bind conv:Fn.Image(ArtworkUrl)}"
+                                                Stretch="UniformToFill"
+                                                Visibility="{x:Bind conv:Fn.IsNotNull(ArtworkUrl)}" />
+                                        </Grid>
+                                    </Border>
+
+                                    <Grid Grid.Column="1" RowSpacing="6">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Text="{x:Bind Title}"
+                                            Foreground="{ThemeResource PrimaryTextBrush}"
+                                            FontSize="16"
+                                            FontWeight="Bold"
+                                            TextWrapping="Wrap"
+                                            TextTrimming="CharacterEllipsis"
+                                            MaxLines="2" />
+
+                                        <!-- MAUI uses the raw TextSecondary color, which does not follow the light theme -->
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Text="{x:Bind Description}"
+                                            Foreground="{ThemeResource SecondaryTextBrush}"
+                                            FontSize="13"
+                                            TextWrapping="Wrap"
+                                            TextTrimming="CharacterEllipsis"
+                                            MaxLines="2" />
+
+                                        <Grid Grid.Row="2" ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                Foreground="{ThemeResource MutedTextBrush}"
+                                                FontSize="12"
+                                                TextTrimming="CharacterEllipsis">
+                                                <Run Text="{x:Bind SeasonEpisodeText}" /><Run Text="{x:Bind conv:Fn.ShortDate(PublishedAt)}" /><Run Text=" - " /><Run Text="{x:Bind ResumePositionText, Mode=OneWay}" /><Run Text=" - " /><Run Text="{x:Bind DurationText}" />
+                                            </TextBlock>
+                                            <!-- Green = not started, yellow = in progress, red = completed -->
+                                            <Ellipse
+                                                Grid.Column="1"
+                                                Width="10"
+                                                Height="10"
+                                                VerticalAlignment="Center"
+                                                Fill="{x:Bind conv:Fn.ProgressStateBrush(ProgressState), Mode=OneWay}" />
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </Button>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.Footer>
+                    <Border Height="16" />
+                </ListView.Footer>
+            </ListView>
+        </RefreshContainer>
+
+        <!-- MAUI CollectionView.EmptyView; hidden while loading -->
+        <StackPanel
+            Grid.Row="2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            Spacing="12"
+            Padding="32"
+            IsHitTestVisible="False"
+            Visibility="{x:Bind conv:Fn.IsEmptyAndIdle(ViewModel.Episodes, ViewModel.IsBusy), Mode=OneWay}">
+            <!-- 🎧 in MAUI: no emoji font on the web -->
+            <FontIcon
+                Glyph="&#xf025;"
+                FontFamily="{StaticResource FaSolid}"
+                FontSize="48"
+                Foreground="{ThemeResource MutedTextBrush}" />
+            <TextBlock
+                Text="{x:Bind ViewModel.EmptyEpisodesText, Mode=OneWay}"
+                Style="{StaticResource SubtitleLabel}"
+                TextWrapping="Wrap" />
+        </StackPanel>
+
+        <!-- Mini player of the current episode -->
+        <Border
+            Grid.Row="3"
+            Style="{StaticResource CardBorder}"
+            Margin="12,0,12,12"
+            Padding="12,8"
+            Visibility="{x:Bind conv:Fn.IsNotNull(ViewModel.CurrentEpisode), Mode=OneWay}">
+            <Grid RowSpacing="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <!-- ⏸ ▶ in MAUI: no font for them on the web -->
+                    <Button
+                        Grid.Column="0"
+                        Content="{x:Bind conv:Fn.PlayPauseGlyph(ViewModel.IsPlaying), Mode=OneWay}"
+                        Style="{StaticResource RoundCardButton}"
+                        Background="{StaticResource AccentBrush}"
+                        Foreground="{ThemeResource PrimaryTextBrush}"
+                        FontSize="18"
+                        Command="{x:Bind ViewModel.PlayPauseCommand}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Text="{x:Bind ViewModel.CurrentEpisode.Title, Mode=OneWay}"
+                        Foreground="{ThemeResource PrimaryTextBrush}"
+                        FontSize="14"
+                        FontWeight="Bold"
+                        VerticalAlignment="Center"
+                        TextTrimming="CharacterEllipsis"
+                        MaxLines="1" />
+                </Grid>
+
+                <Grid Grid.Row="1" ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Column="0"
+                        Text="{x:Bind ViewModel.ElapsedTimeText, Mode=OneWay}"
+                        Foreground="{ThemeResource SecondaryTextBrush}"
+                        FontSize="11"
+                        VerticalAlignment="Center" />
+                    <!-- Not bound: set from the ViewModel progress unless the user is dragging it (code-behind) -->
+                    <Slider
+                        x:Name="ProgressSlider"
+                        Grid.Column="1"
+                        Minimum="0"
+                        Maximum="1"
+                        StepFrequency="0.001"
+                        IsThumbToolTipEnabled="False"
+                        VerticalAlignment="Center"
+                        ValueChanged="OnSeekValueChanged" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Text="{x:Bind ViewModel.TotalTimeText, Mode=OneWay}"
+                        Foreground="{ThemeResource SecondaryTextBrush}"
+                        FontSize="11"
+                        VerticalAlignment="Center" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+
+</Page>

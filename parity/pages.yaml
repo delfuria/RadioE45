@@ -21,13 +21,19 @@
   maui: RadioE45/Views/OnAirPage.xaml
   uno: RadioE45.Uno/Views/OnAirPage.xaml
   viewmodels: [OnAirViewModel]
-  ignore: []
+  ignore:
+    - name: Tab_OnAir
+      reason: "MAUI page title; on Uno the tab label lives in ShellPage and the page has no title bar"
+    - name: IsBusy
+      reason: "MAUI RefreshView.IsRefreshing; the Uno RefreshContainer shows its indicator until the RefreshNowPlayingCommand deferral completes"
 
 - page: RadioList
   maui: RadioE45/Views/RadioListPage.xaml
   uno: RadioE45.Uno/Views/RadioListPage.xaml
   viewmodels: [RadioListViewModel]
-  ignore: []
+  ignore:
+    - name: Common_Delete
+      reason: "Label of the MAUI SwipeView delete item (touch only); on Uno edit/delete are in the context menu, which uses RadioList_DeleteStation as in MAUI"
 
 - page: AddStation
   maui: RadioE45/Views/AddStationPage.xaml
@@ -57,7 +63,9 @@
   maui: RadioE45/Views/SongRequestPage.xaml
   uno: RadioE45.Uno/Views/SongRequestPage.xaml
   viewmodels: [SongRequestViewModel]
-  ignore: []
+  ignore:
+    - name: Tab_Request
+      reason: "MAUI page title; on Uno the tab label lives in ShellPage and the page has no title bar"
 
 - page: PodcastList
   maui: RadioE45/Views/PodcastListPage.xaml

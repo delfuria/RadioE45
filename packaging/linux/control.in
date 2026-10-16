@@ -1,0 +1,15 @@
+Package: radioe45
+Version: @VERSION@
+Architecture: @ARCH@
+Maintainer: Stefano Del Furia <support@radioe45.it>
+Installed-Size: @INSTALLED_SIZE@
+Section: sound
+Priority: optional
+Homepage: https://github.com/delfuria/RadioE45
+Depends: libvlc5, vlc-plugin-base, libfontconfig1, libx11-6, libgl1, libicu78 | libicu77 | libicu76 | libicu74 | libicu72 | libicu70, libssl3t64 | libssl3, ca-certificates
+Recommends: vlc
+Description: Radio E45 web radio player (preview)
+ Listen to the Radio E45 stations and to any AzuraCast station:
+ live streams, now playing and history, song requests, schedule and podcasts.
+ .
+ Linux preview of the Radio E45 desktop app (Uno Platform).

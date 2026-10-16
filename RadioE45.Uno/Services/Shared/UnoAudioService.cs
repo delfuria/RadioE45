@@ -21,6 +21,26 @@ public sealed class UnoAudioService : LiveStreamAudioService
         ILogger<UnoAudioService> logger)
         : base(streamUrlProber, platformNowPlayingService, audioFocusManager, settingsRepo, networkMonitor, dispatcher, logger)
     {
-        AttachPlayer(new MediaPlayerStreamPlayer(networkMonitor, logger));
+        var player = new MediaPlayerStreamPlayer(networkMonitor, logger);
+#if RADIOE45_BROWSER
+        player.AutoplayBlocked += (_, _) => dispatcher.Post(OnAutoplayBlocked);
+#endif
+        AttachPlayer(player);
     }
+
+    // Web: the browser refused to start the radio without a gesture (Safari always at page load,
+    // Chrome without the site sound permission). Not a failure to reconnect from: the radio waits
+    // and starts at the first click or key press in the page, the moment the browser allows it
+    // (also when that click is on Play: a second resume is harmless).
+#if RADIOE45_BROWSER
+    private void OnAutoplayBlocked()
+    {
+        _ = PauseAsync();
+        Browser.BrowserUserActivation.OnFirstGesture(() =>
+        {
+            if (CurrentStation is not null && !IsPlaying)
+                _ = ResumeAsync();
+        });
+    }
+#endif
 }

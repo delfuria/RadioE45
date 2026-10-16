@@ -58,18 +58,40 @@
         <DefineConstants>$(DefineConstants);RADIOE45_BROWSER</DefineConstants>
         <!-- Required by the JSImport source generator (Services/Browser). -->
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <!-- Refit (Core) deserializes with reflection-based System.Text.Json. The trimmed WASM
+             Release turns it off by default (JsonSerializerIsReflectionDisabled on every API
+             call, found in S9b); MAUI keeps it on. Source-generated contexts would remove this. -->
+        <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    </PropertyGroup>
+
+    <!-- Linux publish (.deb, S10.0): VideoLAN.LibVLC.Windows (through Uno MediaPlayerElement)
+         copies libVLC for win-x64, win-x86 and win-arm64 (about 280 MB) into every output.
+         Linux uses the system libVLC (package dependency), so leave them out there. -->
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-desktop' and $(RuntimeIdentifier.StartsWith('linux-'))">
+        <VlcWindowsX64Enabled>false</VlcWindowsX64Enabled>
+        <VlcWindowsX86Enabled>false</VlcWindowsX86Enabled>
+        <VlcWindowsArm64Enabled>false</VlcWindowsArm64Enabled>
     </PropertyGroup>
 
     <!-- linux-arm64: the libSkiaSharp.so brought by Uno fails at startup with
          "undefined symbol: FT_Get_BDF_Property"; the NoDependencies build fixes it (S1). -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-desktop'">
         <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.2" />
+        <!-- MPRIS (Services/Desktop/MprisNowPlayingService): same version Uno uses for X11. -->
+        <PackageReference Include="Tmds.DBus.Protocol" Version="0.92.0" />
     </ItemGroup>
 
     <!-- Extra browser scripts are loaded by the WASM bootstrapper only as embedded resources
          (the template wires AppManifest.js alone). -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browserwasm'">
         <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45Network.js" />
+        <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45Autoplay.js" />
+        <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45MediaSession.js" />
+        <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45Pwa.js" />
+        <!-- PWA icons of manifest.webmanifest. The bootstrapper prefixes the manifest icon paths
+             with the package_<hash> folder, so they ship as package content (not in wwwroot).
+             White background and logo inside the maskable safe zone (S9b). -->
+        <Content Include="Platforms\WebAssembly\Pwa\*.png" Link="pwa\%(Filename)%(Extension)" />
     </ItemGroup>
 
     <ItemGroup>

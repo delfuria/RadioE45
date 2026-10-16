@@ -29,8 +29,15 @@
             <SolidColorBrush x:Key="MutedTextBrush" Color="#9CA3AF" />
             <SolidColorBrush x:Key="TabBarBackgroundBrush" Color="#111111" />
             <SolidColorBrush x:Key="DividerBrush" Color="#2A2A2A" />
-            <!-- Fluent accent used by NavigationView selection, ToggleSwitch, Slider… -->
+            <!-- Fluent accent used by NavigationView selection, ToggleSwitch, Slider…: the Fluent
+                 brushes read the Light/Dark variants, so all of them are set (MAUI uses Accent). -->
             <Color x:Key="SystemAccentColor">#E63946</Color>
+            <Color x:Key="SystemAccentColorLight1">#E63946</Color>
+            <Color x:Key="SystemAccentColorLight2">#E63946</Color>
+            <Color x:Key="SystemAccentColorLight3">#E63946</Color>
+            <Color x:Key="SystemAccentColorDark1">#E63946</Color>
+            <Color x:Key="SystemAccentColorDark2">#E63946</Color>
+            <Color x:Key="SystemAccentColorDark3">#E63946</Color>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="PageBackgroundBrush" Color="#F8F9FA" />
@@ -42,6 +49,12 @@
             <SolidColorBrush x:Key="TabBarBackgroundBrush" Color="#FFFFFF" />
             <SolidColorBrush x:Key="DividerBrush" Color="#E5E7EB" />
             <Color x:Key="SystemAccentColor">#E63946</Color>
+            <Color x:Key="SystemAccentColorLight1">#E63946</Color>
+            <Color x:Key="SystemAccentColorLight2">#E63946</Color>
+            <Color x:Key="SystemAccentColorLight3">#E63946</Color>
+            <Color x:Key="SystemAccentColorDark1">#E63946</Color>
+            <Color x:Key="SystemAccentColorDark2">#E63946</Color>
+            <Color x:Key="SystemAccentColorDark3">#E63946</Color>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

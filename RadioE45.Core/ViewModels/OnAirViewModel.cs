@@ -230,6 +230,25 @@ public partial class OnAirViewModel : BaseViewModel
         }, LocalizationResourceManager.Instance["Err_Init"]);
     }
 
+    /// <summary>
+    /// Called each time the On Air page appears (MAUI OnAppearing, Uno OnNavigatedTo). Applies
+    /// the volume, selects the default station on the first call and, on later visits, restarts
+    /// the station that was streaming if something else stopped it (a podcast episode): the
+    /// page may be a new instance while this ViewModel is the surviving singleton, so
+    /// InitializeAsync returns at once but the audio service has been cleared. Always the same
+    /// station that was streaming; the favorite/first choice applies only at app launch.
+    /// Without autoplay (web before the first user interaction) nothing starts on its own, and a
+    /// station that never played (web: Play not pressed yet) is never started here.
+    /// </summary>
+    public async Task ActivateAsync()
+    {
+        _audioService.SetVolume(Volume);
+        await InitializeAsync();
+
+        if (_hasStartedRadio && _environment.CanAutoplay && _audioService.CurrentStation is null && CurrentStation is not null)
+            await RestartAsync();
+    }
+
     public async Task RestartAsync()
     {
         if (CurrentStation is null)
@@ -247,7 +266,15 @@ public partial class OnAirViewModel : BaseViewModel
         if (station is not null)
         {
             CurrentStation = station;
-            await StartPlayAndNowPollingAsync(station);
+            if (_environment.CanAutoplay)
+            {
+                await StartPlayAndNowPollingAsync(station);
+            }
+            else
+            {
+                ApplyStationMetadata(station);
+                await StartNowPlayingPollingAsync(station);
+            }
         }
     }
 
@@ -459,8 +486,14 @@ public partial class OnAirViewModel : BaseViewModel
         await RefreshNowPlayingAsync();
     }
 
+    // Set by the first start of the live radio: ActivateAsync restarts only a radio that was
+    // playing (always true on MAUI, where the radio starts at launch).
+    private bool _hasStartedRadio;
+
     private async Task StartPlayAndNowPollingAsync(AzuraStation station)
     {
+        _hasStartedRadio = true;
+
         // Un solo player attivo alla volta: avviare la radio live ferma un eventuale episodio podcast.
         if (_podcastPlayerService.CurrentEpisode is not null)
             await _podcastPlayerService.StopAsync();

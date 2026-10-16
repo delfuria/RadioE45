@@ -50,14 +50,6 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
     [ObservableProperty]
     public partial PodcastFilterOption<PodcastEpisodeProgressState>? SelectedStatus { get; set; }
 
-    // Stagione/episodio sono spesso assenti dal feed (vedi commento su SeasonEpisodeText):
-    // il relativo Picker si mostra solo se almeno un episodio valorizza il campo.
-    [ObservableProperty]
-    public partial bool IsSeasonFilterVisible { get; set; }
-
-    [ObservableProperty]
-    public partial bool IsEpisodeFilterVisible { get; set; }
-
     // Distingue "il podcast non ha episodi" da "i filtri escludono tutti gli episodi" — non
     // cambia con la selezione dei filtri, solo quando cambia l'elenco scaricato dal feed.
     [ObservableProperty]
@@ -202,9 +194,6 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
             .Distinct()
             .OrderBy(n => n)
             .ToList();
-
-        IsSeasonFilterVisible = seasons.Count > 0;
-        IsEpisodeFilterVisible = episodeNumbers.Count > 0;
 
         SeasonOptions = new List<PodcastFilterOption<int>>
         {

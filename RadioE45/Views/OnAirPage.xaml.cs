@@ -35,19 +35,11 @@ public partial class OnAirPage : ContentPage
             _isInitialized = true;
             // Android (Media3) ignores the element and just connects its MediaController.
             (_audioService as IMediaElementHost)?.Initialize(AudioPlayer);
-            _audioService.SetVolume(_viewModel.Volume);
-            await _viewModel.InitializeAsync();
         }
 
-        // Questo check corre sia al primo avvio (dopo InitializeAsync) sia ai ritorni
-        // sulla pagina (es. da Podcast, che ferma la radio live per riprodurre l'episodio —
-        // vedi PodcastPlayerService.PlayAsync). Copre il caso in cui OnAirPage è una nuova
-        // istanza (transient) ma OnAirViewModel è il singleton sopravvissuto: InitializeAsync
-        // ritorna subito perché CurrentStation != null, ma AudioService è stato azzerato.
-        // Riprende sempre la stessa stazione che era in streaming — la selezione preferita/prima
-        // si applica solo al vero avvio dell'app (vedi App.CreateWindow).
-        if (_audioService.CurrentStation is null && _viewModel.CurrentStation is not null)
-            await _viewModel.RestartAsync();
+        // Volume, default station on the first visit, restart of the streaming station on the
+        // next ones (e.g. back from Podcast, which stops the live radio): see ActivateAsync.
+        await _viewModel.ActivateAsync();
     }
 
     protected override void OnSizeAllocated(double width, double height)

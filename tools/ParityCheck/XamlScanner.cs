@@ -27,9 +27,10 @@ public static partial class XamlScanner
             Add(members, path);
         }
 
-        // Uno/WinUI: {x:Bind ViewModel.X}, {x:Bind X} (item templates), {x:Bind Path=...}
+        // Uno/WinUI: {x:Bind ViewModel.X}, {x:Bind X} (item templates), {x:Bind Path=...} and the
+        // paths passed to x:Bind functions: {x:Bind conv:Fn.IsNull(ViewModel.X), Mode=OneWay}
         foreach (Match m in XBindRegex().Matches(xaml))
-            Add(members, StripViewModelPrefix(m.Groups[1].Value));
+            AddXBindPaths(members, m.Groups[1].Value);
 
         foreach (Match m in TranslateRegex().Matches(xaml))
             keys.Add(m.Groups[1].Value);
@@ -54,8 +55,68 @@ public static partial class XamlScanner
             set.Add(path);
     }
 
+    private static void AddXBindPaths(SortedSet<string> set, string body)
+    {
+        var expression = SplitTopLevel(body)[0].Trim();
+        if (expression.StartsWith("Path=", StringComparison.Ordinal))
+            expression = expression["Path=".Length..];
+
+        int open = expression.IndexOf('(');
+        if (open < 0)
+        {
+            if (LeadingPathRegex().Match(expression).Groups[1].Value is { Length: > 0 } path)
+                Add(set, StripViewModelPrefix(path));
+            return;
+        }
+
+        // Function call: the function name is not a member, its arguments are.
+        int close = expression.LastIndexOf(')');
+        if (close <= open)
+            return;
+        foreach (var argument in SplitTopLevel(expression[(open + 1)..close]))
+        {
+            var arg = argument.Trim();
+            if (arg.Length == 0 || arg[0] is '\'' or '"' || char.IsDigit(arg[0]) || arg[0] == '-')
+                continue;
+            AddXBindPaths(set, arg);
+        }
+    }
+
+    // Splits on commas outside parentheses and quotes.
+    private static List<string> SplitTopLevel(string text)
+    {
+        var parts = new List<string>();
+        int depth = 0, start = 0;
+        char quote = '\0';
+        for (int i = 0; i < text.Length; i++)
+        {
+            char c = text[i];
+            if (quote != '\0')
+            {
+                if (c == quote) quote = '\0';
+                continue;
+            }
+            switch (c)
+            {
+                case '\'' or '"': quote = c; break;
+                case '(': depth++; break;
+                case ')': depth--; break;
+                case ',' when depth == 0:
+                    parts.Add(text[start..i]);
+                    start = i + 1;
+                    break;
+            }
+        }
+        parts.Add(text[start..]);
+        return parts;
+    }
+
+    // ViewModel.X, or OnAirViewModel.X on pages that bind a second ViewModel (the shell).
     private static string StripViewModelPrefix(string path) =>
-        path.StartsWith("ViewModel.", StringComparison.Ordinal) ? path["ViewModel.".Length..] : path;
+        ViewModelPrefixRegex().Match(path) is { Success: true } prefix ? path[prefix.Length..] : path;
+
+    [GeneratedRegex(@"^(?:[A-Z]\w*)?ViewModel\.")]
+    private static partial Regex ViewModelPrefixRegex();
 
     [GeneratedRegex(@"\{Binding\b([^{}]*(?:\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}[^{}]*)*)\}")]
     private static partial Regex BindingRegex();
@@ -66,7 +127,7 @@ public static partial class XamlScanner
     [GeneratedRegex(@"^\s*([A-Za-z_][\w.]*)?")]
     private static partial Regex LeadingPathRegex();
 
-    [GeneratedRegex(@"\{x:Bind\s+(?:Path=)?([A-Za-z_][\w.]*)")]
+    [GeneratedRegex(@"\{x:Bind\s+([^{}]*)\}")]
     private static partial Regex XBindRegex();
 
     [GeneratedRegex(@"\{loc:Translate\s+(?:Key=)?([A-Za-z_]\w*)")]

@@ -44,6 +44,7 @@ EditStationViewModel.StationId : int { get; set; }
 EditStationViewModel.UrlBase : string { get; set; }
 EditStationViewModel.WebsiteUrl : string { get; set; }
 OnAirViewModel : type
+OnAirViewModel.ActivateAsync() : Task
 OnAirViewModel.ArtworkHeight : double { get; set; }
 OnAirViewModel.ArtworkUrl : string { get; set; }
 OnAirViewModel.ClearStationAsync() : Task
@@ -87,9 +88,7 @@ PodcastEpisodesViewModel.ElapsedTimeText : string { get; set; }
 PodcastEpisodesViewModel.EmptyEpisodesText : string { get; set; }
 PodcastEpisodesViewModel.EpisodeNumberOptions : List<PodcastFilterOption<int>> { get; set; }
 PodcastEpisodesViewModel.Episodes : ObservableCollection<AzuraCastPodcastEpisode> { get; set; }
-PodcastEpisodesViewModel.IsEpisodeFilterVisible : bool { get; set; }
 PodcastEpisodesViewModel.IsPlaying : bool { get; set; }
-PodcastEpisodesViewModel.IsSeasonFilterVisible : bool { get; set; }
 PodcastEpisodesViewModel.IsStaleForCurrentStation() : bool
 PodcastEpisodesViewModel.LoadEpisodesCommand : IAsyncRelayCommand { get; }
 PodcastEpisodesViewModel.PlayEpisodeCommand : IAsyncRelayCommand<AzuraCastPodcastEpisode> { get; }

@@ -1,10 +1,43 @@
 {
-  "background_color": "#0D0D0D",
-  "description": "Radio E45: AzuraCast web radio player",
-  "display": "standalone",
+  "id": "/",
   "name": "Radio E45",
   "short_name": "Radio E45",
-  "start_url": "/index.html",
+  "description": "Radio E45: AzuraCast web radio player",
+  "lang": "it",
+  "dir": "ltr",
+  "categories": [
+    "music",
+    "entertainment"
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
   "theme_color": "#E63946",
-  "scope": "/"
+  "icons": [
+    {
+      "src": "pwa/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "pwa/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "pwa/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "pwa/icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }

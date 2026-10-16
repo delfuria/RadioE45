@@ -1,0 +1,214 @@
+<UserControl
+    x:Class="RadioE45.Views.ScheduleDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:loc="using:RadioE45.Services.Localization"
+    xmlns:conv="using:RadioE45.Converters"
+    xmlns:models="using:RadioE45.Models">
+
+    <!-- Port of RadioE45/Views/SchedulePopup.xaml (toolkit Popup as a bottom sheet). Hosted by
+         ShellPage in a pane that slides up from the bottom over a dark layer, like the side menu:
+         a ContentDialog would be centered and, on the web, outside the app column. Closed by the
+         ✕ button, a click outside, Esc or a downward drag on the handle (MAUI: swipe down). -->
+
+    <Grid Padding="0,0,0,24" Background="{ThemeResource PageBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Handle: dragging it (or the title row) down closes the sheet -->
+        <Grid
+            x:Name="DragArea"
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Background="Transparent"
+            ManipulationMode="TranslateY"
+            ManipulationCompleted="OnDragCompleted" />
+
+        <Border
+            Grid.Row="0"
+            Height="5"
+            Width="40"
+            CornerRadius="3"
+            Margin="0,10,0,4"
+            HorizontalAlignment="Center"
+            Background="{ThemeResource MutedTextBrush}"
+            IsHitTestVisible="False" />
+
+        <Grid Grid.Row="1" Padding="20,4,8,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                Grid.Column="0"
+                Text="{loc:Translate Key=Tab_Schedule}"
+                Foreground="{ThemeResource PrimaryTextBrush}"
+                FontSize="20"
+                FontWeight="Bold"
+                VerticalAlignment="Center"
+                IsHitTestVisible="False" />
+            <Button
+                Grid.Column="1"
+                Content="&#xf00d;"
+                FontFamily="{StaticResource FaSolid}"
+                FontSize="18"
+                Width="44"
+                Height="44"
+                CornerRadius="22"
+                Style="{StaticResource IconButton}"
+                Foreground="{ThemeResource SecondaryTextBrush}"
+                AutomationProperties.Name="{loc:Translate Key=Common_Close}"
+                Click="OnCloseClick" />
+        </Grid>
+
+        <ProgressRing
+            Grid.Row="2"
+            IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
+            Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
+            VerticalAlignment="Top"
+            Margin="0,24,0,0" />
+
+        <!-- MAUI CollectionView.EmptyView; hidden while loading (MAUI shows both) -->
+        <StackPanel
+            Grid.Row="2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            Spacing="12"
+            Padding="32"
+            Visibility="{x:Bind conv:Fn.IsEmptyAndIdle(ViewModel.ScheduleItems, ViewModel.IsBusy), Mode=OneWay}">
+            <!-- 📅 in MAUI: no emoji font on the web -->
+            <FontIcon
+                Glyph="&#xf073;"
+                FontFamily="{StaticResource FaSolid}"
+                FontSize="48"
+                Foreground="{ThemeResource MutedTextBrush}" />
+            <TextBlock Text="{loc:Translate Key=Schedule_Empty}" Style="{StaticResource SubtitleLabel}" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <ListView
+            Grid.Row="2"
+            ItemsSource="{x:Bind ViewModel.ScheduleItems, Mode=OneWay}"
+            SelectionMode="None"
+            IsItemClickEnabled="False">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="MinHeight" Value="0" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="models:PlaylistSchedule">
+                    <Border Style="{StaticResource CardBorder}" Margin="16,8,16,0">
+                        <Grid RowSpacing="6">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Time slot + badge (On Air / LIVE / In schedule) -->
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <!-- MAUI uses the raw TextSecondary color, which does not follow the light theme -->
+                                <TextBlock
+                                    Grid.Column="0"
+                                    Foreground="{ThemeResource SecondaryTextBrush}"
+                                    FontSize="13"
+                                    VerticalAlignment="Center">
+                                    <Run Text="{x:Bind conv:Fn.Time(Start)}" /><Run Text=" – " /><Run Text="{x:Bind conv:Fn.Time(End)}" />
+                                </TextBlock>
+                                <Border
+                                    Grid.Column="1"
+                                    Style="{StaticResource ScheduleBadge}"
+                                    Background="{StaticResource AccentBrush}"
+                                    Visibility="{x:Bind ShowPlaylistOnAirBadge}">
+                                    <TextBlock
+                                        Text="{loc:Translate Key=Schedule_Now}"
+                                        Style="{StaticResource ScheduleBadgeLabel}"
+                                        Foreground="{ThemeResource PrimaryTextBrush}" />
+                                </Border>
+                                <Border
+                                    Grid.Column="1"
+                                    Style="{StaticResource ScheduleBadge}"
+                                    Background="{StaticResource AccentBrush}"
+                                    Visibility="{x:Bind ShowLiveBadge}">
+                                    <TextBlock
+                                        Text="{loc:Translate Key=Schedule_Live}"
+                                        Style="{StaticResource ScheduleBadgeLabel}"
+                                        Foreground="{ThemeResource PrimaryTextBrush}" />
+                                </Border>
+                                <Border
+                                    Grid.Column="1"
+                                    Style="{StaticResource ScheduleBadge}"
+                                    BorderBrush="{StaticResource AccentBrush}"
+                                    BorderThickness="1"
+                                    Visibility="{x:Bind ShowInScheduleBadge}">
+                                    <TextBlock
+                                        Text="{loc:Translate Key=Schedule_InSchedule}"
+                                        Style="{StaticResource ScheduleBadgeLabel}"
+                                        Foreground="{StaticResource AccentBrush}" />
+                                </Border>
+                            </Grid>
+
+                            <!-- Type icon (microphone = streamer, note = playlist) + name; streamers in an accent frame -->
+                            <Border
+                                Grid.Row="1"
+                                HorizontalAlignment="Left"
+                                CornerRadius="10"
+                                BorderBrush="{StaticResource AccentBrush}"
+                                BorderThickness="{x:Bind conv:Fn.StreamerFrame(IsStreamer)}"
+                                Padding="{x:Bind conv:Fn.StreamerPadding(IsStreamer)}">
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon
+                                        Grid.Column="0"
+                                        Glyph="&#xf001;"
+                                        FontFamily="{StaticResource FaSolid}"
+                                        FontSize="14"
+                                        Foreground="{ThemeResource MutedTextBrush}"
+                                        VerticalAlignment="Center"
+                                        Visibility="{x:Bind conv:Fn.Collapsed(IsStreamer)}" />
+                                    <FontIcon
+                                        Grid.Column="0"
+                                        Glyph="&#xf130;"
+                                        FontFamily="{StaticResource FaSolid}"
+                                        FontSize="14"
+                                        Foreground="{StaticResource AccentBrush}"
+                                        VerticalAlignment="Center"
+                                        Visibility="{x:Bind IsStreamer}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Text="{x:Bind Name}"
+                                        Foreground="{ThemeResource PrimaryTextBrush}"
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        TextTrimming="CharacterEllipsis"
+                                        MaxLines="1" />
+                                </Grid>
+                            </Border>
+
+                            <!-- Date -->
+                            <TextBlock
+                                Grid.Row="2"
+                                Text="{x:Bind conv:Fn.DayDate(Start)}"
+                                Foreground="{ThemeResource MutedTextBrush}"
+                                FontSize="12" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+
+</UserControl>
