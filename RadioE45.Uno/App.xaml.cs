@@ -145,11 +145,16 @@ public partial class App : Application
 
         services.AddRadioE45Core();
 
-        // Audio: shared live and podcast engines on the Uno MediaPlayer. System media controls
-        // (MPRIS, Media Session) arrive in S9.
+        // Audio: shared live and podcast engines on the Uno MediaPlayer. System media controls:
+        // MPRIS on Linux (nothing on macOS and Windows), Media Session on the web.
         services.AddSingleton<IAudioService, UnoAudioService>();
         services.AddSingleton<IPodcastPlayerService, UnoPodcastPlayerService>();
-        services.AddSingleton<IPlatformNowPlayingService, NullPlatformNowPlayingService>();
+        services.AddSingleton<SystemMediaCommands>();
+#if RADIOE45_DESKTOP
+        services.AddSingleton<IPlatformNowPlayingService, Services.Desktop.MprisNowPlayingService>();
+#elif RADIOE45_BROWSER
+        services.AddSingleton<IPlatformNowPlayingService, Services.Browser.BrowserMediaSession>();
+#endif
         services.AddSingleton<IAudioFocusManager, NullAudioFocusManager>();
 
         services.AddSingleton<IAzuraStationCatalog, AzuraStationCatalog>();

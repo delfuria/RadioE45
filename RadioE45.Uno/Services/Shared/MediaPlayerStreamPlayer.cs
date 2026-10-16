@@ -18,7 +18,9 @@ namespace RadioE45.Services.Shared;
 ///   when <see cref="INetworkMonitor"/> reports the loss while a source is open, the player
 ///   reports Buffering, so the UI does not stay on "playing" during the stall and the watchdog
 ///   of <see cref="LiveStreamAudioService"/> (stuck buffering > 12 s) takes over.
-/// System metadata (MPRIS, Media Session) comes in S9: SetMetadata is a no-op until then.
+/// - on the web, close only pauses and keeps the source (see <see cref="Close"/>).
+/// System metadata goes through IPlatformNowPlayingService (MPRIS, Media Session): SetMetadata
+/// is a no-op.
 /// </summary>
 public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
 {
@@ -27,6 +29,7 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
     private readonly MediaPlayer _player;
     private readonly StreamStateDebouncer _states;
     private readonly ILogger _logger;
+    private bool _closed = true;
 
     public MediaPlayerStreamPlayer(INetworkMonitor networkMonitor, ILogger logger)
     {
@@ -41,7 +44,7 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
         _player.PlaybackSession.PlaybackStateChanged += OnPlaybackStateChanged;
     }
 
-    public bool HasSource => _player.Source is not null;
+    public bool HasSource => !_closed && _player.Source is not null;
 
     public event EventHandler<StreamPlayerStateChangedEventArgs>? StateChanged;
     public event EventHandler<string?>? Failed;
@@ -50,6 +53,7 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
     public void Open(string url)
     {
         _states.Push(StreamPlayerState.Opening);
+        _closed = false;
         _player.Source = MediaSource.CreateFromUri(new Uri(url));
         _player.Play();
     }
@@ -58,11 +62,17 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
     {
         // Already closed: touching the player again is not harmless on the web, where the
         // deferred stop (HTMLMediaElement.load) aborts a play() just started by the podcast player.
-        if (_player.Source is null)
+        if (_closed || _player.Source is null)
             return;
 
+        _closed = true;
         _player.Pause();
-        _player.Source = null;
+        // Web: Chrome removes the media controls (Media Session) as soon as the audio element
+        // loses its source, so a pause from the controls would close them. The paused source
+        // stays (the browser stops reading it; the server drops the idle listener) and the next
+        // Open replaces it with a fresh connection to the live stream.
+        if (!OperatingSystem.IsBrowser())
+            _player.Source = null;
         _states.ReportNow(StreamPlayerState.Stopped);
     }
 
@@ -87,7 +97,7 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
 
     private void OnConnectivityChanged(object? sender, bool hasInternet)
     {
-        if (!hasInternet && _player.Source is not null)
+        if (!hasInternet && HasSource)
         {
             _logger.LogInformation("Network lost while streaming: reporting Buffering");
             _states.ReportNow(StreamPlayerState.Buffering);
@@ -97,7 +107,7 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
     private void OnPlaybackStateChanged(MediaPlaybackSession session, object args)
     {
         // A closed player keeps reporting Paused/None: only the explicit Stopped from Close counts.
-        if (_player.Source is null)
+        if (_closed || _player.Source is null)
             return;
 
         _states.Push(session.PlaybackState switch
@@ -113,8 +123,8 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
     private void OnMediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
     {
         // On the web, removing the source (Close) makes the HTML5 audio element raise an error
-        // with no message: that is our own close, not a failure.
-        if (_player.Source is null)
+        // with no message: that is our own close, not a failure. Same for a parked source.
+        if (_closed || _player.Source is null)
             return;
 
         // The web reports a play() without a user gesture as NotAllowedError (§5).
@@ -123,5 +133,9 @@ public sealed class MediaPlayerStreamPlayer : IStreamPlayer, IDisposable
         Failed?.Invoke(this, args.ErrorMessage);
     }
 
-    private void OnMediaEnded(MediaPlayer sender, object args) => Ended?.Invoke(this, EventArgs.Empty);
+    private void OnMediaEnded(MediaPlayer sender, object args)
+    {
+        if (!_closed)
+            Ended?.Invoke(this, EventArgs.Empty);
+    }
 }

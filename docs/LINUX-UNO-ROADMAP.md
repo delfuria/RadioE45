@@ -1,8 +1,8 @@
 # RadioE45 su Linux e Web con Uno Platform — Piano operativo
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
-> Branch di lavoro attuale: `S8.7` (da `S8.6.5`, non ancora unita a `main`); da S8 un branch per ogni punto. Ultimo aggiornamento: 2026-10-16 (app v0.45).
-> Stato: **S0–S8.1 completate (regressione MAUI ok); S8 (S8.1–S8.7) completata (conferma dell'utente 2026-10-16); prossima sessione: S9** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Branch di lavoro attuale: `S9a` (da `S8.7`, non ancora unita a `main`); da S8 un branch per ogni punto. Ultimo aggiornamento: 2026-10-16 (app v0.45).
+> Stato: **S0–S8.1 completate (regressione MAUI ok); S8 (S8.1–S8.7) completata (conferma dell'utente 2026-10-16); prossima sessione: S9a** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -666,10 +666,34 @@ Decisioni prese con l'utente (2026-10-15):
   - Da fare con l'utente: guardare le icone delle tab in tema chiaro e nella VM Linux.
 - **Uscita di ogni sessione:** le feature della pagina sono `done` in `features.yaml` e `ParityCheck` non segnala errori per quella pagina.
 
-### S9 — Integrazione di piattaforma · VM + Mac
-- [ ] MPRIS (desktop), Media Session API (web).
-- [ ] PWA: manifest, icone, service worker per lo shell offline.
-- [ ] Test su GNOME Wayland, KDE, Xfce/X11; Chrome, Firefox, Safari.
+### S9 — Integrazione di piattaforma · VM + Mac (divisa in S9a + S9b + S9c)
+Divisa con l'utente il 2026-10-16, un branch per fase come in S8.
+
+#### S9a — Controlli multimediali di sistema · Mac + VM — ✅ codice 2026-10-16, branch `S9a` da `S8.7`
+- [x] **Desktop Linux, MPRIS** (`org.mpris.MediaPlayer2.radioe45` sul bus di sessione, con `Tmds.DBus.Protocol`, già usato da Uno per X11): implementa `IPlatformNowPlayingService` (titolo, artista, copertina, stato) e riceve Play, Pause, PlayPause, Stop dal sistema (tasti multimediali, cuffie, pannello di GNOME/KDE). Su macOS e Windows il desktop Uno resta senza (nessun bus di sessione).
+- [x] **Web, Media Session API** (JS interop come `RadioE45Network.js`): stessi metadati e comandi play/pausa nel controllo multimediale del browser e del sistema.
+- [x] Comandi come MAUI iOS (`AppDelegate.SetupRemoteCommandCenter`): play/pausa/toggle sulla radio, niente avanti/indietro né seek (stream live).
+- [x] Feature `shell.system-media-controls` → `done` su desktop (nota: solo Linux) e web.
+- [x] Verifiche: VM Ubuntu (pannello multimediale di GNOME, `playerctl`, `busctl`), Chrome (controllo multimediale della barra degli strumenti), Safari.
+  - **Codice:** `Services/Shared/SystemMediaCommands` (play, pausa, toggle, stop = pausa sul `IAudioService`, risolto al momento perché l'audio dipende da `IPlatformNowPlayingService`; sul thread UI). `Services/Desktop/MprisNowPlayingService`: `DBusConnection` di `Tmds.DBus.Protocol` 0.92.0 (riferimento esplicito, stessa versione di Uno), nome `org.mpris.MediaPlayer2.radioe45`, oggetto `/org/mpris/MediaPlayer2` con le interfacce `MediaPlayer2` e `MediaPlayer2.Player`, `Properties` (`Get`, `GetAll`, `Set` ignorato, segnale `PropertiesChanged`) e introspezione; attivo solo su Linux con bus di sessione, altrove non fa nulla. Copertina scaricata con `RemoteArtworkLoader` in `<dati>/mpris/cover-N` (nome nuovo a ogni copertina: i client la memorizzano per URL) e passata come `file://`. `Services/Browser/BrowserMediaSession` + `RadioE45MediaSession.js`: `MediaMetadata` (il browser carica la copertina senza CORS), `playbackState`, azioni play/pause/stop. Core e MAUI invariati.
+  - **Verificato:** VM Ubuntu con `playerctl` (player `radioe45`, stato Playing, titolo, artista, durata, copertina `file://`; `pause` → Paused, `play-pause` → Playing, `next` rifiutato) e `busctl introspect`; Chrome (`navigator.mediaSession`: metadati, copertina, `playing`); autotest macOS 0 errori (MPRIS inattivo); build desktop, web e soluzione 0 avvisi/0 errori; `ParityCheck` = 1 (solo crash report).
+  - **Da fare con l'utente:** pannello multimediale di GNOME e tasti multimediali reali nella VM; nel browser il controllo multimediale di Chrome (icona nella barra) e i tasti della tastiera (l'automazione non li genera); Safari; KDE e Xfce in S9c.
+  - Limiti: i podcast non passano dai controlli di sistema (neanche in MAUI: `IPlatformNowPlayingService` è usato solo dalla radio).
+  - **Dopo la prova dell'utente** (GNOME ok; Chrome: pannello visibile ma "pausa" lo chiudeva; avanti/indietro disabilitati):
+    - **Avanti/indietro = stazione successiva/precedente** (richiesta dell'utente) in MPRIS (`Next`/`Previous`, `CanGoNext`/`CanGoPrevious` con più di una stazione) e nella Media Session (`nexttrack`/`previoustrack`), tramite `OnAirViewModel.Next/PreviousStationCommand` come i pulsanti di Android Auto, così la pagina segue. MAUI iOS/macOS resta senza (`NextTrackCommand` disabilitato). Verificato con `playerctl next/previous` nella VM.
+    - **Pausa su Chrome:** Chrome toglie i controlli multimediali appena l'elemento audio perde la sorgente, e la pausa del motore live chiude lo stream (`Close` = sorgente nulla). Sul web `MediaPlayerStreamPlayer.Close` ora mette solo in pausa e lascia la sorgente ("parcheggiata", `HasSource` falso, eventi ignorati); il prossimo `Open` la sostituisce con una connessione nuova alla diretta. Il browser smette di leggere lo stream in pausa, il server poi chiude l'ascoltatore inattivo. Verificato in Chrome: dopo la pausa `currentSrc` resta e `playbackState` è `paused`, Play riparte.
+    - **Safari:** non ha un pannello nella barra come Chrome: i controlli compaiono nel Centro di controllo di macOS ("In riproduzione") e nell'icona dell'altoparlante della scheda. **Radio E45 non parte in Safari** (le altre sì): il suo `listen_url` è la porta diretta di Icecast (`https://radioe45.ddns.net:8060/radio.mp3`, HTTP/1.1, redirect 302 con `?_ic2=`, `Connection: Close`, `Content-Range` finto da 1 GB), mentre AzuraTest passa dal proxy web (`/listen/…`, HTTP/2). Il proxy esiste anche per Radio E45 (`https://radioe45.ddns.net/listen/radioe45/radio.mp3` risponde 200 `audio/mpeg`). Da confermare in Safari (non automatizzabile: "Consenti JavaScript dagli eventi Apple" disattivato).
+- **Uscita:** metadati e play/pausa dal sistema su Linux e nel browser; `ParityCheck` = 1 solo per i crash report.
+
+#### S9b — PWA · Mac
+- [ ] `manifest.webmanifest` completo (nome, colori, icone nelle varie dimensioni), favicon.
+- [ ] Service worker per aprire la shell offline (lo stream richiede comunque la rete).
+- [ ] Verifiche: "Installa app" in Chrome/Edge, avvio in finestra propria, Lighthouse PWA.
+
+#### S9c — Test sugli ambienti · VM + Mac
+- [ ] Linux: GNOME Wayland, KDE, Xfce su X11 puro ("Ubuntu on Xorg", in sospeso da S1).
+- [ ] Browser: Chrome, Firefox (audio mai provato, §S2), Safari.
+- [ ] Correzioni emerse; regressione MAUI se toccato il Core.
 
 ### S10 — Packaging, CI, hosting · Mac + VM + GitHub
 - [ ] Snap arm64 nella VM; snap x64 in CI.
@@ -719,6 +743,7 @@ Decisioni prese con l'utente (2026-10-15):
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-16 | S9a | Codice completato (prove manuali dell'utente) | Branch `S9a` da `S8.7`. S9 divisa in S9a/S9b/S9c. MPRIS su Linux (`Tmds.DBus.Protocol`) e Media Session sul web, comandi play/pausa come MAUI iOS; verificati con `playerctl` nella VM e in Chrome; autotest macOS ok; build verdi; ParityCheck = 1 (solo crash report). Core e MAUI invariati. Prossima: S9b |
 | 2026-10-16 | S8.7 | Completata (prova dell'utente da fare) | Branch `S8.7` da `S8.6.5`. Layout verificati su tutte le pagine a 500×855, 900×450 e nella colonna web: nessuna correzione. Niente nuove scorciatoie (decisione dell'utente). Icone delle tab su Uno (glifi Font Awesome, `shell.tab-icons`). Build verdi; ParityCheck = 1. Prossima: S9 |
 | 2026-10-16 | S8.6 | Codice completato (prove manuali dell'utente) | Branch `S8.6` da `S8.5`. `PodcastListPage` e `PodcastEpisodesPage` Uno (filtri, mini player, ciclo di vita S7b), tab Podcast legata a `HasPodcasts`, `PodcastListViewModel` singleton in Uno; verificate su macOS; soluzione verde, 149 test, ParityCheck = 1 (solo S9 e crash report). Core e MAUI invariati. Prossima: S8.7 |
 | 2026-10-16 | S8.5 | Codice completato (prove manuali dell'utente) | Branch `S8.5` da `S8.4`. `SongRequestPage` Uno (ricerca, errore, lista, richiesta, paginazione), tab Richieste visibile solo con richieste abilitate; ParityCheck legge `XxxViewModel.Y`; 149 test; verificata su macOS; build verdi; ParityCheck = 1. Core e MAUI invariati. Prossima: S8.6 |

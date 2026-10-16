@@ -64,6 +64,8 @@
          "undefined symbol: FT_Get_BDF_Property"; the NoDependencies build fixes it (S1). -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-desktop'">
         <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.2" />
+        <!-- MPRIS (Services/Desktop/MprisNowPlayingService): same version Uno uses for X11. -->
+        <PackageReference Include="Tmds.DBus.Protocol" Version="0.92.0" />
     </ItemGroup>
 
     <!-- Extra browser scripts are loaded by the WASM bootstrapper only as embedded resources
@@ -71,6 +73,7 @@
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browserwasm'">
         <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45Network.js" />
         <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45Autoplay.js" />
+        <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45MediaSession.js" />
     </ItemGroup>
 
     <ItemGroup>

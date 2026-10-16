@@ -59,8 +59,8 @@
   title: Metadati e tasti multimediali di sistema (lock screen iOS, Centro di controllo macOS, SMTC Windows)
   since: "0.44"
   page: Shell
-  status: { maui: done, desktop: todo, web: todo }
-  notes: "Desktop: MPRIS; web: Media Session API (S9)"
+  status: { maui: done, desktop: done, web: done }
+  notes: "Desktop: MPRIS solo su Linux (macOS e Windows senza bus di sessione: nessun controllo), Services/Desktop/MprisNowPlayingService; web: Media Session API, Services/Browser/BrowserMediaSession. Comandi play/pausa come MAUI iOS (SystemMediaCommands); avanti/indietro = stazione successiva/precedente come Android Auto (MAUI iOS/macOS li ha disabilitati); niente seek"
 
 - id: shell.tab-icons
   title: Icona per ogni tab della stazione (On Air, Richieste, Podcast)
