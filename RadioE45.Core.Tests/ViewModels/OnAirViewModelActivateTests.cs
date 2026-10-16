@@ -10,7 +10,8 @@ using RadioE45.ViewModels;
 namespace RadioE45.Core.Tests.ViewModels;
 
 // OnAirViewModel.ActivateAsync: what used to be the MAUI OnAppearing code, plus the web rule
-// that the radio never starts without a user gesture (IAppEnvironment.CanAutoplay).
+// that the radio never starts before the first user gesture (IAppEnvironment.CanAutoplay) and is
+// restarted only if it was playing.
 public class OnAirViewModelActivateTests
 {
     private readonly IAudioService _audio = Substitute.For<IAudioService>();
@@ -97,6 +98,35 @@ public class OnAirViewModelActivateTests
     {
         OnAirViewModel vm = CreateViewModel(canAutoplay: false);
         await vm.ActivateAsync();
+
+        await vm.ActivateAsync();
+
+        await _audio.DidNotReceive().PlayAsync(Arg.Any<AzuraStation>());
+    }
+
+    // Web: after the first click the browser allows autoplay, and back from a podcast the radio
+    // restarts as on desktop.
+    [Fact]
+    public async Task Once_autoplay_is_allowed_next_activation_restarts_the_station_played_by_the_user()
+    {
+        OnAirViewModel vm = CreateViewModel(canAutoplay: false);
+        await vm.ActivateAsync();
+        await vm.PlayPauseCommand.ExecuteAsync(null);              // Play pressed by the user
+        _environment.CanAutoplay.Returns(true);                   // the page has had a user gesture
+        _audio.CurrentStation.Returns((AzuraStation?)null);       // a podcast episode stopped it
+
+        await vm.ActivateAsync();
+
+        await _audio.Received(2).PlayAsync(_station);
+    }
+
+    // Web: a click anywhere allows autoplay, but a radio the user never played stays stopped.
+    [Fact]
+    public async Task Once_autoplay_is_allowed_next_activation_does_not_start_a_station_never_played()
+    {
+        OnAirViewModel vm = CreateViewModel(canAutoplay: false);
+        await vm.ActivateAsync();
+        _environment.CanAutoplay.Returns(true);
 
         await vm.ActivateAsync();
 

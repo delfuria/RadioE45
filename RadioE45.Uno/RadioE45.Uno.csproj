@@ -70,6 +70,7 @@
          (the template wires AppManifest.js alone). -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browserwasm'">
         <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45Network.js" />
+        <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45Autoplay.js" />
     </ItemGroup>
 
     <ItemGroup>
