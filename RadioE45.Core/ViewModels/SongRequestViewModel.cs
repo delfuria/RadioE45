@@ -76,7 +76,8 @@ public partial class SongRequestViewModel : BaseViewModel
             foreach (AzuraCastRequestItem item in items)
                 item.RequestCommand = RequestSongCommand;
 
-            _allSongs = items;
+            // I jingle sono brani della libreria ma non vanno proposti tra le richieste.
+            _allSongs = items.Where(i => !i.Title.Trim().Equals("jingle", StringComparison.OrdinalIgnoreCase)).ToList();
             PageNumber = 1;
             ApplyFilter();
         }, LocalizationResourceManager.Instance["Err_LoadRequestableSongs"]);
