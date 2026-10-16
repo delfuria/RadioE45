@@ -81,6 +81,13 @@ public partial class SongRequestViewModel : BaseViewModel
             PageNumber = 1;
             ApplyFilter();
         }, LocalizationResourceManager.Instance["Err_LoadRequestableSongs"]);
+
+        // Caricamento fallito: la vista vuota deve comunque avere il suo testo.
+        if (ErrorMessage is not null)
+        {
+            _allSongs = [];
+            ApplyFilter();
+        }
     }
 
     partial void OnSearchTextChanged(string value)

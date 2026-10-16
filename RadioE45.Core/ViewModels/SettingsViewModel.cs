@@ -88,7 +88,9 @@ public partial class SettingsViewModel : BaseViewModel
     private async Task LoadSettingsAsync()
     {
         _currentSettings = await _settingsRepo.GetAsync();
-        ThemePreference = _currentSettings.ThemePreference;
+        // Il tema applicato all'avvio è quello dello store: è la fonte di verità (il valore nel DB
+        // resta una copia scritta insieme a questo); con lo store vuoto vale il DB.
+        ThemePreference = _settingsStore.Get("theme_preference", _currentSettings.ThemePreference);
         SeedVersion = (float) _currentSettings.SeedVersion;
         MustUpdate = _currentSettings.MustUpdate;
         StartWithFavorite = _currentSettings.StartWithFavorite;

@@ -37,6 +37,7 @@
 
             <CollectionView.EmptyView>
                 <VerticalStackLayout
+                    IsVisible="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
                     VerticalOptions="Center"
                     HorizontalOptions="Center"
                     Spacing="12"
@@ -86,21 +87,14 @@
                                     MaxLines="1" />
                                 <Label
                                     Text="{Binding Description}"
-                                    TextColor="{DynamicResource TextSecondary}"
+                                    TextColor="{DynamicResource SecondaryText}"
                                     FontSize="13"
                                     LineBreakMode="TailTruncation"
                                     MaxLines="2" />
                                 <Label
+                                    Text="{Binding EpisodeCountText}"
                                     TextColor="{DynamicResource MutedText}"
-                                    FontSize="12">
-                                    <Label.FormattedText>
-                                        <FormattedString>
-                                            <Span Text="{Binding EpisodeCount}" />
-                                            <Span Text=" " />
-                                            <Span Text="{loc:Translate Podcast_Episodes}" />
-                                        </FormattedString>
-                                    </Label.FormattedText>
-                                </Label>
+                                    FontSize="12" />
                             </VerticalStackLayout>
 
                         </Grid>

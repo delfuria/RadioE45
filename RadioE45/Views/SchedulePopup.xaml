@@ -73,6 +73,7 @@
 
             <CollectionView.EmptyView>
                 <VerticalStackLayout
+                    IsVisible="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
                     VerticalOptions="Center"
                     HorizontalOptions="Center"
                     Spacing="12"
@@ -99,7 +100,7 @@
                             <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
                                 <Label
                                     Grid.Column="0"
-                                    TextColor="{DynamicResource TextSecondary}"
+                                    TextColor="{DynamicResource SecondaryText}"
                                     FontSize="13"
                                     VerticalOptions="Center">
                                     <Label.FormattedText>

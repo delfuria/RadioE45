@@ -82,7 +82,8 @@
   <data name="Schedule_Live" xml:space="preserve"><value>● LIVE</value></data>
   <data name="Schedule_InSchedule" xml:space="preserve"><value>On schedule</value></data>
   <data name="Podcast_Empty" xml:space="preserve"><value>No podcasts available</value></data>
-  <data name="Podcast_Episodes" xml:space="preserve"><value>episodes</value></data>
+  <data name="Podcast_EpisodeCount_One" xml:space="preserve"><value>{0} episode</value></data>
+  <data name="Podcast_EpisodeCount_Many" xml:space="preserve"><value>{0} episodes</value></data>
   <data name="Podcast_NoEpisodes" xml:space="preserve"><value>No episodes available</value></data>
   <data name="Podcast_SeasonEpisode" xml:space="preserve"><value>Season {0} - Ep. {1} </value></data>
   <data name="Podcast_FilterSeasonLabel" xml:space="preserve"><value>Season</value></data>

@@ -92,13 +92,13 @@ public partial class AddStationViewModel : BaseViewModel
 
             List<RadioStation> existing = await _radioRepository.GetAllAsync();
             HashSet<(string, int)> existingKeys = existing
-                .Select(s => (s.UrlBase, s.StationId))
+                .Select(s => (RadioStation.UrlBaseKey(s.UrlBase), s.StationId))
                 .ToHashSet();
 
             UnsubscribeItems();
 
             var items = stations
-                .Select(s => new StationSelectionItem(s, urlBase, existingKeys.Contains((urlBase, s.Id))))
+                .Select(s => new StationSelectionItem(s, urlBase, existingKeys.Contains((RadioStation.UrlBaseKey(urlBase), s.Id))))
                 .ToList();
 
             foreach (StationSelectionItem item in items)

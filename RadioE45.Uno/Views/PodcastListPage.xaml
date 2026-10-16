@@ -90,9 +90,7 @@
                                             TextWrapping="Wrap"
                                             TextTrimming="CharacterEllipsis"
                                             MaxLines="2" />
-                                        <TextBlock Foreground="{ThemeResource MutedTextBrush}" FontSize="12">
-                                            <Run Text="{x:Bind conv:Fn.Text(EpisodeCount)}" /><Run Text=" " /><Run Text="{loc:Translate Key=Podcast_Episodes}" />
-                                        </TextBlock>
+                                        <TextBlock Text="{x:Bind EpisodeCountText}" Foreground="{ThemeResource MutedTextBrush}" FontSize="12" />
                                     </StackPanel>
                                 </Grid>
                             </Border>

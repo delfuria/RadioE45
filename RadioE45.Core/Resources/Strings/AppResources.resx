@@ -86,7 +86,8 @@
   <data name="Schedule_Live" xml:space="preserve"><value>● Diretta</value></data>
   <data name="Schedule_InSchedule" xml:space="preserve"><value>In orario</value></data>
   <data name="Podcast_Empty" xml:space="preserve"><value>Nessun podcast disponibile</value></data>
-  <data name="Podcast_Episodes" xml:space="preserve"><value>episodi</value></data>
+  <data name="Podcast_EpisodeCount_One" xml:space="preserve"><value>{0} episodio</value></data>
+  <data name="Podcast_EpisodeCount_Many" xml:space="preserve"><value>{0} episodi</value></data>
   <data name="Podcast_NoEpisodes" xml:space="preserve"><value>Nessun episodio disponibile</value></data>
   <data name="Podcast_SeasonEpisode" xml:space="preserve"><value>Stagione: {0} - Ep. {1} </value></data>
   <data name="Podcast_FilterSeasonLabel" xml:space="preserve"><value>Stagione</value></data>

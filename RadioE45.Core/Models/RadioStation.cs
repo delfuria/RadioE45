@@ -28,4 +28,17 @@ public class RadioStation
     public string? SocialUrl3 { get; set; }
     public string? ContactEmail { get; set; }
     public string? ContactPhone { get; set; }
+
+    // Il seed salva "demo.azuracast.com", l'utente può digitare "https://demo.azuracast.com/": per
+    // riconoscere una stazione già aggiunta si confronta il valore senza schema, senza "/" finale
+    // e senza distinguere maiuscole.
+    public static string UrlBaseKey(string urlBase)
+    {
+        string value = urlBase.Trim();
+        int schemeEnd = value.IndexOf("://", StringComparison.Ordinal);
+        if (schemeEnd >= 0)
+            value = value[(schemeEnd + 3)..];
+
+        return value.TrimEnd('/').ToLowerInvariant();
+    }
 }

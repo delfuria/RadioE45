@@ -90,6 +90,7 @@
 
                 <CollectionView.EmptyView>
                     <VerticalStackLayout
+                        IsVisible="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
                         VerticalOptions="Center"
                         HorizontalOptions="Center"
                         Spacing="12"

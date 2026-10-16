@@ -85,6 +85,7 @@
 
                 <CollectionView.EmptyView>
                     <VerticalStackLayout
+                        IsVisible="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
                         VerticalOptions="Center"
                         HorizontalOptions="Center"
                         Spacing="12"
@@ -148,7 +149,7 @@
                                 <Label
                                     Grid.Row="1"
                                     Text="{Binding Description}"
-                                    TextColor="{DynamicResource TextSecondary}"
+                                    TextColor="{DynamicResource SecondaryText}"
                                     FontSize="13"
                                     LineBreakMode="TailTruncation"
                                     MaxLines="2" />
@@ -231,7 +232,7 @@
                     <Label
                         Grid.Column="0"
                         Text="{Binding ElapsedTimeText}"
-                        TextColor="{DynamicResource TextSecondary}"
+                        TextColor="{DynamicResource SecondaryText}"
                         FontSize="11"
                         VerticalOptions="Center" />
 
@@ -246,7 +247,7 @@
                     <Label
                         Grid.Column="2"
                         Text="{Binding TotalTimeText}"
-                        TextColor="{DynamicResource TextSecondary}"
+                        TextColor="{DynamicResource SecondaryText}"
                         FontSize="11"
                         VerticalOptions="Center" />
                 </Grid>
