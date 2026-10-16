@@ -1,8 +1,8 @@
 # RadioE45 su Linux e Web con Uno Platform — Piano operativo
 
 > Documento operativo, da riprendere a ogni sessione Claude Code.
-> Branch di lavoro attuale: `S8.6` (da `S8.5`, non ancora unita a `main`); da S8 un branch per ogni punto. Ultimo aggiornamento: 2026-10-16 (app v0.45).
-> Stato: **S0–S8.1 completate (regressione MAUI ok); S8.2 codice completato (prove manuali dell'utente); S8.3 completata; S8.4, S8.5 e S8.6 codice completato (S8.4–S8.6 non ancora committate); prossima sessione: S8.7** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
+> Branch di lavoro attuale: `S8.7` (da `S8.6.5`, non ancora unita a `main`); da S8 un branch per ogni punto. Ultimo aggiornamento: 2026-10-16 (app v0.45).
+> Stato: **S0–S8.1 completate (regressione MAUI ok); S8.2 codice completato (prove manuali dell'utente); S8.3 completata; S8.4, S8.5 e S8.6 codice completato; S8.7 completata (prova dell'utente da fare); prossima sessione: S9** (§12). Aggiornare le checkbox e il registro (§14) alla fine di ogni sessione.
 
 ---
 
@@ -655,11 +655,15 @@ Decisioni prese con l'utente (2026-10-15):
   - **Correzione dopo la prova dell'utente (web):** tornando su In Onda dopo un episodio la radio non ripartiva da sola (sul web `CanAutoplay` era sempre `false`). Ora sul web `CanAutoplay` = `navigator.userActivation.hasBeenActive` (`Services/Browser/BrowserUserActivation`, `RadioE45Autoplay.js`): prima del primo clic nella pagina niente avvio automatico, dopo il browser permette `play()`. Nel Core `ActivateAsync` riavvia solo una radio già avviata almeno una volta (`_hasStartedRadio`), altrimenti sul web partirebbe da sola dopo un clic qualsiasi anche senza aver mai premuto Play; in MAUI non cambia nulla (la radio parte sempre all'avvio). 2 test (151 totali). Verificato in Chrome: Play su AzuraTest → episodio → In Onda: la radio riparte; scheda nuova, clic su un'altra tab e ritorno senza Play: resta ferma. Effetto collaterale: dopo un **ricaricamento** della pagina Chrome conserva l'attivazione e la radio parte all'avvio, come su desktop (una scheda nuova invece non parte).
   - **Filtri episodi (richiesta dell'utente, branch `S8.6.5`, MAUI e Uno):** sempre visibili e in ordine Stato, Stagione, Episodio. Tolti `IsSeasonFilterVisible`/`IsEpisodeFilterVisible` da `PodcastEpisodesViewModel` (prima Stagione/Episodio comparivano solo se almeno un episodio del feed ne aveva il valore); senza valori nel feed le due caselle offrono solo "Tutte/Tutti".
   - Da fare con l'utente: ascolto reale di un episodio dalla pagina (play, pausa, seek trascinando e con le frecce, cambio di tab che ferma l'episodio, ripresa dalla posizione salvata) su macOS, VM e Chrome; filtri stagione/episodio con un feed che li valorizza.
-- [ ] S8.7 Verifica dei layout fissi, scorciatoie da tastiera
+- [x] S8.7 Verifica dei layout fissi — ✅ 2026-10-16, branch `S8.7` da `S8.6.5`
   - **Layout deciso (utente, 2026-10-15), niente layout adattivi:**
     - **Desktop:** finestra non ridimensionabile (né massimizzabile) che parte sempre con la stessa dimensione delle app MAUI desktop (Mac Catalyst, Windows): 500×855 in verticale o 900×450 in orizzontale, da `desktop_orientation` (`DesktopWindowSize` nel Core, `shell.desktop-window-size`, fatto in S7a). Nessuna dimensione salvata o ripristinata.
     - **Web:** solo la colonna centrata a larghezza fissa 500, pagine sempre in verticale (`UnoLayout.IsSingleColumn`, `shell.web-column`, fatto in S8.1). Il "web largo" a due colonne non esiste più.
-  - Da fare: controllare che tutte le pagine stiano nelle due finestre desktop (anche 900×450) e nella colonna web; scorciatoie da tastiera.
+  - **Scorciatoie da tastiera: nessuna nuova, su nessun ambiente** (decisione dell'utente, 2026-10-16). In MAUI richiederebbero una barra dei menu (`KeyboardAccelerator` solo su `MenuFlyoutItem`). Su Uno restano F5 (aggiorna, sostituisce il trascinamento touch del `RefreshContainer`), Esc (chiude menu e palinsesto) e Invio (cerca in Aggiungi stazione).
+  - **Verifica dei layout:** giro automatico temporaneo (autotest DEBUG, poi tolto) su tutte le pagine con catture della sola finestra: In Onda (anche storico aperto), palinsesto, menu, Canali, Aggiungi, Modifica, Impostazioni, Richieste, Podcast, Episodi, sia a 500×855 sia a 900×450. Tutto sta nella finestra; le pagine lunghe (Impostazioni, Modifica, Richieste, palinsesto, menu) scorrono, i pulsanti in fondo restano visibili. In orizzontale In Onda usa le due colonne come MAUI. Web in Chrome: colonna da 500, pagine in verticale. Nessuna correzione necessaria.
+  - **Icone delle tab (segnalazione dell'utente):** in MAUI ogni tab ha un'icona (`tab_onair.png`, `tab_request`, `tab_podcast`), su Uno mancavano. Ora glifi Font Awesome nella `NavigationView` (play, nota musicale, microfono): seguono tema e selezione e si vedono anche sul web (le immagini MAUI sono bianche o rosse fisse). Nuova feature `shell.tab-icons`. Verificate su macOS (verticale e orizzontale) e in Chrome.
+  - Verifiche: build desktop e web 0 avvisi/0 errori; `ParityCheck` = 1. Core e MAUI non modificati.
+  - Da fare con l'utente: guardare le icone delle tab in tema chiaro e nella VM Linux.
 - **Uscita di ogni sessione:** le feature della pagina sono `done` in `features.yaml` e `ParityCheck` non segnala errori per quella pagina.
 
 ### S9 — Integrazione di piattaforma · VM + Mac
@@ -715,6 +719,7 @@ Decisioni prese con l'utente (2026-10-15):
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-10-16 | S8.7 | Completata (prova dell'utente da fare) | Branch `S8.7` da `S8.6.5`. Layout verificati su tutte le pagine a 500×855, 900×450 e nella colonna web: nessuna correzione. Niente nuove scorciatoie (decisione dell'utente). Icone delle tab su Uno (glifi Font Awesome, `shell.tab-icons`). Build verdi; ParityCheck = 1. Prossima: S9 |
 | 2026-10-16 | S8.6 | Codice completato (prove manuali dell'utente) | Branch `S8.6` da `S8.5`. `PodcastListPage` e `PodcastEpisodesPage` Uno (filtri, mini player, ciclo di vita S7b), tab Podcast legata a `HasPodcasts`, `PodcastListViewModel` singleton in Uno; verificate su macOS; soluzione verde, 149 test, ParityCheck = 1 (solo S9 e crash report). Core e MAUI invariati. Prossima: S8.7 |
 | 2026-10-16 | S8.5 | Codice completato (prove manuali dell'utente) | Branch `S8.5` da `S8.4`. `SongRequestPage` Uno (ricerca, errore, lista, richiesta, paginazione), tab Richieste visibile solo con richieste abilitate; ParityCheck legge `XxxViewModel.Y`; 149 test; verificata su macOS; build verdi; ParityCheck = 1. Core e MAUI invariati. Prossima: S8.6 |
 | 2026-10-16 | S8.4 | Codice completato (prove manuali dell'utente) | Branch `S8.4` da `S8.3`. Palinsesto Uno come pannello dal basso della shell (`ScheduleDialog`), ingresso da In Onda (pulsante e riga compatta); verificato su macOS; build verdi; ParityCheck = 1. Core e MAUI invariati. Prossima: S8.5 |

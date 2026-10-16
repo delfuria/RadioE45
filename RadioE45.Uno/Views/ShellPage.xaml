@@ -28,17 +28,31 @@
             ItemInvoked="OnItemInvoked">
 
             <NavigationView.MenuItems>
-                <NavigationViewItem x:Name="TabOnAir" Content="{loc:Translate Key=Tab_OnAir}" Tag="OnAir" />
+                <!-- Tab icons: Font Awesome glyphs for the MAUI tab_onair, tab_request and tab_podcast
+                     images (fixed white or red, while a glyph follows the theme and the selection) -->
+                <NavigationViewItem x:Name="TabOnAir" Content="{loc:Translate Key=Tab_OnAir}" Tag="OnAir">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource FaSolid}" Glyph="&#xf04b;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem
                     x:Name="TabRequest"
                     Content="{loc:Translate Key=Tab_Request}"
                     Tag="Request"
-                    Visibility="{x:Bind OnAirViewModel.NowPlaying.RequestsEnabled, Mode=OneWay}" />
+                    Visibility="{x:Bind OnAirViewModel.NowPlaying.RequestsEnabled, Mode=OneWay}">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource FaSolid}" Glyph="&#xf001;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem
                     x:Name="TabPodcasts"
                     Content="{loc:Translate Key=Tab_Podcasts}"
                     Tag="Podcasts"
-                    Visibility="{x:Bind OnAirViewModel.HasPodcasts, Mode=OneWay}" />
+                    Visibility="{x:Bind OnAirViewModel.HasPodcasts, Mode=OneWay}">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource FaSolid}" Glyph="&#xf130;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
 
             <Frame x:Name="ContentFrame" Navigated="OnFrameNavigated" />

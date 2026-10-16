@@ -62,6 +62,13 @@
   status: { maui: done, desktop: todo, web: todo }
   notes: "Desktop: MPRIS; web: Media Session API (S9)"
 
+- id: shell.tab-icons
+  title: Icona per ogni tab della stazione (On Air, Richieste, Podcast)
+  since: "0.45"
+  page: Shell
+  status: { maui: done, desktop: done, web: done }
+  notes: "MAUI: immagini tab_onair/tab_request/tab_podcast; Uno: glifi Font Awesome (play, nota musicale, microfono) nella NavigationView, seguono tema e selezione"
+
 - id: shell.desktop-window-size
   title: Finestra desktop fissa 500×855 (verticale) o 900×450 (orizzontale) da desktop_orientation, non ridimensionabile
   since: "0.44"
