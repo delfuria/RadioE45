@@ -5,6 +5,7 @@ using RadioE45.Services.Data;
 using RadioE45.Services.Platform;
 using RadioE45.Services.Radio;
 using RadioE45.Services.Shared;
+using RadioE45.Services.Updates;
 using RadioE45.ViewModels;
 using RadioE45.Views;
 using Uno.Resizetizer;
@@ -149,6 +150,14 @@ public partial class App : Application
 #endif
 
         services.AddRadioE45Core();
+
+        // Update check (docs/APP-UPDATE-ROADMAP.md): the Linux .deb follows GitHub Releases; the web
+        // build and the other desktops have no check. Replaces the NullUpdateSource of AddRadioE45Core.
+        if (OperatingSystem.IsLinux())
+        {
+            services.AddSingleton<IAppUpdateSource>(sp =>
+                new GitHubReleaseUpdateSource(sp.GetRequiredService<IHttpClientFactory>(), GitHubReleaseChannel.LinuxDeb));
+        }
 
         // Audio: shared live and podcast engines on the Uno MediaPlayer. System media controls:
         // MPRIS on Linux (nothing on macOS and Windows), Media Session on the web.

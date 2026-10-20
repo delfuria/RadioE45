@@ -93,6 +93,24 @@ public static class PlatformSelfTest
         Report("environment", environment.VersionString.Length > 0,
             $"{environment.VersionString} build {environment.BuildString} {environment.CommitId} {environment.PlatformName}");
 
+        var updateSource = services.GetRequiredService<IAppUpdateSource>();
+        if (updateSource.IsSupported)
+        {
+            try
+            {
+                var latest = await updateSource.GetLatestAsync(CancellationToken.None);
+                Report("update.source", true, latest is null ? "no release for this channel" : $"latest {latest.Version} {latest.Url}");
+            }
+            catch (Exception ex)
+            {
+                Report("update.source", false, ex.Message);
+            }
+        }
+        else
+        {
+            Report("update.source", true, "no update check on this platform");
+        }
+
         // Persists across runs: the second run must print previous + 1.
         var runs = settings.Get(RunCountKey, 0) + 1;
         settings.Set(RunCountKey, runs);

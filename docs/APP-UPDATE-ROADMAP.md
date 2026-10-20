@@ -1,6 +1,6 @@
 # RadioE45 — Roadmap controllo aggiornamenti
 
-> Stato: **piano pronto, nessuna implementazione.** Prossima sessione: **U4** (§9); ancora da provare a schermo: controllo manuale in Impostazioni (iOS) e lettura di `AppInfo.VersionString`. Ultimo aggiornamento: 2026-10-20 (app v0.46.6).
+> Stato: **piano pronto, nessuna implementazione.** Prossima sessione: **U5** (§9); ancora da provare a schermo: controllo manuale in Impostazioni (iOS) e lettura di `AppInfo.VersionString`. Ultimo aggiornamento: 2026-10-20 (app v0.46.6).
 > Analisi di partenza (meccanismi per piattaforma): [`APP-UPDATE-CHECK.md`](APP-UPDATE-CHECK.md). Questo file è il piano operativo e prevale in caso di differenze.
 > Branch di lavoro: `app-update`. Un branch per sessione solo se la sessione tocca tanti file; altrimenti si resta su `app-update`.
 
@@ -171,12 +171,12 @@ Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, 
 - [x] Prova reale su iOS (simulatore iPhone 16e) con versione forzata `0.45` (`-p:ApplicationDisplayVersion=0.45 -p:NBGV_SetMauiVersionProperties=false`): dialog "È disponibile la versione 0.46" al primo avvio, nessun dialog al secondo avvio dello stesso giorno.
 - **Uscita:** su iOS il prompt compare con l'URL corretto e "Aggiorna" apre lo Store.
 
-### U4 — GitHub Releases (Linux Uno desktop e Windows non pacchettizzato)
-- [ ] `GitHubReleaseUpdateSource` (Core): `repos/delfuria/RadioE45/releases/latest`, scarta prerelease/draft, controlla l'asset del canale (`.deb` per Linux, `RadioE45_Setup_*.exe` per Windows), URL = `html_url` della release.
-- [ ] `UnoUpdateSourceSelector`: desktop → GitHub; web → `Null`.
-- [ ] Windows MAUI non pacchettizzato (`AppInfo.PackagingModel == Unpackaged`) → GitHub (si completa in U6).
-- [ ] Test con `HttpMessageHandler` fittizio (fixture `releases/latest`).
-- [ ] Prova nella VM Linux (`ssh radioe45-vm`) con versione locale più bassa.
+### U4 — GitHub Releases (Linux Uno desktop e Windows non pacchettizzato) — ✅ completata 2026-10-20 (Windows da provare su macchina Windows)
+- [x] `GitHubReleaseUpdateSource` (Core): `repos/delfuria/RadioE45/releases/latest`, scarta prerelease/draft, controlla l'asset del canale (`.deb` per Linux, `RadioE45_Setup_*.exe` per Windows), URL = `html_url` della release.
+- [x] `UnoUpdateSourceSelector`: desktop → GitHub; web → `Null`.
+- [x] Windows MAUI non pacchettizzato (`AppInfo.PackagingModel == Unpackaged`) → GitHub (compilato; non provato su Windows; il ramo Store si completa in U6).
+- [x] Test con `HttpMessageHandler` fittizio (fixture `releases/latest`).
+- [x] Prova nella VM Linux (`ssh radioe45-vm`) con versione locale più bassa.
 - **Uscita:** su Linux compare il prompt con il link alla release; `0.46.x` locale uguale all'ultimo tag non genera prompt.
 
 ### U5 — Porting su Uno (UI) e parità
@@ -212,6 +212,7 @@ Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, 
 | U1 | 2026-10-20 | ok | `AppUpdateInfo`/`AppUpdateAction`, `IAppUpdateSource` (con `IsSupported`), `NullUpdateSource`, `AppUpdateCoordinator` (risultati `AppUpdateStatus`: Unsupported/Skipped/UpToDate/Available/Failed), DI con `TryAdd` (sorgente di default `Null`). 206 test verdi, build Core/Uno desktop/Mac Catalyst ok, ParityCheck 0 |
 | U2 | 2026-10-20 | ok, non verificata a schermo | `AppUpdatePrompter` (Core: avviso al primo avvio del giorno, "Aggiorna"/"Più tardi", errori silenziosi), `SettingsViewModel` (`CheckForUpdatesCommand`, `UpdateNowCommand`, `UpdateStatusText`, `IsUpdateAvailable`, `IsUpdateCheckSupported`), righe nella card Info di `SettingsPage`, avvio non bloccante in `AppShell.OnNavigated` dopo termini e redirect stazioni, 10 stringhe `Update_*`/`Settings_CheckUpdates` it/en/pl, `parity/features.yaml` (4 feature) e snapshot. Visto su simulatore iOS in U3 (dialog e limite giornaliero); la riga manuale in Impostazioni non è ancora stata aperta a schermo. Lettura di `AppInfo.VersionString` ancora da fare |
 | U3 | 2026-10-20 | ok, non provata su iOS | `AppleLookupUpdateSource` (Core, `HttpClient` "Updates" con timeout 10 s, paese del dispositivo con fallback `it`, URL solo https), registrata in `MauiProgram` solo se `OperatingSystem.IsIOS()`; Mac Catalyst e Android restano `NullUpdateSource`. 229 test verdi, build Mac Catalyst e iOS ok, ParityCheck 0 |
+| U4 | 2026-10-20 | ok, Windows non provato | `GitHubReleaseUpdateSource` (Core, `GitHubReleaseChannel.LinuxDeb`/`WindowsInstaller`): scarta draft e prerelease, offre la release solo se contiene il file del canale (`.deb` o `RadioE45_Setup*.exe`), apre solo pagine `https://github.com`, User-Agent obbligatorio. Registrata in Uno solo su Linux e in MAUI solo su Windows non pacchettizzato (selezione al momento della risoluzione, non in `CreateMauiApp`). `PlatformSelfTest` stampa `SELFTEST update.source`. 245 test verdi; build Mac Catalyst, iOS, Android, Uno desktop e browserwasm ok; nella VM Linux: `latest 0.46 https://github.com/delfuria/RadioE45/releases/tag/v0.46.6` con app `0.46`, quindi nessun avviso. Il dialog su Linux arriva con U5 (avvio in `ShellPage`) |
 
 
 ## 11. Definizione di done
