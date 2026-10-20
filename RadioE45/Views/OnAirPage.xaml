@@ -139,10 +139,19 @@
                                     FontAttributes="Bold" />
                             </Border>
 
-                            <controls:VuMeterView
-                                WidthRequest="32"
-                                HeightRequest="28"
-                                IsActive="{Binding IsPlaying}" />
+                            <!-- VU meter e indicatore di attesa (connessione assente/buffering) in alternativa -->
+                            <Grid WidthRequest="32" HeightRequest="28">
+                                <controls:VuMeterView
+                                    IsActive="{Binding IsPlaying}"
+                                    IsVisible="{Binding IsBuffering, Converter={StaticResource InvertBool}}" />
+                                <ActivityIndicator
+                                    IsRunning="{Binding IsBuffering}"
+                                    IsVisible="{Binding IsBuffering}"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"
+                                    HeightRequest="24"
+                                    WidthRequest="24" />
+                            </Grid>
 
                         </HorizontalStackLayout>
 
@@ -270,15 +279,6 @@
                         </Grid>
                     </Border>
 
-                    <!-- Buffering indicator -->
-                    <ActivityIndicator
-                        IsRunning="{Binding IsBuffering}"
-                        IsVisible="{Binding IsBuffering}"
-                        HorizontalOptions="Center"
-                        Margin="0,10,0,0"
-                        HeightRequest="32"
-                        WidthRequest="32" />
-
                     <!-- Controlli playback: stazione precedente · play/pausa · stazione successiva · mute (solo mobile) -->
                     <HorizontalStackLayout
                         HorizontalOptions="Center"
@@ -287,7 +287,7 @@
 
                         <!-- Stazione precedente: pulsante + nome (max 2 righe). Il margine superiore
                              centra il pulsante (44) sulla verticale del play (68) -->
-                        <VerticalStackLayout WidthRequest="76" Spacing="4" VerticalOptions="Start" Margin="0,12,0,0" IsVisible="{Binding HasMultipleStations}">
+                        <VerticalStackLayout WidthRequest="76" Spacing="4" VerticalOptions="Start" Margin="0,12,0,0" IsVisible="{Binding ShowPreviousStation}">
                             <Button
                                 Text="⏮"
                                 BackgroundColor="{DynamicResource CardElevated}"
@@ -317,7 +317,7 @@
                             IsEnabled="{Binding IsBuffering, Converter={StaticResource InvertBool}}" />
 
                         <!-- Stazione successiva -->
-                        <VerticalStackLayout WidthRequest="76" Spacing="4" VerticalOptions="Start" Margin="0,12,0,0" IsVisible="{Binding HasMultipleStations}">
+                        <VerticalStackLayout WidthRequest="76" Spacing="4" VerticalOptions="Start" Margin="0,12,0,0" IsVisible="{Binding ShowNextStation}">
                             <Button
                                 Text="⏭"
                                 BackgroundColor="{DynamicResource CardElevated}"

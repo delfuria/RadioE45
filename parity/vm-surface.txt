@@ -50,7 +50,6 @@ OnAirViewModel.ArtworkUrl : string { get; set; }
 OnAirViewModel.ClearStationAsync() : Task
 OnAirViewModel.CurrentStation : AzuraStation { get; set; }
 OnAirViewModel.ElapsedTimeText : string { get; set; }
-OnAirViewModel.HasMultipleStations : bool { get; }
 OnAirViewModel.HasPodcasts : bool { get; set; }
 OnAirViewModel.HasSchedule : bool { get; set; }
 OnAirViewModel.InitializeAsync() : Task
@@ -70,6 +69,8 @@ OnAirViewModel.RefreshNowPlayingCommand : IAsyncRelayCommand { get; }
 OnAirViewModel.RestartAsync() : Task
 OnAirViewModel.SelectStationCommand : IAsyncRelayCommand<AzuraStation> { get; }
 OnAirViewModel.SetVolumeCommand : IRelayCommand<double> { get; }
+OnAirViewModel.ShowNextStation : bool { get; }
+OnAirViewModel.ShowPreviousStation : bool { get; }
 OnAirViewModel.ShowScheduleCommand : IAsyncRelayCommand { get; }
 OnAirViewModel.ShowScheduleOnlyRow : bool { get; }
 OnAirViewModel.ShutdownAsync() : Task

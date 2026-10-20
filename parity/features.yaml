@@ -185,6 +185,7 @@
   page: OnAir
   viewmodel: OnAirViewModel
   status: { maui: done, desktop: done, web: done }
+  notes: "1 stazione: solo play; 2 stazioni: solo successiva; 3 o più: precedente e successiva. Spinner di attesa al posto del VU meter (riga in alto a destra)"
 
 - id: onair.volume
   title: Volume e mute (slider su desktop, mute su mobile con volume di sistema)
@@ -434,6 +435,7 @@
   page: SongRequest
   viewmodel: SongRequestViewModel
   status: { maui: done, desktop: done, web: done }
+  notes: "Elenco mischiato a ogni caricamento (logica nel ViewModel)"
 
 - id: songrequest.submit
   title: Invio della richiesta con messaggi d'errore dedicati (troppo recente, già in coda, non richiedibile…)

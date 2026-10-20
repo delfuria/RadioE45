@@ -153,10 +153,19 @@
                                     FontWeight="Bold" />
                             </Border>
 
-                            <controls:VuMeterView
-                                Width="32"
-                                Height="28"
-                                IsActive="{x:Bind ViewModel.IsPlaying, Mode=OneWay}" />
+                            <!-- VU meter and waiting indicator (no connection/buffering) are mutually exclusive -->
+                            <Grid Width="32" Height="28">
+                                <controls:VuMeterView
+                                    IsActive="{x:Bind ViewModel.IsPlaying, Mode=OneWay}"
+                                    Visibility="{x:Bind conv:Fn.Not(ViewModel.IsBuffering), Mode=OneWay}" />
+                                <ProgressRing
+                                    IsActive="{x:Bind ViewModel.IsBuffering, Mode=OneWay}"
+                                    Visibility="{x:Bind ViewModel.IsBuffering, Mode=OneWay}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Height="24"
+                                    Width="24" />
+                            </Grid>
 
                         </StackPanel>
 
@@ -294,15 +303,6 @@
                         </Grid>
                     </Button>
 
-                    <!-- Buffering -->
-                    <ProgressRing
-                        IsActive="{x:Bind ViewModel.IsBuffering, Mode=OneWay}"
-                        Visibility="{x:Bind ViewModel.IsBuffering, Mode=OneWay}"
-                        HorizontalAlignment="Center"
-                        Margin="0,10,0,0"
-                        Height="32"
-                        Width="32" />
-
                     <!-- Playback: previous station · play/pause · next station -->
                     <StackPanel
                         Orientation="Horizontal"
@@ -317,7 +317,7 @@
                             Spacing="4"
                             VerticalAlignment="Top"
                             Margin="0,12,0,0"
-                            Visibility="{x:Bind ViewModel.HasMultipleStations, Mode=OneWay}">
+                            Visibility="{x:Bind ViewModel.ShowPreviousStation, Mode=OneWay}">
                             <Button
                                 Content="&#xf048;"
                                 Style="{StaticResource RoundCardButton}"
@@ -346,7 +346,7 @@
                             Spacing="4"
                             VerticalAlignment="Top"
                             Margin="0,12,0,0"
-                            Visibility="{x:Bind ViewModel.HasMultipleStations, Mode=OneWay}">
+                            Visibility="{x:Bind ViewModel.ShowNextStation, Mode=OneWay}">
                             <Button
                                 Content="&#xf051;"
                                 Style="{StaticResource RoundCardButton}"

@@ -357,14 +357,17 @@ public partial class OnAirViewModel : BaseViewModel
 
     public string? NextStationName => GetAdjacentStation(+1)?.Name;
 
-    // With a single station previous/next would just reselect it: the buttons are hidden.
-    public bool HasMultipleStations => _catalog.Stations.Count > 1;
+    // 1 station: neither button (they would just reselect it). 2 stations: only "next", "previous" would be the same.
+    public bool ShowPreviousStation => _catalog.Stations.Count >= 3;
+
+    public bool ShowNextStation => _catalog.Stations.Count >= 2;
 
     private void NotifyAdjacentStationsChanged()
     {
         OnPropertyChanged(nameof(PreviousStationName));
         OnPropertyChanged(nameof(NextStationName));
-        OnPropertyChanged(nameof(HasMultipleStations));
+        OnPropertyChanged(nameof(ShowPreviousStation));
+        OnPropertyChanged(nameof(ShowNextStation));
     }
 
     private static int IndexOfStation(IReadOnlyList<AzuraStation> stations, int id)

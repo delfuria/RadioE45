@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -78,6 +79,8 @@ public partial class SongRequestViewModel : BaseViewModel
 
             // I jingle sono brani della libreria ma non vanno proposti tra le richieste.
             _allSongs = items.Where(i => !i.Title.Trim().Equals("jingle", StringComparison.OrdinalIgnoreCase)).ToList();
+            // Shuffled at every load so the same songs don't always lead the list
+            Random.Shared.Shuffle(CollectionsMarshal.AsSpan(_allSongs));
             PageNumber = 1;
             ApplyFilter();
         }, LocalizationResourceManager.Instance["Err_LoadRequestableSongs"]);
