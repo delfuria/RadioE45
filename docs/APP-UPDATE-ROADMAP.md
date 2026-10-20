@@ -1,6 +1,6 @@
 # RadioE45 — Roadmap controllo aggiornamenti
 
-> Stato: **piano pronto, nessuna implementazione.** Prossima sessione: **U5** (§9); ancora da provare a schermo: controllo manuale in Impostazioni (iOS) e lettura di `AppInfo.VersionString`. Ultimo aggiornamento: 2026-10-20 (app v0.46.6).
+> Stato: **piano pronto, nessuna implementazione.** Prossima sessione: **U6** (Windows Store) oppure U8 (hardening) se Windows non serve subito (§9); ancora da provare a schermo: controllo manuale in Impostazioni (iOS) e lettura di `AppInfo.VersionString`. Ultimo aggiornamento: 2026-10-20 (app v0.46.6).
 > Analisi di partenza (meccanismi per piattaforma): [`APP-UPDATE-CHECK.md`](APP-UPDATE-CHECK.md). Questo file è il piano operativo e prevale in caso di differenze.
 > Branch di lavoro: `app-update`. Un branch per sessione solo se la sessione tocca tanti file; altrimenti si resta su `app-update`.
 
@@ -179,12 +179,12 @@ Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, 
 - [x] Prova nella VM Linux (`ssh radioe45-vm`) con versione locale più bassa.
 - **Uscita:** su Linux compare il prompt con il link alla release; `0.46.x` locale uguale all'ultimo tag non genera prompt.
 
-### U5 — Porting su Uno (UI) e parità
-- [ ] Punto di avvio in `ShellPage.OnLoaded`, dopo `EnsureAcceptedAsync()`.
-- [ ] UI Impostazioni su Uno (skill `ui-parity-port`), `{x:Bind ViewModel.X}`.
-- [ ] `parity/features.yaml`: `update.startup-prompt`, `settings.update.check`, `update.android` (§6); `ParityCheck` 0 o 1.
-- [ ] Verifica visiva su desktop (stessa regola dello screenshot per finestra).
-- **Uscita:** desktop allineato; web `n/a` con nota.
+### U5 — Porting su Uno (UI) e parità — ✅ completata 2026-10-20 (riga manuale Uno non aperta a schermo)
+- [x] Punto di avvio in `ShellPage.OnLoaded`, dopo `EnsureAcceptedAsync()`.
+- [x] UI Impostazioni su Uno (skill `ui-parity-port`), `{x:Bind ViewModel.X}`.
+- [x] `parity/features.yaml`: `update.startup-prompt`, `settings.update.check`, `update.android` (§6); `ParityCheck` 0 o 1.
+- [x] Verifica visiva su desktop (stessa regola dello screenshot per finestra).
+- **Uscita:** desktop allineato; web `n/a` con nota. (Parità: `desktop: limited` perché la sezione c'è solo su Linux; vedi note.)
 
 ### U6 — Windows Store
 - [ ] `MauiWindowsStoreUpdateSource` (`#if WINDOWS`): `StoreContext` con `InitializeWithWindow`, `GetAppAndOptionalStorePackageUpdatesAsync`, rilevamento pacchettizzato.
@@ -213,6 +213,7 @@ Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, 
 | U2 | 2026-10-20 | ok, non verificata a schermo | `AppUpdatePrompter` (Core: avviso al primo avvio del giorno, "Aggiorna"/"Più tardi", errori silenziosi), `SettingsViewModel` (`CheckForUpdatesCommand`, `UpdateNowCommand`, `UpdateStatusText`, `IsUpdateAvailable`, `IsUpdateCheckSupported`), righe nella card Info di `SettingsPage`, avvio non bloccante in `AppShell.OnNavigated` dopo termini e redirect stazioni, 10 stringhe `Update_*`/`Settings_CheckUpdates` it/en/pl, `parity/features.yaml` (4 feature) e snapshot. Visto su simulatore iOS in U3 (dialog e limite giornaliero); la riga manuale in Impostazioni non è ancora stata aperta a schermo. Lettura di `AppInfo.VersionString` ancora da fare |
 | U3 | 2026-10-20 | ok, non provata su iOS | `AppleLookupUpdateSource` (Core, `HttpClient` "Updates" con timeout 10 s, paese del dispositivo con fallback `it`, URL solo https), registrata in `MauiProgram` solo se `OperatingSystem.IsIOS()`; Mac Catalyst e Android restano `NullUpdateSource`. 229 test verdi, build Mac Catalyst e iOS ok, ParityCheck 0 |
 | U4 | 2026-10-20 | ok, Windows non provato | `GitHubReleaseUpdateSource` (Core, `GitHubReleaseChannel.LinuxDeb`/`WindowsInstaller`): scarta draft e prerelease, offre la release solo se contiene il file del canale (`.deb` o `RadioE45_Setup*.exe`), apre solo pagine `https://github.com`, User-Agent obbligatorio. Registrata in Uno solo su Linux e in MAUI solo su Windows non pacchettizzato (selezione al momento della risoluzione, non in `CreateMauiApp`). `PlatformSelfTest` stampa `SELFTEST update.source`. 245 test verdi; build Mac Catalyst, iOS, Android, Uno desktop e browserwasm ok; nella VM Linux: `latest 0.46 https://github.com/delfuria/RadioE45/releases/tag/v0.46.6` con app `0.46`, quindi nessun avviso. Il dialog su Linux arriva con U5 (avvio in `ShellPage`) |
+| U5 | 2026-10-20 | ok | `ShellPage` (Uno) lancia `AppUpdatePrompter.CheckAtStartupAsync()` dopo termini e redirect stazioni; righe "Controlla aggiornamenti" / "Aggiorna ora" nella card Info di `SettingsPage` Uno (nascoste se `IsUpdateCheckSupported` è falso). `parity/features.yaml`: `settings.update.check` e `update.startup-prompt` `maui: limited, desktop: limited, web: n/a`; `ParityCheck` 0 senza debito residuo per queste feature. Build Uno desktop e browserwasm ok. **Visto nella VM Linux** (versione forzata `0.45` solo nella copia della VM, poi ripristinata): dialog "Update available / Version 0.46 of Radio E45 is available." con "Update" e "Later". Le righe in Impostazioni su Uno non sono state aperte a schermo |
 
 
 ## 11. Definizione di done

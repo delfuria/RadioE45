@@ -5,6 +5,7 @@ using RadioE45.Models;
 using RadioE45.Services.Data;
 using RadioE45.Services.Legal;
 using RadioE45.Services.Shared;
+using RadioE45.Services.Updates;
 using RadioE45.ViewModels;
 
 namespace RadioE45.Views;
@@ -21,6 +22,7 @@ public sealed partial class ShellPage : Page
 {
     private readonly IRadioRepository _radioRepository;
     private readonly ITermsService _termsService;
+    private readonly AppUpdatePrompter _updatePrompter;
     private bool _startupCheckDone;
     private Storyboard? _menuStoryboard;
     private bool _menuOpening;
@@ -31,6 +33,7 @@ public sealed partial class ShellPage : Page
         UnoNavigationService navigation,
         IRadioRepository radioRepository,
         ITermsService termsService,
+        AppUpdatePrompter updatePrompter,
         AppMenuViewModel menuViewModel,
         OnAirViewModel onAirViewModel)
     {
@@ -39,6 +42,7 @@ public sealed partial class ShellPage : Page
         InitializeComponent();
         _radioRepository = radioRepository;
         _termsService = termsService;
+        _updatePrompter = updatePrompter;
         navigation.Attach(this);
         if (UnoLayout.IsSingleColumn)
         {
@@ -72,7 +76,7 @@ public sealed partial class ShellPage : Page
     }
 
     // Same startup check as AppShell.OnNavigated: terms of use on the first launch, then without
-    // stations the app opens Channels, whose ViewModel offers the default stations.
+    // stations the app opens Channels, whose ViewModel offers the default stations, then the daily update check.
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         if (_startupCheckDone) return;
@@ -81,6 +85,9 @@ public sealed partial class ShellPage : Page
         await _termsService.EnsureAcceptedAsync();
         if (!await _radioRepository.HasStationsAsync())
             Push(typeof(RadioListPage), clearHistory: true);
+
+        // Not awaited: the check must never delay playback. Once a day, silent on errors.
+        _ = _updatePrompter.CheckAtStartupAsync();
     }
 
     // The menu pane slides in from outside the shell: without a clip the animation shows it to
