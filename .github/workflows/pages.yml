@@ -53,6 +53,9 @@ jobs:
           mv publish/wwwroot site
           # Pages must not run Jekyll (it hides the package_* and _framework-like folders).
           touch site/.nojekyll
+          # Read by the web app (WebVersionUpdateSource) to tell a visitor that a newer build exists.
+          jq -c '{version: .version}' version.json > site/version.json
+          cat site/version.json
           # Pages has no rewrite rules: unknown paths get the app instead of a plain 404.
           cp site/index.html site/404.html
           find site -maxdepth 2 \( -name index.html -o -name 404.html -o -name manifest.webmanifest -o -name radioe45-sw.js \) | sort

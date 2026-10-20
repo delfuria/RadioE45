@@ -151,13 +151,29 @@ public partial class App : Application
 
         services.AddRadioE45Core();
 
-        // Update check (docs/APP-UPDATE-ROADMAP.md): the Linux .deb follows GitHub Releases; the web
-        // build and the other desktops have no check. Replaces the NullUpdateSource of AddRadioE45Core.
+        // Update check (docs/APP-UPDATE-ROADMAP.md): the Linux .deb follows GitHub Releases, the web build its own
+        // version.json; the other desktops have no check. Replaces the NullUpdateSource of AddRadioE45Core.
+#if RADIOE45_BROWSER
+        services.AddSingleton<IAppUpdateSource>(sp =>
+        {
+            // Resolved while the shell is built: a failure here must not stop the app from starting.
+            try
+            {
+                return new WebVersionUpdateSource(sp.GetRequiredService<IHttpClientFactory>(), global::RadioE45.Services.Browser.BrowserAppBase.Get());
+            }
+            catch (Exception ex)
+            {
+                sp.GetRequiredService<ILoggerFactory>().CreateLogger("UpdateCheck").LogWarning(ex, "Web update check unavailable");
+                return new NullUpdateSource();
+            }
+        });
+#else
         if (OperatingSystem.IsLinux())
         {
             services.AddSingleton<IAppUpdateSource>(sp =>
                 new GitHubReleaseUpdateSource(sp.GetRequiredService<IHttpClientFactory>(), GitHubReleaseChannel.LinuxDeb));
         }
+#endif
 
         // Audio: shared live and podcast engines on the Uno MediaPlayer. System media controls:
         // MPRIS on Linux (nothing on macOS and Windows), Media Session on the web.

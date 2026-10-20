@@ -408,16 +408,16 @@
   since: "0.47"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: limited, desktop: limited, web: n/a }
-  notes: "docs/APP-UPDATE-ROADMAP.md. La sezione compare solo dove esiste una sorgente: MAUI iOS e Windows installer (Store in U6), Uno desktop solo su Linux (.deb, GitHub Releases). Web senza controllo (U7 opzionale)"
+  status: { maui: limited, desktop: limited, web: limited }
+  notes: "docs/APP-UPDATE-ROADMAP.md. La sezione compare solo dove esiste una sorgente: MAUI iOS, Windows (Store e installer), Uno desktop solo su Linux (.deb, GitHub Releases), web (version.json del sito: \"Aggiorna\" apre l'app in una nuova scheda)"
 
 - id: update.startup-prompt
   title: Avviso di aggiornamento disponibile al primo avvio del giorno, dopo i Termini d'uso ("Aggiorna" / "Più tardi")
   since: "0.47"
   page: Shell
   viewmodel: SettingsViewModel
-  status: { maui: limited, desktop: limited, web: n/a }
-  notes: "Logica in AppUpdatePrompter (Core). Attivo dove esiste una sorgente: MAUI iOS e Windows installer (Store in U6), Uno desktop solo su Linux (.deb). Web senza controllo"
+  status: { maui: limited, desktop: limited, web: limited }
+  notes: "Logica in AppUpdatePrompter (Core). Attivo dove esiste una sorgente: MAUI iOS e Windows, Uno desktop solo su Linux (.deb), web con version.json del sito (solo cambi di Major.Minor)"
 
 - id: update.android
   title: Controllo aggiornamenti su Android

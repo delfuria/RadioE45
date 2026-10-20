@@ -147,10 +147,15 @@ public static class MauiProgram
             if (OperatingSystem.IsIOS())
                 return ActivatorUtilities.CreateInstance<AppleLookupUpdateSource>(sp);
 
-            // Windows outside the Microsoft Store (Inno Setup installer) follows the GitHub release;
-            // the Store package comes in U6.
-            if (OperatingSystem.IsWindows() && AppInfo.Current.PackagingModel == AppPackagingModel.Unpackaged)
-                return new GitHubReleaseUpdateSource(sp.GetRequiredService<IHttpClientFactory>(), GitHubReleaseChannel.WindowsInstaller);
+            // Windows: the Store package asks the Store, the Inno Setup installer follows the GitHub release.
+            if (OperatingSystem.IsWindows())
+            {
+                if (AppInfo.Current.PackagingModel == AppPackagingModel.Unpackaged)
+                    return new GitHubReleaseUpdateSource(sp.GetRequiredService<IHttpClientFactory>(), GitHubReleaseChannel.WindowsInstaller);
+#if WINDOWS
+                return new MauiWindowsStoreUpdateSource();
+#endif
+            }
 
             return new NullUpdateSource();
         });
