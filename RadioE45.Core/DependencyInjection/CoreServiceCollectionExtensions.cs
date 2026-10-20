@@ -1,8 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using RadioE45.Services.Audio;
 using RadioE45.Services.Data;
 using RadioE45.Services.Legal;
+using RadioE45.Services.Platform;
 using RadioE45.Services.Radio;
+using RadioE45.Services.Updates;
 
 namespace RadioE45.DependencyInjection;
 
@@ -21,6 +24,11 @@ public static class CoreServiceCollectionExtensions
         services.AddSingleton<ITermsService, TermsService>();
         services.AddSingleton<IStreamUrlProber, StreamUrlProber>();
         services.AddSingleton<RemoteArtworkLoader>();
+
+        // Heads register the source of their distribution channel; without one there is no update check.
+        services.TryAddSingleton(TimeProvider.System);
+        services.TryAddSingleton<IAppUpdateSource, NullUpdateSource>();
+        services.AddSingleton<AppUpdateCoordinator>();
 
         services.AddSingleton<INowPlayingService, NowPlayingService>();
         services.AddSingleton<IStationDetailService, StationDetailService>();

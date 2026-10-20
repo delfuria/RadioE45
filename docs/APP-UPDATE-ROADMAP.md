@@ -1,6 +1,6 @@
 # RadioE45 — Roadmap controllo aggiornamenti
 
-> Stato: **piano pronto, nessuna implementazione.** Prossima sessione: **U0** (§9). Ultimo aggiornamento: 2026-10-20 (app v0.46.6).
+> Stato: **piano pronto, nessuna implementazione.** Prossima sessione: **U2** (§9). Ultimo aggiornamento: 2026-10-20 (app v0.46.6).
 > Analisi di partenza (meccanismi per piattaforma): [`APP-UPDATE-CHECK.md`](APP-UPDATE-CHECK.md). Questo file è il piano operativo e prevale in caso di differenze.
 > Branch di lavoro: `app-update`. Un branch per sessione solo se la sessione tocca tanti file; altrimenti si resta su `app-update`.
 
@@ -142,18 +142,18 @@ Note obbligatorie per `n/a`/`limited`; per Android dichiarare nelle `notes` che 
 
 Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, `ParityCheck` 0 o 1, checkbox e registro (§10) aggiornati, commit proposto come testo. Dopo ogni modifica `.cs`: diagnostica LSP e `dotnet build`.
 
-### U0 — Fondazione versioni (Core, nessuna UI)
-- [ ] Leggere a runtime cosa riportano `AppInfo.VersionString` (iOS, Mac, Android, Windows) e `UnoAppEnvironment` (Linux/web); annotare i valori in §3.
-- [ ] `AppVersion` nel Core (parse tollerante, confronto solo Major.Minor) + `AppVersionTests`.
-- [ ] Nessuna nuova proprietà in `IAppEnvironment`: `AppVersion` tronca a Major.Minor. Verificare solo i valori a runtime.
+### U0 — Fondazione versioni (Core, nessuna UI) — ✅ completata 2026-10-20
+- [ ] **Rimandato a U2** (serve un dispositivo): leggere a runtime cosa riportano `AppInfo.VersionString` (iOS, Mac, Android, Windows) e `UnoAppEnvironment` (Linux/web); annotare i valori in §3.
+- [x] `AppVersion` nel Core (parse tollerante, confronto solo Major.Minor) + `AppVersionTests`.
+- [x] Nessuna nuova proprietà in `IAppEnvironment`: `AppVersion` tronca a Major.Minor. Verificare solo i valori a runtime.
 - **File:** `RadioE45.Core/Models/AppVersion.cs`, `RadioE45.Core.Tests/Models/AppVersionTests.cs`.
 - **Uscita:** test verdi; nessuna regressione UI.
 
-### U1 — Coordinator, modello e sorgente nulla (Core)
-- [ ] `AppUpdateInfo`, `AppUpdateAction`, `IAppUpdateSource`, `NullUpdateSource`.
-- [ ] `AppUpdateCoordinator` (limite giornaliero, manuale, errori silenziosi, log).
-- [ ] Registrazione DI nel Core (`DependencyInjection/`), sorgente di default `Null`.
-- [ ] Test del coordinator con `TimeProvider` fittizio e `ISettingsStore` in memoria.
+### U1 — Coordinator, modello e sorgente nulla (Core) — ✅ completata 2026-10-20
+- [x] `AppUpdateInfo`, `AppUpdateAction`, `IAppUpdateSource`, `NullUpdateSource`.
+- [x] `AppUpdateCoordinator` (limite giornaliero, manuale, errori silenziosi, log).
+- [x] Registrazione DI nel Core (`DependencyInjection/`), sorgente di default `Null`.
+- [x] Test del coordinator con `TimeProvider` fittizio e `ISettingsStore` in memoria.
 - **Uscita:** logica completa e testata senza alcuna sorgente reale.
 
 ### U2 — Avviso all'avvio e Impostazioni, MAUI (UI minima)
@@ -208,7 +208,8 @@ Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, 
 
 | Sessione | Data | Esito | Note |
 |---|---|---|---|
-| — | — | — | nessuna sessione ancora eseguita |
+| U0 | 2026-10-20 | ok | `Models/AppVersion.cs` (record struct Major.Minor, `TryParse` tollerante), 38 test totali nuovi con U1. Letture a runtime di `AppInfo.VersionString` rimandate a U2 |
+| U1 | 2026-10-20 | ok | `AppUpdateInfo`/`AppUpdateAction`, `IAppUpdateSource` (con `IsSupported`), `NullUpdateSource`, `AppUpdateCoordinator` (risultati `AppUpdateStatus`: Unsupported/Skipped/UpToDate/Available/Failed), DI con `TryAdd` (sorgente di default `Null`). 206 test verdi, build Core/Uno desktop/Mac Catalyst ok, ParityCheck 0 |
 
 ## 11. Definizione di done
 
