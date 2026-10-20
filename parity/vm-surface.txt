@@ -125,9 +125,12 @@ ScheduleViewModel.LoadScheduleCommand : IAsyncRelayCommand { get; }
 ScheduleViewModel.ScheduleItems : ObservableCollection<PlaylistSchedule> { get; set; }
 SettingsViewModel : type
 SettingsViewModel.AppVersion : string { get; set; }
+SettingsViewModel.CheckForUpdatesCommand : IAsyncRelayCommand { get; }
 SettingsViewModel.CrashReportingEnabled : bool { get; set; }
 SettingsViewModel.IsCrashReportingAvailable : bool { get; }
 SettingsViewModel.IsDebugBuild : bool { get; }
+SettingsViewModel.IsUpdateAvailable : bool { get; set; }
+SettingsViewModel.IsUpdateCheckSupported : bool { get; }
 SettingsViewModel.MustUpdate : bool { get; set; }
 SettingsViewModel.PlaybackLatencyOffsetSeconds : int { get; set; }
 SettingsViewModel.PreferHlsStream : bool { get; set; }
@@ -139,6 +142,8 @@ SettingsViewModel.SendCrashReportTestCommand : IAsyncRelayCommand { get; }
 SettingsViewModel.ShowTermsCommand : IAsyncRelayCommand { get; }
 SettingsViewModel.StartWithFavorite : bool { get; set; }
 SettingsViewModel.ThemePreference : string { get; set; }
+SettingsViewModel.UpdateNowCommand : IAsyncRelayCommand { get; }
+SettingsViewModel.UpdateStatusText : string { get; set; }
 SongRequestViewModel : type
 SongRequestViewModel.CanGoToNextPage : bool { get; }
 SongRequestViewModel.CanGoToPreviousPage : bool { get; }

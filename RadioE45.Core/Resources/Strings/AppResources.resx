@@ -217,4 +217,14 @@ L'app è fornita «così com'è». Non siamo responsabili degli stream di terze 
 
 Puoi rileggere questi termini in qualsiasi momento in Impostazioni → Info.</value></data>
   <data name="Settings_Terms" xml:space="preserve"><value>Termini d'uso</value></data>
+  <data name="Update_Title" xml:space="preserve"><value>Aggiornamento disponibile</value></data>
+  <data name="Update_Message" xml:space="preserve"><value>È disponibile la versione {0} di Radio E45.</value></data>
+  <data name="Update_Accept" xml:space="preserve"><value>Aggiorna</value></data>
+  <data name="Update_Later" xml:space="preserve"><value>Più tardi</value></data>
+  <data name="Settings_CheckUpdates" xml:space="preserve"><value>Controlla aggiornamenti</value></data>
+  <data name="Update_Now" xml:space="preserve"><value>Aggiorna ora</value></data>
+  <data name="Update_Status_Checking" xml:space="preserve"><value>Controllo in corso…</value></data>
+  <data name="Update_Status_UpToDate" xml:space="preserve"><value>App aggiornata</value></data>
+  <data name="Update_Status_Available" xml:space="preserve"><value>Disponibile la versione {0}</value></data>
+  <data name="Update_Status_Failed" xml:space="preserve"><value>Controllo non riuscito</value></data>
 </root>

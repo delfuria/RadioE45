@@ -208,4 +208,14 @@ The app is provided "as is". We are not responsible for third-party streams.
 
 You can read these terms again at any time in Settings → Info.</value></data>
   <data name="Settings_Terms" xml:space="preserve"><value>Terms of Use</value></data>
+  <data name="Update_Title" xml:space="preserve"><value>Update available</value></data>
+  <data name="Update_Message" xml:space="preserve"><value>Version {0} of Radio E45 is available.</value></data>
+  <data name="Update_Accept" xml:space="preserve"><value>Update</value></data>
+  <data name="Update_Later" xml:space="preserve"><value>Later</value></data>
+  <data name="Settings_CheckUpdates" xml:space="preserve"><value>Check for updates</value></data>
+  <data name="Update_Now" xml:space="preserve"><value>Update now</value></data>
+  <data name="Update_Status_Checking" xml:space="preserve"><value>Checking…</value></data>
+  <data name="Update_Status_UpToDate" xml:space="preserve"><value>App is up to date</value></data>
+  <data name="Update_Status_Available" xml:space="preserve"><value>Version {0} available</value></data>
+  <data name="Update_Status_Failed" xml:space="preserve"><value>Check failed</value></data>
 </root>

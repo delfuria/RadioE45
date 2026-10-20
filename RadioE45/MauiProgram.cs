@@ -15,6 +15,7 @@ using RadioE45.Services.Localization;
 using RadioE45.Services.Logging;
 using RadioE45.Services.Platform;
 using RadioE45.Services.Radio;
+using RadioE45.Services.Updates;
 using RadioE45.ViewModels;
 using RadioE45.Views;
 using Refit;
@@ -138,6 +139,11 @@ public static class MauiProgram
 
         // Shared services from RadioE45.Core (AzuraCast HTTP client, radio/podcast services, repositories)
         builder.Services.AddRadioE45Core();
+
+        // Update check source per distribution channel (docs/APP-UPDATE-ROADMAP.md). Registered after
+        // AddRadioE45Core to replace its NullUpdateSource. Android and Mac Catalyst have no check yet.
+        if (OperatingSystem.IsIOS())
+            builder.Services.AddSingleton<IAppUpdateSource, AppleLookupUpdateSource>();
 
         // Singletons — survive navigation
  #if ANDROID

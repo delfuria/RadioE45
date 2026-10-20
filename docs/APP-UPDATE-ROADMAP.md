@@ -1,6 +1,6 @@
 # RadioE45 — Roadmap controllo aggiornamenti
 
-> Stato: **piano pronto, nessuna implementazione.** Prossima sessione: **U2** (§9). Ultimo aggiornamento: 2026-10-20 (app v0.46.6).
+> Stato: **piano pronto, nessuna implementazione.** Prossima sessione: **U4** (§9); ancora da provare a schermo: controllo manuale in Impostazioni (iOS) e lettura di `AppInfo.VersionString`. Ultimo aggiornamento: 2026-10-20 (app v0.46.6).
 > Analisi di partenza (meccanismi per piattaforma): [`APP-UPDATE-CHECK.md`](APP-UPDATE-CHECK.md). Questo file è il piano operativo e prevale in caso di differenze.
 > Branch di lavoro: `app-update`. Un branch per sessione solo se la sessione tocca tanti file; altrimenti si resta su `app-update`.
 
@@ -156,19 +156,19 @@ Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, 
 - [x] Test del coordinator con `TimeProvider` fittizio e `ISettingsStore` in memoria.
 - **Uscita:** logica completa e testata senza alcuna sorgente reale.
 
-### U2 — Avviso all'avvio e Impostazioni, MAUI (UI minima)
-- [ ] Stringhe `Update_*` nei `.resx` (it/en/pl).
-- [ ] `SettingsViewModel`: stato update, comandi "Controlla aggiornamenti" e "Aggiorna ora".
-- [ ] Punto di avvio in `AppShell.OnNavigated`, dopo `EnsureAcceptedAsync()`, non bloccante.
-- [ ] UI in `SettingsPage` MAUI.
-- [ ] `parity/features.yaml` + `--update-surface`; Uno e web come `todo` (porting in U5).
+### U2 — Avviso all'avvio e Impostazioni, MAUI (UI minima) — ✅ completata 2026-10-20 (verificata su simulatore iOS: dialog; manuale da provare)
+- [x] Stringhe `Update_*` nei `.resx` (it/en/pl).
+- [x] `SettingsViewModel`: stato update, comandi "Controlla aggiornamenti" e "Aggiorna ora".
+- [x] Punto di avvio in `AppShell.OnNavigated`, dopo `EnsureAcceptedAsync()`, non bloccante.
+- [x] UI in `SettingsPage` MAUI.
+- [x] `parity/features.yaml` + `--update-surface`; Uno e web come `todo` (porting in U5).
 - **Uscita:** su iOS (o Mac Catalyst, con la sorgente fittizia) con `NullUpdateSource` forzata a "versione fittizia più alta" (flag DEBUG) il dialog compare al primo avvio del giorno e non al secondo (provare cambiando `update.lastCheckDate`); il pulsante manuale funziona. Verifica visiva con screenshot della sola finestra dell'app (per ID finestra).
 
-### U3 — Apple (solo iOS)
-- [ ] Paese della Lookup: regione del dispositivo, fallback `it` (D8).
-- [ ] `AppleLookupUpdateSource` (Core): `bundleId`, `country`, `entity`; lettura di `version` e `trackViewUrl`; fixture di test.
-- [ ] `MauiUpdateSourceSelector`: iOS → Apple; Mac Catalyst → `NullUpdateSource` (D9).
-- [ ] Prova reale con una versione locale più bassa (build di prova con versione forzata).
+### U3 — Apple (solo iOS) — ✅ completata 2026-10-20 (Lookup reale provata su simulatore iOS)
+- [x] Paese della Lookup: regione del dispositivo, fallback `it` (D8).
+- [x] `AppleLookupUpdateSource` (Core): `bundleId`, `country`, `entity`; lettura di `version` e `trackViewUrl`; fixture di test.
+- [x] `MauiUpdateSourceSelector`: iOS → Apple; Mac Catalyst → `NullUpdateSource` (D9).
+- [x] Prova reale su iOS (simulatore iPhone 16e) con versione forzata `0.45` (`-p:ApplicationDisplayVersion=0.45 -p:NBGV_SetMauiVersionProperties=false`): dialog "È disponibile la versione 0.46" al primo avvio, nessun dialog al secondo avvio dello stesso giorno.
 - **Uscita:** su iOS il prompt compare con l'URL corretto e "Aggiorna" apre lo Store.
 
 ### U4 — GitHub Releases (Linux Uno desktop e Windows non pacchettizzato)
@@ -210,6 +210,9 @@ Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, 
 |---|---|---|---|
 | U0 | 2026-10-20 | ok | `Models/AppVersion.cs` (record struct Major.Minor, `TryParse` tollerante), 38 test totali nuovi con U1. Letture a runtime di `AppInfo.VersionString` rimandate a U2 |
 | U1 | 2026-10-20 | ok | `AppUpdateInfo`/`AppUpdateAction`, `IAppUpdateSource` (con `IsSupported`), `NullUpdateSource`, `AppUpdateCoordinator` (risultati `AppUpdateStatus`: Unsupported/Skipped/UpToDate/Available/Failed), DI con `TryAdd` (sorgente di default `Null`). 206 test verdi, build Core/Uno desktop/Mac Catalyst ok, ParityCheck 0 |
+| U2 | 2026-10-20 | ok, non verificata a schermo | `AppUpdatePrompter` (Core: avviso al primo avvio del giorno, "Aggiorna"/"Più tardi", errori silenziosi), `SettingsViewModel` (`CheckForUpdatesCommand`, `UpdateNowCommand`, `UpdateStatusText`, `IsUpdateAvailable`, `IsUpdateCheckSupported`), righe nella card Info di `SettingsPage`, avvio non bloccante in `AppShell.OnNavigated` dopo termini e redirect stazioni, 10 stringhe `Update_*`/`Settings_CheckUpdates` it/en/pl, `parity/features.yaml` (4 feature) e snapshot. Visto su simulatore iOS in U3 (dialog e limite giornaliero); la riga manuale in Impostazioni non è ancora stata aperta a schermo. Lettura di `AppInfo.VersionString` ancora da fare |
+| U3 | 2026-10-20 | ok, non provata su iOS | `AppleLookupUpdateSource` (Core, `HttpClient` "Updates" con timeout 10 s, paese del dispositivo con fallback `it`, URL solo https), registrata in `MauiProgram` solo se `OperatingSystem.IsIOS()`; Mac Catalyst e Android restano `NullUpdateSource`. 229 test verdi, build Mac Catalyst e iOS ok, ParityCheck 0 |
+
 
 ## 11. Definizione di done
 

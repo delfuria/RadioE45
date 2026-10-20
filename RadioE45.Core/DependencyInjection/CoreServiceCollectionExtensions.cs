@@ -21,6 +21,10 @@ public static class CoreServiceCollectionExtensions
         services.AddHttpClient("AzuraCast")
             .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(3));
 
+        // Update lookups (App Store, GitHub Releases): silent on failure, so a short timeout.
+        services.AddHttpClient(AppleLookupUpdateSource.HttpClientName)
+            .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(10));
+
         services.AddSingleton<ITermsService, TermsService>();
         services.AddSingleton<IStreamUrlProber, StreamUrlProber>();
         services.AddSingleton<RemoteArtworkLoader>();
@@ -29,6 +33,7 @@ public static class CoreServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<IAppUpdateSource, NullUpdateSource>();
         services.AddSingleton<AppUpdateCoordinator>();
+        services.AddSingleton<AppUpdatePrompter>();
 
         services.AddSingleton<INowPlayingService, NowPlayingService>();
         services.AddSingleton<IStationDetailService, StationDetailService>();

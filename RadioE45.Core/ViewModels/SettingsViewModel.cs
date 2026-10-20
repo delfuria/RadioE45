@@ -6,6 +6,7 @@ using RadioE45.Services.Data;
 using RadioE45.Services.Legal;
 using RadioE45.Services.Localization;
 using RadioE45.Services.Platform;
+using RadioE45.Services.Updates;
 
 namespace RadioE45.ViewModels;
 
@@ -20,6 +21,9 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly ICrashReportingService _crashReporting;
     private readonly IAppEnvironment _environment;
     private readonly ITermsService _terms;
+    private readonly AppUpdateCoordinator _updateCoordinator;
+    private readonly AppUpdatePrompter _updatePrompter;
+    private AppUpdateInfo? _availableUpdate;
     private AppSettings? _currentSettings;
     private bool _hasChanges;
 
@@ -56,6 +60,15 @@ public partial class SettingsViewModel : BaseViewModel
     [ObservableProperty]
     public partial int RequestPageSize { get; set; }
 
+    [ObservableProperty]
+    public partial string UpdateStatusText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool IsUpdateAvailable { get; set; }
+
+    /// <summary>False on channels without an update check (Android, Mac Catalyst, web): the section is hidden.</summary>
+    public bool IsUpdateCheckSupported => _updateCoordinator.IsSupported;
+
     public bool IsCrashReportingAvailable => _crashReporting.IsAvailable;
 
     public SettingsViewModel(
@@ -68,6 +81,8 @@ public partial class SettingsViewModel : BaseViewModel
         ICrashReportingService crashReporting,
         IAppEnvironment environment,
         ITermsService terms,
+        AppUpdateCoordinator updateCoordinator,
+        AppUpdatePrompter updatePrompter,
         ILogger<SettingsViewModel> logger)
     {
         Logger = logger;
@@ -80,6 +95,8 @@ public partial class SettingsViewModel : BaseViewModel
         _crashReporting = crashReporting;
         _environment = environment;
         _terms = terms;
+        _updateCoordinator = updateCoordinator;
+        _updatePrompter = updatePrompter;
         Title = "Impostazioni";
         AppVersion = $"{environment.VersionString} ({environment.BuildString}, {environment.CommitId})";
         _ = LoadSettingsAsync();
@@ -126,6 +143,31 @@ public partial class SettingsViewModel : BaseViewModel
 
     [RelayCommand]
     private Task ShowTermsAsync() => _terms.ShowAsync();
+
+    [RelayCommand]
+    private async Task CheckForUpdatesAsync()
+    {
+        if (!_updateCoordinator.IsSupported)
+            return;
+
+        LocalizationResourceManager loc = LocalizationResourceManager.Instance;
+        UpdateStatusText = loc["Update_Status_Checking"];
+        IsUpdateAvailable = false;
+
+        AppUpdateCheckResult result = await _updateCoordinator.CheckAsync(manual: true);
+        _availableUpdate = result.Update;
+        IsUpdateAvailable = result.Status == AppUpdateStatus.Available;
+        UpdateStatusText = result.Status switch
+        {
+            AppUpdateStatus.Available => loc.Format("Update_Status_Available", result.Update!.Version),
+            AppUpdateStatus.UpToDate => loc["Update_Status_UpToDate"],
+            _ => loc["Update_Status_Failed"],
+        };
+    }
+
+    [RelayCommand]
+    private Task UpdateNowAsync() =>
+        _availableUpdate is null ? Task.CompletedTask : _updatePrompter.OpenAsync(_availableUpdate);
 
     [RelayCommand]
     private async Task ResetDatabaseAsync()

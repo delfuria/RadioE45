@@ -403,6 +403,36 @@
   viewmodel: SettingsViewModel
   status: { maui: done, desktop: done, web: done }
 
+- id: settings.update.check
+  title: Impostazioni, controllo aggiornamenti manuale con stato ("Controlla aggiornamenti", "Aggiorna ora"); sezione nascosta sui canali senza controllo
+  since: "0.47"
+  page: Settings
+  viewmodel: SettingsViewModel
+  status: { maui: limited, desktop: todo, web: n/a }
+  notes: "docs/APP-UPDATE-ROADMAP.md. MAUI: la UI compare solo dove esiste una sorgente (iOS dalla U3; Windows in U6); desktop in U5; web senza controllo (U7 opzionale)"
+
+- id: update.startup-prompt
+  title: Avviso di aggiornamento disponibile al primo avvio del giorno, dopo i Termini d'uso ("Aggiorna" / "Più tardi")
+  since: "0.47"
+  page: Shell
+  viewmodel: SettingsViewModel
+  status: { maui: limited, desktop: todo, web: n/a }
+  notes: "Logica in AppUpdatePrompter (Core). MAUI: attivo dove esiste una sorgente (iOS dalla U3; Windows in U6); desktop in U4/U5; web senza controllo"
+
+- id: update.android
+  title: Controllo aggiornamenti su Android
+  since: "0.47"
+  page: Shell
+  status: { maui: todo, desktop: n/a, web: n/a }
+  notes: "Debito D3 (docs/APP-UPDATE-ROADMAP.md): rimandato, nessun interop Play. Desktop e web non hanno questo canale"
+
+- id: update.mac
+  title: Controllo aggiornamenti su Mac Catalyst
+  since: "0.47"
+  page: Shell
+  status: { maui: todo, desktop: n/a, web: n/a }
+  notes: "Debito D9: l'app Mac non è pubblicata sul Mac App Store. Desktop e web non hanno questo canale"
+
 # --- Schedule --------------------------------------------------------------------------------
 
 - id: schedule.list

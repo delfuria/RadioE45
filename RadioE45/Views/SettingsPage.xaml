@@ -270,6 +270,46 @@
                             Style="{StaticResource CaptionLabel}" />
                     </Grid>
 
+                    <VerticalStackLayout Spacing="14" IsVisible="{Binding IsUpdateCheckSupported}">
+                        <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" />
+
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="32">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CheckForUpdatesCommand}" />
+                            </Grid.GestureRecognizers>
+                            <Label
+                                Grid.Column="0"
+                                Text="{loc:Translate Settings_CheckUpdates}"
+                                TextColor="{DynamicResource PrimaryText}"
+                                FontSize="15"
+                                VerticalOptions="Center" />
+                            <Label
+                                Grid.Column="1"
+                                Text="{Binding UpdateStatusText}"
+                                Style="{StaticResource CaptionLabel}"
+                                VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,Auto" MinimumHeightRequest="32" IsVisible="{Binding IsUpdateAvailable}">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding UpdateNowCommand}" />
+                            </Grid.GestureRecognizers>
+                            <Label
+                                Grid.Column="0"
+                                Text="{loc:Translate Update_Now}"
+                                TextColor="{DynamicResource Accent}"
+                                FontSize="15"
+                                FontAttributes="Bold"
+                                VerticalOptions="Center" />
+                            <Label
+                                Grid.Column="1"
+                                Text="&#x203A;"
+                                TextColor="{DynamicResource Accent}"
+                                FontSize="20"
+                                VerticalOptions="Center" />
+                        </Grid>
+                    </VerticalStackLayout>
+
                     <BoxView HeightRequest="1" Color="{DynamicResource DividerColor}" />
 
                     <Grid ColumnDefinitions="*,Auto">

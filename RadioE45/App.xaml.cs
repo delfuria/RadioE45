@@ -7,6 +7,7 @@ using RadioE45.Services.Legal;
 using RadioE45.Services.Logging;
 using RadioE45.Services.Platform;
 using RadioE45.Services.Radio;
+using RadioE45.Services.Updates;
 using RadioE45.ViewModels;
 
 namespace RadioE45;
@@ -18,8 +19,9 @@ public partial class App : Application
     private readonly OnAirViewModel _onAirViewModel;
     private readonly AppMenuViewModel _appMenuViewModel;
     private readonly ITermsService _termsService;
+    private readonly AppUpdatePrompter _updatePrompter;
 
-    public App(IAppSettingsRepository settingsRepo, ILogRepository logRepo, DatabaseLoggerProvider dbLoggerProvider, IAzuraStationCatalog stationCatalog, IRadioRepository radioRepository, OnAirViewModel onAirViewModel, AppMenuViewModel appMenuViewModel, ITermsService termsService)
+    public App(IAppSettingsRepository settingsRepo, ILogRepository logRepo, DatabaseLoggerProvider dbLoggerProvider, IAzuraStationCatalog stationCatalog, IRadioRepository radioRepository, OnAirViewModel onAirViewModel, AppMenuViewModel appMenuViewModel, ITermsService termsService, AppUpdatePrompter updatePrompter)
     {
         InitializeComponent();
         _settingsRepo = settingsRepo;
@@ -27,6 +29,7 @@ public partial class App : Application
         _onAirViewModel = onAirViewModel;
         _appMenuViewModel = appMenuViewModel;
         _termsService = termsService;
+        _updatePrompter = updatePrompter;
 
         var pref = Preferences.Default.Get("theme_preference", "Dark");
         ThemeService.Apply(pref);
@@ -87,7 +90,7 @@ public partial class App : Application
         // subito vedendo CurrentStation valorizzato) selezioni di nuovo preferita/prima.
         _onAirViewModel.CurrentStation = null;
 
-        Window window = new(new AppShell(_radioRepository, _onAirViewModel, _appMenuViewModel, _termsService));
+        Window window = new(new AppShell(_radioRepository, _onAirViewModel, _appMenuViewModel, _termsService, _updatePrompter));
 
         DevicePlatform platform = DeviceInfo.Current.Platform;
         if (platform == DevicePlatform.WinUI || platform == DevicePlatform.MacCatalyst)

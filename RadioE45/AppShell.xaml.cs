@@ -1,5 +1,6 @@
 using RadioE45.Services.Data;
 using RadioE45.Services.Legal;
+using RadioE45.Services.Updates;
 using RadioE45.ViewModels;
 using RadioE45.Views;
 
@@ -9,12 +10,14 @@ public partial class AppShell : Shell
 {
     private readonly IRadioRepository _radioRepository;
     private readonly ITermsService _termsService;
+    private readonly AppUpdatePrompter _updatePrompter;
     private bool _startupCheckDone;
 
-    public AppShell(IRadioRepository radioRepository, OnAirViewModel onAirViewModel, AppMenuViewModel appMenuViewModel, ITermsService termsService)
+    public AppShell(IRadioRepository radioRepository, OnAirViewModel onAirViewModel, AppMenuViewModel appMenuViewModel, ITermsService termsService, AppUpdatePrompter updatePrompter)
     {
         _radioRepository = radioRepository;
         _termsService = termsService;
+        _updatePrompter = updatePrompter;
         BindingContext = onAirViewModel;
         InitializeComponent();
         MenuRoot.BindingContext = appMenuViewModel;
@@ -69,6 +72,9 @@ public partial class AppShell : Shell
         bool hasStations = await _radioRepository.HasStationsAsync();
         if (!hasStations)
             await GoToAsync("//OnAirPage/RadioListPage");
+
+        // Not awaited: the check must never delay playback. Once a day, silent on errors.
+        _ = _updatePrompter.CheckAtStartupAsync();
     }
 
     private async Task WaitUntilLoadedAsync()
