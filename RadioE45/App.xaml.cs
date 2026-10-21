@@ -88,7 +88,13 @@ public partial class App : Application
         // E' quindi il punto giusto per applicare "preferita/prima solo al vero avvio dell'app":
         // azzerare CurrentStation qui fa si' che InitializeAsync (che altrimenti ritornerebbe
         // subito vedendo CurrentStation valorizzato) selezioni di nuovo preferita/prima.
-        _onAirViewModel.CurrentStation = null;
+        // Su iOS (lifecycle a scene) la finestra viene ricreata anche quando iOS distrugge la scena
+        // con l'app in background e il processo e' vivo: li' la stazione in ascolto va conservata.
+        // Un avvio a freddo parte comunque con CurrentStation nullo.
+        if (DeviceInfo.Current.Platform != DevicePlatform.iOS)
+        {
+            _onAirViewModel.CurrentStation = null;
+        }
 
         Window window = new(new AppShell(_radioRepository, _onAirViewModel, _appMenuViewModel, _termsService, _updatePrompter));
 

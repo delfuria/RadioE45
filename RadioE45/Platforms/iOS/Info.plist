@@ -51,6 +51,27 @@
 			<key>NSAllowsArbitraryLoads</key>
 			<true/>
 		</dict>
+		<!-- Lifecycle a scene (fase A del piano CarPlay): solo la scena principale.
+		     Il nome __MAUI_DEFAULT_SCENE_CONFIGURATION__ e' quello che MauiUISceneDelegate riconosce.
+		     UIApplicationSupportsMultipleScenes=false: una sola finestra anche su iPad.
+		     La scena CarPlay si aggiunge in fase B (vedi il blocco commentato qui sotto). -->
+		<key>UIApplicationSceneManifest</key>
+		<dict>
+			<key>UIApplicationSupportsMultipleScenes</key>
+			<false/>
+			<key>UISceneConfigurations</key>
+			<dict>
+				<key>UIWindowSceneSessionRoleApplication</key>
+				<array>
+					<dict>
+						<key>UISceneConfigurationName</key>
+						<string>__MAUI_DEFAULT_SCENE_CONFIGURATION__</string>
+						<key>UISceneDelegateClassName</key>
+						<string>SceneDelegate</string>
+					</dict>
+				</array>
+			</dict>
+		</dict>
 		<!--
 			CARPLAY SCENE MANIFEST — DISABILITATO (nessun certificato Apple CarPlay disponibile)
 			══════════════════════════════════════════════════════════════════════════════════════

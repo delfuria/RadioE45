@@ -94,8 +94,8 @@
   title: Apple CarPlay
   since: "0.44"
   page: Shell
-  status: { maui: done, desktop: n/a, web: n/a }
-  notes: "Solo iOS"
+  status: { maui: todo, desktop: n/a, web: n/a }
+  notes: "Solo iOS. Codice presente ma disattivato: in attesa dell'entitlement Apple carplay-audio e della migrazione a scene (docs/carplay-ios/piano-operativo.md)"
 
 - id: shell.android-auto
   title: Android Auto e controlli Bluetooth/AVRCP (Media3)

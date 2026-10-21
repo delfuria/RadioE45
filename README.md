@@ -38,7 +38,7 @@ Want to try RadioE45 before the public release? Join the preliminary tests:
 - Local persistence with SQLite
 - Dark theme by default
 - Update check: once a day, on the first launch, the app tells you when a newer version is available (App Store on iOS, Microsoft Store or GitHub Releases on Windows, GitHub Releases for the Linux `.deb`, the site itself on the web), and Settings has a manual check
-- Apple CarPlay support (iOS)
+- Apple CarPlay support (iOS): in progress, not yet enabled (waiting for Apple's CarPlay entitlement)
 - Android Auto support
 
 ## Android Auto

@@ -136,7 +136,7 @@ Fase A (scene app principale) → Fase B (spike manifest) → Fase C (audio a fr
 
 ### Fase 0 — Richiesta entitlement (bloccante, azione manuale, subito)
 1. Compilare la richiesta su CarPlay Contact Us, categoria audio.
-2. Testo: app radio in streaming live, descrizione funzionalità, bundle ID `com.radioe45.app`, eventuale video.
+2. Il modulo non ha campo di descrizione: developer information, tipo di app Audio, termini.
 3. Accettare l'addendum come Account Holder.
 4. Registrare la data di invio in questo documento.
 
@@ -249,3 +249,18 @@ Ogni test va registrato (screenshot della finestra app o del simulatore, secondo
 - Flutter, [UIScene migration](https://docs.flutter.dev/release/breaking-changes/uiscenedelegate.md) (fonte secondaria, usata solo per il contesto del cambio di lifecycle)
 - Apple, CarPlay Contact Us: <https://developer.apple.com/contact/carplay/>
 - Codice: `RadioE45/Platforms/iOS/*`, `RadioE45/RadioE45.csproj` (blocchi commentati), `RadioE45.Core/Services/Audio/LiveStreamAudioService.cs`, `RadioE45.Core/Services/Radio/AzuraStationCatalog.cs`, `RadioE45/Views/OnAirPage.xaml.cs`
+
+---
+
+## 11. Registro avanzamento
+
+### 21 ottobre 2026
+- **G.1 fatto:** `shell.carplay` a `maui: todo`, README riformulato.
+- **Fase 0 (inviata il 21 ottobre 2026):** il modulo Apple ha solo developer information, tipo di app (Audio) e termini: nessun campo di descrizione. [`entitlement-request.md`](entitlement-request.md) riassume i passi e i punti da tenere per App Review.
+- **Risposte alle domande aperte:** iPad con una sola finestra (§3.3 punto 5); circa 4 stazioni per utente, quindi lista semplice, niente sezioni né troncamento (§3.5, R6).
+- **Fase A, in corso:**
+  - `Platforms/iOS/Info.plist`: attivo `UIApplicationSceneManifest` con la sola scena principale, `UIApplicationSupportsMultipleScenes=false`.
+  - `App.xaml.cs` `CreateWindow`: su iOS non azzera più `CurrentStation` (con le scene la finestra può essere ricreata a processo vivo). Android, Windows e Mac invariati.
+  - Verificato: build `net10.0-ios` Debug simulatore 0 errori 0 avvisi; il manifest è presente nel bundle; l'app parte su iPhone 16e (iOS 26.2) e mostra la finestra principale.
+  - **Da verificare ancora:** background/foreground con radio in riproduzione, distruzione e ricreazione della scena, audio in background e lock screen, interruzioni audio, rotazione, iPad.
+- **Correzione a §3.1 e §3.2:** MAUI **non** rimuove `UIApplicationSceneManifest` dal merge dei plist; il manifest del sorgente arriva nel bundle. Un bundle senza manifest visto all'inizio dipendeva da `AppManifest.plist` intermedio non rigenerato (build incrementale). Quindi la Fase B probabilmente non richiede script post-build né re-firma: basta aggiungere la scena CarPlay al plist sorgente e l'entitlement. Da confermare con lo spike.
