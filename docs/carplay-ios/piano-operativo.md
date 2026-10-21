@@ -269,3 +269,11 @@ Ogni test va registrato (screenshot della finestra app o del simulatore, secondo
   - **Non verificato:** distruzione e ricreazione della scena a processo vivo (il simulatore non offre un comando per forzarla; resta il caso che la modifica a `CreateWindow` dovrebbe coprire), lock screen, interruzioni audio (telefonata, Siri), rotazione, ripristino dopo kill. Da provare su device reale.
   - Errori HTTP nei log sulla stazione demo (`demo.azuracast.com`): non legati alle scene.
 - **Correzione a §3.1 e §3.2:** MAUI **non** rimuove `UIApplicationSceneManifest` dal merge dei plist; il manifest del sorgente arriva nel bundle. Un bundle senza manifest visto all'inizio dipendeva da `AppManifest.plist` intermedio non rigenerato (build incrementale). Quindi la Fase B probabilmente non richiede script post-build né re-firma: basta aggiungere la scena CarPlay al plist sorgente e l'entitlement. Da confermare con lo spike.
+
+- **Fase C, fatta (stesso giorno):**
+  - Nuovo `Platforms/iOS/AvStreamPlayer.cs`: player live su `AVPlayer`, senza pagina. Metadata e lock screen restano a `IosNowPlayingService`.
+  - `AudioService` su iOS crea e collega `AvStreamPlayer` nel costruttore; `OnAirPage` su iOS rimuove il `MediaElement` (come Android). Mac Catalyst e Windows invariati (`MediaElement`).
+  - `LiveStreamAudioService`: `PlayAsync` e `ResumeAsync` senza player non tornano più in silenzio, scrivono un avviso nel log (nessuna stringa utente nuova).
+  - Test: nuovo test del Core (255/255 verdi); build `ios`, `maccatalyst`, `android` 0 errori 0 avvisi; `ParityCheck` senza disallineamenti.
+  - Simulatore iPhone 16e: avvio, Radio E45 parte (Opening, Paused, Buffering, Playing in circa 1,2 s), pausa e ripresa dal pulsante.
+  - **Non verificato:** avvio a freddo vero da CarPlay (serve la Fase B), interruzioni audio (telefonata, Siri) e riproduzione con schermo bloccato su device reale. Con `AVPlayer` un'interruzione mette il player in `Paused` e il watchdog (10 s) può tentare di riaprire lo stream: comportamento identico al `MediaElement` di prima, che usava lo stesso `AVPlayer`, ma da provare.

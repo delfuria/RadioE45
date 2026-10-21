@@ -18,6 +18,11 @@ public partial class OnAirPage : ContentPage
         _audioService = audioService;
         BindingContext = viewModel;
 
+#if IOS
+        // On iOS the audio engine owns a native AVPlayer (no page needed, CarPlay can start the app
+        // without a window), so the hidden MediaElement is not used: remove it before it's rendered.
+        (AudioPlayer.Parent as Microsoft.Maui.Controls.Layout)?.Remove(AudioPlayer);
+#endif
 #if ANDROID
         // On Android playback runs in the Media3 service (single session). Detach the hidden
         // MediaElement before it's rendered so its handler never spins up a second, competing

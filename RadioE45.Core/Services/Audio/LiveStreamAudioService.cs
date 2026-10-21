@@ -67,7 +67,7 @@ public class LiveStreamAudioService : IAudioService
     /// <summary>
     /// Attaches the player that will render the stream. MAUI calls it once per OnAirPage
     /// instance (the MediaElement lives in the page); Uno once at startup. Until a player is
-    /// attached, Play/Pause/Resume/Stop are no-ops.
+    /// attached, Play/Pause/Resume/Stop are no-ops (Play and Resume log a warning).
     /// </summary>
     public void AttachPlayer(IStreamPlayer player)
     {
@@ -108,7 +108,10 @@ public class LiveStreamAudioService : IAudioService
     public Task PlayAsync(AzuraStation station)
     {
         if (_player is null)
+        {
+            _logger.LogWarning("Play requested for {Station} but no player is attached", station.Name);
             return Task.CompletedTask;
+        }
 
         if (!_audioFocusManager.RequestFocus())
         {
@@ -154,7 +157,13 @@ public class LiveStreamAudioService : IAudioService
     // attuale della diretta invece di proseguire da un buffer ormai non più sincronizzato.
     public Task ResumeAsync()
     {
-        if (_player is null || _currentStation is null)
+        if (_player is null)
+        {
+            _logger.LogWarning("Resume requested but no player is attached");
+            return Task.CompletedTask;
+        }
+
+        if (_currentStation is null)
             return Task.CompletedTask;
 
         if (!_audioFocusManager.RequestFocus())

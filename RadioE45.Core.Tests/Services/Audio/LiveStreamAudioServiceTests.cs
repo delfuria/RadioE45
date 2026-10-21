@@ -147,6 +147,21 @@ public sealed class LiveStreamAudioServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Play_without_an_attached_player_does_nothing_and_does_not_take_audio_focus()
+    {
+        LiveStreamAudioService bare = new(
+            _prober, _nowPlaying, _focus, _settings, _network, new InlineDispatcher(), NullLogger.Instance);
+
+        await bare.PlayAsync(Station());
+        await bare.ResumeAsync();
+
+        Assert.Null(bare.CurrentStation);
+        _focus.DidNotReceive().RequestFocus();
+        await _prober.DidNotReceive().ProbeFirstReachableAsync(Arg.Any<string[]>(), Arg.Any<CancellationToken>());
+        bare.Shutdown();
+    }
+
+    [Fact]
     public async Task Play_opens_the_first_reachable_url_and_raises_StreamOpened()
     {
         AzuraStation station = Station();
