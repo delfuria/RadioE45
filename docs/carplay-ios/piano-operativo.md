@@ -262,5 +262,10 @@ Ogni test va registrato (screenshot della finestra app o del simulatore, secondo
   - `Platforms/iOS/Info.plist`: attivo `UIApplicationSceneManifest` con la sola scena principale, `UIApplicationSupportsMultipleScenes=false`.
   - `App.xaml.cs` `CreateWindow`: su iOS non azzera più `CurrentStation` (con le scene la finestra può essere ricreata a processo vivo). Android, Windows e Mac invariati.
   - Verificato: build `net10.0-ios` Debug simulatore 0 errori 0 avvisi; il manifest è presente nel bundle; l'app parte su iPhone 16e (iOS 26.2) e mostra la finestra principale.
-  - **Da verificare ancora:** background/foreground con radio in riproduzione, distruzione e ricreazione della scena, audio in background e lock screen, interruzioni audio, rotazione, iPad.
+  - Test sul simulatore (iPhone 16e, iPad Air 13" M3, iOS 26.2):
+    - avvio a freddo: finestra principale visibile, la radio parte e il Now Playing si popola;
+    - background 20 s con Radio E45 in riproduzione e ritorno in primo piano: stesso processo, stessa stazione, pulsante ancora su pausa, nessun passaggio a `Stopped` nei log;
+    - iPad: una sola finestra a tutto schermo, avvio corretto.
+  - **Non verificato:** distruzione e ricreazione della scena a processo vivo (il simulatore non offre un comando per forzarla; resta il caso che la modifica a `CreateWindow` dovrebbe coprire), lock screen, interruzioni audio (telefonata, Siri), rotazione, ripristino dopo kill. Da provare su device reale.
+  - Errori HTTP nei log sulla stazione demo (`demo.azuracast.com`): non legati alle scene.
 - **Correzione a §3.1 e §3.2:** MAUI **non** rimuove `UIApplicationSceneManifest` dal merge dei plist; il manifest del sorgente arriva nel bundle. Un bundle senza manifest visto all'inizio dipendeva da `AppManifest.plist` intermedio non rigenerato (build incrementale). Quindi la Fase B probabilmente non richiede script post-build né re-firma: basta aggiungere la scena CarPlay al plist sorgente e l'entitlement. Da confermare con lo spike.
