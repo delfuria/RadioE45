@@ -227,4 +227,7 @@ Puoi rileggere questi termini in qualsiasi momento in Impostazioni → Info.</va
   <data name="Update_Status_UpToDate" xml:space="preserve"><value>App aggiornata</value></data>
   <data name="Update_Status_Available" xml:space="preserve"><value>Disponibile la versione {0}</value></data>
   <data name="Update_Status_Failed" xml:space="preserve"><value>Controllo non riuscito</value></data>
+  <data name="CarPlay_Title" xml:space="preserve"><value>Stazioni</value></data>
+  <data name="CarPlay_Loading" xml:space="preserve"><value>Caricamento stazioni...</value></data>
+  <data name="CarPlay_NoStations" xml:space="preserve"><value>Nessuna stazione disponibile</value></data>
 </root>

@@ -183,6 +183,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAudioFocusManager, NullAudioFocusManager>();
  #endif
         builder.Services.AddSingleton<IAzuraStationCatalog, AzuraStationCatalog>();
+        builder.Services.AddTransient<CarStationList>();
         builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
 
         // OnAirViewModel is Singleton so RadioListViewModel can reference it and share state

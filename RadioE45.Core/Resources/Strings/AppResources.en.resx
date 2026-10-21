@@ -218,4 +218,7 @@ You can read these terms again at any time in Settings → Info.</value></data>
   <data name="Update_Status_UpToDate" xml:space="preserve"><value>App is up to date</value></data>
   <data name="Update_Status_Available" xml:space="preserve"><value>Version {0} available</value></data>
   <data name="Update_Status_Failed" xml:space="preserve"><value>Check failed</value></data>
+  <data name="CarPlay_Title" xml:space="preserve"><value>Stations</value></data>
+  <data name="CarPlay_Loading" xml:space="preserve"><value>Loading stations...</value></data>
+  <data name="CarPlay_NoStations" xml:space="preserve"><value>No stations available</value></data>
 </root>

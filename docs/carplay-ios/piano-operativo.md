@@ -277,3 +277,44 @@ Ogni test va registrato (screenshot della finestra app o del simulatore, secondo
   - Test: nuovo test del Core (255/255 verdi); build `ios`, `maccatalyst`, `android` 0 errori 0 avvisi; `ParityCheck` senza disallineamenti.
   - Simulatore iPhone 16e: avvio, Radio E45 parte (Opening, Paused, Buffering, Playing in circa 1,2 s), pausa e ripresa dal pulsante.
   - **Non verificato:** avvio a freddo vero da CarPlay (serve la Fase B), interruzioni audio (telefonata, Siri) e riproduzione con schermo bloccato su device reale. Con `AVPlayer` un'interruzione mette il player in `Paused` e il watchdog (10 s) può tentare di riaprire lo stream: comportamento identico al `MediaElement` di prima, che usava lo stesso `AVPlayer`, ma da provare.
+
+- **Fase D, fatta (stesso giorno):**
+  - Correzione a §3.5: il catalogo **ha già** `StationsRefreshed`, ma non scatta dopo il primo `LoadAsync` (solo dopo `ReloadAsync` e dopo il recupero delle stazioni offline). Non l'ho fatto scattare dopo il primo caricamento: lo ascoltano `OnAirViewModel`, `RadioListViewModel` e `AppMenuViewModel`, e `OnAirViewModel` sceglierebbe la stazione predefinita in corsa con la sua inizializzazione, cambiando il comportamento dell'app principale.
+  - Soluzione: nuovo `RadioE45.Core/Services/Radio/CarStationList.cs` (Core, senza UI). Attende `catalog.LoadAsync()` (idempotente, condivide il caricamento già avviato, quindi sicuro anche all'avvio a freddo da CarPlay), si iscrive a `StationsRefreshed` e espone stato (`Loading`, `Ready`, `Empty`), voci, titolo e testo del segnaposto. Registrato nel DI come transient.
+  - `CarPlaySceneDelegate` ora: mostra il segnaposto, chiama `LoadAsync`, e su `Changed` aggiorna la lista con `UpdateSections` sul main thread. Tolto il `t.Result` (regola 5).
+  - **Anticipato dalla Fase E:** stringhe `CarPlay_Title`, `CarPlay_Loading`, `CarPlay_NoStations` nei tre `.resx` (neutro italiano, `en`, `pl`). Il segnaposto "Caricamento stazioni..." e "Stazioni" non sono più hardcoded.
+  - Test: 8 nuovi test del Core (263/263 verdi); build `ios`, `maccatalyst`, `android` e Uno desktop senza errori né avvisi; `ParityCheck` senza disallineamenti.
+  - **Non verificato:** l'aggiornamento della lista su CarPlay (serve la scena, Fase B).
+
+---
+
+## 12. Da confermare e da verificare
+
+Cose rimaste aperte nelle fasi fatte o decise per default. Spuntare quando risolte.
+
+### Decisioni da confermare con l'utente
+- [ ] **Release in due tempi** (§9 domanda 4): scene + player AVPlayer (Fasi A e C) come versione a sé, senza CarPlay, poi CarPlay. Consigliato; non ancora confermato.
+- [ ] **Versione target** per il rilascio con CarPlay (§9 domanda 5).
+- [ ] **Artwork nella lista** in prima release o dopo (§9 domanda 6).
+- [ ] **Mac Catalyst senza CarPlay** (§9 domanda 7): nessun manifest né entitlement. Previsto così, non confermato.
+- [ ] **Stazioni offline nella lista in auto:** oggi `CarStationList` le mostra tutte. Decidere se nasconderle o segnarle, perché toccarne una non farebbe partire nulla.
+- [ ] **Sottotitolo "in riproduzione":** si aggiorna solo quando cambia il catalogo, non a ogni brano (`INowPlayingService.NowPlayingUpdated` non è collegato). Decidere se serve.
+- [ ] **iPad, una sola finestra:** deciso, ma con `UIApplicationSupportsMultipleScenes=true` (necessario per la scena CarPlay) l'iPad potrebbe aprire più finestre. Da risolvere in Fase B.
+
+### Da verificare (test)
+- [ ] **Fase A:** distruzione e ricreazione della scena a processo vivo; lock screen; interruzioni audio; rotazione; ripristino dopo kill. Su device reale.
+- [ ] **Fase C:** avvio a freddo da CarPlay (dopo B); telefonata e Siri; riproduzione con schermo bloccato; comportamento del watchdog dopo un'interruzione.
+- [ ] **Fase D:** aggiornamento della lista dal vivo su CarPlay (dopo B); catalogo vuoto o in errore.
+- [ ] **Mac Catalyst e Windows** dopo il cambio a `AudioService` (build ok, ma riproduzione non riprovata dopo la Fase C).
+- [ ] **Limiti del veicolo** (`CPListTemplate.MaximumItemCount`): con circa 4 stazioni non dovrebbe servire nulla, ma il valore reale non è stato letto.
+
+### Da correggere nel piano
+- [ ] §3.1 e §3.2 dicono che MAUI rimuove il manifest e serve uno script post-build: smentito in Fase A. Riscrivere la Fase B dopo lo spike.
+- [ ] §1: la riga su `AzuraStationCatalog` ("nessun evento") va corretta come in Fase D.
+
+### Fasi ancora da fare
+- [ ] **Fase B:** aggiungere scena CarPlay al plist, spike su firma e simulatore (R8).
+- [ ] **Fase E:** errore di riproduzione con `CPAlertTemplate`; artwork; indicatore "in riproduzione". (Le stringhe sono già nei `.resx`.)
+- [ ] **Fase F:** test su simulatore CarPlay e su device con entitlement.
+- [ ] **Fase G:** `shell.carplay` a `done`, README, `docs/carplay-ios/README.md`, store, versione.
+- [ ] **Dopo l'approvazione Apple:** capability sull'App ID, profili Development e App Store, entitlement nel plist.

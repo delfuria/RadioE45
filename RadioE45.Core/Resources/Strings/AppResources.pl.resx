@@ -219,4 +219,7 @@ Warunki możesz przeczytać ponownie w dowolnym momencie w Ustawienia → Info.<
   <data name="Update_Status_UpToDate" xml:space="preserve"><value>Aplikacja jest aktualna</value></data>
   <data name="Update_Status_Available" xml:space="preserve"><value>Dostępna wersja {0}</value></data>
   <data name="Update_Status_Failed" xml:space="preserve"><value>Nie udało się sprawdzić</value></data>
+  <data name="CarPlay_Title" xml:space="preserve"><value>Stacje</value></data>
+  <data name="CarPlay_Loading" xml:space="preserve"><value>Ładowanie stacji...</value></data>
+  <data name="CarPlay_NoStations" xml:space="preserve"><value>Brak dostępnych stacji</value></data>
 </root>

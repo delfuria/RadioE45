@@ -15,8 +15,8 @@ public sealed class CarPlaySceneDelegate : CPTemplateApplicationSceneDelegate
 {
     private IServiceScope? _scope;
     private IAudioService? _audioService;
-    private INowPlayingService? _nowPlayingService;
-    private IAzuraStationCatalog? _catalog;
+    private CarStationList? _stationList;
+    private CPListTemplate? _rootTemplate;
     private ILogger<CarPlaySceneDelegate>? _logger;
     private CPInterfaceController? _controller;
 
@@ -37,46 +37,41 @@ public sealed class CarPlaySceneDelegate : CPTemplateApplicationSceneDelegate
         _scope = services.CreateScope();
         IServiceProvider sp = _scope.ServiceProvider;
         _audioService = sp.GetRequiredService<IAudioService>();
-        _nowPlayingService = sp.GetRequiredService<INowPlayingService>();
-        _catalog = sp.GetRequiredService<IAzuraStationCatalog>();
+        _stationList = sp.GetRequiredService<CarStationList>();
         _logger = sp.GetService<ILogger<CarPlaySceneDelegate>>();
 
-        System.Diagnostics.Debug.WriteLine($"[CarPlay] DidConnect: stations={_catalog?.Stations?.Count ?? -1}");
+        // The catalog may still be loading (cold start from CarPlay): show the placeholder now and
+        // redraw whenever the list changes. Changed can be raised on any thread.
+        _stationList.Changed += OnStationListChanged;
         SetupRootTemplate();
+        _ = _stationList.LoadAsync();
     }
 
     public override void DidDisconnect(
         CPTemplateApplicationScene templateApplicationScene,
         CPInterfaceController interfaceController)
     {
+        if (_stationList is not null)
+            _stationList.Changed -= OnStationListChanged;
+
+        // Disposing the scope also disposes the CarStationList (unsubscribes from the catalog).
         _scope?.Dispose();
         _scope = null;
         _controller = null;
         _audioService = null;
-        _nowPlayingService = null;
-        _catalog = null;
+        _stationList = null;
+        _rootTemplate = null;
     }
 
     private void SetupRootTemplate()
     {
         try
         {
-            var stations = _catalog?.Stations ?? [];
-            System.Diagnostics.Debug.WriteLine($"[CarPlay] SetupRootTemplate: building list with {stations.Count} station(s)");
+            if (_stationList is null || _controller is null)
+                return;
 
-            // CarPlay requires at least one item; show a placeholder while loading.
-            CPListItem[] items = stations.Count > 0
-                ? stations.Select(BuildStationListItem).ToArray()
-                : [new CPListItem("Caricamento stazioni...", null)];
-
-            CPListSection section = new(
-                items.Cast<ICPListTemplateItem>().ToArray(),
-                header: null,
-                sectionIndexTitle: null);
-
-            CPListTemplate listTemplate = new("Stazioni", new[] { section });
-            _ = _controller!.SetRootTemplateAsync(listTemplate, animated: false)
-                .ContinueWith(t => System.Diagnostics.Debug.WriteLine($"[CarPlay] SetRootTemplateAsync result: {t.Result}"));
+            _rootTemplate = new CPListTemplate(_stationList.Title, BuildSections());
+            _ = SetRootTemplateAsync(_controller, _rootTemplate);
         }
         catch (Exception ex)
         {
@@ -85,19 +80,44 @@ public sealed class CarPlaySceneDelegate : CPTemplateApplicationSceneDelegate
         }
     }
 
-    private CPListItem BuildStationListItem(AzuraStation station)
+    private async Task SetRootTemplateAsync(CPInterfaceController controller, CPListTemplate template)
     {
-        bool isCurrent = _audioService?.CurrentStation?.Id == station.Id;
-        string? currentTitle = _nowPlayingService?.Current.Title;
-        string? subtitle = (isCurrent && !string.IsNullOrEmpty(currentTitle))
-            ? currentTitle
-            : station.Description;
+        (bool ok, NSError? error) = await controller.SetRootTemplateAsync(template, animated: false);
+        System.Diagnostics.Debug.WriteLine($"[CarPlay] SetRootTemplateAsync result: {ok} {error?.LocalizedDescription}");
+    }
 
-        CPListItem item = new(station.Name, subtitle);
+    private void OnStationListChanged()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            try
+            {
+                _rootTemplate?.UpdateSections(BuildSections());
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "CarPlay: updating the station list failed");
+            }
+        });
+    }
+
+    private CPListSection[] BuildSections()
+    {
+        // CarPlay requires at least one item; while there are no stations show a placeholder row.
+        CPListItem[] items = _stationList is { State: CarStationListState.Ready }
+            ? _stationList.Items.Select(BuildStationListItem).ToArray()
+            : [new CPListItem(_stationList?.PlaceholderText, null)];
+
+        return [new CPListSection(items.Cast<ICPListTemplateItem>().ToArray(), header: null, sectionIndexTitle: null)];
+    }
+
+    private CPListItem BuildStationListItem(CarStationListItem entry)
+    {
+        CPListItem item = new(entry.Title, entry.Subtitle);
         // 'listItem' (not '_') so that '_' inside the body is a true discard, not an assignment to the param.
         item.Handler = (listItem, completion) =>
         {
-            _ = PlayStationAsync(station);
+            _ = PlayStationAsync(entry.Station);
             completion();
         };
         return item;
