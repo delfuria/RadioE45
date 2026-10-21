@@ -63,6 +63,8 @@ Questi file vengono rigenerati ad ogni build: modificarli manualmente è inutile
 ## Checklist di release
 
 - [ ] `version.json` → `version` aggiornato (se serve bump) e **committato**
+- [ ] `CHANGELOG.md`: `[Unreleased]` chiuso nella sezione della versione (`/release-prep`)
+- [ ] Bozza della release GitHub (workflow Release → `create-draft`), poi pacchetti caricati e `publish`: `RELEASE.md`
 - [ ] Build Android
 - [ ] Build Windows MSIX
 - [ ] Build macOS

@@ -26,7 +26,9 @@ Piano operativo e stato delle sessioni: [`docs/LINUX-UNO-ROADMAP.md`](docs/LINUX
 9. **Commit:** mai eseguire `git commit`; proporre il messaggio come testo, in inglese, con il trailer di parità:
    - `Parity: maui, desktop, web` quando tutto è allineato;
    - `Parity-Debt: <feature-id> (desktop, web)` quando il port è rinviato.
+   Stesso vincolo per tag e release: mai `git tag`, `git push`, `gh release create/edit` né lancio del workflow Release; si propongono i comandi.
 10. Dopo ogni modifica `.cs`: diagnostica LSP e `dotnet build`. Niente `rm -rf`. Testi di store e changelog in inglese.
+11. **Changelog:** ogni modifica visibile all'utente (funzioni, correzioni, testi, piattaforme) aggiunge una riga in inglese sotto `## [Unreleased]` di `CHANGELOG.md` (sottosezioni `New`, `Improved`, `Fixed`; scritta per l'utente, senza nomi di file o classi). Una modifica non è finita senza la riga. `version.json` e il rename di `[Unreleased]` si toccano solo con `/release-prep` o su richiesta.
 
 ## Comandi
 
@@ -46,6 +48,10 @@ RADIOE45_SELFTEST=1 dotnet run --project RadioE45.Uno -f net10.0-desktop   # DEB
 ```
 
 Test Linux nella VM Parallels (`ssh radioe45-vm`, sorgenti sincronizzati con `rsync`): comandi in §2.2 del roadmap.
+
+## Release
+
+Procedura completa in [`docs/RELEASE.md`](docs/RELEASE.md): build in locale, bozza GitHub con il workflow `Release` (lancio manuale), caricamento dei pacchetti, pubblicazione. Versione e tag a due cifre da `version.json` (`0.47` → `v0.47`). Per preparare una release usare la skill `release-prep`; le modifiche a `.github/workflows/release.yml` e `linux-deb.yml` solo su richiesta esplicita.
 
 ## Sistema di parità
 

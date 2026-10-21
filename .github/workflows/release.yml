@@ -1,0 +1,129 @@
+# Manual release of Radio E45 (docs/RELEASE.md).
+#
+# The packages are built locally (Android, macOS, Windows, Linux scripts in scripts/) and attached
+# to the release with `--upload <tag>`. This workflow only does the GitHub side, in two steps:
+#   create-draft: checks version.json and CHANGELOG.md, creates a DRAFT release with the changelog
+#                 section as body. A draft has no tag yet and is ignored by the in-app update check
+#                 (GitHubReleaseUpdateSource), so nobody is offered a version with missing files.
+#   publish:      checks that every expected package is attached, then publishes the draft; the
+#                 tag v<version> is created on the commit the draft was made from.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: create-draft, then (after the local upload) publish
+        type: choice
+        options:
+          - create-draft
+          - publish
+        default: create-draft
+      prerelease:
+        description: Mark the release as a pre-release (create-draft only)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # the only job that writes: draft, tag, publish
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Only from main
+        if: github.ref != 'refs/heads/main'
+        run: echo "::error::Run the release from main"; exit 1
+
+      - uses: actions/checkout@v4
+
+      - name: Version and tag
+        id: v
+        run: |
+          VERSION=$(jq -r .version version.json)
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::version.json has '$VERSION': expected two digits (e.g. 0.47)"; exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version $VERSION, tag v$VERSION"
+
+      - name: Create draft
+        if: inputs.action == 'create-draft'
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+          TAG: ${{ steps.v.outputs.tag }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
+            echo "::error::Tag $TAG already exists: bump version.json"; exit 1
+          fi
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "::error::A release $TAG already exists (draft or published)"; exit 1
+          fi
+
+          # Section of this version in CHANGELOG.md, without its heading.
+          awk -v ver="$VERSION" '
+            /^## \[/ { if (found) exit; if (index($0, "## [" ver "]") == 1) found = 1; next }
+            found { print }
+          ' CHANGELOG.md | sed -e '/./,$!d' > notes.md
+          if [ ! -s notes.md ]; then
+            echo "::error::CHANGELOG.md has no '## [$VERSION]' section (or it is empty)"; exit 1
+          fi
+
+          cat >> notes.md <<'LINUX'
+
+          ### Linux (preview)
+          Download `radioe45_<version>_amd64.deb` (x64) or `radioe45_<version>_arm64.deb` (ARM64, e.g. Raspberry Pi), then:
+
+              sudo apt install ./radioe45_<version>_amd64.deb
+
+          Tested on Ubuntu 24.04. Requires a distribution with apt (Ubuntu 22.04+, Debian 12+, Linux Mint, …). This is a preview: please report issues on GitHub.
+          LINUX
+
+          FLAGS=(--draft --target "$GITHUB_SHA" --title "v$VERSION" --notes-file notes.md)
+          [ "$PRERELEASE" = "true" ] && FLAGS+=(--prerelease)
+          gh release create "$TAG" "${FLAGS[@]}"
+
+          {
+            echo "## Draft $TAG created"
+            echo
+            echo "Next: attach the packages from the Mac (\`--upload $TAG\`), then run this workflow again with **publish**."
+            echo
+            echo '```'
+            cat notes.md
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish
+        if: inputs.action == 'publish'
+        env:
+          TAG: ${{ steps.v.outputs.tag }}
+        run: |
+          gh release view "$TAG" --json isDraft,assets > release.json || { echo "::error::No release $TAG: run create-draft first"; exit 1; }
+          if [ "$(jq -r .isDraft release.json)" != "true" ]; then
+            echo "::error::$TAG is already published"; exit 1
+          fi
+
+          missing=0
+          for pattern in '^RadioE45\.apk$' '^RadioE45\.dmg$' \
+                         '^radioe45_.*_amd64\.deb$' '^radioe45_.*_arm64\.deb$' \
+                         '^RadioE45_Setup_x64\.exe$' '^RadioE45_Setup_arm64\.exe$' \
+                         '^RadioE45_.*_portable_win-x64\.zip$' '^RadioE45_.*_portable_win-arm64\.zip$'; do
+            if ! jq -r '.assets[].name' release.json | grep -Eq "$pattern"; then
+              echo "::error::Missing package: $pattern"; missing=1
+            fi
+          done
+          [ "$missing" = 0 ] || exit 1
+
+          gh release edit "$TAG" --draft=false --latest
+          echo "## Release $TAG published" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ github.server_url }}/${{ github.repository }}/releases/tag/$TAG" >> "$GITHUB_STEP_SUMMARY"

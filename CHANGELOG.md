@@ -1,0 +1,60 @@
+<!-- markdownlint-disable MD022 MD024 -->
+# Changelog
+
+All notable changes to Radio E45 are documented in this file. Texts are in English and written for users, not for developers.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follow `version.json` (two digits, e.g. `0.47`); the Git tag is `v` plus the version. The section of the version being released is used as the body of the GitHub release (see `docs/RELEASE.md`). Releases before 0.46 are only on the [GitHub Releases](https://github.com/delfuria/RadioE45/releases) page.
+
+## [Unreleased]
+
+### New
+- **Update check:** the app tells you when a newer version is available (App Store, Microsoft Store, GitHub releases for Linux and the Windows installer, and the web app), with a manual check in Settings.
+
+### Improved
+- **On Air:** the previous/next station buttons are hidden when there is a single station.
+- **On Air:** the buffering spinner is replaced by the VU meter.
+- **Requests:** the list of songs you can request is shuffled.
+
+## [0.46.6] - 2026-10-16
+
+### New
+- **Web app on GitHub Pages:** Radio E45 now runs in the browser at https://delfuria.github.io/RadioE45/ and can be installed as an app from the browser menu.
+
+### Improved
+- **Requests:** songs titled "jingle" are no longer listed among the songs you can request.
+- **Podcasts:** the episode count now uses the right singular and plural ("1 episode", "2 episodes"), including the Polish forms.
+- **Add station:** a station you already have is now recognised even if you type the server address with `https://` or a trailing slash.
+- **Settings:** the Theme setting now always shows the theme that is actually applied.
+- **Web:** songs without artwork now show the Radio E45 generic cover instead of an empty placeholder.
+
+### Fixed
+- **Linux (arm64):** the app failed to start on a clean system because of missing system libraries.
+- **Light theme:** secondary text in the schedule and in the podcast pages was hard to read.
+- **Loading:** "No schedule", "No songs", "No podcasts" and "No episodes" are no longer shown while the list is still loading.
+- **Requests:** after a loading error the empty list now shows its message.
+
+## [0.46] - 2026-10-16
+
+### New
+- **Linux desktop app**, with `.deb` packages for x64 and arm64.
+- **Web app** that runs in the browser and can be installed as a PWA, with an offline shell.
+- Both new apps include On Air, Channels, Add/Edit station, Podcasts, Settings, Terms of use and the side menu.
+- System media controls: MPRIS on Linux and Media Session in the browser.
+- **Clearer schedule:** streamers always take precedence, and playlists are clipped or split around their time slots.
+- A streamer shows **LIVE** only when connected, otherwise **On schedule**. Playlists show **On Air** only when no live is connected.
+- Schedule popup: microphone icon for streamers, music note for playlists.
+- Terms and Conditions page.
+- Privacy info for macOS.
+
+### Improved
+- Podcast episode filters are always visible, with the status filter first.
+- Station search retries on local-network hosts while the Local Network alert is shown, and skips private hosts for public stations.
+- Web: the radio restarts after a podcast, and starts at the first tap when autoplay is blocked.
+- Web: streams the browser fetch refuses can still play.
+- Web: content is centered on wide screens.
+
+### Fixed
+- Podcast resume position.
+- Podcast tab switching.
+- Web: playback no longer fails because streams were intercepted by the service worker.
+- Neutral-language strings.

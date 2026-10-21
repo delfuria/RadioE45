@@ -236,4 +236,4 @@ Disinstallazione: `sudo apt remove radioe45` (i dati restano in `~/.local/share/
 
 - La cartella `store-packages/` è esclusa da Git tramite `.gitignore`.
 - I certificati Apple e il keystore Android non vanno mai committati nel repository.
-- Per aggiornare la versione dell'app, modifica `ApplicationDisplayVersion` in `RadioE45/RadioE45.csproj`.
+- La versione dell'app si alza solo in `version.json` (vedi `VERSION-BUMP.md`). La release su GitHub (changelog, bozza, pacchetti, pubblicazione) è in `RELEASE.md`.
