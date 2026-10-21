@@ -1,6 +1,6 @@
 # RadioE45 — Roadmap controllo aggiornamenti
 
-> Stato: **piano pronto, nessuna implementazione.** Prossima sessione: **U8** (hardening) dopo le prove su Windows e nel browser (§9); ancora da provare a schermo: controllo manuale in Impostazioni (iOS) e lettura di `AppInfo.VersionString`. Ultimo aggiornamento: 2026-10-20 (app v0.46.6).
+> Stato: **piano pronto, nessuna implementazione.** Tutte le sessioni sono completate; restano solo le prove elencate in U6 e U8 (§9); ancora da provare a schermo: controllo manuale in Impostazioni (iOS) e lettura di `AppInfo.VersionString`. Ultimo aggiornamento: 2026-10-20 (app v0.46.6).
 > Analisi di partenza (meccanismi per piattaforma): [`APP-UPDATE-CHECK.md`](APP-UPDATE-CHECK.md). Questo file è il piano operativo e prevale in caso di differenze.
 > Branch di lavoro: `app-update`. Un branch per sessione solo se la sessione tocca tanti file; altrimenti si resta su `app-update`.
 
@@ -186,23 +186,24 @@ Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, 
 - [x] Verifica visiva su desktop (stessa regola dello screenshot per finestra).
 - **Uscita:** desktop allineato; web `n/a` con nota. (Parità: `desktop: limited` perché la sezione c'è solo su Linux; vedi note.)
 
-### U6 — Windows Store — ✅ scritta 2026-10-20 (non compilata né provata su Windows)
+### U6 — Windows Store — ✅ compilata e avviata su Windows 2026-10-21 (ramo Store non provato)
 - [x] `MauiWindowsStoreUpdateSource` (`#if WINDOWS`): `StoreContext` con `InitializeWithWindow`, `GetAppAndOptionalStorePackageUpdatesAsync`, rilevamento pacchettizzato.
 - [x] Selettore: pacchettizzato → Store (D7); non pacchettizzato → GitHub (U4).
 - [x] Azione: aprire la pagina Store (`ms-windows-store://pdp/?productid=9pj0lkl6mnvq`).
-- [ ] Prova su macchina Windows con build Store e con installer Inno (compilare `net10.0-windows10.0.19041.0`, controllare `update.Package.Id.Version` e `AppInfo.PackagingModel`).
+- [x] Compilazione e avvio su Windows (non pacchettizzata → GitHub).
+- [ ] Prova del pacchetto Store (MSIX): controllare `update.Package.Id.Version` e `AppInfo.PackagingModel == Packaged`.
 - **Uscita:** entrambi i canali Windows danno il prompt giusto; il canale Inno non apre mai lo Store.
 
 ### U7 — Web — ✅ completata 2026-10-20
 - [x] `version.json` nella build Pages, confronto con la versione compilata, banner "Nuova versione disponibile — ricarica".
 - [x] Prova nel browser: sito con `version.json` più alto della build, dialog al primo avvio del giorno e apertura dell'app in nuova scheda.
 
-### U8 — Hardening e rilascio
-- [ ] Revisione stringhe it/en/pl (`docs/LOCALIZATION.md`).
-- [ ] Log tecnici, nessun dialog su errore di rete al check automatico.
-- [ ] Smoke test su iOS, Windows (Store e Inno), Linux, web.
-- [ ] `dotnet build RadioE45.slnx`, test Core, `ParityCheck --strict` per il debito residuo (solo Android).
-- [ ] Note di rilascio in inglese (changelog/store).
+### U8 — Hardening e rilascio — ✅ completata 2026-10-21 (restano le prove su dispositivo)
+- [x] Revisione stringhe it/en/pl (`docs/LOCALIZATION.md`): 10 chiavi presenti nei tre `.resx`, segnaposto `{0}` coerenti.
+- [x] Log tecnici (`LogWarning` nel coordinator e nel prompter), nessun dialog su errore di rete al check automatico (test `A_failing_check_is_swallowed_without_any_dialog`).
+- [x] Smoke test: iOS (simulatore), Linux (VM), web (Release in locale), Windows non pacchettizzato (VM, avvio e controllo). Da fare: iOS su dispositivo (apertura dell'App Store), Windows pacchettizzato (Store), riga manuale in Impostazioni su Uno (iOS provata sul simulatore).
+- [x] `dotnet build RadioE45.slnx` (0 avvisi, 0 errori), 254 test verdi, `ParityCheck --strict`: unico errore il debito preesistente `settings.diagnostics.crash-reports`.
+- [x] Note di rilascio in inglese: nel messaggio finale della sessione (il repo non ha un file di changelog). README aggiornato con la funzione.
 
 ## 10. Registro sessioni
 
@@ -214,7 +215,8 @@ Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, 
 | U3 | 2026-10-20 | ok, non provata su iOS | `AppleLookupUpdateSource` (Core, `HttpClient` "Updates" con timeout 10 s, paese del dispositivo con fallback `it`, URL solo https), registrata in `MauiProgram` solo se `OperatingSystem.IsIOS()`; Mac Catalyst e Android restano `NullUpdateSource`. 229 test verdi, build Mac Catalyst e iOS ok, ParityCheck 0 |
 | U4 | 2026-10-20 | ok, Windows non provato | `GitHubReleaseUpdateSource` (Core, `GitHubReleaseChannel.LinuxDeb`/`WindowsInstaller`): scarta draft e prerelease, offre la release solo se contiene il file del canale (`.deb` o `RadioE45_Setup*.exe`), apre solo pagine `https://github.com`, User-Agent obbligatorio. Registrata in Uno solo su Linux e in MAUI solo su Windows non pacchettizzato (selezione al momento della risoluzione, non in `CreateMauiApp`). `PlatformSelfTest` stampa `SELFTEST update.source`. 245 test verdi; build Mac Catalyst, iOS, Android, Uno desktop e browserwasm ok; nella VM Linux: `latest 0.46 https://github.com/delfuria/RadioE45/releases/tag/v0.46.6` con app `0.46`, quindi nessun avviso. Il dialog su Linux arriva con U5 (avvio in `ShellPage`) |
 | U5 | 2026-10-20 | ok | `ShellPage` (Uno) lancia `AppUpdatePrompter.CheckAtStartupAsync()` dopo termini e redirect stazioni; righe "Controlla aggiornamenti" / "Aggiorna ora" nella card Info di `SettingsPage` Uno (nascoste se `IsUpdateCheckSupported` è falso). `parity/features.yaml`: `settings.update.check` e `update.startup-prompt` `maui: limited, desktop: limited, web: n/a`; `ParityCheck` 0 senza debito residuo per queste feature. Build Uno desktop e browserwasm ok. **Visto nella VM Linux** (versione forzata `0.45` solo nella copia della VM, poi ripristinata): dialog "Update available / Version 0.46 of Radio E45 is available." con "Update" e "Later". Le righe in Impostazioni su Uno non sono state aperte a schermo |
-| U6 | 2026-10-20 | scritta, non compilata | `RadioE45/Services/Platform/MauiWindowsStoreUpdateSource.cs` (`#if WINDOWS`): `StoreContext.GetDefault().GetAppAndOptionalStorePackageUpdatesAsync()` (nessuna UI, quindi nessun handle di finestra), versione = Major.Minor del pacchetto aggiornato, azione = apri `ms-windows-store://pdp/?productid=9pj0lkl6mnvq`. Selezione in `MauiProgram`: Windows non pacchettizzato → GitHub (U4), pacchettizzato → Store. **Il progetto Windows non si compila su questo Mac**: il codice è scritto sulla documentazione Microsoft Learn e va compilato e provato su Windows |
+| U6 | 2026-10-21 | ok sul ramo non pacchettizzato; Store non provato | `RadioE45/Services/Platform/MauiWindowsStoreUpdateSource.cs` (`#if WINDOWS`): `StoreContext.GetDefault().GetAppAndOptionalStorePackageUpdatesAsync()` (nessuna UI, quindi nessun handle di finestra), versione = Major.Minor del pacchetto aggiornato, azione = apri `ms-windows-store://pdp/?productid=9pj0lkl6mnvq`. Selezione in `MauiProgram`: Windows non pacchettizzato → GitHub (U4), pacchettizzato → Store. **Compilata e avviata nella VM Windows 11 (arm64)** con `dotnet build RadioE45 -f net10.0-windows10.0.19041.0` (0 errori, 0 avvisi; serve la cartella `.git` per NBGV). Build con versione forzata a `0.45` (commit solo nella copia `C:\RadioE45` della VM): al primo avvio del giorno `update.lastCheckDate` viene scritta in `%LOCALAPPDATA%\mobilefx\42646Delfo.RadioE45\Settings\preferences.dat`, cioè il controllo GitHub è partito ed è riuscito. **Dialog non visto a schermo**: `prlctl capture` della VM disegna lo schermo a pezzi e non l'ha mostrato. **Il ramo Store non è provato**: serve un pacchetto MSIX con identità (Store o sideload firmato); non è chiaro se `update.Package.Id.Version` riporti la versione nuova |
+| U8 | 2026-10-21 | ok | Stringhe it/en/pl riviste, log verificati, build di tutta `RadioE45.slnx` pulita (Windows compilato a parte nella VM), 254 test, `ParityCheck --strict` senza debito nuovo, riga in `README.md`. Restano: prova del pacchetto Store e iOS su dispositivo. **Riga manuale provata su simulatore iOS (2026-10-21)**: build `0.45`, il dialog all'avvio compare al primo avvio del nuovo giorno; Impostazioni → Info → "Controlla aggiornamenti" mostra "Disponibile la versione 0.46" e compare "Aggiorna ora" in rosso, che apre Safari (nel simulatore l'URL dell'App Store dà "indirizzo non valido": manca l'app App Store, da verificare su dispositivo) |
 | U7 | 2026-10-20 | ok, verificata nel browser | `WebVersionUpdateSource` (Core, 9 test): legge `version.json` accanto all'app con cache-buster, azione = riaprire l'app in `?v=<versione>` in una nuova scheda. `BrowserAppBase` + `RadioE45Update.js` danno la cartella dell'app (`document.baseURI`). `pages.yml` scrive `site/version.json` da `version.json` della radice con `jq`. **Regressione trovata e corretta**: `RadioE45Update.js` non era elencato come `EmbeddedResource` in `RadioE45.Uno.csproj` (gli script WASM vanno elencati uno per uno), quindi il `JSImport` falliva mentre `ShellPage` costruiva il prompter e l'app restava sulla splash. La registrazione web ora è in `try/catch` e ripiega su `NullUpdateSource`, così un controllo rotto non blocca più l'avvio. Provato su pubblicazione Release servita in locale con `version.json` = `0.99`: dialog "È disponibile la versione 0.99", "Aggiorna" apre `?v=0.99` in una nuova scheda |
 
 
