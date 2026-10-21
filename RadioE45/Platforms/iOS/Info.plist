@@ -51,72 +51,26 @@
 			<key>NSAllowsArbitraryLoads</key>
 			<true/>
 		</dict>
-		<!-- Lifecycle a scene (fase A del piano CarPlay): solo la scena principale.
-		     Il nome __MAUI_DEFAULT_SCENE_CONFIGURATION__ e' quello che MauiUISceneDelegate riconosce.
-		     UIApplicationSupportsMultipleScenes=false: una sola finestra anche su iPad.
-		     La scena CarPlay si aggiunge in fase B (vedi il blocco commentato qui sotto). -->
-		<key>UIApplicationSceneManifest</key>
-		<dict>
-			<key>UIApplicationSupportsMultipleScenes</key>
-			<false/>
-			<key>UISceneConfigurations</key>
-			<dict>
-				<key>UIWindowSceneSessionRoleApplication</key>
-				<array>
-					<dict>
-						<key>UISceneConfigurationName</key>
-						<string>__MAUI_DEFAULT_SCENE_CONFIGURATION__</string>
-						<key>UISceneDelegateClassName</key>
-						<string>SceneDelegate</string>
-					</dict>
-				</array>
-			</dict>
-		</dict>
-		<!--
-			CARPLAY SCENE MANIFEST — DISABILITATO (nessun certificato Apple CarPlay disponibile)
-			══════════════════════════════════════════════════════════════════════════════════════
-			UIApplicationSceneManifest abilita la modalità multi-scena richiesta da CarPlay
-			(CPTemplateApplicationSceneDelegate ha bisogno di una sessione di scena separata).
-			Senza questo blocco iOS tratta l'app come single-scene e MAUI funziona normalmente.
-
-			NOTA TECNICA: MAUI rimuove UIApplicationSceneManifest durante il merge dei plist
-			in fase di build. Per questo motivo esiste scripts/inject-carplay-manifest.sh che
-			lo re-inietta nel bundle compilato. Questa copia nel sorgente serve come riferimento
-			e come input per lo script di iniezione.
-
-			COME RIPRISTINARE (una volta ottenuto il certificato Apple CarPlay):
-			  1. Completare prima i passi descritti nei blocchi CustomEntitlements e nei
-			     MSBuild target in RadioE45.csproj.
-			  2. Decommentare il blocco <key>UIApplicationSceneManifest</key> ... </dict>
-			     qui sotto (tutto il contenuto tra i tag INIZIO CARPLAY e FINE CARPLAY).
-			  3. Il manifest in questo file viene usato dallo script inject-carplay-manifest.sh
-			     come sorgente; lo stesso contenuto verrà iniettato nel bundle compilato.
-			  4. I file C# coinvolti (già pronti, non necessitano modifiche):
-			     - Platforms/iOS/AppDelegate.cs  → GetConfiguration() e SetupRemoteCommandCenter()
-			     - Platforms/iOS/CarPlaySceneDelegate.cs → DidConnect / DidDisconnect / lista stazioni
-			     - Platforms/iOS/SceneDelegate.cs → delega la finestra principale a MauiUISceneDelegate
-
-			═══ INIZIO BLOCCO CARPLAY (decommentare tutto fino a FINE BLOCCO CARPLAY) ═══
+		<!-- Lifecycle a scene: scena principale + scena CarPlay.
+		     __MAUI_DEFAULT_SCENE_CONFIGURATION__ e' il nome che MauiUISceneDelegate riconosce.
+		     UIApplicationSupportsMultipleScenes e' obbligatorio per la scena CarPlay; di conseguenza
+		     l'iPad potrebbe aprire piu' finestre (vedi docs/carplay-ios/piano-operativo.md, §3.3 punto 5).
+		     La scena CarPlay viene usata solo con l'entitlement com.apple.developer.carplay-audio. -->
 		<key>UIApplicationSceneManifest</key>
 		<dict>
 			<key>UIApplicationSupportsMultipleScenes</key>
 			<true/>
 			<key>UISceneConfigurations</key>
 			<dict>
-				Finestra principale iPhone/iPad — il nome DEVE essere __MAUI_DEFAULT_SCENE_CONFIGURATION__
-				perché MauiUISceneDelegate.WillConnect lo riconosce e crea la finestra MAUI.
 				<key>UIWindowSceneSessionRoleApplication</key>
 				<array>
 					<dict>
-						<key>UISceneClassName</key>
-						<string>UIWindowScene</string>
 						<key>UISceneConfigurationName</key>
 						<string>__MAUI_DEFAULT_SCENE_CONFIGURATION__</string>
 						<key>UISceneDelegateClassName</key>
 						<string>SceneDelegate</string>
 					</dict>
 				</array>
-				Display CarPlay — CarPlaySceneDelegate mostra la lista stazioni come root template.
 				<key>CPTemplateApplicationSceneSessionRoleApplication</key>
 				<array>
 					<dict>
@@ -130,7 +84,5 @@
 				</array>
 			</dict>
 		</dict>
-			═══ FINE BLOCCO CARPLAY ═══
-		-->
 	</dict>
 </plist>

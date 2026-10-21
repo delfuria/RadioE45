@@ -9,6 +9,7 @@ The form has no free-text description. It asks only for:
 3. **Terms and conditions** (CarPlay Entitlement Addendum): accept.
 
 Submitted on: 2026-10-21
+Approved on: 2026-10-21 (confirmation email: "The entitlement for CarPlay Audio App (CarPlay framework) has been assigned to your account"). Organization Admins can also use the capability.
 
 ## After submitting
 

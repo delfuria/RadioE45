@@ -224,7 +224,7 @@ Ogni test va registrato (screenshot della finestra app o del simulatore, secondo
 ---
 
 ## 8. Checklist azioni manuali (utente)
-- [ ] Inviare la richiesta entitlement CarPlay Audio (Fase 0) e registrare la data.
+- [x] Inviare la richiesta entitlement CarPlay Audio (Fase 0): inviata e approvata il 21 ottobre 2026.
 - [ ] Dopo approvazione: capability sull'App ID; rigenerare profili Development e App Store.
 - [ ] Procurarsi un modo per testare su device (auto o accessorio, oppure secondo dispositivo con CarPlay for iPhone).
 - [ ] Preparare video demo e note per il reviewer.
@@ -302,19 +302,40 @@ Cose rimaste aperte nelle fasi fatte o decise per default. Spuntare quando risol
 - [ ] **iPad, una sola finestra:** deciso, ma con `UIApplicationSupportsMultipleScenes=true` (necessario per la scena CarPlay) l'iPad potrebbe aprire più finestre. Da risolvere in Fase B.
 
 ### Da verificare (test)
+- [ ] **Now Playing di CarPlay fermo su ▶** con audio attivo (vedi registro Fase B): verificare su device; se si ripete, valutare `MPNowPlayingSession` con l'`AVPlayer`.
+- [ ] **Scollegamento CarPlay in auto:** sul simulatore l'audio continua; su un'auto vera iOS cambia la route audio. Verificare se l'app deve mettere in pausa (route change `OldDeviceUnavailable`), come per le cuffie.
+- [ ] **iPad con `UIApplicationSupportsMultipleScenes=true`:** verificare se si possono aprire più finestre e, se sì, limitarle a una.
 - [ ] **Fase A:** distruzione e ricreazione della scena a processo vivo; lock screen; interruzioni audio; rotazione; ripristino dopo kill. Su device reale.
-- [ ] **Fase C:** avvio a freddo da CarPlay (dopo B); telefonata e Siri; riproduzione con schermo bloccato; comportamento del watchdog dopo un'interruzione.
-- [ ] **Fase D:** aggiornamento della lista dal vivo su CarPlay (dopo B); catalogo vuoto o in errore.
+- [x] **Fase C:** avvio a freddo da CarPlay con audio (simulatore, 21 ottobre).
+- [ ] **Fase C:** telefonata e Siri; riproduzione con schermo bloccato; comportamento del watchdog dopo un'interruzione.
+- [x] **Fase D:** aggiornamento della lista dal vivo su CarPlay (avvio a freddo, 21 ottobre).
+- [ ] **Fase D:** catalogo vuoto o in errore, su CarPlay.
 - [ ] **Mac Catalyst e Windows** dopo il cambio a `AudioService` (build ok, ma riproduzione non riprovata dopo la Fase C).
 - [ ] **Limiti del veicolo** (`CPListTemplate.MaximumItemCount`): con circa 4 stazioni non dovrebbe servire nulla, ma il valore reale non è stato letto.
 
 ### Da correggere nel piano
-- [ ] §3.1 e §3.2 dicono che MAUI rimuove il manifest e serve uno script post-build: smentito in Fase A. Riscrivere la Fase B dopo lo spike.
+- [x] §3.1 e §3.2 (MAUI rimuove il manifest, serve uno script post-build): smentiti in Fase A e B, vedi `simulator-testing.md` §5.
 - [ ] §1: la riga su `AzuraStationCatalog` ("nessun evento") va corretta come in Fase D.
 
 ### Fasi ancora da fare
-- [ ] **Fase B:** aggiungere scena CarPlay al plist, spike su firma e simulatore (R8).
+- [x] **Fase B:** scena CarPlay nel plist, entitlement per simulatore, test sul simulatore (R8 risolto: serve l'entitlement nell'eseguibile).
 - [ ] **Fase E:** errore di riproduzione con `CPAlertTemplate`; artwork; indicatore "in riproduzione". (Le stringhe sono già nei `.resx`.)
 - [ ] **Fase F:** test su simulatore CarPlay e su device con entitlement.
 - [ ] **Fase G:** `shell.carplay` a `done`, README, `docs/carplay-ios/README.md`, store, versione.
-- [ ] **Dopo l'approvazione Apple:** capability sull'App ID, profili Development e App Store, entitlement nel plist.
+- [ ] **Dopo l'approvazione Apple (approvata il 21 ottobre):** capability sull'App ID, profili Development e App Store, entitlement nel plist.
+
+### 21 ottobre 2026 (sera)
+- **Fase 0 chiusa:** Apple ha assegnato l'entitlement CarPlay Audio all'account (email di conferma lo stesso giorno). R1 superato. Restano i passi manuali di §8: capability sull'App ID e rigenerazione dei profili.
+
+- **Fase B, fatta sul simulatore (stessa sera).** Procedura e diagnostica in [`simulator-testing.md`](simulator-testing.md).
+  - `Info.plist`: manifest con scena principale e scena CarPlay, `UIApplicationSupportsMultipleScenes=true`. Tolto il vecchio blocco commentato.
+  - `RadioE45.csproj`: tolti i commenti obsoleti su script post-build e re-firma; le build per simulatore usano `Platforms/iOS/Entitlements.Simulator.plist` (con `carplay-audio`, senza profilo). Device e App Store restano su `Entitlements.plist`, senza CarPlay fino ai nuovi profili (verificato con `-getProperty:CodesignEntitlements`).
+  - **Primi tentativi falliti, cause misurate:** (1) icona assente perché l'eseguibile non era stato rilinkato e non conteneva l'entitlement (cache del link basata sul percorso); (2) click finito su Messaggi perché `System Events click at` non è un click vero; (3) menu CarPlay disabilitato per simulatore non pronto. La re-firma a mano non serviva: su simulatore conta la sezione `__entitlements`. Dettagli in `simulator-testing.md` §5.
+  - **Verificato (iPhone 16e, iOS 26.2):**
+    - icona RadioE45 nella home CarPlay; "Application declares audio entitlement" nei log;
+    - lista "Stazioni" con le 4 stazioni; la stazione in onda ha il brano come sottotitolo;
+    - tap su Radio Cartoni: riproduzione (`Playing` in 0,6 s) e push del Now Playing con titolo e artista;
+    - **avvio a freddo da CarPlay** (app terminata, 0 processi): viene creata solo la scena CarPlay; la lista è impostata prima del caricamento del catalogo (00.934 contro 01.310-01.727) e si aggiorna da sola (Fase D); tap su una stazione: `Playing` in 0,7 s senza finestra principale (Fase C);
+    - apertura dell'app sul telefono durante la riproduzione da CarPlay: stessa istanza, stessa stazione, nessun riavvio dello stream;
+    - scollegamento CarPlay: scena chiusa, processo e audio vivi, app principale utilizzabile.
+  - **Problema aperto, Now Playing di CarPlay:** il pulsante resta su ▶ e il tempo non avanza, mentre l'audio suona. Misura: in `mediaremoted` lo stato di RadioE45 passa a `Paused` alla registrazione dei comandi remoti e non diventa mai `Playing`; cambia solo `playbackRate` (0 → 1). `MPNowPlayingInfoCenter.playbackState` è solo macOS (documentazione Apple; assente nel binding iOS), quindi non è quella la correzione (tentativo annullato). Ipotesi da verificare: sul simulatore il sistema non rileva l'audio attivo, oppure serve `MPNowPlayingSession` collegato all'`AVPlayer`. Prima verificarlo su device reale, poi decidere.

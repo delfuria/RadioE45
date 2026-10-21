@@ -45,27 +45,12 @@
         <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
     </PropertyGroup>
 
-    <!--
-        CARPLAY ENTITLEMENT — DISABILITATO (nessun certificato Apple CarPlay disponibile)
-        ══════════════════════════════════════════════════════════════════════════════════
-        Questo entitlement causa il fallimento del code signing su device fisico se il
-        provisioning profile non include "com.apple.developer.carplay-audio".
-
-        COME RIPRISTINARE (una volta ottenuto il certificato Apple CarPlay):
-          1. Richiedere l'entitlement CarPlay su https://developer.apple.com/contact/carplay/
-          2. Dopo l'approvazione, rigenerare il provisioning profile su developer.apple.com
-             includendo la capability "CarPlay Audio".
-          3. Scaricare il nuovo profilo e installarlo in Xcode (o tramite dotnet).
-          4. Decommentare il blocco <ItemGroup> qui sotto.
-          5. Decommentare anche i target InjectCarPlaySceneManifest e ResignAppBundle più in basso.
-          6. Decommentare UIApplicationSceneManifest in Platforms/iOS/Info.plist.
-    <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
-        <CustomEntitlements Include="com.apple.developer.carplay-audio"
-                            Type="Boolean"
-                            Value="true"
-                            Visible="false" />
-    </ItemGroup>
-    -->
+    <!-- CarPlay Audio: l'entitlement com.apple.developer.carplay-audio e' assegnato all'account (21 ottobre 2026).
+         Simulatore: Platforms/iOS/Entitlements.Simulator.plist (vedi sotto). Device e App Store:
+         vanno in Platforms/iOS/Entitlements.plist solo dopo aver abilitato la capability sull'App ID
+         e rigenerato i profili, altrimenti il code signing fallisce.
+         La scena CarPlay e' nel manifest di Platforms/iOS/Info.plist, che MAUI porta nel bundle
+         senza script post-build. Dettagli: docs/carplay-ios/piano-operativo.md. -->
 
     <ItemGroup>
         <!-- Escludi il template dei segreti dalla compilazione -->
@@ -176,6 +161,11 @@
                           Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
     </ItemGroup>
 
+    <!-- Simulatore iOS: entitlement CarPlay nel binario ad-hoc, senza provisioning profile -->
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and $(RuntimeIdentifier.StartsWith('iossimulator'))">
+        <CodesignEntitlements>Platforms/iOS/Entitlements.Simulator.plist</CodesignEntitlements>
+    </PropertyGroup>
+
     <!-- iOS App Store signing -->
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
         <CodesignKey>Apple Distribution: Stefano Del Furia (VZWMBQL256)</CodesignKey>
@@ -233,42 +223,6 @@
         <PackageReference Include="Xamarin.AndroidX.SavedState" Version="1.5.0.1" />
         <PackageReference Include="Xamarin.AndroidX.SavedState.SavedState.Ktx" Version="1.5.0.1" />
     </ItemGroup>
-
-    <!--
-        CARPLAY POST-BUILD TARGETS — DISABILITATI (nessun certificato Apple CarPlay disponibile)
-        ══════════════════════════════════════════════════════════════════════════════════════════
-        Questi due target servono SOLO per il simulatore iOS, dove la firma è ad-hoc e può
-        essere alterata dopo il build. Su device fisico con certificato reale NON vanno usati:
-        modificare Info.plist dopo il codesign del certificato Distribution/Development
-        invaliderebbe la firma e impedirebbe l'installazione.
-
-        InjectCarPlaySceneManifest: MAUI rimuove UIApplicationSceneManifest durante il merge
-        dei plist; lo script lo re-inietta nel bundle compilato dopo ogni build iOS.
-
-        ResignAppBundle: il simulatore iOS 26 verifica la firma del bundle prima di creare
-        sessioni CarPlay; re-firma ad-hoc il bundle dopo l'iniezione.
-
-        COME RIPRISTINARE (solo per test su simulatore, dopo aver ottenuto il certificato):
-          1. Completare prima i passi 1-4 descritti nel blocco CustomEntitlements qui sopra.
-          2. Decommentare entrambi i target qui sotto.
-          3. Verificare che scripts/inject-carplay-manifest.sh e scripts/resign-app-bundle.sh
-             siano presenti e abbiano i permessi di esecuzione (chmod +x).
-          4. Su device fisico i target non servono: la firma del certificato Distribution
-             viene applicata da MAUI in fase di build e non va alterata post-build.
-
-    <Target Name="InjectCarPlaySceneManifest"
-            AfterTargets="Build"
-            Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
-        <Exec Command="bash &quot;$(MSBuildProjectDirectory)/../scripts/inject-carplay-manifest.sh&quot; &quot;$(OutputPath)&quot; &quot;$(MSBuildProjectName)&quot;" />
-    </Target>
-
-    <Target Name="ResignAppBundle"
-            AfterTargets="InjectCarPlaySceneManifest"
-            Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
-        <Exec Command="bash &quot;$(MSBuildProjectDirectory)/../scripts/resign-app-bundle.sh&quot; &quot;$(OutputPath)&quot; &quot;$(MSBuildProjectName)&quot;" />
-    </Target>
-    -->
-
     <!-- Rider looks for $(AssemblyName).app but MAUI names the bundle after ApplicationTitle.
          This symlink bridges the gap without changing either name. -->
     <Target Name="CreateRiderBundleAlias" AfterTargets="Build"

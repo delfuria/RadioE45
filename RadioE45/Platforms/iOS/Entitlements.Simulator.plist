@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Solo per le build per simulatore (vedi RadioE45.csproj): il simulatore CarPlay mostra l'app
+	     solo se l'entitlement e' nel binario firmato. Non richiede provisioning profile.
+	     Le build su device e App Store usano Entitlements.plist. -->
+	<key>com.apple.developer.carplay-audio</key>
+	<true/>
+</dict>
+</plist>
