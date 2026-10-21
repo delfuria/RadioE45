@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.47] - 2026-10-21
+
 ### New
 - **Update check:** the app tells you when a newer version is available (App Store, Microsoft Store, GitHub releases for Linux and the Windows installer, and the web app), with a manual check in Settings.
 
