@@ -436,3 +436,8 @@ L'app è `Playing` 0,55-1,26 s dopo l'apertura in tutti i casi, anche con uscita
 - `implementation-plan.md` segnato come storico; `STORE-DISTRIBUTION.md` con avviso: gli script `build-store-*.sh` non esistono più, comando `dotnet publish` dalla documentazione Microsoft (non ancora eseguito).
 - `CarPlaySceneDelegate.cs`: commento obsoleto sullo script di iniezione corretto.
 - **Restano all'utente:** `/release-prep`, build App Store e TestFlight (prova C), prove B6, B7, B10, B11, invio ad App Review.
+
+### 22 ottobre 2026 — release 0.48
+- `/release-prep`: `version.json` 0.48, `CHANGELOG.md` `[0.48] - 2026-10-22`; test 263/263, build `RadioE45.slnx`, Uno desktop e web senza errori né avvisi; `ParityCheck --strict` exit 2 per il debito dichiarato `settings.diagnostics.crash-reports (desktop, web)` (si rilascia con `Parity-Debt`, decisione utente). Commit `d76783f` dell'utente.
+- **IPA App Store 0.48.1 controllata:** entitlement CarPlay presente, profilo `Radio E45 AppStore` del 22 ottobre, distribuzione, firma valida, codice attuale (motore in-process e pausa allo scollegamento). Pronta per TestFlight.
+- Correzione: gli script di build non sono spariti, stanno fuori dal repository (`OneDrive-Personale/Lavori/RadioE45-Scripts/scripts/`); `STORE-DISTRIBUTION.md` e `app-store-carplay.md` aggiornati. `build-applestore-ios.sh` non controlla l'entitlement CarPlay: riga proposta in `app-store-carplay.md` §2.

@@ -21,7 +21,7 @@
 | 1 | Capability CarPlay Audio sull'App ID, profili rigenerati | [`provisioning-profiles.md`](provisioning-profiles.md) §4.4 | fatto il 22 ottobre |
 | 2 | `carplay-audio` in `Platforms/iOS/Entitlements.plist` | commit `9432d63` | fatto |
 | 3 | Versione e changelog | skill `/release-prep` (sposta `[Unreleased]` nella versione, controlli, build) | da fare |
-| 4 | L'IPA firmata App Store contiene l'entitlement | comando del §2, punto 3 | da fare |
+| 4 | L'IPA firmata App Store contiene l'entitlement | comando del §2, punto 3 | fatto il 22 ottobre su 0.48.1 (vedi §2) |
 | 5 | Prove su TestFlight (parte C di [`device-test-plan.md`](device-test-plan.md)) | §2 | da fare |
 | 6 | Prove B6, B7, B10, B11 | [`device-test-plan.md`](device-test-plan.md) | da fare |
 | 7 | iPad: una sola finestra | [`device-test-plan.md`](device-test-plan.md) A12 | da verificare se c'è un iPad |
@@ -29,24 +29,34 @@
 
 ## 2. TestFlight (prova C)
 
-1. Build App Store. `build-store-ios.sh`, citato in `STORE-DISTRIBUTION.md`, non esiste più (cartella `scripts/` cancellata a giugno 2026). Comando dalla documentazione Microsoft ([Publish an iOS app using the command line](https://learn.microsoft.com/dotnet/maui/ios/deployment/publish-cli?view=net-maui-10.0)); chiave, profilo `Radio E45 AppStore` ed entitlement vengono dal csproj (configurazione Release):
+1. Build App Store con lo script fuori dal repository: `~/Library/CloudStorage/OneDrive-Personale/Lavori/RadioE45-Scripts/scripts/build-applestore-ios.sh`.
+   - Cosa fa: restore pulito, `dotnet publish` Release con AOT, firma `Radio E45 AppStore` ed `Entitlements.plist`, poi controlla firma, `get-task-allow`, Team ID, bundle ID, versione, `ITSAppUsesNonExemptEncryption`, privacy manifest e profilo incorporato, e valida con `xcrun altool --validate-app`.
+   - Output: `scripts/store-packages/RadioE45.ipa` (in quella cartella).
+   - Lo script **non controlla CarPlay**. Per farlo controllare anche a lui, aggiungere dopo il controllo del Team ID:
 
-   ```bash
-   dotnet publish RadioE45/RadioE45.csproj -f net10.0-ios -c Release -p:ArchiveOnBuild=true -p:RuntimeIdentifier=ios-arm64
-   ```
-
-   L'IPA finisce in `RadioE45/bin/Release/net10.0-ios/ios-arm64/publish/`. Non l'ho eseguito: da provare alla prima release.
-2. Caricamento con Transporter o `xcrun altool` (sezione "Upload su App Store Connect" di [`../STORE-DISTRIBUTION.md`](../STORE-DISTRIBUTION.md)).
+     ```bash
+     echo "$ENT" | grep -q "com.apple.developer.carplay-audio" || { echo "[ERRORE] Entitlement CarPlay assente"; exit 1; }
+     ```
+2. Caricamento con Transporter (`open -a Transporter`) o `xcrun altool --upload-app`.
 3. Prima di caricare, verificare che l'IPA contenga l'entitlement CarPlay:
 
    ```bash
    T=$(mktemp -d)
-   unzip -q RadioE45/bin/Release/net10.0-ios/ios-arm64/publish/*.ipa -d "$T"
+   unzip -q ~/Library/CloudStorage/OneDrive-Personale/Lavori/RadioE45-Scripts/scripts/store-packages/RadioE45.ipa -d "$T"
    codesign -d --entitlements - "$T"/Payload/*.app | grep carplay-audio
    security cms -D -i "$T"/Payload/*.app/embedded.mobileprovision | plutil -extract Name raw -
    ```
 
    Atteso: la riga con `com.apple.developer.carplay-audio` e il profilo `Radio E45 AppStore`. Se manca, non caricare: il profilo App Store installato non è quello rigenerato.
+
+   **Esito 22 ottobre 2026, IPA 0.48.1 (13:57, commit `d76783f`):**
+   - entitlement `carplay-audio` presente;
+   - profilo `Radio E45 AppStore` creato il 22 ottobre;
+   - certificato Apple Distribution, `get-task-allow` 0, `beta-reports-active` 1, firma valida;
+   - scena CarPlay nel manifest;
+   - `RadioE45.dll` contiene `AudioQueueStreamPlayer`, `IosStreamPlayer` e il log della pausa allo scollegamento.
+
+   **Pronta per il caricamento.**
 4. Installare da TestFlight sull'iPhone e ripetere almeno A1, A6, B1, B3, B5, B8 (con CarPlay Simulator).
 
 ## 3. What's New (note di versione)
