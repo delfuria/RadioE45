@@ -302,9 +302,11 @@ Cose rimaste aperte nelle fasi fatte o decise per default. Spuntare quando risol
 - [ ] **iPad, una sola finestra:** deciso, ma con `UIApplicationSupportsMultipleScenes=true` (necessario per la scena CarPlay) l'iPad potrebbe aprire più finestre. Da risolvere in Fase B.
 
 ### Da verificare (test)
-- [ ] **Telefonata: audio abbassato invece che fermo** (22 ottobre): confermare la causa con i log, poi gestire le interruzioni di `AVAudioSession` e sospendere il watchdog durante l'interruzione.
-- [ ] **Ritardo di circa 15 s prima di sentire l'audio** con CarPlay Simulator: misurare dove si perde il tempo.
-- [ ] **Now Playing di CarPlay fermo su ▶** con audio attivo (vedi registro Fase B): verificare su device; se si ripete, valutare `MPNowPlayingSession` con l'`AVPlayer`.
+- [x] **Telefonata** (22 ottobre): con la build attuale pausa allo squillo e ripresa dopo la chiusura, confermato dai log. Facoltativo: gestione esplicita delle interruzioni per il caso app in primo piano.
+- [ ] **Ritardo di circa 20 s in CarPlay con MP3:** misurato (9 avvii 17-22 s; Musica 0,2-0,7 s; HLS 1,2 s). Safari con lo stesso MP3 parte subito (osservazione utente): cercare l'impostazione del player, una variabile alla volta, misurando in `airplayd`.
+- [ ] **"Preferisci HLS" ignorato** se l'ultimo URL riuscito è l'MP3 (`GetCandidateUrls`).
+- [ ] **Widget CarPlay senza tempi:** confrontare con un'app Apple sullo stesso CarPlay Simulator.
+- [x] **Now Playing fermo su ▶:** limite del simulatore; sul device lo stato è corretto (22 ottobre).
 - [ ] **Scollegamento CarPlay in auto:** sul simulatore l'audio continua; su un'auto vera iOS cambia la route audio. Verificare se l'app deve mettere in pausa (route change `OldDeviceUnavailable`), come per le cuffie.
 - [ ] **iPad con `UIApplicationSupportsMultipleScenes=true`:** verificare se si possono aprire più finestre e, se sì, limitarle a una.
 - [ ] **Fase A:** distruzione e ricreazione della scena a processo vivo; lock screen; interruzioni audio; rotazione; ripristino dopo kill. Su device reale.
@@ -357,3 +359,39 @@ Cose rimaste aperte nelle fasi fatte o decise per default. Spuntare quando risol
   - Release `ios-arm64`: `carplay-audio` = 1, `get-task-allow` = 0, profilo `Radio E45 AppStore`;
   - Release Mac Catalyst: firmata con `Radio E45 Mac AppStore`, entitlement invariati (niente CarPlay), `codesign --verify --deep --strict` ok.
 - Prossimo passo: P3 e seguenti di `device-test-plan.md` (installare la build Debug sull'iPhone e ripetere B1).
+
+### 22 ottobre 2026 — analisi dei log del telefono (`log collect`, 11:35-11:42)
+Nota strumento: nella shell zsh `log` è una funzione; usare `/usr/bin/log show <archivio>`.
+- **Avvio sull'altoparlante: OK.** Scelta URL 10-34 ms, `Playing` 564-738 ms dopo l'apertura (6 misure). L'utente sente circa 1 s.
+- **Telefonata: OK con questa build.** Squillo 11:37:59.9 → `audiomxd` interrompe RadioE45 (`Ringtone` priorità 10 contro `NonMixable` priorità 0), sfumatura 0,7 s a zero, `STOPPED`; risposta 11:38:16.9; fine chiamata 11:38:53.8; `End Interruption, ShouldResume` 11:38:55.3; `Playing` 11:38:56.1. In `mediaremoted`: `Playing → Interrupted → Playing`. Il watchdog non ha riaperto durante la chiamata (app sospesa). La gestione esplicita delle interruzioni resta consigliata per il caso app in primo piano (Siri, sveglia), ma non c'è un difetto misurato.
+- **Now Playing fermo su ▶ (simulatore): chiuso.** Sul device lo stato segue la riproduzione (`Paused`/`Playing`/`Interrupted`). Era un limite del simulatore.
+- **CarPlay, audio dopo circa 20 s: causa a valle dell'app.** L'app è `Playing` in meno di 0,8 s anche con uscita `CarAudio`; il motore AirPlay bufferizzato di `airplayd` (`APAudioEngineBuffered`) resta in `Prerolling` con buffer 0% e passa a `Started` dopo 17-20 s (11:40:17.8 → 11:40:38.1; 11:41:16.1 → 11:41:33.0; route CarPlay 11:39:42 → 11:40:01.3). La pausa è immediata (12 ms). Ipotesi: il motore attende un buffer minimo che uno stream MP3 dal vivo riempie solo in tempo reale. Previsione: con HLS (segmenti già pronti) la partenza è molto più rapida.
+- **Widget CarPlay senza tempi:** il Centro di Controllo dell'iPhone li mostra, quindi i metadati ci sono. Da confrontare con un'app Apple sullo stesso CarPlay Simulator.
+
+### 22 ottobre 2026 — esperimenti di confronto (utente)
+- Musica (Apple), Safari con lo stesso URL MP3 di Radio Casa e RadioE45 con "Preferisci HLS": audio subito su CarPlay. RadioE45 con MP3: circa 20 s, anche aprendo l'app da CarPlay. Quindi il ritardo dipende dalla combinazione `AvStreamPlayer` + MP3 progressivo sul percorso CarPlay, non da iOS in generale. Il sorgente WebKit (`MediaPlayerPrivateAVFoundationObjC.mm`) non mostra impostazioni diverse ovvie (`automaticallyWaitsToMinimizeStalling` lasciato attivo, nessun `preferredForwardBufferDuration`): confronto da fare nei log (`radioe45-prove2.logarchive`).
+- Copertina, dettagli del brano e cambio stazione su CarPlay: sempre corretti. **I tempi nel widget CarPlay mancano ancora** (presenti nel Centro di Controllo dell'iPhone): confronto con Musica nello stesso archivio.
+
+### 22 ottobre 2026 — analisi di `radioe45-prove2.logarchive` (11:30-12:10)
+Metodo: per ogni `cmsSetIsPlaying … starting` in `audiomxd`, tempo fino al primo `Started` del motore CarPlay in `airplayd` (`APAudioEngineBuffered`).
+
+| Sorgente | Avvii | Tempo fino a `Started` |
+|---|---|---|
+| Musica (Apple) | 5 | 0,17-0,69 s |
+| RadioE45, HLS (AzuraTest Radio, `demo.azuracast.com/hls/.../live.m3u8`) | 1 | 1,16 s |
+| RadioE45, MP3 (Radio Casa LAN, Radio E45, `radioe45.ddns.net`) | 9 | 17-22 s |
+
+L'app è `Playing` 0,55-1,26 s dopo l'apertura in tutti i casi, anche con uscita `CarAudio`.
+- **Safari:** l'utente osserva partenza immediata con lo stesso MP3; non c'è nei log e si accetta l'osservazione (decisione utente: non cercarla). Quindi la sola spiegazione "MP3 dal vivo arriva in tempo reale" non basta: conta anche la configurazione di `AvStreamPlayer` (`AVPlayer` con impostazioni predefinite).
+- **Difetto trovato (misurato):** con "Preferisci HLS" attivo Radio Casa ha usato sempre l'MP3, perché `LiveStreamAudioService.GetCandidateUrls` mette per primo `OnAirStreamUrl` (l'ultimo URL riuscito) prima dell'ordine scelto dall'impostazione.
+
+### 22 ottobre 2026 — prova 1 e prova 2 sul ritardo CarPlay
+- **Prova 1, `AutomaticallyWaitsToMinimizeStalling = false`: falsificata.** Build verificata nel log; MP3 su CarPlay +20,0 / +22,0 / +22,0 s (`radioe45-prova1.logarchive`). Modifica tolta.
+- **Differenza trovata:** per Safari (`com.apple.WebKit`, 12:16:41) `airplayd` apre uno stream CarPlay in tempo reale (`APEndpointStreamCarPlayAudio` "AudioMain: Setup succeeded", `audioType media`, `audioLatencyMs 32`, `type 100`) e il motore bufferizzato non registra nessun `Started`. RadioE45 invece si registra come client di AirPlay bufferizzato (`FigBufferedAirPlayClientRoutingRegistry`) e passa da `APAudioEngineBuffered`, che con un MP3 dal vivo resta in preroll circa 20 s. WebKit imposta `AVPlayer.allowsExternalPlayback` (`MediaPlayerPrivateAVFoundationObjC.mm`).
+- **Prova 2, `AllowsExternalPlayback = false`:** in corso. Previsione: "AudioMain: Setup succeeded … type 100" anche per RadioE45, nessun preroll bufferizzato, audio in 1-2 s. Da verificare anche: avvio sull'altoparlante invariato; AirPlay verso altri altoparlanti (se disponibile), che con questa impostazione passerebbe in tempo reale.
+- **Prova 2, `AllowsExternalPlayback = false`: falsificata.** Build verificata; `airplayd` registra comunque RadioE45 come client di AirPlay bufferizzato a ogni avvio; MP3 su CarPlay +20 / +22 / +22 / +22 s (`radioe45-prova2.logarchive`). AirPlay verso un altoparlante: funzionante (utente). Modifica tolta.
+- **Causa individuata (misurata):** in `audiomxd`, all'avvio, Safari ha `IsPlayingOutput:YES` e RadioE45 `IsPlayingOutput:NO`; tutto il resto coincide (`MediaPlayback/Default`, `NonMixable`, `System Music`, `NowPlayingApp:YES`). Safari produce l'audio nel proprio processo e CarPlay lo riceve in tempo reale (`type 100`, 32 ms); il nostro `AVPlayer` consegna lo stream al percorso AirPlay bufferizzato (`APAudioEngineBuffered`), che con un MP3 dal vivo deve accumulare circa 20 s. HLS (+1-3 s) e Musica (+0,2-0,7 s) riempiono il buffer subito. È una differenza di motore, non di parametro: niente altre prove a parametri.
+- **Opzioni (decisione utente):**
+  1. **HLS quando la stazione lo offre**, correggendo `GetCandidateUrls` perché "Preferisci HLS" (o una preferenza automatica con uscita CarPlay) non sia scavalcato dall'ultimo URL riuscito. Misurato: +1-3 s. Non risolve le stazioni solo MP3 (oggi Radio Cartoni, Radio E45).
+  2. **Motore MP3 in-process** (download dello stream + decodifica con AudioToolbox, uscita con `AVAudioEngine` o `AudioQueue`), cioè audio prodotto nell'app come Safari. Previsione: percorso in tempo reale e avvio in 1-2 s anche per MP3. Lavoro significativo e da tenere su iOS soltanto.
+  3. **Accettare il ritardo per gli MP3** e consigliare HLS ai gestori delle stazioni (AzuraCast lo attiva per stazione).
