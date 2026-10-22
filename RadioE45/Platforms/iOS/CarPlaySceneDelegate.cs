@@ -8,7 +8,7 @@ using RadioE45.Services.Radio;
 
 namespace RadioE45;
 
-// UISceneDelegateClassName in the built Info.plist (injected by inject-carplay-manifest.sh)
+// UISceneDelegateClassName in Platforms/iOS/Info.plist (CPTemplateApplicationSceneSessionRoleApplication)
 // must match the Objective-C registered name below.
 [Register("CarPlaySceneDelegate")]
 public sealed class CarPlaySceneDelegate : CPTemplateApplicationSceneDelegate

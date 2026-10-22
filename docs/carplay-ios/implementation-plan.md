@@ -1,5 +1,7 @@
 # Apple CarPlay — Piano di Riattivazione ed Estensione
 
+> **Documento storico.** Sostituito da [`piano-operativo.md`](piano-operativo.md) e, per lo stato attuale, da [`README.md`](README.md). Le Fasi 1-2 (script post-build e re-firma) si sono rivelate non necessarie: vedi [`simulator-testing.md`](simulator-testing.md) §5.
+
 > Data: 31 luglio 2026
 > Target: `net10.0-ios`
 > Stato: scaffolding già scritto a metà giugno 2026, disabilitato in attesa dell'entitlement Apple

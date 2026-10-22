@@ -94,8 +94,8 @@
   title: Apple CarPlay
   since: "0.44"
   page: Shell
-  status: { maui: todo, desktop: n/a, web: n/a }
-  notes: "Solo iOS. Codice presente ma disattivato: in attesa dell'entitlement Apple carplay-audio e della migrazione a scene (docs/carplay-ios/piano-operativo.md)"
+  status: { maui: done, desktop: n/a, web: n/a }
+  notes: "Solo iOS (CarPlay non esiste su Mac, Windows, Linux e web). Lista stazioni e Now Playing; verificato con CarPlay Simulator e iPhone il 22 ottobre 2026, auto reale non provata. docs/carplay-ios/README.md"
 
 - id: shell.android-auto
   title: Android Auto e controlli Bluetooth/AVRCP (Media3)

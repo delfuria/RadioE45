@@ -54,6 +54,8 @@ L'output è `scripts/store-packages/RadioE45.aab`.
 
 ## Apple App Store (iOS)
 
+> **Aggiornamento 22 ottobre 2026.** Gli script `build-store-*.sh` citati sotto non esistono più (cartella `scripts/` cancellata a giugno 2026). Per iOS usare `dotnet publish RadioE45/RadioE45.csproj -f net10.0-ios -c Release -p:ArchiveOnBuild=true -p:RuntimeIdentifier=ios-arm64` (IPA in `RadioE45/bin/Release/net10.0-ios/ios-arm64/publish/`). Con CarPlay il profilo App Store deve contenere la capability CarPlay Audio: controlli e testi in [`carplay-ios/app-store-carplay.md`](carplay-ios/app-store-carplay.md); profili in [`carplay-ios/provisioning-profiles.md`](carplay-ios/provisioning-profiles.md).
+
 ### Prerequisiti
 
 1. **macOS** con Xcode installato

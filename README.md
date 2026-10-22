@@ -25,7 +25,7 @@ Want to try RadioE45 before the public release? Join the preliminary tests:
 - Linux (preview): Debian/Ubuntu-based distributions, `.deb` package for x64 and arm64
 
 ## Features
-- Background audio streaming with `CommunityToolkit.Maui.MediaElement`
+- Background audio streaming (iOS: native AVPlayer for HLS and an in-app AudioQueue player for MP3/AAC streams; Android: Media3; Mac Catalyst and Windows: `CommunityToolkit.Maui.MediaElement`)
 - Now Playing updated every 10 seconds from the AzuraCast API
 - Cover art, artist, and current track title
 - LIVE indicator with streamer name
@@ -38,7 +38,7 @@ Want to try RadioE45 before the public release? Join the preliminary tests:
 - Local persistence with SQLite
 - Dark theme by default
 - Update check: once a day, on the first launch, the app tells you when a newer version is available (App Store on iOS, Microsoft Store or GitHub Releases on Windows, GitHub Releases for the Linux `.deb`, the site itself on the web), and Settings has a manual check
-- Apple CarPlay support (iOS): in progress, not yet enabled (waiting for Apple's CarPlay entitlement)
+- Apple CarPlay support (iOS)
 - Android Auto support
 
 ## Android Auto
@@ -49,12 +49,26 @@ Android Auto is now implemented. The Android audio layer was rebuilt: playback m
 background playback. Full details (technical analysis, rebuild report, dev setup, in
 Italian and English) are in [`docs/android-auto-media3/`](docs/android-auto-media3/README.md).
 
+## Apple CarPlay
+
+CarPlay is implemented for iOS with the CarPlay Audio entitlement. The car screen shows the
+station list (`CPListTemplate`); choosing a station starts playback and opens Now Playing
+(`CPNowPlayingTemplate`) with track, artist, cover art and elapsed time. Play, pause and
+next/previous station work from the car controls and the iPhone lock screen. The app can be
+started directly from CarPlay without opening it on the iPhone first.
+
+Live MP3/AAC streams are played by an in-app AudioQueue player: with `AVPlayer` CarPlay waited
+about 20 seconds before the first sound (analysis in
+[`docs/carplay-ios/carplay-mp3-start-delay.md`](docs/carplay-ios/carplay-mp3-start-delay.md)).
+Architecture, files and test procedure: [`docs/carplay-ios/`](docs/carplay-ios/README.md).
+
 ## Documentation
 All documentation lives in [`docs/`](docs/):
 
 | Topic | Path |
 |-------|------|
 | Android Auto / Bluetooth → Media3 rebuild (IT + EN) | [`docs/android-auto-media3/`](docs/android-auto-media3/README.md) |
+| Apple CarPlay (architecture, tests, App Store) | [`docs/carplay-ios/`](docs/carplay-ios/README.md) |
 | CarPlay / Android Auto — original implementation | [`docs/carplay/`](docs/carplay/android-auto-carplay-implementation.md) |
 | UI localization (`.resx`) | [`docs/LOCALIZATION.md`](docs/LOCALIZATION.md) |
 | Store distribution | [`docs/STORE-DISTRIBUTION.md`](docs/STORE-DISTRIBUTION.md) · [`docs/store-descriptions.md`](docs/store-descriptions.md) |

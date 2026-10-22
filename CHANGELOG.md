@@ -7,7 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.48] - 2026-10-22
+
 ### New
+- **Apple CarPlay:** choose a station from the list on the car screen and see the track, artist and cover in Now Playing; the car's buttons pause, resume and change station.
 - **iPhone and iPad:** the next and previous buttons on the lock screen, in Control Center, in CarPlay and on headphones switch to the next or previous station.
 
 ### Fixed

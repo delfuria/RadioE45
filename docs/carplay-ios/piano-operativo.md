@@ -325,7 +325,7 @@ Cose rimaste aperte nelle fasi fatte o decise per default. Spuntare quando risol
 - [x] **Fase B:** scena CarPlay nel plist, entitlement per simulatore, test sul simulatore (R8 risolto: serve l'entitlement nell'eseguibile).
 - [ ] **Fase E:** errore di riproduzione con `CPAlertTemplate`; artwork; indicatore "in riproduzione". (Le stringhe sono già nei `.resx`.)
 - [ ] **Fase F:** test su simulatore CarPlay e su device con entitlement.
-- [ ] **Fase G:** `shell.carplay` a `done`, README, `docs/carplay-ios/README.md`, store, versione.
+- [x] **Fase G:** `shell.carplay` a `done`, README, `docs/carplay-ios/README.md`, testi store e note App Review (22 ottobre). Versione e TestFlight con `/release-prep` e la prova C.
 - [x] **Dopo l'approvazione Apple (approvata il 21 ottobre):** capability sull'App ID, profili Development e App Store, entitlement nel plist.
 
 ### 21 ottobre 2026 (sera)
@@ -427,3 +427,12 @@ L'app è `Playing` 0,55-1,26 s dopo l'apertura in tutti i casi, anche con uscita
 - Build installata sul device: da ripetere B8, B9, A1 (avvio), A7 (telefonata), A8 (cuffie).
 - **Esito sul device (utente):** B8 superata (resta in pausa). B9: ricollegando il cavo l'audio riparte da solo; da capire nei log se per un comando "play" del sistema (accettabile) o per un nostro riavvio. B5: confermato di lasciarlo così per ora.
 - **B9 chiarita (`radioe45-b9.logarchive`):** 13:41:41.508 cavo staccato → "Audio output device removed, pausing" → pausa; 13:41:53.050 `mediaremoted` "Sending command … command = Play" a RadioE45 da `com.apple.cmsession.carplay`; 13:41:53.062 `Resume station streaming`. Uguale alle 13:39:44. La ripartenza al ricollegamento è un comando di sistema (iOS riprende l'ultima app audio quando l'auto si collega), non un riavvio dell'app: comportamento atteso, lasciato così. **B8 e B9 superate.**
+
+### 22 ottobre 2026 — Fase G
+- `parity/features.yaml`: `shell.carplay` → `maui: done` (note: solo iOS, verificato con CarPlay Simulator e iPhone, auto reale non provata). `ParityCheck`: nessun disallineamento.
+- `CHANGELOG.md` `[Unreleased]` `New`: Apple CarPlay.
+- `README.md`: voce funzioni, sezione "Apple CarPlay", riga nella tabella dei documenti.
+- Nuovi documenti: [`README.md`](README.md) (tecnico) e [`app-store-carplay.md`](app-store-carplay.md) (controlli, TestFlight, What's New, descrizione, note per App Review).
+- `implementation-plan.md` segnato come storico; `STORE-DISTRIBUTION.md` con avviso: gli script `build-store-*.sh` non esistono più, comando `dotnet publish` dalla documentazione Microsoft (non ancora eseguito).
+- `CarPlaySceneDelegate.cs`: commento obsoleto sullo script di iniezione corretto.
+- **Restano all'utente:** `/release-prep`, build App Store e TestFlight (prova C), prove B6, B7, B10, B11, invio ad App Review.
