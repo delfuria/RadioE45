@@ -13,6 +13,8 @@ public sealed class Feature
     public string? Viewmodel { get; set; }
     public FeatureStatus Status { get; set; } = new();
     public string? Notes { get; set; }
+    /// <summary>Why <c>status.tv</c> is <c>limited</c> or <c>n/a</c> (required then); free-form hints otherwise.</summary>
+    public string? TvNotes { get; set; }
 }
 
 public sealed class FeatureStatus
@@ -20,12 +22,15 @@ public sealed class FeatureStatus
     public string Maui { get; set; } = "";
     public string Desktop { get; set; } = "";
     public string Web { get; set; } = "";
+    /// <summary>Android TV / Google TV views (<c>RadioE45/Views/Tv</c>), docs/ANDROID-TV-ROADMAP.md §5.</summary>
+    public string Tv { get; set; } = "";
 
     public IEnumerable<(string Platform, string Value)> All()
     {
         yield return ("maui", Maui);
         yield return ("desktop", Desktop);
         yield return ("web", Web);
+        yield return ("tv", Tv);
     }
 
     public IEnumerable<(string Platform, string Value)> Uno()
@@ -48,7 +53,14 @@ public sealed class PageMap
     /// <summary>Binding members or string keys used only by MAUI, each with a reason.</summary>
     public List<IgnoreEntry> Ignore { get; set; } = [];
 
+    /// <summary>TV page path (<c>RadioE45/Views/Tv/...</c>), or <c>n/a</c> when the page has no TV counterpart (then <see cref="TvReason"/> is required).</summary>
+    public string Tv { get; set; } = "";
+    public string? TvReason { get; set; }
+    /// <summary>Binding members or string keys used by the phone page and deliberately absent on TV (touch-only), each with a reason.</summary>
+    public List<IgnoreEntry> IgnoreTv { get; set; } = [];
+
     public bool UnoNotApplicable => Uno == Status.NotApplicable;
+    public bool TvNotApplicable => Tv == Status.NotApplicable;
 }
 
 public sealed class IgnoreEntry

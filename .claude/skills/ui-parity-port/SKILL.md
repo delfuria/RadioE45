@@ -41,7 +41,7 @@ Riferimenti: `CLAUDE.md`, `docs/LINUX-UNO-ROADMAP.md` (§6, §8), `docs/parity/M
 
 ## 5. Chiusura
 
-1. In `parity/features.yaml` portare `desktop` e `web` a `done`, oppure `limited` con `notes` che spiegano il limite (es. CORS sul web).
+1. In `parity/features.yaml` portare `desktop` e `web` a `done`, oppure `limited` con `notes` che spiegano il limite (es. CORS sul web). Per una feature nuova valorizzare anche `tv` (`todo`, oppure `n/a` con `tvNotes` se non ha senso su TV): il port TV si fa con la skill `tv-parity-port`.
 2. `ParityCheck` di nuovo: deve restituire 0 o 1.
 3. Proporre il messaggio di commit **come testo** (in inglese, mai eseguire `git commit`), con il trailer:
    - `Parity: maui, desktop, web` se la feature è allineata ovunque;

@@ -5,8 +5,12 @@
 #   since:      app version that introduced the feature ("0.44" = already in the S5 inventory)
 #   page:       logical page name from pages.yaml
 #   viewmodel:  ViewModel that owns the behaviour (optional for platform-only features)
-#   status:     maui | desktop | web  →  done | todo (declared debt) | limited | n/a
+#   status:     maui | desktop | web | tv  →  done | todo (declared debt) | limited | n/a
 #   notes:      required for limited and n/a; also used for planned limitations of todo items
+#   tvNotes:    the same for status.tv (required when tv is limited or n/a); 'notes' speaks about the other platforms
+#
+# 'tv' is Android TV / Google TV: MAUI views in RadioE45/Views/Tv, same app as the phone
+# (docs/ANDROID-TV-ROADMAP.md §5). 'todo' on tv is listed by ParityCheck --include-tv.
 #
 # Initial inventory (S5a, v0.44): MAUI done, desktop and web todo until RadioE45.Uno exists.
 
@@ -17,7 +21,8 @@
   since: "0.44"
   page: Shell
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
+  tvNotes: "Fila di pulsanti focusabili, non una barra di tab: On Air e Stations sempre visibili, Request e Podcast solo con la capability"
   notes: "Uno: NavigationView (§8); tab Richieste (S8.5) e Podcast (S8.6) legate a OnAirViewModel tramite ShellPage.OnAirViewModel"
 
 - id: shell.menu.station-header
@@ -25,21 +30,24 @@
   since: "0.44"
   page: Shell
   viewmodel: AppMenuViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessun menu laterale su TV (decisione 2026-10-22)"
 
 - id: shell.menu.navigation
   title: Menu laterale, voci Canali e Impostazioni
   since: "0.44"
   page: Shell
   viewmodel: AppMenuViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessun menu laterale su TV (decisione 2026-10-22)"
 
 - id: shell.menu.station-links
   title: Menu laterale, link della stazione (sito web, fino a 3 social, email e telefono)
   since: "0.44"
   page: Shell
   viewmodel: AppMenuViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessun menu laterale su TV (decisione 2026-10-22)"
   notes: "Web: i link mailto/tel e i siti si aprono in una nuova scheda"
 
 - id: shell.menu.app-version
@@ -47,61 +55,70 @@
   since: "0.44"
   page: Shell
   viewmodel: AppMenuViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessun menu laterale su TV (decisione 2026-10-22)"
 
 - id: shell.terms-of-use
   title: Termini d'uso mostrati una volta al primo avvio (App Review 5.2.3)
   since: "0.44"
   page: Shell
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
+  tvNotes: "Solo al primo utilizzo, con il focus iniziale sul pulsante; non si rilegge da nessuna parte"
 
 - id: shell.system-media-controls
   title: Metadati e tasti multimediali di sistema (lock screen iOS, Centro di controllo macOS, SMTC Windows)
   since: "0.44"
   page: Shell
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
+  tvNotes: "La sessione Media3 esiste già: verificare i tasti media del telecomando"
   notes: "Desktop: MPRIS solo su Linux (macOS e Windows senza bus di sessione: nessun controllo), Services/Desktop/MprisNowPlayingService; web: Media Session API, Services/Browser/BrowserMediaSession. Comandi play/pausa come MAUI iOS (SystemMediaCommands); avanti/indietro = stazione successiva/precedente come Android Auto (MAUI iOS/macOS li ha disabilitati); niente seek"
 
 - id: shell.tab-icons
   title: Icona per ogni tab della stazione (On Air, Richieste, Podcast)
   since: "0.45"
   page: Shell
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "I pulsanti di sezione TV hanno solo l'etichetta"
   notes: "MAUI: immagini tab_onair/tab_request/tab_podcast; Uno: glifi Font Awesome (play, nota musicale, microfono) nella NavigationView, seguono tema e selezione"
 
 - id: shell.pwa
   title: App web installabile (PWA) con icone, finestra propria e avvio della shell senza il server web
   since: "0.45"
   page: Shell
-  status: { maui: n/a, desktop: n/a, web: done }
+  status: { maui: n/a, desktop: n/a, web: done, tv: n/a }
+  tvNotes: "Solo web"
   notes: "Solo web (le app native si installano dagli store e dai pacchetti). Platforms/WebAssembly/manifest.webmanifest, icone in Platforms/WebAssembly/Pwa (bianche, logo nella zona sicura maskable); service worker di Uno (network-first) avvolto da wwwroot/radioe45-sw.js, che lascia al browser stream e richieste verso altre origini (Safari rifiuta la fetch del worker sulla porta Icecast); RadioE45Pwa.js lo registra e mette in cache uno-assets.txt. Lo stream e le API richiedono comunque la rete"
 
 - id: shell.desktop-window-size
   title: Finestra desktop fissa 500×855 (verticale) o 900×450 (orizzontale) da desktop_orientation, non ridimensionabile
   since: "0.44"
   page: Shell
-  status: { maui: done, desktop: done, web: n/a }
+  status: { maui: done, desktop: done, web: n/a, tv: n/a }
+  tvNotes: "Solo desktop"
   notes: "Web: la finestra è quella del browser. Dimensioni condivise in RadioE45.Core DesktopWindowSize"
 
 - id: shell.web-column
   title: Web, app in una colonna centrata larga quanto la finestra desktop verticale (500), tab comprese, pagine sempre in verticale
   since: "0.44"
   page: Shell
-  status: { maui: n/a, desktop: n/a, web: done }
+  status: { maui: n/a, desktop: n/a, web: done, tv: n/a }
+  tvNotes: "Solo web"
   notes: "Solo web (il browser ha qualsiasi dimensione): MAUI e desktop hanno la finestra fissa di shell.desktop-window-size. RadioE45.Uno/Services/Shared/UnoLayout"
 
 - id: shell.carplay
   title: Apple CarPlay
   since: "0.44"
   page: Shell
-  status: { maui: done, desktop: n/a, web: n/a }
+  status: { maui: done, desktop: n/a, web: n/a, tv: n/a }
+  tvNotes: "Solo iOS"
   notes: "Solo iOS (CarPlay non esiste su Mac, Windows, Linux e web). Lista stazioni e Now Playing; verificato con CarPlay Simulator e iPhone il 22 ottobre 2026, auto reale non provata. docs/carplay-ios/README.md"
 
 - id: shell.android-auto
   title: Android Auto e controlli Bluetooth/AVRCP (Media3)
   since: "0.44"
   page: Shell
-  status: { maui: done, desktop: n/a, web: n/a }
+  status: { maui: done, desktop: n/a, web: n/a, tv: n/a }
+  tvNotes: "Android Auto non riguarda la TV; la sessione Media3 è la stessa (vedi shell.system-media-controls)"
   notes: "Solo Android"
 
 # --- On Air ----------------------------------------------------------------------------------
@@ -111,14 +128,15 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
   notes: "Web: limite accettato, la copertina generica di AzuraCast (redirect a /static/img/generic_song.jpg, es. jingle) non ha CORS e resta il segnaposto (roadmap §5)"
 
 - id: onair.menu-button
   title: Pulsante sopra la copertina che apre il menu laterale
   since: "0.44"
   page: OnAir
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessun menu laterale su TV (decisione 2026-10-22)"
   notes: "Uno: Controls/MenuButton apre il pannello del menu (SplitView in sovrimpressione nella shell)"
 
 - id: onair.live-indicator
@@ -126,14 +144,14 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: onair.station-badge
   title: Badge della stazione con nome, preferito, numero di ascoltatori e badge HLS
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
   notes: "Uno: icone Font Awesome al posto delle emoji MAUI (nessun font emoji nel renderer Skia web). 0.48: badge HLS centrato verticalmente in MAUI (VerticalOptions=Center), come già in Uno: stessa altezza del badge della stazione"
 
 - id: onair.favorite
@@ -141,42 +159,42 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: onair.track-info
   title: Titolo e artista del brano in onda
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: onair.track-progress
   title: Avanzamento del brano con tempo trascorso e durata
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: onair.next-track
   title: Prossimo brano (copertina, titolo, artista)
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: onair.schedule-entry
   title: Accesso al palinsesto accanto al prossimo brano, o riga compatta se manca il prossimo brano
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: onair.playback-controls
   title: Play/pausa (pausa live = chiusura stream, ripresa in diretta) e indicatore di buffering
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
   notes: "Web: nessun autoplay, ogni avvio parte da un gesto dell'utente (§5): all'apertura stazione selezionata e now playing, niente play né ripresa automatica (IAppEnvironment.CanAutoplay)"
 
 - id: onair.station-switch
@@ -184,7 +202,7 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
   notes: "1 stazione: solo play; 2 stazioni: solo successiva; 3 o più: precedente e successiva. Spinner di attesa al posto del VU meter (riga in alto a destra)"
 
 - id: onair.volume
@@ -192,35 +210,37 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Il volume è del televisore e si regola dal telecomando"
 
 - id: onair.error
   title: Messaggio d'errore della pagina On Air
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: onair.song-history
   title: Ultimi brani trasmessi, sezione espandibile
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: onair.pull-to-refresh
   title: Aggiornamento manuale del now playing (pull to refresh)
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessun pull to refresh col telecomando; il now playing si aggiorna da solo"
   notes: "Desktop: F5 (RefreshContainer richiede il touch); web: trascinamento touch o F5"
 
 - id: onair.vu-meter
   title: VU meter animato durante la riproduzione
   since: "0.44"
   page: OnAir
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
   notes: "Uno: SKCanvasElement al posto di GraphicsView; livelli condivisi in RadioE45.Core/Visuals/VuMeterLevels"
 
 # --- Radio list ------------------------------------------------------------------------------
@@ -230,28 +250,31 @@
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
+  tvNotes: "Nella sezione Stations"
 
 - id: radiolist.offline-indicator
   title: Indicatore di stazione offline
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: radiolist.select-and-play
   title: Selezione di una stazione e avvio della riproduzione
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
+  tvNotes: "OK sulla stazione"
 
 - id: radiolist.edit-delete
   title: Modifica ed eliminazione (con conferma) da swipe o menu contestuale
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
+  tvNotes: "Azioni sulla stazione focalizzata, non swipe né menu contestuale"
   notes: "Uno: menu contestuale (tasto destro, pressione lunga al tocco) al posto dello SwipeView, che è solo touch"
 
 - id: radiolist.reorder
@@ -259,7 +282,8 @@
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Il trascinamento non esiste col D-pad"
   notes: "Uno: si trascina dalla maniglia (la riga è un pulsante che cattura il puntatore); rilascio su una riga o sotto la lista come in MAUI"
 
 - id: radiolist.refresh
@@ -267,7 +291,7 @@
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
   notes: "Uno: anche F5"
 
 - id: radiolist.empty-seed-prompt
@@ -275,14 +299,15 @@
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: radiolist.add-button
   title: Pulsante flottante per aggiungere una stazione
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
+  tvNotes: "Pulsante focusabile, non flottante"
 
 # --- Add / edit station ----------------------------------------------------------------------
 
@@ -291,7 +316,8 @@
   since: "0.44"
   page: AddStation
   viewmodel: AddStationViewModel
-  status: { maui: done, desktop: done, web: limited }
+  status: { maui: done, desktop: done, web: limited, tv: todo }
+  tvNotes: "Tastiera su schermo di Android TV"
   notes: "Web: funziona solo con server AzuraCast che inviano gli header CORS (§5); Invio nella casella URL = cerca"
 
 - id: addstation.select-and-add
@@ -299,42 +325,43 @@
   since: "0.44"
   page: AddStation
   viewmodel: AddStationViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: addstation.errors
   title: Messaggi di stato (prompt iniziale, nessun risultato, errore del server)
   since: "0.44"
   page: AddStation
   viewmodel: AddStationViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: editstation.form
   title: Modifica di nome, URL, ID, short name e descrizione della stazione
   since: "0.44"
   page: EditStation
   viewmodel: EditStationViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
+  tvNotes: "Tastiera su schermo di Android TV"
 
 - id: editstation.custom-links
   title: Informazioni personalizzate (sito, 3 social, email, telefono) con validazione dei link
   since: "0.44"
   page: EditStation
   viewmodel: EditStationViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: editstation.latency-override
   title: Ritardo di sincronizzazione personalizzato per la stazione
   since: "0.44"
   page: EditStation
   viewmodel: EditStationViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: editstation.save-cancel
   title: Salva e annulla, con messaggio d'errore
   since: "0.44"
   page: EditStation
   viewmodel: EditStationViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 # --- Settings --------------------------------------------------------------------------------
 
@@ -343,7 +370,8 @@
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
   notes: "Web: la stazione viene selezionata ma non avviata (nessun autoplay, §5)"
 
 - id: settings.playback.latency-offset
@@ -351,49 +379,56 @@
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
 
 - id: settings.playback.prefer-hls
   title: Preferenza per lo stream HLS
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
 
 - id: settings.song-request.page-size
   title: Numero di brani per pagina nelle richieste
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
 
 - id: settings.theme
   title: Tema (sistema, chiaro, scuro)
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
 
 - id: settings.save
   title: Salvataggio delle impostazioni con conferma (toast)
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
 
 - id: settings.diagnostics.reset-database
   title: Reset del database con conferma
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
 
 - id: settings.diagnostics.crash-reports
   title: Consenso all'invio dei crash report, crash di test, avviso di riavvio
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: todo, web: todo }
+  status: { maui: done, desktop: todo, web: todo, tv: n/a }
+  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
   notes: "Uno: interfaccia portata (S8.3) ma nascosta, perché manca il servizio (UnavailableCrashReportingService). Web: Sentry .NET su WASM limitato, decisione rinviata (§5)"
 
 - id: settings.info
@@ -401,14 +436,16 @@
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
 
 - id: settings.update.check
   title: Impostazioni, controllo aggiornamenti manuale con stato ("Controlla aggiornamenti", "Aggiorna ora"); sezione nascosta sui canali senza controllo
   since: "0.47"
   page: Settings
   viewmodel: SettingsViewModel
-  status: { maui: limited, desktop: limited, web: limited }
+  status: { maui: limited, desktop: limited, web: limited, tv: n/a }
+  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
   notes: "docs/APP-UPDATE-ROADMAP.md. La sezione compare solo dove esiste una sorgente: MAUI iOS, Windows (Store e installer), Uno desktop solo su Linux (.deb, GitHub Releases), web (version.json del sito: \"Aggiorna\" apre l'app in una nuova scheda)"
 
 - id: update.startup-prompt
@@ -416,21 +453,24 @@
   since: "0.47"
   page: Shell
   viewmodel: SettingsViewModel
-  status: { maui: limited, desktop: limited, web: limited }
+  status: { maui: limited, desktop: limited, web: limited, tv: n/a }
+  tvNotes: "Su TV gli aggiornamenti passano dallo store"
   notes: "Logica in AppUpdatePrompter (Core). Attivo dove esiste una sorgente: MAUI iOS e Windows, Uno desktop solo su Linux (.deb), web con version.json del sito (solo cambi di Major.Minor)"
 
 - id: update.android
   title: Controllo aggiornamenti su Android
   since: "0.47"
   page: Shell
-  status: { maui: todo, desktop: n/a, web: n/a }
+  status: { maui: todo, desktop: n/a, web: n/a, tv: n/a }
+  tvNotes: "Su TV gli aggiornamenti passano dallo store"
   notes: "Debito D3 (docs/APP-UPDATE-ROADMAP.md): rimandato, nessun interop Play. Desktop e web non hanno questo canale"
 
 - id: update.mac
   title: Controllo aggiornamenti su Mac Catalyst
   since: "0.47"
   page: Shell
-  status: { maui: todo, desktop: n/a, web: n/a }
+  status: { maui: todo, desktop: n/a, web: n/a, tv: n/a }
+  tvNotes: "Solo Mac"
   notes: "Debito D9: l'app Mac non è pubblicata sul Mac App Store. Desktop e web non hanno questo canale"
 
 # --- Schedule --------------------------------------------------------------------------------
@@ -440,7 +480,8 @@
   since: "0.44"
   page: Schedule
   viewmodel: ScheduleViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
+  tvNotes: "Finestra a schermo intero con scorrimento col D-pad, non pannello dal basso"
   notes: "Uno: ScheduleDialog in un pannello della shell che sale dal basso (S8.4); chiusura con ✕, clic fuori, Esc o trascinamento verso il basso della maniglia"
 
 - id: schedule.live-badge
@@ -448,7 +489,7 @@
   since: "0.44"
   page: Schedule
   viewmodel: ScheduleViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 # --- Song requests ---------------------------------------------------------------------------
 
@@ -457,14 +498,15 @@
   since: "0.44"
   page: SongRequest
   viewmodel: SongRequestViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
+  tvNotes: "Tastiera su schermo di Android TV"
 
 - id: songrequest.list
   title: Elenco brani con copertina, titolo, artista e stato della richiesta
   since: "0.44"
   page: SongRequest
   viewmodel: SongRequestViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
   notes: "Elenco mischiato a ogni caricamento (logica nel ViewModel)"
 
 - id: songrequest.submit
@@ -472,14 +514,14 @@
   since: "0.44"
   page: SongRequest
   viewmodel: SongRequestViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: songrequest.pagination
   title: Paginazione (pagina precedente/successiva, numero di pagina)
   since: "0.44"
   page: SongRequest
   viewmodel: SongRequestViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 # --- Podcasts --------------------------------------------------------------------------------
 
@@ -488,28 +530,29 @@
   since: "0.44"
   page: PodcastList
   viewmodel: PodcastListViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: podcastepisodes.list
   title: Elenco episodi con data, stagione/episodio, durata e stato di ascolto
   since: "0.44"
   page: PodcastEpisodes
   viewmodel: PodcastEpisodesViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: podcastepisodes.filters
   title: Filtri per stato di ascolto, stagione ed episodio, sempre visibili (stato per primo)
   since: "0.44"
   page: PodcastEpisodes
   viewmodel: PodcastEpisodesViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
 
 - id: podcastepisodes.player
   title: Mini player dell'episodio con play/pausa, seek e tempi
   since: "0.44"
   page: PodcastEpisodes
   viewmodel: PodcastEpisodesViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
+  tvNotes: "Prima verificare quale servizio riproduce gli episodi su Android (ROADMAP T5)"
   notes: "Uno: UnoPodcastPlayerService (S7b). Il ViewModel non deve dipendere dal ciclo di vita della pagina: lo stato del mini player segue il servizio (EpisodeStopped, ProgressSaved, fix 2026-10-15); la pagina chiama Activate() quando appare (MAUI OnAppearing, Uno OnNavigatedTo)"
 
 - id: podcastepisodes.resume
@@ -517,4 +560,37 @@
   since: "0.44"
   page: PodcastEpisodes
   viewmodel: PodcastEpisodesViewModel
-  status: { maui: done, desktop: done, web: done }
+  status: { maui: done, desktop: done, web: done, tv: todo }
+
+# --- Android TV only -----------------------------------------------------------------------
+
+- id: tv.launcher
+  title: Icona e banner nel launcher di Android TV / Google TV
+  since: "0.49"
+  page: Shell
+  status: { maui: n/a, desktop: n/a, web: n/a, tv: done }
+  notes: "Solo Android TV"
+  tvNotes: "Manifest leanback, banner 320x180, intent LEANBACK_LAUNCHER; verificato sull'emulatore il 2026-10-22"
+
+- id: tv.focus
+  title: Ogni controllo azionabile è raggiungibile col D-pad, con focus iniziale sensato e stato di focus ben visibile
+  since: "0.49"
+  page: Shell
+  status: { maui: n/a, desktop: n/a, web: n/a, tv: todo }
+  notes: "Solo Android TV"
+  tvNotes: "Criterio: mappa del focus (docs/ANDROID-TV-ROADMAP.md §2.3)"
+
+- id: tv.media-keys
+  title: Tasti media del telecomando (play/pausa, avanti, indietro) comandano la riproduzione
+  since: "0.49"
+  page: Shell
+  status: { maui: n/a, desktop: n/a, web: n/a, tv: todo }
+  notes: "Solo Android TV"
+  tvNotes: "Verso la sessione Media3 già presente"
+
+- id: tv.back
+  title: Indietro risale di un livello; dalla radice manda l'app in background senza fermare l'audio
+  since: "0.49"
+  page: Shell
+  status: { maui: n/a, desktop: n/a, web: n/a, tv: todo }
+  notes: "Solo Android TV"

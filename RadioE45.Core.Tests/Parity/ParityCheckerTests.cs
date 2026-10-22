@@ -21,17 +21,7 @@ public sealed class ParityCheckerTests : IDisposable
               <Button Command="{Binding PlayPauseCommand}" IsVisible="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}" />
             </ContentPage>
             """);
-        Write("parity/pages.yaml", """
-            - page: Shell
-              maui: RadioE45/AppShell.xaml
-              uno: n/a
-              reason: test
-              viewmodels: [OnAirViewModel]
-            - page: OnAir
-              maui: RadioE45/Views/OnAirPage.xaml
-              uno: RadioE45.Uno/Views/OnAirPage.xaml
-              viewmodels: [OnAirViewModel]
-            """);
+        WritePages();
         WriteFeatures(desktop: "todo");
         Write(ParityChecker.SurfacePath, VmSurface.ToText(VmSurface.Generate(typeof(BaseViewModel).Assembly)));
     }
@@ -198,25 +188,223 @@ public sealed class ParityCheckerTests : IDisposable
         Assert.Contains(Run(strict: true), f => f.Severity == Severity.Error && f.Check == "debt");
     }
 
-    private IReadOnlyList<Finding> Run(bool strict = false) =>
-        new ParityChecker(_root, typeof(BaseViewModel).Assembly).Run(strict);
+    // --- tv (docs/ANDROID-TV-ROADMAP.md §5) --------------------------------------------------
 
-    private void WriteFeatures(string desktop, string notes = "")
+    [Theory]
+    [InlineData("limited", "")]
+    [InlineData("n/a", "")]
+    [InlineData("maybe", "x")]
+    public void Invalid_tv_status_or_missing_tv_notes_is_an_error(string tv, string tvNotes)
+    {
+        WriteFeatures(desktop: "todo", tv: tv, tvNotes: tvNotes);
+
+        Assert.Contains(Run(), f => f.Severity == Severity.Error && f.Check == "manifest" && f.Message.Contains("tv"));
+    }
+
+    [Fact]
+    public void Page_without_tv_path_is_an_error()
+    {
+        Write("parity/pages.yaml", """
+            - page: Shell
+              maui: RadioE45/AppShell.xaml
+              uno: n/a
+              reason: test
+              tv: n/a
+              tvReason: test
+              viewmodels: [OnAirViewModel]
+            - page: OnAir
+              maui: RadioE45/Views/OnAirPage.xaml
+              uno: RadioE45.Uno/Views/OnAirPage.xaml
+              viewmodels: [OnAirViewModel]
+            """);
+
+        Assert.Contains(Run(), f => f.Severity == Severity.Error && f.Message.Contains("no 'tv' path"));
+    }
+
+    [Fact]
+    public void Tv_not_applicable_page_needs_a_reason()
+    {
+        Write("parity/pages.yaml", File.ReadAllText(Path.Combine(_root, "parity/pages.yaml")).Replace("tvReason: test", "tvReason: \"\""));
+
+        Assert.Contains(Run(), f => f.Severity == Severity.Error && f.Message.Contains("tvReason"));
+    }
+
+    [Fact]
+    public void Unmapped_tv_page_is_an_error()
+    {
+        Write("RadioE45/Views/Tv/TvOrphanPage.xaml", "<ContentPage />");
+
+        Assert.Contains(Run(), f => f.Severity == Severity.Error && f.Message.Contains("TvOrphanPage.xaml"));
+    }
+
+    [Fact]
+    public void Missing_tv_page_with_done_feature_is_an_error()
+    {
+        WritePages(tvOnAir: "RadioE45/Views/Tv/TvNowPlayingPage.xaml");
+        WriteFeatures(desktop: "todo", tv: "done");
+
+        Assert.Contains(Run(), f => f.Severity == Severity.Error && f.Check == "pages" && f.Message.Contains("TV page"));
+    }
+
+    [Fact]
+    public void Tv_platform_feature_without_viewmodel_does_not_need_a_tv_page()
+    {
+        WritePages(tvOnAir: "RadioE45/Views/Tv/TvNowPlayingPage.xaml");
+        Write(ParityChecker.FeaturesPath, """
+            - id: shell.app
+              title: App
+              since: "0.44"
+              page: Shell
+              status: { maui: done, desktop: n/a, web: n/a, tv: n/a }
+              notes: test
+              tvNotes: test
+            - id: tv.launcher
+              title: Launcher
+              since: "0.49"
+              page: OnAir
+              status: { maui: n/a, desktop: n/a, web: n/a, tv: done }
+              notes: test
+            """);
+
+        Assert.DoesNotContain(Run(), f => f.Severity == Severity.Error);
+    }
+
+    [Fact]
+    public void Tv_not_applicable_page_with_done_feature_is_an_error()
+    {
+        WriteFeatures(desktop: "todo", tv: "done");
+
+        Assert.Contains(Run(), f => f.Severity == Severity.Error && f.Check == "pages" && f.Message.Contains("tv: n/a"));
+    }
+
+    [Fact]
+    public void Tv_page_binding_the_same_members_is_aligned()
+    {
+        WriteFeatures(desktop: "done", tv: "done");
+        WriteAlignedUnoPage();
+        WritePages(tvOnAir: "RadioE45/Views/Tv/TvNowPlayingPage.xaml");
+        Write("RadioE45/Views/Tv/TvNowPlayingPage.xaml", """
+            <ContentPage>
+              <Label Text="{Binding NowPlaying.Title}" />
+              <Label Text="{loc:Translate Tab_OnAir}" />
+              <Button Command="{Binding PlayPauseCommand}" IsVisible="{Binding IsBusy}" />
+            </ContentPage>
+            """);
+
+        Assert.Empty(Run());
+    }
+
+    [Fact]
+    public void Tv_page_missing_a_binding_is_an_error_unless_declared()
+    {
+        WriteFeatures(desktop: "done", tv: "done");
+        WriteAlignedUnoPage();
+        WritePages(tvOnAir: "RadioE45/Views/Tv/TvNowPlayingPage.xaml");
+        Write("RadioE45/Views/Tv/TvNowPlayingPage.xaml", """<ContentPage><Label Text="{Binding NowPlaying.Title}" /><Label Text="{loc:Translate Tab_OnAir}" /></ContentPage>""");
+
+        var error = Assert.Single(Run(), f => f.Severity == Severity.Error);
+        Assert.Equal("bindings", error.Check);
+        Assert.Contains("TvNowPlayingPage.xaml", error.Message);
+        Assert.Contains("PlayPauseCommand", error.Message);
+
+        WriteFeatures(desktop: "done", tv: "todo", tvNotes: "");
+        Assert.DoesNotContain(Run(), f => f.Severity == Severity.Error);
+
+        WriteFeatures(desktop: "done", tv: "done");
+        WritePages(tvOnAir: "RadioE45/Views/Tv/TvNowPlayingPage.xaml", ignoreTv: "PlayPauseCommand");
+        Write("RadioE45/Views/Tv/TvNowPlayingPage.xaml", """<ContentPage><Label Text="{Binding NowPlaying.Title}" /><Label Text="{loc:Translate Tab_OnAir}" /><Label Text="{Binding IsBusy}" /></ContentPage>""");
+        Assert.Empty(Run());
+    }
+
+    [Fact]
+    public void Tv_todo_is_one_summary_line_without_include_tv()
+    {
+        WriteFeatures(desktop: "done", tv: "todo", tvNotes: "");
+        WriteAlignedUnoPage();
+
+        var debt = Assert.Single(Run());
+        Assert.Equal(Severity.Debt, debt.Severity);
+        Assert.Contains("tv: 1", debt.Message);
+    }
+
+    [Fact]
+    public void Include_tv_lists_the_todo_features()
+    {
+        WriteFeatures(desktop: "done", tv: "todo", tvNotes: "");
+        WriteAlignedUnoPage();
+
+        var debt = Assert.Single(Run(includeTv: true));
+        Assert.Equal(Severity.Debt, debt.Severity);
+        Assert.Contains("onair.player (tv)", debt.Message);
+    }
+
+    [Fact]
+    public void Strict_ignores_tv_todo_but_strict_include_tv_does_not()
+    {
+        WriteFeatures(desktop: "done", tv: "todo", tvNotes: "");
+        WriteAlignedUnoPage();
+
+        Assert.DoesNotContain(Run(strict: true), f => f.Severity == Severity.Error);
+        Assert.Contains(Run(strict: true, includeTv: true), f => f.Severity == Severity.Error && f.Check == "debt" && f.Message.Contains("onair.player"));
+    }
+
+    private IReadOnlyList<Finding> Run(bool strict = false, bool includeTv = false) =>
+        new ParityChecker(_root, typeof(BaseViewModel).Assembly).Run(strict, includeTv);
+
+    private void WritePages(string tvOnAir = "n/a", string? ignoreTv = null)
+    {
+        var lines = new List<string>
+        {
+            "- page: Shell",
+            "  maui: RadioE45/AppShell.xaml",
+            "  uno: n/a",
+            "  reason: test",
+            "  tv: n/a",
+            "  tvReason: test",
+            "  viewmodels: [OnAirViewModel]",
+            "- page: OnAir",
+            "  maui: RadioE45/Views/OnAirPage.xaml",
+            "  uno: RadioE45.Uno/Views/OnAirPage.xaml",
+            $"  tv: {tvOnAir}",
+        };
+        if (tvOnAir == "n/a") lines.Add("  tvReason: test");
+        lines.Add("  viewmodels: [OnAirViewModel]");
+        if (ignoreTv is not null)
+        {
+            lines.Add("  ignoreTv:");
+            lines.Add($"    - name: {ignoreTv}");
+            lines.Add("      reason: test");
+        }
+
+        Write("parity/pages.yaml", string.Join("\n", lines));
+    }
+
+    private void WriteAlignedUnoPage() => WriteUnoPage("""
+        <Page>
+          <TextBlock Text="{x:Bind ViewModel.NowPlaying.Title, Mode=OneWay}" />
+          <TextBlock Text="{loc:Translate Tab_OnAir}" />
+          <Button Command="{x:Bind ViewModel.PlayPauseCommand}" Visibility="{x:Bind ViewModel.IsBusy}" />
+        </Page>
+        """);
+
+    private void WriteFeatures(string desktop, string notes = "", string tv = "n/a", string tvNotes = "test")
     {
         Write(ParityChecker.FeaturesPath, $$"""
             - id: shell.app
               title: App
               since: "0.44"
               page: Shell
-              status: { maui: done, desktop: n/a, web: n/a }
+              status: { maui: done, desktop: n/a, web: n/a, tv: n/a }
               notes: test
+              tvNotes: test
             - id: onair.player
               title: Player
               since: "0.44"
               page: OnAir
               viewmodel: OnAirViewModel
-              status: { maui: done, desktop: {{desktop}}, web: {{desktop}} }
+              status: { maui: done, desktop: {{desktop}}, web: {{desktop}}, tv: {{tv}} }
               notes: "{{notes}}"
+              tvNotes: "{{tvNotes}}"
             """);
     }
 

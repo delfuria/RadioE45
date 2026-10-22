@@ -7,6 +7,10 @@
 #   ignore:      binding members or string keys used only by MAUI, each with a reason:
 #                  - name: IsMuted
 #                    reason: "..."
+#   tv:          Android TV page (RadioE45/Views/Tv/*.xaml, MAUI, same app as the phone), or 'n/a' + tvReason
+#   tvReason:    why the page has no TV counterpart (required when tv is 'n/a')
+#   ignoreTv:    like 'ignore', for members or string keys of the phone page deliberately absent on TV
+#                (touch-only: swipe, drag, pull to refresh). docs/ANDROID-TV-ROADMAP.md §5
 #
 # Uno pages expose the ViewModel as a 'ViewModel' property and bind with {x:Bind ViewModel.X}
 # so that ParityCheck can compare them with the MAUI {Binding X} paths.
@@ -14,12 +18,14 @@
 - page: Shell
   maui: RadioE45/AppShell.xaml
   uno: RadioE45.Uno/Views/ShellPage.xaml
+  tv: RadioE45/Views/Tv/TvRootPage.xaml
   viewmodels: [OnAirViewModel, AppMenuViewModel]
   ignore: []
 
 - page: OnAir
   maui: RadioE45/Views/OnAirPage.xaml
   uno: RadioE45.Uno/Views/OnAirPage.xaml
+  tv: RadioE45/Views/Tv/TvNowPlayingPage.xaml
   viewmodels: [OnAirViewModel]
   ignore:
     - name: Tab_OnAir
@@ -30,6 +36,7 @@
 - page: RadioList
   maui: RadioE45/Views/RadioListPage.xaml
   uno: RadioE45.Uno/Views/RadioListPage.xaml
+  tv: RadioE45/Views/Tv/TvStationsPage.xaml
   viewmodels: [RadioListViewModel]
   ignore:
     - name: Common_Delete
@@ -38,30 +45,36 @@
 - page: AddStation
   maui: RadioE45/Views/AddStationPage.xaml
   uno: RadioE45.Uno/Views/AddStationPage.xaml
+  tv: RadioE45/Views/Tv/TvAddStationPage.xaml
   viewmodels: [AddStationViewModel, StationSelectionItem]
   ignore: []
 
 - page: EditStation
   maui: RadioE45/Views/EditStationPage.xaml
   uno: RadioE45.Uno/Views/EditStationPage.xaml
+  tv: RadioE45/Views/Tv/TvEditStationPage.xaml
   viewmodels: [EditStationViewModel]
   ignore: []
 
 - page: Settings
   maui: RadioE45/Views/SettingsPage.xaml
   uno: RadioE45.Uno/Views/SettingsPage.xaml
+  tv: n/a
+  tvReason: "Nessuna impostazione su TV (decisione 2026-10-22, docs/ANDROID-TV-ROADMAP.md §1)"
   viewmodels: [SettingsViewModel]
   ignore: []
 
 - page: Schedule
   maui: RadioE45/Views/SchedulePopup.xaml
   uno: RadioE45.Uno/Views/ScheduleDialog.xaml
+  tv: RadioE45/Views/Tv/TvScheduleDialog.xaml
   viewmodels: [ScheduleViewModel]
   ignore: []
 
 - page: SongRequest
   maui: RadioE45/Views/SongRequestPage.xaml
   uno: RadioE45.Uno/Views/SongRequestPage.xaml
+  tv: RadioE45/Views/Tv/TvRequestPage.xaml
   viewmodels: [SongRequestViewModel]
   ignore:
     - name: Tab_Request
@@ -70,11 +83,13 @@
 - page: PodcastList
   maui: RadioE45/Views/PodcastListPage.xaml
   uno: RadioE45.Uno/Views/PodcastListPage.xaml
+  tv: RadioE45/Views/Tv/TvPodcastListPage.xaml
   viewmodels: [PodcastListViewModel]
   ignore: []
 
 - page: PodcastEpisodes
   maui: RadioE45/Views/PodcastEpisodesPage.xaml
   uno: RadioE45.Uno/Views/PodcastEpisodesPage.xaml
+  tv: RadioE45/Views/Tv/TvPodcastEpisodesPage.xaml
   viewmodels: [PodcastEpisodesViewModel]
   ignore: []

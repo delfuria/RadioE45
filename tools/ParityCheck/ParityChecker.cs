@@ -19,10 +19,13 @@ public sealed partial class ParityChecker(string root, Assembly coreAssembly)
     public const string SurfacePath = "parity/vm-surface.txt";
     private const string MauiViewsDir = "RadioE45/Views";
     private const string MauiShell = "RadioE45/AppShell.xaml";
+    private const string MauiTvViewsDir = "RadioE45/Views/Tv";
 
     private readonly List<Finding> _findings = [];
 
-    public IReadOnlyList<Finding> Run(bool strict)
+    /// <param name="strict">Declared 'todo' on desktop/web becomes an error (release gate of the Uno app).</param>
+    /// <param name="includeTv">List 'todo' on tv feature by feature; with <paramref name="strict"/> they become errors (release gate of the TV app).</param>
+    public IReadOnlyList<Finding> Run(bool strict, bool includeTv = false)
     {
         var features = Load<Feature>(FeaturesPath);
         var pages = Load<PageMap>(PagesPath);
@@ -35,7 +38,7 @@ public sealed partial class ParityChecker(string root, Assembly coreAssembly)
         CheckPageCoverage(pages, features);
         CheckPagePairs(pages, features);
         CheckVmSurface();
-        ReportDebt(features, strict);
+        ReportDebt(features, strict, includeTv);
 
         return _findings;
     }
@@ -52,10 +55,14 @@ public sealed partial class ParityChecker(string root, Assembly coreAssembly)
             if (!pageNames.Add(p.Page)) Error(check, $"{PagesPath}: duplicate page '{p.Page}'");
             if (string.IsNullOrWhiteSpace(p.Uno)) Error(check, $"{PagesPath}: page '{p.Page}' has no 'uno' path (use 'n/a' + reason)");
             if (p.UnoNotApplicable && string.IsNullOrWhiteSpace(p.Reason)) Error(check, $"{PagesPath}: page '{p.Page}' is uno: n/a without a reason");
+            if (string.IsNullOrWhiteSpace(p.Tv)) Error(check, $"{PagesPath}: page '{p.Page}' has no 'tv' path (use 'n/a' + tvReason)");
+            if (p.TvNotApplicable && string.IsNullOrWhiteSpace(p.TvReason)) Error(check, $"{PagesPath}: page '{p.Page}' is tv: n/a without a tvReason");
             foreach (var vm in p.Viewmodels.Where(vm => !vmNames.Contains(vm)))
                 Error(check, $"{PagesPath}: page '{p.Page}' references unknown ViewModel '{vm}'");
             foreach (var i in p.Ignore.Where(i => string.IsNullOrWhiteSpace(i.Reason)))
                 Error(check, $"{PagesPath}: page '{p.Page}' ignores '{i.Name}' without a reason");
+            foreach (var i in p.IgnoreTv.Where(i => string.IsNullOrWhiteSpace(i.Reason)))
+                Error(check, $"{PagesPath}: page '{p.Page}' ignores '{i.Name}' on tv without a reason");
         }
 
         var ids = new HashSet<string>(StringComparer.Ordinal);
@@ -71,10 +78,11 @@ public sealed partial class ParityChecker(string root, Assembly coreAssembly)
 
             foreach (var (platform, value) in f.Status.All())
             {
+                var (notes, notesField) = platform == "tv" ? (f.TvNotes, "tvNotes") : (f.Notes, "notes");
                 if (!Status.Valid.Contains(value))
                     Error(check, $"{where}: status.{platform} '{value}' is not one of done|todo|limited|n/a");
-                else if (value is Status.Limited or Status.NotApplicable && string.IsNullOrWhiteSpace(f.Notes))
-                    Error(check, $"{where}: status.{platform} is '{value}' but 'notes' does not say why");
+                else if (value is Status.Limited or Status.NotApplicable && string.IsNullOrWhiteSpace(notes))
+                    Error(check, $"{where}: status.{platform} is '{value}' but '{notesField}' does not say why");
             }
         }
     }
@@ -92,6 +100,15 @@ public sealed partial class ParityChecker(string root, Assembly coreAssembly)
         foreach (var maui in mauiPages.Where(m => !mapped.Contains(m)))
             Error(check, $"MAUI page {maui} is not mapped in {PagesPath}");
 
+        var tvDir = Path.Combine(root, MauiTvViewsDir);
+        if (Directory.Exists(tvDir))
+        {
+            var mappedTv = pages.Where(p => !p.TvNotApplicable).Select(p => Normalize(p.Tv)).ToHashSet(StringComparer.Ordinal);
+            foreach (var tv in Directory.EnumerateFiles(tvDir, "*.xaml").Select(f => Normalize(Path.GetRelativePath(root, f))))
+                if (!mappedTv.Contains(tv))
+                    Error(check, $"TV page {tv} is not mapped in {PagesPath} (field 'tv')");
+        }
+
         foreach (var p in pages)
         {
             if (!File.Exists(Path.Combine(root, p.Maui)))
@@ -100,6 +117,8 @@ public sealed partial class ParityChecker(string root, Assembly coreAssembly)
             var pageFeatures = features.Where(f => f.Page == p.Page).ToList();
             if (pageFeatures.Count == 0)
                 Error(check, $"page '{p.Page}' has no feature in {FeaturesPath}");
+
+            CheckTvPageExists(p, pageFeatures);
 
             if (p.UnoNotApplicable || File.Exists(Path.Combine(root, p.Uno)))
                 continue;
@@ -115,6 +134,28 @@ public sealed partial class ParityChecker(string root, Assembly coreAssembly)
         }
     }
 
+    /// <summary>
+    /// A TV page that does not exist yet is fine for 'todo' features (debt is reported per feature);
+    /// done/limited need the file. Platform features without a ViewModel (launcher, media keys) are
+    /// not about a view, so they are exempt.
+    /// </summary>
+    private void CheckTvPageExists(PageMap p, List<Feature> pageFeatures)
+    {
+        if (string.IsNullOrWhiteSpace(p.Tv) || (!p.TvNotApplicable && File.Exists(Path.Combine(root, p.Tv))))
+            return;
+
+        var claimed = pageFeatures
+            .Where(f => f.Status.Tv is Status.Done or Status.Limited && !string.IsNullOrWhiteSpace(f.Viewmodel))
+            .Select(f => f.Id)
+            .ToList();
+        if (claimed.Count == 0)
+            return;
+
+        Error("pages", p.TvNotApplicable
+            ? $"page '{p.Page}' is tv: n/a but features are marked done/limited on tv: {string.Join(", ", claimed)}"
+            : $"TV page {p.Tv} does not exist but features are marked done/limited on tv: {string.Join(", ", claimed)}");
+    }
+
     // --- 2-3. Bindings and strings ------------------------------------------------------------
 
     private void CheckPagePairs(List<PageMap> pages, List<Feature> features)
@@ -122,30 +163,45 @@ public sealed partial class ParityChecker(string root, Assembly coreAssembly)
         foreach (var p in pages)
         {
             var mauiPath = Path.Combine(root, p.Maui);
-            var unoPath = Path.Combine(root, p.Uno);
-            if (p.UnoNotApplicable || !File.Exists(mauiPath) || !File.Exists(unoPath))
+            if (!File.Exists(mauiPath))
                 continue;
 
             var maui = XamlScanner.Scan(mauiPath);
-            var uno = XamlScanner.Scan(unoPath);
-            var ignored = p.Ignore.Select(i => i.Name).ToHashSet(StringComparer.Ordinal);
 
-            // A page with features still 'todo' on desktop or web is a declared partial port.
-            var declaredDebt = features.Any(f => f.Page == p.Page && f.Status.Uno().Any(s => s.Value == Status.Todo));
+            if (!p.UnoNotApplicable && File.Exists(Path.Combine(root, p.Uno)))
+            {
+                var uno = XamlScanner.Scan(Path.Combine(root, p.Uno));
+                var ignored = p.Ignore.Select(i => i.Name).ToHashSet(StringComparer.Ordinal);
 
-            Compare("bindings", p, maui.Members, uno.Members, ignored, declaredDebt, "binds");
-            Compare("strings", p, maui.StringKeys, uno.StringKeys, ignored, declaredDebt, "uses string");
+                // A page with features still 'todo' on desktop or web is a declared partial port.
+                var declaredDebt = features.Any(f => f.Page == p.Page && f.Status.Uno().Any(s => s.Value == Status.Todo));
+
+                Compare("bindings", p.Maui, p.Uno, maui.Members, uno.Members, ignored, declaredDebt, "binds");
+                Compare("strings", p.Maui, p.Uno, maui.StringKeys, uno.StringKeys, ignored, declaredDebt, "uses string");
+            }
+
+            if (!p.TvNotApplicable && !string.IsNullOrWhiteSpace(p.Tv) && File.Exists(Path.Combine(root, p.Tv)))
+            {
+                var tv = XamlScanner.Scan(Path.Combine(root, p.Tv));
+                var ignoredTv = p.IgnoreTv.Select(i => i.Name).ToHashSet(StringComparer.Ordinal);
+
+                // A page with features still 'todo' on tv is a declared partial port.
+                var declaredTvDebt = features.Any(f => f.Page == p.Page && f.Status.Tv == Status.Todo);
+
+                Compare("bindings", p.Maui, p.Tv, maui.Members, tv.Members, ignoredTv, declaredTvDebt, "binds");
+                Compare("strings", p.Maui, p.Tv, maui.StringKeys, tv.StringKeys, ignoredTv, declaredTvDebt, "uses string");
+            }
         }
     }
 
-    private void Compare(string check, PageMap p, IReadOnlySet<string> maui, IReadOnlySet<string> uno,
+    private void Compare(string check, string mauiPath, string targetPath, IReadOnlySet<string> maui, IReadOnlySet<string> target,
         HashSet<string> ignored, bool declaredDebt, string verb)
     {
-        var missing = maui.Where(m => !uno.Contains(m) && !ignored.Contains(m)).ToList();
+        var missing = maui.Where(m => !target.Contains(m) && !ignored.Contains(m)).ToList();
         if (missing.Count == 0)
             return;
 
-        var message = $"{p.Maui} {verb} {string.Join(", ", missing)} but {p.Uno} does not";
+        var message = $"{mauiPath} {verb} {string.Join(", ", missing)} but {targetPath} does not";
         if (declaredDebt) Debt(check, message);
         else Error(check, message + " (add to 'ignore' with a reason, or mark the feature 'todo')");
     }
@@ -200,16 +256,25 @@ public sealed partial class ParityChecker(string root, Assembly coreAssembly)
 
     // --- 5. Debt -----------------------------------------------------------------------------
 
-    private void ReportDebt(List<Feature> features, bool strict)
+    private void ReportDebt(List<Feature> features, bool strict, bool includeTv)
     {
         foreach (var f in features)
         {
             var todo = f.Status.Uno().Where(s => s.Value == Status.Todo).Select(s => s.Platform).ToList();
+            if (includeTv && f.Status.Tv == Status.Todo) todo.Add("tv");
             if (todo.Count == 0) continue;
 
             var message = $"{f.Id} ({string.Join(", ", todo)})";
-            if (strict) Error("debt", message + " is still 'todo' (--strict)");
+            if (strict) Error("debt", message + $" is still 'todo' (--strict{(includeTv ? " --include-tv" : "")})");
             else Debt("debt", message);
+        }
+
+        // The TV port is a long list of 'todo': without --include-tv one summary line keeps the report readable.
+        if (!includeTv)
+        {
+            var tvTodo = features.Count(f => f.Status.Tv == Status.Todo);
+            if (tvTodo > 0)
+                Debt("debt", $"tv: {tvTodo} feature(s) still 'todo' (list them with --include-tv)");
         }
     }
 

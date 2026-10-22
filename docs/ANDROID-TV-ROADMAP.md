@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code. Modellato su `docs/LINUX-UNO-ROADMAP.md` (stesso sistema di parità, stesse regole di processo).
 > Analisi di fattibilità e rischi: [`ANDROID-TV.md`](ANDROID-TV.md). Ultimo aggiornamento: 2026-10-22 (app v0.48).
-> Stato: **T0 completata; prossima sessione: T1** (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
+> Stato: **T0 e T1 completate; prossima sessione: T2** (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
 
 ---
 
@@ -19,8 +19,9 @@
 
 **Obiettivi**
 - La stessa app Android (`com.radioe45.app`, target `net10.0-android`) funziona su Android TV / Google TV, con un'interfaccia pensata per il telecomando (D-pad) e per la distanza da divano.
-- Ambito: **opzione C allargata** (decisione 2026-10-22): lettore con stazione corrente e lista stazioni, più podcast (elenco, episodi, ascolto). Niente layout a 10 piedi completo come l'opzione B.
-- Fire TV (Amazon Appstore): solo se il pacchetto funziona senza modifiche (T8).
+- Ambito: **opzione C allargata** (decisione 2026-10-22): lettore con stazione corrente, Schedule, selezione e gestione delle stazioni (aggiunta, modifica, eliminazione) e podcast (elenco, episodi, ascolto). Niente layout a 10 piedi completo come l'opzione B.
+- **Nessuna impostazione e nessun menu laterale (flyout) su TV** (decisione 2026-10-22). Le stazioni si scelgono e si gestiscono dalla sezione **Stazioni**, solo TV (§4). Il dialogo dei termini d'uso compare solo al primo utilizzo.
+- Fire TV (Amazon Appstore): il dispositivo c'è, ma T8 è **rinviata** (decisione 2026-10-22). Si riprende a Google TV chiuso.
 - L'app MAUI su telefono, iOS, Mac, Windows e l'app Uno non cambiano.
 
 **Regole decise (non ridiscutere senza l'utente)**
@@ -40,7 +41,7 @@
 |---|---|---|
 | **Emulatore `Television_1080p`** | Prove di ogni sessione | Attivo: Android 12 (API 31), immagine Android TV con Google Play, arm64, 1920x1080 a 320 dpi (**960x540 dp**), `leanback_only` |
 | **TV Sony Bravia Google TV** (circa 3 anni) | Prova finale: audio, standby, telecomando vero (T7) | Modello e versione Android da leggere dalle impostazioni; si collega con `adb connect <ip>` |
-| **Fire TV** | Solo T8, se si decide di procedere | Nessun dispositivo disponibile |
+| **Fire TV** | Solo T8 (rinviata) | Dispositivo disponibile; non usato per ora |
 
 ### 2.1 Comandi
 
@@ -109,10 +110,21 @@ App Android (un solo APK/AAB)
 
 | Pagina TV | Pagina telefono | ViewModel |
 |---|---|---|
-| `Tv/TvNowPlayingPage` (stazione corrente, controlli, lista stazioni) | `OnAirPage` + `RadioListPage` | `OnAirViewModel`, `RadioListViewModel` |
+| `Tv/TvNowPlayingPage` (stazione corrente, controlli play/pausa, avanti/indietro, accesso a Schedule; il volume è del televisore, `onair.volume` è `n/a`) | `OnAirPage` | `OnAirViewModel` |
+| `Tv/TvStationsPage` (sezione **Stazioni**, solo TV: lista con selezione, focus iniziale sulla stazione corrente, azioni di gestione) | `RadioListPage` | `RadioListViewModel` |
+| `Tv/TvScheduleDialog` (palinsesto leggibile da lontano, scorrimento col D-pad) | `SchedulePopup` | `ScheduleViewModel` |
+| `Tv/TvRequestPage` (richiesta brani, come sul telefono) | `SongRequestPage` | `SongRequestViewModel` |
 | `Tv/TvPodcastListPage` | `PodcastListPage` | `PodcastListViewModel` |
 | `Tv/TvPodcastEpisodesPage` | `PodcastEpisodesPage` | `PodcastEpisodesViewModel` |
-| Aggiungi/modifica stazione, Impostazioni, Schedule | — | `n/a` su TV con motivo (T1 decide caso per caso) |
+| Impostazioni e menu laterale | `SettingsPage`, flyout di `AppShell` | `n/a` su TV (decisione 2026-10-22) |
+| Aggiungi, modifica, elimina stazione | `AddStationPage`, `EditStationPage` | `Tv/TvAddStationPage`, `Tv/TvEditStationPage`, aperte dalla sezione Stazioni; ViewModel `AddStationViewModel`, `EditStationViewModel` |
+
+**Navigazione su TV (decisione 2026-10-22):** niente barra di tab MAUI. Una fila di **pulsanti focusabili** in alto, ciascuno una sezione:
+- **On Air** e **Stations**: sempre visibili.
+- **Request** e **Podcast**: visibili solo se la stazione corrente ha la capability (come le tab del telefono, `shell.tabs`, pilotate da `OnAirViewModel`).
+- Le etichette riusano le chiavi `.resx` esistenti (nessun testo nuovo se non necessario).
+
+La sezione **Stations**, solo TV, elenca le stazioni (OK seleziona) e dà accesso ad aggiunta, modifica ed eliminazione. L'inserimento di nome e URL usa la tastiera su schermo di Android TV. La fila di pulsanti è il primo elemento da verificare nello spike T2: stato `Focused` visibile, sezione corrente evidenziata, SU/GIÙ per uscire dalla fila e rientrarvi.
 
 ---
 
@@ -137,7 +149,7 @@ Stesso impianto di `LINUX-UNO-ROADMAP.md` §6, con `tv` accanto a `maui`, `deskt
 5. **Verifica visiva e di focus:** screenshot dell'emulatore e mappa del focus (§2.3) per ogni pagina TV toccata.
 
 ### 5.2 Inventario iniziale (T1)
-Per ogni feature esistente in `features.yaml` si dichiara `tv`: `todo` se rientra nell'ambito (§1), `n/a` con `tvNotes` se non ha senso su TV (aggiunta stazione, impostazioni avanzate, trascinamento per riordinare, ecc.). Nessuna feature resta senza valore.
+Per ogni feature esistente in `features.yaml` si dichiara `tv`: `todo` se rientra nell'ambito (§1), `n/a` con `tvNotes` se non ha senso su TV (impostazioni, menu laterale, trascinamento per riordinare, ecc.). Nessuna feature resta senza valore.
 
 ---
 
@@ -151,12 +163,13 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 - [x] Build Android verde; installazione sull'emulatore; icona e banner nel launcher TV
 - [x] Baseline del focus sulla UI telefono (§3): opzione A scartata
 
-### T1 — Sistema di parità TV · Mac
-- [ ] `parity/features.yaml`: `status.tv` e `tvNotes` per tutte le feature (§5.2)
-- [ ] `parity/pages.yaml`: campo `tv` per ogni pagina (percorso o `n/a` + motivo)
-- [ ] `tools/ParityCheck`: modello (`Manifest.cs`), controlli (`ParityChecker.cs`), flag `--include-tv`; test in `RadioE45.Core.Tests/Parity/`
-- [ ] Skill `.claude/skills/tv-parity-port/SKILL.md`; hook aggiornato; `CLAUDE.md` e `ui-parity-port` con riferimento a `tv`
-- [ ] Uscita: `ParityCheck` restituisce 0 o 1, `dotnet test` verde, `dotnet build RadioE45.slnx` verde
+### T1 — Sistema di parità TV · Mac — ✅ completata 2026-10-22
+- [x] `parity/features.yaml`: `status.tv` e `tvNotes` per tutte le 68 feature esistenti (§5.2) più 4 feature solo-TV (`tv.launcher`, `tv.focus`, `tv.media-keys`, `tv.back`)
+- [x] `parity/pages.yaml`: campo `tv` per ogni pagina (percorso o `n/a` + `tvReason`); Impostazioni `n/a`
+- [x] `tools/ParityCheck`: modello (`Manifest.cs`), controlli (`ParityChecker.cs`), flag `--include-tv`; 12 test nuovi in `RadioE45.Core.Tests/Parity/`
+- [x] Skill `.claude/skills/tv-parity-port/SKILL.md`; hook `tools/parity-hook.sh` con promemoria dedicato alle viste TV; `CLAUDE.md` e `ui-parity-port` con riferimento a `tv`
+- [x] Uscita: `ParityCheck` restituisce 1 (solo debito dichiarato), `dotnet test` verde (277), `--strict` invariato (solo `settings.diagnostics.crash-reports`), `--strict --include-tv` conta i 44 `tv: todo`
+- Regola aggiunta in T1: una feature **senza ViewModel** (piattaforma, es. `tv.launcher`) può essere `done` su tv anche se il file della pagina TV non esiste ancora; per le altre serve il file.
 
 ### T2 — Spike: rilevamento TV, pagina radice, focus · Mac + emulatore
 - [ ] Log che conferma `DeviceIdiom.TV` sull'emulatore; scelta della pagina radice in base al form factor
@@ -165,17 +178,24 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 - [ ] Verifica tasti media e Indietro; dialogo dei termini con focus iniziale sul pulsante
 - [ ] Uscita: mappa del focus che raggiunge i tre controlli; decisione confermata sul perimetro (C o C allargata)
 
-### T3 — Stazione corrente e lista stazioni (opzione C) · Mac + emulatore
-- [ ] `TvNowPlayingPage`: logo/copertina, titolo e artista, stato, ascoltatori, lista stazioni
+### T3 — Navigazione a pulsanti, lettore e selezione stazioni · Mac + emulatore
+- [ ] Fila di pulsanti focusabili (On Air, Stations sempre; Request e Podcast solo con la capability, aggiunti in T5) con focus e sezione corrente ben visibili
+- [ ] `TvNowPlayingPage`: logo/copertina, titolo e artista, stato, ascoltatori
+- [ ] `TvStationsPage`: lista, focus iniziale sulla stazione corrente, selezione con OK
 - [ ] Binding a `OnAirViewModel` e `RadioListViewModel`; `features.yaml` e `pages.yaml` aggiornati
 - [ ] Uscita: riproduzione di una stazione dall'emulatore, mappa del focus completa, ParityCheck 0 o 1
 
-### T4 — Controlli e tasti del telecomando · Mac + emulatore
-- [ ] Play/pausa, avanti/indietro stazione, volume; tasti media del telecomando verso la sessione Media3
+### T4 — Controlli, Schedule e gestione stazioni · Mac + emulatore
+- [ ] Play/pausa e avanti/indietro stazione (il volume resta del televisore); tasti media del telecomando verso la sessione Media3
+- [ ] `TvScheduleDialog`: palinsesto con scorrimento col D-pad
+- [ ] Gestione stazioni dalla sezione Stations: `TvAddStationPage`, `TvEditStationPage`, eliminazione con conferma; tastiera su schermo
+- [ ] Dialogo dei termini d'uso solo al primo utilizzo, con focus iniziale sul pulsante
 - [ ] Stati di errore e offline leggibili da lontano
 - [ ] Uscita: tutti i controlli raggiungibili e comandabili col solo D-pad e tasti media
 
-### T5 — Podcast · Mac + emulatore
+### T5 — Richieste e podcast · Mac + emulatore
+- [ ] `TvRequestPage` con `SongRequestViewModel`; pulsante **Request** visibile solo con la capability
+- [ ] Pulsante **Podcast** visibile solo con la capability
 - [ ] Verifica del servizio che riproduce gli episodi su Android e convivenza con `RadioPlaybackService` (prima di costruire la UI)
 - [ ] `TvPodcastListPage`, `TvPodcastEpisodesPage`, mini player con seek da D-pad
 - [ ] Uscita: ascolto di un episodio dall'emulatore, ripresa dalla posizione salvata, parità aggiornata
@@ -190,8 +210,8 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 - [ ] Audio, rete, standby e spegnimento, telecomando vero, tasti media
 - [ ] Uscita: esiti e differenze rispetto all'emulatore scritti in §3
 
-### T8 — Fire TV (opzionale)
-- [ ] Decidere se procedere (serve un dispositivo o l'emulatore Fire OS)
+### T8 — Fire TV · ⏸ rinviata (2026-10-22, dopo Google TV)
+- [ ] Il dispositivo Fire TV c'è: ripartire da qui a Google TV chiuso
 - [ ] Verificare che lo stesso APK funzioni; requisiti dell'Amazon Appstore
 - [ ] Uscita: `limited` o `done` dichiarato; altrimenti fuori ambito
 
@@ -227,10 +247,16 @@ T1 un giorno; T2 un giorno; T3 e T4 circa una settimana insieme; T5 due o tre gi
 - Prove su emulatore prima, poi Sony Google TV.
 - Fire TV solo se non complica (T8).
 
+- Nessuna impostazione e nessun menu laterale su TV.
+- Navigazione su TV: fila di pulsanti focusabili, niente barra di tab. **On Air** e **Stations** sempre visibili; **Request** e **Podcast** solo se la stazione ha la capability.
+- Sezione **Stations**, solo TV, per selezione e gestione (aggiunta, modifica, eliminazione).
+- Richieste brani su TV: sì.
+- Schedule su TV: sì.
+- Dialogo dei termini d'uso: solo al primo utilizzo, senza rilettura da Impostazioni.
+- Fire TV: dispositivo disponibile, T8 rinviata.
+
 **Aperte**
-1. Impostazioni su TV: nessuna, solo lingua, o l'info dei termini d'uso? (decide T1 caso per caso)
-2. Aggiunta di stazioni personalizzate su TV: probabilmente `n/a` (digitare un URL col telecomando è scomodo); da confermare.
-3. Fire TV: c'è un dispositivo o si salta T8?
+Nessuna decisione aperta. Lo spike T2 può ancora cambiare i dettagli della fila di pulsanti (§4) se il focus non si comporta come previsto.
 
 ---
 
@@ -240,6 +266,10 @@ T1 un giorno; T2 un giorno; T3 e T4 circa una settimana insieme; T5 due o tre gi
 |---|---|---|
 | 2026-10-18 | Analisi | Fattibilità e azioni in `ANDROID-TV.md` |
 | 2026-10-22 | T0 | Manifest TV, banner, installazione ed esame dell'emulatore; opzione A scartata; piano e parità TV progettati |
+| 2026-10-22 | Decisioni | Niente impostazioni né flyout su TV; T8 (Fire TV) rinviata |
+| 2026-10-22 | Decisioni | Sezione Stations solo-TV per selezione e gestione; Schedule inclusa; termini d'uso solo al primo utilizzo |
+| 2026-10-22 | Decisioni | Navigazione a pulsanti focusabili (On Air, Stations sempre; Request, Podcast con la capability), niente barra di tab; Richieste incluse |
+| 2026-10-22 | T1 | Piattaforma `tv` in features/pages, `ParityCheck --include-tv`, 12 test, skill `tv-parity-port`, hook. Inventario: 44 `todo`, il resto `n/a` con motivo o `done` (launcher) |
 
 ---
 

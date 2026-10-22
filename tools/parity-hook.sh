@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Claude Code hooks for the MAUI ↔ Uno parity system (docs/LINUX-UNO-ROADMAP.md §6.4, §7.3).
+# Claude Code hooks for the MAUI ↔ Uno ↔ TV parity system (docs/LINUX-UNO-ROADMAP.md §6.4, §7.3;
+# docs/ANDROID-TV-ROADMAP.md §5).
 # Registered in .claude/settings.json; reads the hook input JSON on stdin.
 #
 #   tools/parity-hook.sh post-edit   PostToolUse (Edit|Write): reminder after a MAUI UI change
@@ -26,9 +27,13 @@ post-edit)
     file="$(json_field "d.get('tool_input',{}).get('file_path')")"
     file="${file//\\//}"
     case "$file" in
+    */RadioE45/Views/Tv/*)
+        python3 -c 'import json,sys; print(json.dumps({"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": sys.argv[1]}}))' \
+            "Modifica vista TV ($(basename "$file")): aggiornare tv (e tvNotes) in parity/features.yaml e il campo tv in parity/pages.yaml, con la skill tv-parity-port. Verificare la mappa del focus sull'emulatore (docs/ANDROID-TV-ROADMAP.md §2.3) e lanciare dotnet run --project tools/ParityCheck -- --include-tv."
+        ;;
     */RadioE45/Views/* | */RadioE45/AppShell.xaml* | */RadioE45.Core/ViewModels/* | */RadioE45/Resources/Styles/*)
         python3 -c 'import json,sys; print(json.dumps({"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": sys.argv[1]}}))' \
-            "Modifica UI MAUI ($(basename "$file")): aggiornare parity/features.yaml (feature nuova o modificata, desktop/web = todo se non portata) e portarla su RadioE45.Uno con la skill ui-parity-port, oppure dichiarare il debito. Se cambia l'API pubblica di un ViewModel: dotnet run --project tools/ParityCheck -- --update-surface."
+            "Modifica UI MAUI ($(basename "$file")): aggiornare parity/features.yaml (feature nuova o modificata, desktop/web/tv = todo se non portata; tv = n/a con tvNotes se non ha senso su TV) e portarla su RadioE45.Uno con la skill ui-parity-port, oppure dichiarare il debito. Se è in ambito Android TV, usare anche la skill tv-parity-port. Se cambia l'API pubblica di un ViewModel: dotnet run --project tools/ParityCheck -- --update-surface."
         ;;
     esac
     exit 0

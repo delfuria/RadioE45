@@ -3,7 +3,7 @@
 App radio per AzuraCast. L'app **MAUI** (Android, iOS, Mac Catalyst, Windows) è quella principale e in produzione; un'app **Uno Platform** (desktop Linux e web) è in costruzione e condivide la logica tramite `RadioE45.Core`.
 Piano operativo e stato delle sessioni: [`docs/LINUX-UNO-ROADMAP.md`](docs/LINUX-UNO-ROADMAP.md) (leggere §0, §1, §6 e §12 a inizio sessione).
 
-**Android TV / Google TV** (in costruzione): stessa app MAUI Android con viste dedicate al telecomando in `RadioE45/Views/Tv/`, stessi ViewModel del Core. Piano operativo, ambiente di prova (emulatore `Television_1080p`) e sessioni T0–T9: [`docs/ANDROID-TV-ROADMAP.md`](docs/ANDROID-TV-ROADMAP.md) (leggere §0, §1, §5 e §6 quando si lavora sulla TV). Fattibilità e rischi: [`docs/ANDROID-TV.md`](docs/ANDROID-TV.md). La piattaforma di parità `tv` arriva con la sessione T1: fino ad allora le viste TV non esistono e `parity/` non le conosce.
+**Android TV / Google TV** (in costruzione): stessa app MAUI Android con viste dedicate al telecomando in `RadioE45/Views/Tv/`, stessi ViewModel del Core. Piano operativo, ambiente di prova (emulatore `Television_1080p`) e sessioni T0–T9: [`docs/ANDROID-TV-ROADMAP.md`](docs/ANDROID-TV-ROADMAP.md) (leggere §0, §1, §5 e §6 quando si lavora sulla TV). Fattibilità e rischi: [`docs/ANDROID-TV.md`](docs/ANDROID-TV.md). La piattaforma di parità `tv` esiste dalla sessione T1 (le viste TV arrivano da T2): vedi regola 8 e «Sistema di parità».
 
 ## Struttura della soluzione (`RadioE45.slnx`)
 
@@ -24,10 +24,10 @@ Piano operativo e stato delle sessioni: [`docs/LINUX-UNO-ROADMAP.md`](docs/LINUX
 5. **Niente sync-over-async nel Core** (`.Result`, `.Wait()`, `GetAwaiter().GetResult()`): WASM è single-thread.
 6. **Stringhe uniche:** solo nei `.resx` di `RadioE45.Core/Resources/Strings/` (neutro = italiano, più `en` e `pl`); vedi `docs/LOCALIZATION.md`.
 7. **Pagine Uno:** il ViewModel è esposto come proprietà `ViewModel` nel code-behind e si usa `{x:Bind ViewModel.X}`, così `ParityCheck` confronta i binding con MAUI. Conversioni: [`docs/parity/MAUI-TO-UNO.md`](docs/parity/MAUI-TO-UNO.md).
-8. **Una modifica a `RadioE45/Views/**`, `RadioE45/AppShell.xaml` o `RadioE45.Core/ViewModels/**` non è finita** finché `parity/features.yaml` non è aggiornato e `ParityCheck` non restituisce 0 o 1. Per portarla su Uno usare la skill `ui-parity-port`.
+8. **Una modifica a `RadioE45/Views/**`, `RadioE45/AppShell.xaml` o `RadioE45.Core/ViewModels/**` non è finita** finché `parity/features.yaml` non è aggiornato e `ParityCheck` non restituisce 0 o 1. Per portarla su Uno usare la skill `ui-parity-port`; per la TV (`RadioE45/Views/Tv/**`, `tv` in `parity/`) la skill `tv-parity-port`. Una feature nuova ha sempre anche `tv` (`todo`, o `n/a` con `tvNotes`).
 9. **Commit:** mai eseguire `git commit`; proporre il messaggio come testo, in inglese, con il trailer di parità:
-   - `Parity: maui, desktop, web` quando tutto è allineato;
-   - `Parity-Debt: <feature-id> (desktop, web)` quando il port è rinviato.
+   - `Parity: maui, desktop, web` quando tutto è allineato (aggiungere `, tv` se la modifica tocca la TV);
+   - `Parity-Debt: <feature-id> (desktop, web)` quando il port è rinviato (`(tv)` per il debito TV).
    Stesso vincolo per tag e release: mai `git tag`, `git push`, `gh release create/edit` né lancio del workflow Release; si propongono i comandi.
 10. Dopo ogni modifica `.cs`: diagnostica LSP e `dotnet build`. Niente `rm -rf`. Testi di store e changelog in inglese.
 11. **Changelog:** ogni modifica visibile all'utente (funzioni, correzioni, testi, piattaforme) aggiunge una riga in inglese sotto `## [Unreleased]` di `CHANGELOG.md` (sottosezioni `New`, `Improved`, `Fixed`; scritta per l'utente, senza nomi di file o classi). Una modifica non è finita senza la riga. `version.json` e il rename di `[Unreleased]` si toccano solo con `/release-prep` o su richiesta.
@@ -41,6 +41,7 @@ dotnet test --project RadioE45.Core.Tests/RadioE45.Core.Tests.csproj
 dotnet run --project tools/ParityCheck                       # 0 allineato, 1 solo debito dichiarato, 2 disallineamento (blocca)
 dotnet run --project tools/ParityCheck -- --update-surface   # dopo una modifica dell'API pubblica di un ViewModel
 dotnet run --project tools/ParityCheck -- --strict --json    # CI / rilascio Uno: anche il debito è errore
+dotnet run --project tools/ParityCheck -- --include-tv       # elenca il debito tv feature per feature (con --strict: gate del rilascio TV)
 
 dotnet build RadioE45.Uno -f net10.0-desktop
 dotnet build RadioE45.Uno -f net10.0-browserwasm
@@ -57,7 +58,7 @@ Procedura completa in [`docs/RELEASE.md`](docs/RELEASE.md): build in locale, boz
 
 ## Sistema di parità
 
-- `parity/features.yaml`: cosa esiste e dove (`done | todo | limited | n/a` per maui, desktop, web; `notes` obbligatorie per `limited` e `n/a`).
-- `parity/pages.yaml`: pagina MAUI ↔ pagina Uno, ViewModel, eccezioni `ignore`.
+- `parity/features.yaml`: cosa esiste e dove (`done | todo | limited | n/a` per maui, desktop, web, tv; `notes` obbligatorie per `limited` e `n/a`, `tvNotes` per lo stato `tv`).
+- `parity/pages.yaml`: pagina MAUI ↔ pagina Uno ↔ pagina TV (`tv`, o `n/a` + `tvReason`), ViewModel, eccezioni `ignore` e `ignoreTv`.
 - `parity/vm-surface.txt`: snapshot dell'API pubblica dei ViewModel (generato, non modificare a mano).
 - Hook in `.claude/settings.json` (script `tools/parity-hook.sh`): promemoria dopo una modifica UI MAUI; a fine turno `ParityCheck` blocca solo con exit 2.

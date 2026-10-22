@@ -1,6 +1,10 @@
 // MAUI ↔ Uno UI parity checker. See docs/LINUX-UNO-ROADMAP.md §6.3.
 //
-//   dotnet run --project tools/ParityCheck -- [--strict] [--json] [--update-surface] [--root <dir>]
+//   dotnet run --project tools/ParityCheck -- [--strict] [--include-tv] [--json] [--update-surface] [--root <dir>]
+//
+// --strict            declared 'todo' on desktop/web is an error (release gate of the Uno app)
+// --include-tv        lists 'todo' on tv feature by feature; with --strict they are errors too
+//                     (release gate of the Android TV app, docs/ANDROID-TV-ROADMAP.md §5)
 //
 // Exit codes: 0 aligned; 1 only declared debt or warnings; 2 undeclared drift (blocks).
 
@@ -10,6 +14,7 @@ using RadioE45.ParityCheck;
 using RadioE45.ViewModels;
 
 var strict = args.Contains("--strict");
+var includeTv = args.Contains("--include-tv");
 var json = args.Contains("--json");
 var updateSurface = args.Contains("--update-surface");
 var rootIndex = Array.IndexOf(args, "--root");
@@ -32,7 +37,7 @@ if (updateSurface)
     Console.Error.WriteLine($"ParityCheck: {ParityChecker.SurfacePath} updated ({lines.Count} lines).");
 }
 
-var findings = new ParityChecker(root, coreAssembly).Run(strict);
+var findings = new ParityChecker(root, coreAssembly).Run(strict, includeTv);
 var exitCode = findings.Any(f => f.Severity == Severity.Error) ? 2
     : findings.Count > 0 ? 1
     : 0;
@@ -65,7 +70,7 @@ else
 
     Console.WriteLine(exitCode switch
     {
-        0 => "ParityCheck: OK, MAUI and Uno are aligned.",
+        0 => "ParityCheck: OK, MAUI, Uno and TV are aligned.",
         1 => "ParityCheck: no undeclared drift (only declared debt/warnings).",
         _ => "ParityCheck: UNDECLARED DRIFT. Fix the errors above or declare the debt in parity/features.yaml.",
     });
