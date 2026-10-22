@@ -15,6 +15,8 @@ namespace RadioE45;
     LaunchMode = LaunchMode.SingleTop,
     ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode |
                            ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
+// Launcher TV: the icon shows in the Android TV / Google TV home only with this category (phones ignore it).
+[IntentFilter(new[] { Intent.ActionMain }, Categories = new[] { "android.intent.category.LEANBACK_LAUNCHER" })]
 public class MainActivity : MauiAppCompatActivity
 {
     private const int PostNotificationsRequestCode = 1001;

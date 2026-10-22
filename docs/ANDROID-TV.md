@@ -1,6 +1,6 @@
 # RadioE45 su Android TV — fattibilità e azioni
 
-Data: 2026-10-18. Stato: analisi, nessun codice modificato.
+Data: 2026-10-18 (aggiornato 2026-10-22). Stato: analisi di fattibilità. Il **piano operativo** con sessioni, parità `tv` e ambiente di prova è in [`ANDROID-TV-ROADMAP.md`](ANDROID-TV-ROADMAP.md); questo documento resta come riferimento per fattibilità, azioni e rischi.
 
 ## Risposta breve
 
@@ -79,8 +79,19 @@ Regole progetto da rispettare:
 - Vista TV completa (B): due o tre settimane, più test.
 - Asset store e pubblicazione: mezza giornata.
 
-## Domande aperte
-1. Quale opzione UI: A (spike prima), B (vista TV completa) o C (minimale)?
-2. Solo Google TV / Android TV via Play, o serve anche Fire TV (Amazon Appstore)?
-3. Hai un dispositivo TV o vuoi usare solo l'emulatore?
-4. Lo spike sul focus lo faccio subito, per decidere tra A e B con dati reali?
+## Decisioni (2026-10-22)
+1. **Opzione C, con podcast.** Schermata minima (stazione corrente + lista stazioni) più elenco podcast e ascolto episodi. Una via di mezzo tra C e B: niente layout a 10 piedi completo, solo le viste già pronte nel Core.
+2. **Fire TV: solo se non complica.** Stesso APK, store diverso (Amazon Appstore). Nel codice non risultano librerie Google Play Services: l'unico riferimento è il meta-data Android Auto (`com.google.android.gms.car.application`), che Fire OS ignora. Da verificare sul device Fire TV reale, non solo leggendo il codice.
+3. **Dispositivo reale disponibile.** Test su device, emulatore opzionale.
+
+## Fattibilità podcast (verificata nel repo)
+- `PodcastListViewModel` (69 righe) e `PodcastEpisodesViewModel` (430 righe) stanno nel Core, senza dipendenze UI. Riusabili così come sono.
+- Le pagine MAUI (`PodcastListPage`, `PodcastEpisodesPage`) fanno solo layout: la vista TV usa gli stessi ViewModel.
+- Da verificare prima di promettere il player podcast su TV: quale servizio riproduce gli episodi su Android (`Services/Platform`) e se può coesistere con `RadioPlaybackService` e la sessione Media3.
+- Parità: le voci `podcastlist.*` e `podcastepisodes.*` in `parity/features.yaml` sono già `done` per maui/desktop/web. La vista TV andrà aggiunta come nuova colonna `tv` o come `todo` dichiarato.
+
+## Piano
+Il piano a sessioni (T0–T9) è in [`ANDROID-TV-ROADMAP.md`](ANDROID-TV-ROADMAP.md) §6. Stato al 2026-10-22:
+- **Fatto (T0):** manifest `leanback` e `touchscreen` con `required="false"`, `android:banner="@drawable/tv_banner"` (PNG 320x180 in `Platforms/Android/Resources/drawable/`), `LEANBACK_LAUNCHER` come secondo `IntentFilter` su `MainActivity`. Verificato sull'emulatore: l'app compare nella riga Apps col banner.
+- **Misurato:** l'opzione A è scartata. Sulla UI telefono il focus D-pad raggiunge solo menu e un tab; play, avanti, volume e Schedule non sono raggiungibili (ROADMAP §3). Si va con viste TV dedicate.
+- **Prossimo:** T1, sistema di parità con la piattaforma `tv`.

@@ -3,6 +3,8 @@
 App radio per AzuraCast. L'app **MAUI** (Android, iOS, Mac Catalyst, Windows) è quella principale e in produzione; un'app **Uno Platform** (desktop Linux e web) è in costruzione e condivide la logica tramite `RadioE45.Core`.
 Piano operativo e stato delle sessioni: [`docs/LINUX-UNO-ROADMAP.md`](docs/LINUX-UNO-ROADMAP.md) (leggere §0, §1, §6 e §12 a inizio sessione).
 
+**Android TV / Google TV** (in costruzione): stessa app MAUI Android con viste dedicate al telecomando in `RadioE45/Views/Tv/`, stessi ViewModel del Core. Piano operativo, ambiente di prova (emulatore `Television_1080p`) e sessioni T0–T9: [`docs/ANDROID-TV-ROADMAP.md`](docs/ANDROID-TV-ROADMAP.md) (leggere §0, §1, §5 e §6 quando si lavora sulla TV). Fattibilità e rischi: [`docs/ANDROID-TV.md`](docs/ANDROID-TV.md). La piattaforma di parità `tv` arriva con la sessione T1: fino ad allora le viste TV non esistono e `parity/` non le conosce.
+
 ## Struttura della soluzione (`RadioE45.slnx`)
 
 | Progetto | Ruolo |

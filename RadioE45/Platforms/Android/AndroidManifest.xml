@@ -5,7 +5,8 @@
 			android:icon="@mipmap/appicon"
 			android:roundIcon="@mipmap/appicon_round"
 			android:supportsRtl="true"
-			android:networkSecurityConfig="@xml/network_security_config">
+			android:networkSecurityConfig="@xml/network_security_config"
+			android:banner="@drawable/tv_banner">
 		<meta-data
 			android:name="com.google.android.gms.car.application"
 			android:resource="@xml/automotive_app_desc" />
@@ -13,6 +14,9 @@
 		     attributes on the class; it serves Android Auto, the media notification and legacy
 		     MediaBrowser clients from a single ExoPlayer session. -->
 	</application>
+	<!-- Android TV / Google TV / Fire TV: required="false" keeps the app installable on phones and tablets. -->
+	<uses-feature android:name="android.software.leanback" android:required="false" />
+	<uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
