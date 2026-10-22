@@ -134,7 +134,7 @@
   page: OnAir
   viewmodel: OnAirViewModel
   status: { maui: done, desktop: done, web: done }
-  notes: "Uno: icone Font Awesome al posto delle emoji MAUI (nessun font emoji nel renderer Skia web)"
+  notes: "Uno: icone Font Awesome al posto delle emoji MAUI (nessun font emoji nel renderer Skia web). 0.48: badge HLS centrato verticalmente in MAUI (VerticalOptions=Center), come già in Uno: stessa altezza del badge della stazione"
 
 - id: onair.favorite
   title: Stazione preferita (toggle dalla pagina On Air)

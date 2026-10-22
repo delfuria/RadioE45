@@ -127,6 +127,7 @@
                             Spacing="8">
 
                             <Border
+                                VerticalOptions="Center"
                                 BackgroundColor="{StaticResource HlsGreen}"
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="Transparent"
