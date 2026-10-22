@@ -161,6 +161,12 @@
                           Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
     </ItemGroup>
 
+    <!-- iOS: AudioQueueStreamPlayer allocates AudioQueue buffers with the pointer overload
+         (the nint overloads are obsolete in .NET for iOS) -->
+    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
     <!-- Simulatore iOS: entitlement CarPlay nel binario ad-hoc, senza provisioning profile -->
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and $(RuntimeIdentifier.StartsWith('iossimulator'))">
         <CodesignEntitlements>Platforms/iOS/Entitlements.Simulator.plist</CodesignEntitlements>

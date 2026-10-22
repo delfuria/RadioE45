@@ -303,11 +303,11 @@ Cose rimaste aperte nelle fasi fatte o decise per default. Spuntare quando risol
 
 ### Da verificare (test)
 - [x] **Telefonata** (22 ottobre): con la build attuale pausa allo squillo e ripresa dopo la chiusura, confermato dai log. Facoltativo: gestione esplicita delle interruzioni per il caso app in primo piano.
-- [ ] **Ritardo di circa 20 s in CarPlay con MP3:** misurato (9 avvii 17-22 s; Musica 0,2-0,7 s; HLS 1,2 s). Safari con lo stesso MP3 parte subito (osservazione utente): cercare l'impostazione del player, una variabile alla volta, misurando in `airplayd`.
+- [x] **Ritardo di circa 20 s in CarPlay con MP3:** risolto con il motore in-process (22 ottobre). Storico: misurato (9 avvii 17-22 s; Musica 0,2-0,7 s; HLS 1,2 s). Safari con lo stesso MP3 parte subito (osservazione utente): cercare l'impostazione del player, una variabile alla volta, misurando in `airplayd`.
 - [ ] **"Preferisci HLS" ignorato** se l'ultimo URL riuscito è l'MP3 (`GetCandidateUrls`).
-- [ ] **Widget CarPlay senza tempi:** confrontare con un'app Apple sullo stesso CarPlay Simulator.
+- [x] **Widget CarPlay senza tempi:** comportamento di sistema, anche Musica non li mostra (22 ottobre).
 - [x] **Now Playing fermo su ▶:** limite del simulatore; sul device lo stato è corretto (22 ottobre).
-- [ ] **Scollegamento CarPlay in auto:** sul simulatore l'audio continua; su un'auto vera iOS cambia la route audio. Verificare se l'app deve mettere in pausa (route change `OldDeviceUnavailable`), come per le cuffie.
+- [x] **Scollegamento CarPlay / cuffie:** pausa su `OldDeviceUnavailable` (22 ottobre); B8 e B9 superate sul device. Ripresa al ricollegamento = comando Play di sistema.
 - [ ] **iPad con `UIApplicationSupportsMultipleScenes=true`:** verificare se si possono aprire più finestre e, se sì, limitarle a una.
 - [ ] **Fase A:** distruzione e ricreazione della scena a processo vivo; lock screen; interruzioni audio; rotazione; ripristino dopo kill. Su device reale.
 - [x] **Fase C:** avvio a freddo da CarPlay con audio (simulatore, 21 ottobre).
@@ -395,3 +395,35 @@ L'app è `Playing` 0,55-1,26 s dopo l'apertura in tutti i casi, anche con uscita
   1. **HLS quando la stazione lo offre**, correggendo `GetCandidateUrls` perché "Preferisci HLS" (o una preferenza automatica con uscita CarPlay) non sia scavalcato dall'ultimo URL riuscito. Misurato: +1-3 s. Non risolve le stazioni solo MP3 (oggi Radio Cartoni, Radio E45).
   2. **Motore MP3 in-process** (download dello stream + decodifica con AudioToolbox, uscita con `AVAudioEngine` o `AudioQueue`), cioè audio prodotto nell'app come Safari. Previsione: percorso in tempo reale e avvio in 1-2 s anche per MP3. Lavoro significativo e da tenere su iOS soltanto.
   3. **Accettare il ritardo per gli MP3** e consigliare HLS ai gestori delle stazioni (AzuraCast lo attiva per stazione).
+
+### 22 ottobre 2026 — motore MP3 in-process (decisione utente)
+- Documento del problema e testi per le issue: [`carplay-mp3-start-delay.md`](carplay-mp3-start-delay.md).
+- Nuovi file iOS: `Platforms/iOS/AudioQueueStreamPlayer.cs` (`NSUrlSession` → `AudioFileStream` → `OutputAudioQueue`, 16 buffer da 8 KB, partenza dopo 2 buffer, `Buffering` solo dopo 2 s senza dati, interruzione → `Paused`), `Platforms/iOS/IosStreamPlayer.cs` (`.m3u8` → `AvStreamPlayer`, il resto → `AudioQueueStreamPlayer`). `AudioService` su iOS usa `IosStreamPlayer`. `RadioE45.csproj`: `AllowUnsafeBlocks` solo per iOS (l'allocazione dei buffer con `nint` è obsoleta in .NET for iOS).
+- Simulatore iPhone 16e: MP3 via Internet, audio 285-396 ms dopo l'apertura (3 avvii), pausa immediata, cambio stazione corretto. Corretto uno sfarfallio Playing → Buffering all'avvio: con l'MP3 la coda restituisce i buffer appena decodificati, non suonati.
+- Build `ios`, `maccatalyst`, `android` senza errori né avvisi. Installata su iPhone 12 mini.
+- **Da misurare sul device:** `IsPlayingOutput:YES` in `audiomxd`; in `airplayd` "AudioMain: Setup succeeded … type 100" e nessun preroll del motore bufferizzato; audio in CarPlay entro 1-2 s; regressioni (altoparlante, telefonata, background e lock screen, cambio rete, HLS ancora con `AVPlayer`).
+
+### 22 ottobre 2026 — esito del motore in-process sul device
+- **CarPlay: l'MP3 parte subito (utente).** Log: `audiomxd` `NowPlayingApp:YES IsPlayingOutput:YES`; avvio 136-606 ms dopo l'apertura (un caso 1353 ms); `mediaremoted` Playing/Paused/Interrupted corretti. Lock screen e Centro di Controllo regolari.
+- **Now Playing su CarPlay:** inizialmente segnalato come assente; i log del processo `CarPlay` mostravano etichette, avanzamento e copertina ricevuti, e la schermata catturata era con la radio ferma (Now Playing svuotato di proposito). Con la radio in riproduzione: tutto visibile (utente).
+- **⏮/⏭ non cambiavano stazione:** in `AppDelegate.SetupRemoteCommandCenter` `NextTrackCommand`/`PreviousTrackCommand` erano disattivati. Ora attivi e collegati a `OnAirViewModel.NextStationCommand`/`PreviousStationCommand` (stessa logica della UI e di Android Auto: stazione adiacente, con giro). Seek resta disattivato. **Verificato dall'utente: i tasti cambiano stazione.**
+- **Tempi nel widget della dashboard CarPlay:** assenti; il processo `CarPlay` riceve comunque durata e tempo trascorso ("Progress view set duration …") e la schermata In riproduzione li mostra. **Chiuso:** anche Musica non mostra i tempi nel widget (utente, 22 ottobre): è il comportamento del widget di sistema, non un difetto di RadioE45.
+- `CHANGELOG.md` `[Unreleased]`: righe `New` (successivo/precedente dai comandi di sistema) e `Fixed` (avvio rapido degli MP3 su CarPlay).
+
+### 22 ottobre 2026 — prove A e B su iPhone con il motore in-process
+- **P1 e P2 chiusi:** profili `Radio E45 Development`, `Radio E45 AppStore`, `Radio E45 Mac AppStore` rigenerati il 22 ottobre con `carplay-audio`; commit `9432d63` firma le build per device con l'entitlement (verificato con `codesign`). L'icona RadioE45 compare in CarPlay.
+- **Parte A (A1-A12): tutte superate** (utente).
+- **Widget dashboard senza tempi:** anche Musica non li mostra; comportamento di sistema.
+- **B5, avvio a freddo da CarPlay:** compare la lista, nessuna riproduzione automatica. È il comportamento del codice (la scena CarPlay non avvia l'audio). Guida CarPlay di Apple (2025-06-09): l'audio parte quando l'utente sceglie un elemento della lista; non c'è un divieto esplicito di avvio automatico. **Decisione utente (22 ottobre): lasciarlo così** (lista, l'audio parte alla scelta della stazione, come nell'esempio Apple).
+- **B8, scollegamento:** l'app va in pausa e dopo pochi secondi l'audio riparte (sull'altoparlante). **B9, ricollegamento:** l'audio riparte da solo. Da analizzare nei log: chi mette in pausa (interruzione, cambio di uscita, comando remoto) e chi fa ripartire (watchdog, comando play di CarPlay).
+- **Nuovo rischio (guida Apple, "good audio citizen"):** attivare la sessione audio ferma subito la radio FM dell'auto; va attivata solo quando si sta per suonare. Oggi `AppDelegate.FinishedLaunching` chiama `SetActive(true)` a ogni avvio, anche quando l'app viene aperta da CarPlay senza riproduzione. Da spostare all'avvio effettivo della riproduzione.
+
+### 22 ottobre 2026 — analisi B8/B9 (`radioe45-b8b9.logarchive`) e correzioni
+- **B8, causa misurata (13:03:47 e 13:21:27, motore nuovo; uguale alle 12:27:43 con AVPlayer):** cavo staccato → `route change OldDeviceUnavailable` → `Speaker`; il sistema invia un'interruzione `Began`; il player passa a `Paused`; 1,4-4,2 s dopo `Watchdog: state=Paused … reconnecting` riapre lo stream sull'altoparlante. **B9:** l'audio suonava già sull'altoparlante e al ricollegamento (`NewDeviceAvailable` → `CarAudio`) passa all'auto; nessun comando "play" ricevuto.
+- **Correzione:** `AudioService` (iOS) su `OldDeviceUnavailable` chiama `PauseAsync` (pausa vera: il watchdog non riapre). Vale anche per le cuffie.
+- **Falsi "Buffering" del motore nuovo (misurati, 13:00:57 e 13:01:38-41):** con un flusso in tempo reale la coda si svuota e si riempie di continuo. Ora `Buffering` solo se nessun dato è stato accodato negli ultimi 2 s (una sola verifica alla volta). Simulatore: 35 s senza falsi `Buffering`.
+- **Sessione audio:** `AppDelegate` imposta solo la categoria; `IosStreamPlayer.Open` attiva la sessione (guida Apple, radio FM dell'auto). Simulatore: avvio regolare (398 ms), nessun errore di attivazione.
+- `CHANGELOG.md`: riga `Fixed` per la pausa allo scollegamento di cuffie o CarPlay.
+- Build installata sul device: da ripetere B8, B9, A1 (avvio), A7 (telefonata), A8 (cuffie).
+- **Esito sul device (utente):** B8 superata (resta in pausa). B9: ricollegando il cavo l'audio riparte da solo; da capire nei log se per un comando "play" del sistema (accettabile) o per un nostro riavvio. B5: confermato di lasciarlo così per ora.
+- **B9 chiarita (`radioe45-b9.logarchive`):** 13:41:41.508 cavo staccato → "Audio output device removed, pausing" → pausa; 13:41:53.050 `mediaremoted` "Sending command … command = Play" a RadioE45 da `com.apple.cmsession.carplay`; 13:41:53.062 `Resume station streaming`. Uguale alle 13:39:44. La ripartenza al ricollegamento è un comando di sistema (iOS riprende l'ultima app audio quando l'auto si collega), non un riavvio dell'app: comportamento atteso, lasciato così. **B8 e B9 superate.**

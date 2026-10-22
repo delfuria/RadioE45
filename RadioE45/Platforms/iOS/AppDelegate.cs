@@ -3,6 +3,7 @@ using Foundation;
 using MediaPlayer;
 using Microsoft.Extensions.Logging;
 using RadioE45.Services.Audio;
+using RadioE45.ViewModels;
 using UIKit;
 
 namespace RadioE45;
@@ -14,9 +15,11 @@ public class AppDelegate : MauiUIApplicationDelegate
 
     public override bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions)
     {
+        // Category only: the session is activated when a stream is opened (IosStreamPlayer.Open).
+        // Activating it at launch would stop the car's FM radio as soon as CarPlay opens the app
+        // (CarPlay Developer Guide: "only activate your audio session when you are ready to play audio").
         AVAudioSession audioSession = AVAudioSession.SharedInstance();
         audioSession.SetCategory(AVAudioSessionCategory.Playback, (AVAudioSessionCategoryOptions)0, out _);
-        audioSession.SetActive(true, out _);
 
         bool result = base.FinishedLaunching(application, launchOptions);
 
@@ -99,13 +102,33 @@ public class AppDelegate : MauiUIApplicationDelegate
             return MPRemoteCommandHandlerStatus.Success;
         });
 
-        // Live radio stream — disable seek and track navigation
+        // Next/previous track = next/previous station (CarPlay, lock screen, steering wheel, headphones),
+        // the same OnAirViewModel commands as the phone UI and as Seek-to-Next/Previous on Android Auto.
+        center.NextTrackCommand.Enabled = true;
+        center.NextTrackCommand.AddTarget(e => SwitchStation(next: true));
+        center.PreviousTrackCommand.Enabled = true;
+        center.PreviousTrackCommand.AddTarget(e => SwitchStation(next: false));
+
+        // Live radio stream — disable seeking
         center.ChangePlaybackPositionCommand.Enabled = false;
         center.SeekForwardCommand.Enabled = false;
         center.SeekBackwardCommand.Enabled = false;
         center.SkipForwardCommand.Enabled = false;
         center.SkipBackwardCommand.Enabled = false;
-        center.NextTrackCommand.Enabled = false;
-        center.PreviousTrackCommand.Enabled = false;
+    }
+
+    private static MPRemoteCommandHandlerStatus SwitchStation(bool next)
+    {
+        OnAirViewModel? onAir = IPlatformApplication.Current?.Services?.GetService<OnAirViewModel>();
+        if (onAir is null) return MPRemoteCommandHandlerStatus.NoSuchContent;
+
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            if (next)
+                await onAir.NextStationCommand.ExecuteAsync(null);
+            else
+                await onAir.PreviousStationCommand.ExecuteAsync(null);
+        });
+        return MPRemoteCommandHandlerStatus.Success;
     }
 }

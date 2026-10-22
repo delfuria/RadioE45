@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### New
+- **iPhone and iPad:** the next and previous buttons on the lock screen, in Control Center, in CarPlay and on headphones switch to the next or previous station.
+
+### Fixed
+- **CarPlay:** stations that stream in MP3 now start in about a second instead of after about 20 seconds, also after pause and when changing station.
+- **iPhone and iPad:** when you unplug headphones or disconnect from CarPlay, the radio stays paused instead of starting again on the phone speaker a few seconds later.
+
 ## [0.47] - 2026-10-21
 
 ### New
