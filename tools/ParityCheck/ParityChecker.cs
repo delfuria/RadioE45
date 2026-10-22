@@ -24,8 +24,9 @@ public sealed partial class ParityChecker(string root, Assembly coreAssembly)
     private readonly List<Finding> _findings = [];
 
     /// <param name="strict">Declared 'todo' on desktop/web becomes an error (release gate of the Uno app).</param>
-    /// <param name="includeTv">List 'todo' on tv feature by feature; with <paramref name="strict"/> they become errors (release gate of the TV app).</param>
-    public IReadOnlyList<Finding> Run(bool strict, bool includeTv = false)
+    /// <param name="includeTv">List 'todo' on tv feature by feature instead of one summary line.</param>
+    /// <param name="strictTv">Declared 'todo' on tv becomes an error (release gate of the TV app); independent of <paramref name="strict"/>.</param>
+    public IReadOnlyList<Finding> Run(bool strict, bool includeTv = false, bool strictTv = false)
     {
         var features = Load<Feature>(FeaturesPath);
         var pages = Load<PageMap>(PagesPath);
@@ -38,7 +39,7 @@ public sealed partial class ParityChecker(string root, Assembly coreAssembly)
         CheckPageCoverage(pages, features);
         CheckPagePairs(pages, features);
         CheckVmSurface();
-        ReportDebt(features, strict, includeTv);
+        ReportDebt(features, strict, includeTv, strictTv);
 
         return _findings;
     }
@@ -256,21 +257,30 @@ public sealed partial class ParityChecker(string root, Assembly coreAssembly)
 
     // --- 5. Debt -----------------------------------------------------------------------------
 
-    private void ReportDebt(List<Feature> features, bool strict, bool includeTv)
+    private void ReportDebt(List<Feature> features, bool strict, bool includeTv, bool strictTv)
     {
+        var listTv = includeTv || strictTv;
+
         foreach (var f in features)
         {
             var todo = f.Status.Uno().Where(s => s.Value == Status.Todo).Select(s => s.Platform).ToList();
-            if (includeTv && f.Status.Tv == Status.Todo) todo.Add("tv");
-            if (todo.Count == 0) continue;
+            if (todo.Count > 0)
+            {
+                var message = $"{f.Id} ({string.Join(", ", todo)})";
+                if (strict) Error("debt", message + " is still 'todo' (--strict)");
+                else Debt("debt", message);
+            }
 
-            var message = $"{f.Id} ({string.Join(", ", todo)})";
-            if (strict) Error("debt", message + $" is still 'todo' (--strict{(includeTv ? " --include-tv" : "")})");
-            else Debt("debt", message);
+            if (listTv && f.Status.Tv == Status.Todo)
+            {
+                var message = $"{f.Id} (tv)";
+                if (strictTv) Error("debt", message + " is still 'todo' (--strict-tv)");
+                else Debt("debt", message);
+            }
         }
 
-        // The TV port is a long list of 'todo': without --include-tv one summary line keeps the report readable.
-        if (!includeTv)
+        // The TV list is long: without --include-tv one summary line keeps the report readable.
+        if (!listTv)
         {
             var tvTodo = features.Count(f => f.Status.Tv == Status.Todo);
             if (tvTodo > 0)

@@ -339,17 +339,34 @@ public sealed class ParityCheckerTests : IDisposable
     }
 
     [Fact]
-    public void Strict_ignores_tv_todo_but_strict_include_tv_does_not()
+    public void Strict_ignores_tv_todo_but_strict_tv_does_not()
     {
         WriteFeatures(desktop: "done", tv: "todo", tvNotes: "");
         WriteAlignedUnoPage();
 
         Assert.DoesNotContain(Run(strict: true), f => f.Severity == Severity.Error);
-        Assert.Contains(Run(strict: true, includeTv: true), f => f.Severity == Severity.Error && f.Check == "debt" && f.Message.Contains("onair.player"));
+        Assert.Contains(Run(strictTv: true), f => f.Severity == Severity.Error && f.Check == "debt" && f.Message.Contains("onair.player"));
     }
 
-    private IReadOnlyList<Finding> Run(bool strict = false, bool includeTv = false) =>
-        new ParityChecker(_root, typeof(BaseViewModel).Assembly).Run(strict, includeTv);
+    [Fact]
+    public void Strict_tv_ignores_desktop_and_web_debt()
+    {
+        WriteFeatures(desktop: "todo", tv: "done");
+        WritePages(tvOnAir: "RadioE45/Views/Tv/TvNowPlayingPage.xaml");
+        Write("RadioE45/Views/Tv/TvNowPlayingPage.xaml", """
+            <ContentPage>
+              <Label Text="{Binding NowPlaying.Title}" />
+              <Label Text="{loc:Translate Tab_OnAir}" />
+              <Button Command="{Binding PlayPauseCommand}" IsVisible="{Binding IsBusy}" />
+            </ContentPage>
+            """);
+
+        Assert.DoesNotContain(Run(strictTv: true), f => f.Severity == Severity.Error);
+        Assert.Contains(Run(strict: true), f => f.Severity == Severity.Error && f.Check == "debt");
+    }
+
+    private IReadOnlyList<Finding> Run(bool strict = false, bool includeTv = false, bool strictTv = false) =>
+        new ParityChecker(_root, typeof(BaseViewModel).Assembly).Run(strict, includeTv, strictTv);
 
     private void WritePages(string tvOnAir = "n/a", string? ignoreTv = null)
     {

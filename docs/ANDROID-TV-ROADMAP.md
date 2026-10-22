@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code. Modellato su `docs/LINUX-UNO-ROADMAP.md` (stesso sistema di parità, stesse regole di processo).
 > Analisi di fattibilità e rischi: [`ANDROID-TV.md`](ANDROID-TV.md). Ultimo aggiornamento: 2026-10-22 (app v0.48).
-> Stato: **T0 e T1 completate; prossima sessione: T2** (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
+> Stato: **T0, T1 e T2 completate; prossima sessione: T3** (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
 
 ---
 
@@ -26,7 +26,7 @@
 
 **Regole decise (non ridiscutere senza l'utente)**
 1. **MAUI first, su Android:** le viste TV sono pagine MAUI in `RadioE45/Views/Tv/`, scelte a runtime quando il dispositivo è una TV. Nessun nuovo target framework, nessun nuovo progetto.
-2. **Nessuna feature senza traccia:** `tv` è la quarta piattaforma del manifest di parità (§5). Il disallineamento è ammesso solo se dichiarato (`todo`, oppure `n/a`/`limited` con motivo).
+2. **Nessuna feature senza traccia:** `tv` è la quarta piattaforma del manifest di parità (§5). Il disallineamento è ammesso solo se dichiarato (`todo`, oppure `n/a`/`limited` con motivo). Su TV molte funzioni non arriveranno mai, perché non servono o non funzionano col telecomando: `n/a` è una risposta **definitiva e legittima** e la parità completa non è un obiettivo.
 3. **ViewModel unici nel Core:** le viste TV usano gli stessi ViewModel del telefono. Niente logica nelle viste TV, solo layout, binding e gestione del focus. Se serve comportamento nuovo (es. "stazione successiva"), va nel ViewModel o in un servizio del Core.
 4. **Core senza UI** (regola 4 di `CLAUDE.md`): il rilevamento TV e i tasti del telecomando stanno nel progetto MAUI o dietro un'interfaccia di `Services/Platform/`, mai nel Core.
 5. **Stringhe uniche** nei `.resx` del Core (it neutro, en, pl). Ogni testo TV nuovo passa da lì.
@@ -86,6 +86,22 @@ Il nome della classe activity (`crc64...`) è generato da .NET: se cambia, legge
 
 **Conclusione:** l'opzione A (stessa UI con un po' di focus) è scartata con dati reali. Servono viste TV dedicate (§4).
 
+### Misure di T2 (2026-10-22, pagina TV dedicata)
+
+| Verifica | Esito |
+|---|---|
+| Rilevamento | `DeviceInfo.Idiom=TV`, creata `TvRootPage` |
+| Fila di pulsanti | Focus raggiungibile col D-pad; `Request` compare solo se la stazione lo supporta, `Podcast` resta nascosto (stazione senza podcast) |
+| Stato `Focused` | Visibile con lo stile `TvButton` (il `VisualStateManager` di MAUI riceve il focus) |
+| Focus iniziale | Da `OnAppearing` non si imposta (nessun elemento focalizzato); da `Loaded` + `Dispatcher` sì, sul pulsante play |
+| OK sul pulsante play | Comanda la riproduzione (3 → 0 → 3 sulla sessione Media3) |
+| **Focus perso dopo OK** | Il pulsante si disabilita mentre il comando asincrono gira e Android sposta il focus su «On Air» senza restituirlo. Risolto con `TvKeepFocusBehavior`: 4 OK di fila, il focus resta |
+| Tasti media del telecomando | Play/pausa, pausa, play, avanti, indietro comandano la sessione Media3 senza codice dedicato; avanti/indietro cambiano stazione |
+| Indietro dalla radice | App in background, audio continua (`state=3`), riapertura riporta la stessa activity |
+| Emoji ⏸ | Si disegna a colori; `U+FE0E` ignorato. Usati i glifi `FaSolid` |
+| DB vuoto | Sull'emulatore le stazioni non c'erano: senza stazione la pagina resta su «Waiting...». Il seed passa dalla pagina Stazioni (T3). Per le prove ho inserito le due stazioni predefinite nel DB dell'emulatore (scaricando il file, `sqlite3` sul Mac, rimettendolo con `run-as`) |
+| Osservazione | Una volta, al primo avvio dopo un'installazione, la chiamata Refit è fallita con `FileNotFoundException: System.Net.Quic`. Non riprodotta in 2 avvii a freddo successivi. Non è specifica della TV: da tenere d'occhio, in particolare sul TV reale (T7) |
+
 ---
 
 ## 4. Architettura di destinazione
@@ -132,6 +148,8 @@ La sezione **Stations**, solo TV, elenca le stazioni (OK seleziona) e dà access
 
 Stesso impianto di `LINUX-UNO-ROADMAP.md` §6, con `tv` accanto a `maui`, `desktop`, `web`.
 
+**Per la TV non si cerca la parità, ma la copertura dichiarata:** ogni feature ha una decisione esplicita (`done`, `limited`, `todo` ancora da fare, `n/a` per sempre con il motivo). Il sistema serve a non perdere funzioni per distrazione, non a replicare tutto il telefono. Un `n/a` motivato non è debito.
+
 ### 5.1 Livelli
 1. **Architettura:** la logica non diverge perché sta nei ViewModel unici (regola 3).
 2. **Manifest** (`parity/features.yaml`): nuova chiave `status.tv` (`done | todo | limited | n/a`) e campo opzionale `tvNotes`, obbligatorio quando `tv` è `limited` o `n/a` (il campo `notes` esistente parla di desktop e web, quindi non si mescola).
@@ -139,7 +157,8 @@ Stesso impianto di `LINUX-UNO-ROADMAP.md` §6, con `tv` accanto a `maui`, `deskt
    - `FeatureStatus.Tv` e `Feature.TvNotes`; `PageMap.Tv` (percorso della pagina TV oppure `n/a` + `tvReason`);
    - stesso confronto dei binding e delle chiavi di stringa tra pagina MAUI e pagina TV, con `ignore` per i membri solo-touch (swipe, trascinamento, pull-to-refresh);
    - copertura: ogni file in `RadioE45/Views/Tv/*.xaml` deve comparire in `pages.yaml`;
-   - debito: `tv: todo` è debito dichiarato. `--strict` resta com'è oggi (desktop e web); `--strict --include-tv` conta anche `tv` ed è il gate prima di pubblicare per TV;
+   - debito: `tv: todo` è debito dichiarato, ma **solo** `todo`: `n/a` e `limited` non lo sono. Senza opzioni il debito TV è una riga di riepilogo; `--include-tv` lo elenca feature per feature;
+   - gate: `--strict` resta quello dell'app Uno (desktop e web) e ignora `tv`; `--strict-tv` è il gate della TV, indipendente dal precedente: fallisce finché resta un `tv: todo`, cioè finché ogni feature non è decisa (`done`, `limited` o `n/a` con motivo);
    - test in `RadioE45.Core.Tests/Parity/` per le nuove regole.
 4. **Processo in Claude Code:**
    - `CLAUDE.md`: regola 8 estesa alle viste TV;
@@ -168,15 +187,17 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 - [x] `parity/pages.yaml`: campo `tv` per ogni pagina (percorso o `n/a` + `tvReason`); Impostazioni `n/a`
 - [x] `tools/ParityCheck`: modello (`Manifest.cs`), controlli (`ParityChecker.cs`), flag `--include-tv`; 12 test nuovi in `RadioE45.Core.Tests/Parity/`
 - [x] Skill `.claude/skills/tv-parity-port/SKILL.md`; hook `tools/parity-hook.sh` con promemoria dedicato alle viste TV; `CLAUDE.md` e `ui-parity-port` con riferimento a `tv`
-- [x] Uscita: `ParityCheck` restituisce 1 (solo debito dichiarato), `dotnet test` verde (277), `--strict` invariato (solo `settings.diagnostics.crash-reports`), `--strict --include-tv` conta i 44 `tv: todo`
+- [x] Uscita: `ParityCheck` restituisce 1 (solo debito dichiarato), `dotnet test` verde (277), `--strict` invariato (solo `settings.diagnostics.crash-reports`), `--strict-tv` conta i `tv: todo`
 - Regola aggiunta in T1: una feature **senza ViewModel** (piattaforma, es. `tv.launcher`) può essere `done` su tv anche se il file della pagina TV non esiste ancora; per le altre serve il file.
 
-### T2 — Spike: rilevamento TV, pagina radice, focus · Mac + emulatore
-- [ ] Log che conferma `DeviceIdiom.TV` sull'emulatore; scelta della pagina radice in base al form factor
-- [ ] `TvRootPage` minima con tre controlli focusabili e stato `Focused` visibile
-- [ ] `tools/tv-focus-probe.sh` (§2.3) e `docs/parity/MAUI-TO-TV.md` (tabella di conversione e regole di layout TV)
-- [ ] Verifica tasti media e Indietro; dialogo dei termini con focus iniziale sul pulsante
-- [ ] Uscita: mappa del focus che raggiunge i tre controlli; decisione confermata sul perimetro (C o C allargata)
+### T2 — Spike: rilevamento TV, pagina radice, focus · Mac + emulatore — ✅ completata 2026-10-22
+- [x] Log che conferma `DeviceIdiom.TV` sull'emulatore (`[TV] DeviceInfo.Idiom=TV root=TvRootPage`); `App.CreateWindow` sceglie la radice in base al form factor
+- [x] `TvRootPage` con la fila di pulsanti (On Air, Channels, Request con la capability) e un lettore minimo; stato `Focused` visibile (`Resources/Styles/TvStyles.xaml`)
+- [x] `tools/tv-focus-probe.sh` (§2.3) e `docs/parity/MAUI-TO-TV.md`
+- [x] Tasti media e Indietro verificati (§3). `TvKeepFocusBehavior` per il focus perso dai comandi asincroni
+- [x] Uscita: la mappa del focus raggiunge tutti i controlli; perimetro confermato (C allargata, §1)
+- Rinviato a T4: dialogo dei termini d'uso con focus iniziale sul pulsante (non è nella pagina TV)
+- Da provare: regressione del telefono (la `Shell` non deve cambiare); build `dotnet build RadioE45.slnx` verde
 
 ### T3 — Navigazione a pulsanti, lettore e selezione stazioni · Mac + emulatore
 - [ ] Fila di pulsanti focusabili (On Air, Stations sempre; Request e Podcast solo con la capability, aggiunti in T5) con focus e sezione corrente ben visibili
@@ -203,7 +224,8 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 ### T6 — Rifinitura 10 piedi · Mac + emulatore
 - [ ] Stringhe in it/en/pl, dimensioni testo, margini di sicurezza, immagini, tema
 - [ ] Prestazioni su lista lunga e immagini, uso memoria
-- [ ] Uscita: revisione degli screenshot, nessun elemento non focusabile
+- [ ] Triage finale dei `tv: todo` rimasti: ognuno diventa `done`, `limited` o `n/a` con `tvNotes` (la parità non è l'obiettivo, §5)
+- [ ] Uscita: revisione degli screenshot, nessun elemento non focusabile, `ParityCheck --strict-tv` senza errori
 
 ### T7 — TV Sony Google TV reale · Mac + TV
 - [ ] Abilitare il debug di rete sul TV, `adb connect`, installazione
@@ -218,7 +240,7 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 ### T9 — Distribuzione · Mac
 - [ ] Play Console: form factor Android TV, screenshot 16:9 (almeno 1280x720), banner, questionario TV
 - [ ] Testi di store in inglese; riga in `CHANGELOG.md` sotto `[Unreleased]`
-- [ ] `docs/STORE-DISTRIBUTION.md` e `docs/RELEASE.md` aggiornati; `--strict --include-tv` verde
+- [ ] `docs/STORE-DISTRIBUTION.md` e `docs/RELEASE.md` aggiornati; `--strict-tv` verde (nessun `todo` residuo)
 - [ ] Release con la skill `release-prep` (comandi proposti, mai eseguiti da Claude)
 
 ### Stima indicativa
@@ -270,6 +292,8 @@ Nessuna decisione aperta. Lo spike T2 può ancora cambiare i dettagli della fila
 | 2026-10-22 | Decisioni | Sezione Stations solo-TV per selezione e gestione; Schedule inclusa; termini d'uso solo al primo utilizzo |
 | 2026-10-22 | Decisioni | Navigazione a pulsanti focusabili (On Air, Stations sempre; Request, Podcast con la capability), niente barra di tab; Richieste incluse |
 | 2026-10-22 | T1 | Piattaforma `tv` in features/pages, `ParityCheck --include-tv`, 12 test, skill `tv-parity-port`, hook. Inventario: 44 `todo`, il resto `n/a` con motivo o `done` (launcher) |
+| 2026-10-22 | T1 (revisione) | La TV non cerca la parità ma la copertura dichiarata: gate `--strict-tv` indipendente da `--strict`; triage di 3 `todo` in `n/a` (VU meter, link personalizzati, ritardo per stazione): restano 41 `todo` |
+| 2026-10-22 | T2 | Spike: `DeviceIdiom.TV` → `TvRootPage`, fila di pulsanti con focus, `tools/tv-focus-probe.sh`, `TvKeepFocusBehavior`, `docs/parity/MAUI-TO-TV.md`; tasti media e Indietro verificati |
 
 ---
 

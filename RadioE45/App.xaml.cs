@@ -9,6 +9,7 @@ using RadioE45.Services.Platform;
 using RadioE45.Services.Radio;
 using RadioE45.Services.Updates;
 using RadioE45.ViewModels;
+using RadioE45.Views.Tv;
 
 namespace RadioE45;
 
@@ -96,7 +97,15 @@ public partial class App : Application
             _onAirViewModel.CurrentStation = null;
         }
 
-        Window window = new(new AppShell(_radioRepository, _onAirViewModel, _appMenuViewModel, _termsService, _updatePrompter));
+        // Android TV / Google TV gets its own remote-control views (docs/ANDROID-TV-ROADMAP.md §4);
+        // every other device, phones and tablets included, keeps the Shell.
+        bool isTv = DeviceInfo.Current.Idiom == DeviceIdiom.TV;
+        Page rootPage = isTv
+            ? IPlatformApplication.Current!.Services.GetRequiredService<TvRootPage>()
+            : new AppShell(_radioRepository, _onAirViewModel, _appMenuViewModel, _termsService, _updatePrompter);
+        System.Diagnostics.Debug.WriteLine($"[TV] DeviceInfo.Idiom={DeviceInfo.Current.Idiom} root={rootPage.GetType().Name}");
+
+        Window window = new(rootPage);
 
         DevicePlatform platform = DeviceInfo.Current.Platform;
         if (platform == DevicePlatform.WinUI || platform == DevicePlatform.MacCatalyst)

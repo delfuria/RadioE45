@@ -24,7 +24,7 @@ Piano operativo e stato delle sessioni: [`docs/LINUX-UNO-ROADMAP.md`](docs/LINUX
 5. **Niente sync-over-async nel Core** (`.Result`, `.Wait()`, `GetAwaiter().GetResult()`): WASM è single-thread.
 6. **Stringhe uniche:** solo nei `.resx` di `RadioE45.Core/Resources/Strings/` (neutro = italiano, più `en` e `pl`); vedi `docs/LOCALIZATION.md`.
 7. **Pagine Uno:** il ViewModel è esposto come proprietà `ViewModel` nel code-behind e si usa `{x:Bind ViewModel.X}`, così `ParityCheck` confronta i binding con MAUI. Conversioni: [`docs/parity/MAUI-TO-UNO.md`](docs/parity/MAUI-TO-UNO.md).
-8. **Una modifica a `RadioE45/Views/**`, `RadioE45/AppShell.xaml` o `RadioE45.Core/ViewModels/**` non è finita** finché `parity/features.yaml` non è aggiornato e `ParityCheck` non restituisce 0 o 1. Per portarla su Uno usare la skill `ui-parity-port`; per la TV (`RadioE45/Views/Tv/**`, `tv` in `parity/`) la skill `tv-parity-port`. Una feature nuova ha sempre anche `tv` (`todo`, o `n/a` con `tvNotes`).
+8. **Una modifica a `RadioE45/Views/**`, `RadioE45/AppShell.xaml` o `RadioE45.Core/ViewModels/**` non è finita** finché `parity/features.yaml` non è aggiornato e `ParityCheck` non restituisce 0 o 1. Per portarla su Uno usare la skill `ui-parity-port`; per la TV (`RadioE45/Views/Tv/**`, `tv` in `parity/`) la skill `tv-parity-port`. Una feature nuova ha sempre anche `tv` (`todo`, o `n/a` con `tvNotes`). Sulla TV non si cerca la parità: molte funzioni non servono o non funzionano col telecomando, e `n/a` motivato è una risposta definitiva, non debito.
 9. **Commit:** mai eseguire `git commit`; proporre il messaggio come testo, in inglese, con il trailer di parità:
    - `Parity: maui, desktop, web` quando tutto è allineato (aggiungere `, tv` se la modifica tocca la TV);
    - `Parity-Debt: <feature-id> (desktop, web)` quando il port è rinviato (`(tv)` per il debito TV).
@@ -41,7 +41,8 @@ dotnet test --project RadioE45.Core.Tests/RadioE45.Core.Tests.csproj
 dotnet run --project tools/ParityCheck                       # 0 allineato, 1 solo debito dichiarato, 2 disallineamento (blocca)
 dotnet run --project tools/ParityCheck -- --update-surface   # dopo una modifica dell'API pubblica di un ViewModel
 dotnet run --project tools/ParityCheck -- --strict --json    # CI / rilascio Uno: anche il debito è errore
-dotnet run --project tools/ParityCheck -- --include-tv       # elenca il debito tv feature per feature (con --strict: gate del rilascio TV)
+dotnet run --project tools/ParityCheck -- --include-tv       # elenca il debito tv feature per feature
+dotnet run --project tools/ParityCheck -- --strict-tv        # gate del rilascio TV (indipendente da --strict): nessun tv todo
 
 dotnet build RadioE45.Uno -f net10.0-desktop
 dotnet build RadioE45.Uno -f net10.0-browserwasm
@@ -49,6 +50,15 @@ dotnet run --project RadioE45.Uno -f net10.0-desktop             # anche su macO
 dotnet run --project RadioE45.Uno -f net10.0-browserwasm         # http://localhost:5045 (la 5000 è dell'AirPlay Receiver di macOS)
 RADIOE45_SELFTEST=1 dotnet run --project RadioE45.Uno -f net10.0-desktop   # DEBUG: autotest dei servizi di piattaforma, righe SELFTEST, poi esce
 ```
+
+Test Android TV (emulatore `Television_1080p`, `emulator-5554`; `adb` non è nel PATH: `~/Library/Android/sdk/platform-tools/adb`):
+
+```bash
+dotnet build RadioE45 -f net10.0-android -t:Install -p:AdbTarget="-s emulator-5554"   # compila e installa
+tools/tv-focus-probe.sh tour --expect "On Air,Channels"     # mappa del focus col D-pad (exit 1 se manca un'etichetta)
+```
+
+Altri comandi `adb` (avvio come il launcher TV, tasti, screenshot) in §2.1 di `docs/ANDROID-TV-ROADMAP.md`.
 
 Test Linux nella VM Parallels (`ssh radioe45-vm`, sorgenti sincronizzati con `rsync`): comandi in §2.2 del roadmap.
 

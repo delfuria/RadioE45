@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.Tv.TvRootPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels;assembly=RadioE45.Core"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    xmlns:controls="clr-namespace:RadioE45.Controls"
+    x:DataType="vm:OnAirViewModel"
+    NavigationPage.HasNavigationBar="False">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Resources/Styles/TvStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <toolkit:BoolToObjectConverter x:Key="PlayPauseText" x:TypeArguments="x:String" TrueObject="&#xF04C;" FalseObject="&#xF04B;" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <!-- Spike T2 (docs/ANDROID-TV-ROADMAP.md §6): fila di pulsanti focusabili in alto e un lettore minimo.
+         Le sezioni si collegano in T3; qui si misurano focus, rilevamento TV e tasti del telecomando. -->
+    <Grid RowDefinitions="Auto,*" Padding="48,27">
+
+        <!-- On Air e Canali sempre visibili; Richiedi e Podcast solo con la capability, come le tab del telefono -->
+        <HorizontalStackLayout Grid.Row="0" Spacing="20">
+            <Button x:Name="NavOnAir" Style="{StaticResource TvButton}" Text="{loc:Translate Tab_OnAir}" />
+            <Button x:Name="NavStations" Style="{StaticResource TvButton}" Text="{loc:Translate Tab_Radio}" />
+            <Button
+                x:Name="NavRequest"
+                Style="{StaticResource TvButton}"
+                Text="{loc:Translate Tab_Request}"
+                IsVisible="{Binding NowPlaying.RequestsEnabled}" />
+            <Button
+                x:Name="NavPodcasts"
+                Style="{StaticResource TvButton}"
+                Text="{loc:Translate Tab_Podcasts}"
+                IsVisible="{Binding HasPodcasts}" />
+        </HorizontalStackLayout>
+
+        <VerticalStackLayout Grid.Row="1" Spacing="16" VerticalOptions="Center" HorizontalOptions="Center">
+            <Label
+                Text="{Binding CurrentStation.Name}"
+                FontSize="40"
+                FontAttributes="Bold"
+                TextColor="{DynamicResource PrimaryText}"
+                HorizontalTextAlignment="Center" />
+            <Label
+                Text="{Binding NowPlaying.Title}"
+                FontSize="32"
+                TextColor="{DynamicResource PrimaryText}"
+                HorizontalTextAlignment="Center" />
+            <Label
+                Text="{Binding NowPlaying.Artist}"
+                FontSize="26"
+                TextColor="{DynamicResource SecondaryText}"
+                HorizontalTextAlignment="Center" />
+            <Button
+                x:Name="PlayPause"
+                Style="{StaticResource TvButton}"
+                Margin="0,24,0,0"
+                FontFamily="FaSolid"
+                FontSize="36"
+                MinimumWidthRequest="160"
+                HorizontalOptions="Center"
+                Text="{Binding IsPlaying, Converter={StaticResource PlayPauseText}}"
+                Command="{Binding PlayPauseCommand}">
+                <Button.Behaviors>
+                    <controls:TvKeepFocusBehavior />
+                </Button.Behaviors>
+            </Button>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

@@ -19,6 +19,45 @@
   maui: RadioE45/AppShell.xaml
   uno: RadioE45.Uno/Views/ShellPage.xaml
   tv: RadioE45/Views/Tv/TvRootPage.xaml
+  ignoreTv:
+    - name: AppVersion
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: ContactLinks
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: FontFamily
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: Glyph
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: HasContactLinks
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: HasSocialLinks
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: OpenChannelsCommand
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: OpenLinkCommand
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: OpenSettingsCommand
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: SocialLinks
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: StationLogoUrl
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: StationName
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: Uri.Host
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: Uri.OriginalString
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: Website
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: Menu_Contacts
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: Menu_Social
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: Menu_Website
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
+    - name: Tab_Settings
+      reason: "Menu laterale: su TV non c'è (decisione 2026-10-22); le voci Impostazioni e link della stazione sono n/a"
   viewmodels: [OnAirViewModel, AppMenuViewModel]
   ignore: []
 

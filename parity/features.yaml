@@ -10,7 +10,8 @@
 #   tvNotes:    the same for status.tv (required when tv is limited or n/a); 'notes' speaks about the other platforms
 #
 # 'tv' is Android TV / Google TV: MAUI views in RadioE45/Views/Tv, same app as the phone
-# (docs/ANDROID-TV-ROADMAP.md §5). 'todo' on tv is listed by ParityCheck --include-tv.
+# (docs/ANDROID-TV-ROADMAP.md §5). 'todo' on tv is listed by ParityCheck --include-tv and blocks --strict-tv.
+# TV is not about parity: 'n/a' (with tvNotes) is a permanent, legitimate answer for what is not needed or not usable with a remote.
 #
 # Initial inventory (S5a, v0.44): MAUI done, desktop and web todo until RadioE45.Uno exists.
 
@@ -70,7 +71,7 @@
   since: "0.44"
   page: Shell
   status: { maui: done, desktop: done, web: done, tv: todo }
-  tvNotes: "La sessione Media3 esiste già: verificare i tasti media del telecomando"
+  tvNotes: "Tasti media verificati (tv.media-keys); resta da vedere la scheda In riproduzione della home TV"
   notes: "Desktop: MPRIS solo su Linux (macOS e Windows senza bus di sessione: nessun controllo), Services/Desktop/MprisNowPlayingService; web: Media Session API, Services/Browser/BrowserMediaSession. Comandi play/pausa come MAUI iOS (SystemMediaCommands); avanti/indietro = stazione successiva/precedente come Android Auto (MAUI iOS/macOS li ha disabilitati); niente seek"
 
 - id: shell.tab-icons
@@ -240,7 +241,8 @@
   title: VU meter animato durante la riproduzione
   since: "0.44"
   page: OnAir
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Animazione decorativa, non serve su TV"
   notes: "Uno: SKCanvasElement al posto di GraphicsView; livelli condivisi in RadioE45.Core/Visuals/VuMeterLevels"
 
 # --- Radio list ------------------------------------------------------------------------------
@@ -347,14 +349,16 @@
   since: "0.44"
   page: EditStation
   viewmodel: EditStationViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Sito, social, email e telefono si mostrano solo nel menu laterale, che su TV non c'è"
 
 - id: editstation.latency-override
   title: Ritardo di sincronizzazione personalizzato per la stazione
   since: "0.44"
   page: EditStation
   viewmodel: EditStationViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Impostazione avanzata; senza impostazioni su TV vale il valore globale già salvato"
 
 - id: editstation.save-cancel
   title: Salva e annulla, con messaggio d'errore
@@ -578,19 +582,20 @@
   page: Shell
   status: { maui: n/a, desktop: n/a, web: n/a, tv: todo }
   notes: "Solo Android TV"
-  tvNotes: "Criterio: mappa del focus (docs/ANDROID-TV-ROADMAP.md §2.3)"
+  tvNotes: "Criterio: mappa del focus (tools/tv-focus-probe.sh, ROADMAP §2.3). Spike T2: fila di pulsanti e play raggiungibili, stato Focused visibile, focus mantenuto dopo OK (TvKeepFocusBehavior); restano le pagine di T3-T5"
 
 - id: tv.media-keys
   title: Tasti media del telecomando (play/pausa, avanti, indietro) comandano la riproduzione
   since: "0.49"
   page: Shell
-  status: { maui: n/a, desktop: n/a, web: n/a, tv: todo }
+  status: { maui: n/a, desktop: n/a, web: n/a, tv: done }
   notes: "Solo Android TV"
-  tvNotes: "Verso la sessione Media3 già presente"
+  tvNotes: "Verificato sull'emulatore il 2026-10-22: play/pausa, avanti e indietro stazione dalla sessione Media3, senza codice dedicato"
 
 - id: tv.back
   title: Indietro risale di un livello; dalla radice manda l'app in background senza fermare l'audio
   since: "0.49"
   page: Shell
-  status: { maui: n/a, desktop: n/a, web: n/a, tv: todo }
+  status: { maui: n/a, desktop: n/a, web: n/a, tv: limited }
   notes: "Solo Android TV"
+  tvNotes: "Dalla radice verificato (emulatore, 2026-10-22): manda l'app in background e l'audio continua. Il risalire di livello arriva con le pagine di T3-T5"

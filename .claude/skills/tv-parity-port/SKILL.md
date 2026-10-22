@@ -5,7 +5,7 @@ description: Porta una funzione dell'app MAUI (RadioE45/Views, ViewModel del Cor
 
 # Port di una funzione MAUI → vista Android TV
 
-Riferimenti: `CLAUDE.md`, `docs/ANDROID-TV-ROADMAP.md` (§1 regole, §4 architettura, §5 parità, §6 sessioni), `docs/parity/MAUI-TO-TV.md` (conversione e regole di layout TV, scritto in T2).
+Riferimenti: `CLAUDE.md`, `docs/ANDROID-TV-ROADMAP.md` (§1 regole, §4 architettura, §5 parità, §6 sessioni), `docs/parity/MAUI-TO-TV.md` (conversione, layout, focus e tasti del telecomando, con le misure fatte sull'emulatore).
 
 La TV è la stessa app MAUI Android del telefono: le viste TV stanno in `RadioE45/Views/Tv/`, usano gli stessi ViewModel del Core e vengono scelte a runtime quando il dispositivo è una TV. Nessun nuovo progetto, nessun nuovo target.
 
@@ -14,6 +14,7 @@ La TV è la stessa app MAUI Android del telefono: le viste TV stanno in `RadioE4
 - Input: un **feature id** (es. `onair.playback-controls`), il nome di una **pagina TV** (es. `TvNowPlayingPage`) oppure un **range git**. Se manca, chiedere quale.
 - Leggere la sessione corrente in `docs/ANDROID-TV-ROADMAP.md` §6: eseguire solo ciò che appartiene alla sessione in corso.
 - Se la funzione è `tv: n/a` in `parity/features.yaml`, **non portarla**: la decisione è già presa (es. impostazioni, menu laterale) ed è nel campo `tvNotes`. Cambiarla solo su richiesta dell'utente, aggiornando prima il roadmap §8.
+- Sulla TV non si cerca la parità: se durante il lavoro una funzione `todo` si rivela inutile o inutilizzabile col telecomando, proporre `n/a` con `tvNotes` invece di forzarla.
 - Emulatore: `emulator-5554`, comandi in `docs/ANDROID-TV-ROADMAP.md` §2.1. Verificare con `adb devices` che sia attivo.
 
 ## 1. Capire la funzione
@@ -27,7 +28,7 @@ La TV è la stessa app MAUI Android del telefono: le viste TV stanno in `RadioE4
 
 1. Pagina in `RadioE45/Views/Tv/` (nome come nel campo `tv` di `pages.yaml`), `x:DataType` e binding `{Binding X}` allo stesso ViewModel del telefono (`BindingContext = viewModel` nel code-behind, come le pagine esistenti).
 2. Regole di layout (§4 del roadmap): pagina logica 960x540 dp, margini di sicurezza circa 48 dp ai lati e 27 dp sopra e sotto, testo e bersagli grandi.
-3. Focus: ogni controllo azionabile è focusabile con stato `Focused` ben visibile; il focus iniziale cade sul controllo principale; Indietro risale di un livello.
+3. Focus: ogni controllo azionabile è focusabile con stato `Focused` ben visibile (stile `TvButton` di `Resources/Styles/TvStyles.xaml`); il focus iniziale si imposta da `Loaded`, non da `OnAppearing`; i pulsanti con comando asincrono usano `TvKeepFocusBehavior`; Indietro risale di un livello.
 4. Niente `#if` e niente logica nel code-behind oltre a cose puramente visive (focus iniziale incluso). Differenze di piattaforma solo nei servizi di `Services/Platform/`.
 5. Stringhe solo nei `.resx` del Core (it neutro, en, pl).
 6. Membri del telefono che su TV non servono (swipe, trascinamento, pull to refresh): `ignoreTv` in `pages.yaml` con motivo. Non usare `ignoreTv` per rimandare un lavoro: per quello c'è `tv: todo`.
@@ -43,9 +44,9 @@ La TV è la stessa app MAUI Android del telefono: le viste TV stanno in `RadioE4
 1. Diagnostica LSP sui file toccati.
 2. `dotnet build RadioE45 -f net10.0-android` e, se è cambiato il Core, `dotnet build RadioE45.slnx` e `dotnet test --project RadioE45.Core.Tests/RadioE45.Core.Tests.csproj`.
 3. Installare sull'emulatore: `dotnet build RadioE45 -f net10.0-android -t:Install -p:AdbTarget="-s emulator-5554"`, avviare come il launcher TV (§2.1 del roadmap).
-4. **Mappa del focus** (§2.3 del roadmap): con `tools/tv-focus-probe.sh` (dalla sessione T2) o, finché non esiste, con `adb shell input keyevent` e `uiautomator dump` leggendo `focused="true"`. Ogni controllo azionabile della pagina deve essere raggiungibile col D-pad. Riportare l'esito.
+4. **Mappa del focus** (§2.3 del roadmap): `tools/tv-focus-probe.sh tour --expect "<etichette>"` (usa `uiautomator dump` e legge `focused="true"`). Ogni controllo azionabile della pagina deve essere raggiungibile col D-pad. Riportare l'esito. Un pulsante con sola icona ha etichetta vuota: dargli `SemanticProperties.Description`.
 5. Screenshot dell'emulatore con `adb exec-out screencap -p`, solo dello schermo del dispositivo. Non premere `DPAD_CENTER` alla cieca nella home TV.
-6. `dotnet run --project tools/ParityCheck -- --include-tv`: nessun errore (exit 0 o 1).
+6. `dotnet run --project tools/ParityCheck -- --include-tv`: nessun errore (exit 0 o 1). Il gate `--strict-tv` si usa solo a fine progetto (T9).
 
 ## 5. Chiusura
 
