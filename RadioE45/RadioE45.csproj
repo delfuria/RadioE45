@@ -47,8 +47,8 @@
 
     <!-- CarPlay Audio: l'entitlement com.apple.developer.carplay-audio e' assegnato all'account (21 ottobre 2026).
          Simulatore: Platforms/iOS/Entitlements.Simulator.plist (vedi sotto). Device e App Store:
-         vanno in Platforms/iOS/Entitlements.plist solo dopo aver abilitato la capability sull'App ID
-         e rigenerato i profili, altrimenti il code signing fallisce.
+         Platforms/iOS/Entitlements.plist, con i profili rigenerati il 22 ottobre 2026 dopo aver
+         abilitato la capability sull'App ID (docs/carplay-ios/provisioning-profiles.md).
          La scena CarPlay e' nel manifest di Platforms/iOS/Info.plist, che MAUI porta nel bundle
          senza script post-build. Dettagli: docs/carplay-ios/piano-operativo.md. -->
 
@@ -164,6 +164,13 @@
     <!-- Simulatore iOS: entitlement CarPlay nel binario ad-hoc, senza provisioning profile -->
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and $(RuntimeIdentifier.StartsWith('iossimulator'))">
         <CodesignEntitlements>Platforms/iOS/Entitlements.Simulator.plist</CodesignEntitlements>
+    </PropertyGroup>
+
+    <!-- iOS Debug su device: profilo manuale con CarPlay al posto del profilo Team di Xcode -->
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Debug' and $(RuntimeIdentifier.StartsWith('ios-'))">
+        <CodesignKey>Apple Development: Stefano Del Furia (G2686Y5924)</CodesignKey>
+        <CodesignProvision>Radio E45 Development</CodesignProvision>
+        <CodesignEntitlements>Platforms/iOS/Entitlements.plist</CodesignEntitlements>
     </PropertyGroup>
 
     <!-- iOS App Store signing -->

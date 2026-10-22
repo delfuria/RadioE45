@@ -28,7 +28,7 @@ public class AudioService : LiveStreamAudioService, IMediaElementHost
         : base(streamUrlProber, platformNowPlayingService, audioFocusManager, settingsRepo, networkMonitor, dispatcher, logger)
     {
 #if IOS
-        AttachPlayer(new AvStreamPlayer());
+        AttachPlayer(new AvStreamPlayer(logger));
 #endif
     }
 

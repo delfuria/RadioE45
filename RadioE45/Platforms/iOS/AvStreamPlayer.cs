@@ -1,5 +1,7 @@
 using AVFoundation;
+using System.Diagnostics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 
 namespace RadioE45.Services.Audio;
 
@@ -15,9 +17,12 @@ public sealed class AvStreamPlayer : IStreamPlayer
     private IDisposable? _itemStatusObserver;
     private NSObject? _endObserver;
     private StreamPlayerState _state = StreamPlayerState.None;
+    private readonly ILogger? _logger;
+    private readonly Stopwatch _sinceOpen = new();
 
-    public AvStreamPlayer()
+    public AvStreamPlayer(ILogger? logger = null)
     {
+        _logger = logger;
         _timeControlObserver = _player.AddObserver("timeControlStatus", NSKeyValueObservingOptions.New, _ => OnTimeControlStatusChanged());
     }
 
@@ -43,6 +48,8 @@ public sealed class AvStreamPlayer : IStreamPlayer
         _endObserver = NSNotificationCenter.DefaultCenter.AddObserver(AVPlayerItem.DidPlayToEndTimeNotification, _ => Ended?.Invoke(this, EventArgs.Empty), item);
 
         SetState(StreamPlayerState.Opening);
+        AudioSessionDiagnostics.LogState("open");
+        _sinceOpen.Restart();
         _player.ReplaceCurrentItemWithPlayerItem(item);
         _player.Play();
     }
@@ -110,6 +117,12 @@ public sealed class AvStreamPlayer : IStreamPlayer
             return;
 
         _state = next;
+        if (next == StreamPlayerState.Playing && _sinceOpen.IsRunning)
+        {
+            _logger?.LogInformation("AvStreamPlayer: playing {Ms} ms after open", _sinceOpen.ElapsedMilliseconds);
+            _sinceOpen.Reset();
+        }
+
         StateChanged?.Invoke(this, new StreamPlayerStateChangedEventArgs(previous, next));
     }
 }

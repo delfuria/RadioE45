@@ -225,8 +225,8 @@ Ogni test va registrato (screenshot della finestra app o del simulatore, secondo
 
 ## 8. Checklist azioni manuali (utente)
 - [x] Inviare la richiesta entitlement CarPlay Audio (Fase 0): inviata e approvata il 21 ottobre 2026.
-- [ ] Dopo approvazione: capability sull'App ID; rigenerare profili Development e App Store.
-- [ ] Procurarsi un modo per testare su device (auto o accessorio, oppure secondo dispositivo con CarPlay for iPhone).
+- [x] Dopo approvazione: capability sull'App ID; rigenerare i profili (sono tre: Development, App Store iOS, **Mac App Store**, stesso App ID). Procedura: [`provisioning-profiles.md`](provisioning-profiles.md).
+- [ ] Prove su device: [`device-test-plan.md`](device-test-plan.md) (senza auto: CarPlay Simulator del Mac con iPhone via cavo).
 - [ ] Preparare video demo e note per il reviewer.
 
 ---
@@ -302,6 +302,8 @@ Cose rimaste aperte nelle fasi fatte o decise per default. Spuntare quando risol
 - [ ] **iPad, una sola finestra:** deciso, ma con `UIApplicationSupportsMultipleScenes=true` (necessario per la scena CarPlay) l'iPad potrebbe aprire più finestre. Da risolvere in Fase B.
 
 ### Da verificare (test)
+- [ ] **Telefonata: audio abbassato invece che fermo** (22 ottobre): confermare la causa con i log, poi gestire le interruzioni di `AVAudioSession` e sospendere il watchdog durante l'interruzione.
+- [ ] **Ritardo di circa 15 s prima di sentire l'audio** con CarPlay Simulator: misurare dove si perde il tempo.
 - [ ] **Now Playing di CarPlay fermo su ▶** con audio attivo (vedi registro Fase B): verificare su device; se si ripete, valutare `MPNowPlayingSession` con l'`AVPlayer`.
 - [ ] **Scollegamento CarPlay in auto:** sul simulatore l'audio continua; su un'auto vera iOS cambia la route audio. Verificare se l'app deve mettere in pausa (route change `OldDeviceUnavailable`), come per le cuffie.
 - [ ] **iPad con `UIApplicationSupportsMultipleScenes=true`:** verificare se si possono aprire più finestre e, se sì, limitarle a una.
@@ -322,7 +324,7 @@ Cose rimaste aperte nelle fasi fatte o decise per default. Spuntare quando risol
 - [ ] **Fase E:** errore di riproduzione con `CPAlertTemplate`; artwork; indicatore "in riproduzione". (Le stringhe sono già nei `.resx`.)
 - [ ] **Fase F:** test su simulatore CarPlay e su device con entitlement.
 - [ ] **Fase G:** `shell.carplay` a `done`, README, `docs/carplay-ios/README.md`, store, versione.
-- [ ] **Dopo l'approvazione Apple (approvata il 21 ottobre):** capability sull'App ID, profili Development e App Store, entitlement nel plist.
+- [x] **Dopo l'approvazione Apple (approvata il 21 ottobre):** capability sull'App ID, profili Development e App Store, entitlement nel plist.
 
 ### 21 ottobre 2026 (sera)
 - **Fase 0 chiusa:** Apple ha assegnato l'entitlement CarPlay Audio all'account (email di conferma lo stesso giorno). R1 superato. Restano i passi manuali di §8: capability sull'App ID e rigenerazione dei profili.
@@ -339,3 +341,19 @@ Cose rimaste aperte nelle fasi fatte o decise per default. Spuntare quando risol
     - apertura dell'app sul telefono durante la riproduzione da CarPlay: stessa istanza, stessa stazione, nessun riavvio dello stream;
     - scollegamento CarPlay: scena chiusa, processo e audio vivi, app principale utilizzabile.
   - **Problema aperto, Now Playing di CarPlay:** il pulsante resta su ▶ e il tempo non avanza, mentre l'audio suona. Misura: in `mediaremoted` lo stato di RadioE45 passa a `Paused` alla registrazione dei comandi remoti e non diventa mai `Playing`; cambia solo `playbackRate` (0 → 1). `MPNowPlayingInfoCenter.playbackState` è solo macOS (documentazione Apple; assente nel binding iOS), quindi non è quella la correzione (tentativo annullato). Ipotesi da verificare: sul simulatore il sistema non rileva l'audio attivo, oppure serve `MPNowPlayingSession` collegato all'`AVPlayer`. Prima verificarlo su device reale, poi decidere.
+
+### 22 ottobre 2026 — prime prove su iPhone 12 mini (build 0.47.9 = `e49b1cc`, Debug, profilo Team)
+- **B1 KO, causa misurata:** la build installata non ha `carplay-audio` (firma col profilo Team; `Entitlements.plist` vuoto; profili ancora di giugno, senza CarPlay). Atteso finché non sono fatti P1 e P2 di `device-test-plan.md`. Il brano nella home CarPlay è il widget di sistema "In riproduzione", che funziona per qualunque app audio.
+- **A7 KO, telefonata:** l'audio si abbassa invece di fermarsi. Misure: la sessione è `Playback` senza opzioni (non mixabile) sia nell'app sia nel `MediaElement` di CommunityToolkit (decompilato: `SetCategory(Playback)`), quindi non è una sessione mixabile. Fatti certi nel codice: su iOS nessuna gestione delle interruzioni; il watchdog tratta `Paused` come stream bloccato e riapre ogni 10 s. Ipotesi principale: il watchdog riapre lo stream durante la chiamata. Da confermare con i log; possibile anche una chiamata VoIP (WhatsApp), che abbassa invece di interrompere.
+- **Ritardo di circa 15 s all'avvio e dopo pausa/play** sentendo l'audio da CarPlay Simulator; la pausa è immediata. Da misurare: tempo di scelta URL e tempo apertura→`Playing` (nuovi log), confrontati con il telefono senza CarPlay Simulator.
+- **Widget CarPlay senza tempi:** probabilmente legato allo stato Now Playing (`Paused` in `mediaremoted`, registro Fase B). Da misurare con A6.
+- **Strumenti aggiunti (solo log, nessun cambio di comportamento):** `Platforms/iOS/AudioSessionDiagnostics.cs` (categoria e opzioni, interruzioni, cambi di uscita, reset dei servizi media), `AvStreamPlayer` (ms dall'apertura a `Playing`), `LiveStreamAudioService` (URL scelto e ms della scelta). Verificati sul simulatore: scelta URL 773 ms, `Playing` 4409 ms dopo l'apertura.
+
+### 22 ottobre 2026 — capability CarPlay sull'App ID e profili rigenerati
+- Portale: CarPlay Audio attivo su `com.radioe45.app`. Rigenerati `Radio E45 AppStore` e `Radio E45 Mac AppStore`; creato il profilo manuale `Radio E45 Development` (iPhone e iPad). Verifica §4.4 di `provisioning-profiles.md`: i tre profili nuovi hanno `carplay-audio`. Il vecchio `Radio E45 AppStore` di giugno (stesso nome) è stato tolto dalla cartella dei profili e spostato nella copia `~/Documents/RadioE45-profili-backup-20261022`.
+- `Platforms/iOS/Entitlements.plist` ora contiene `com.apple.developer.carplay-audio`. `RadioE45.csproj`: nuova firma esplicita per Debug su device (`-r ios-*`): `Apple Development`, `Radio E45 Development`, `Entitlements.plist`.
+- Misure con `codesign -d --entitlements -` e profilo incorporato:
+  - Debug `ios-arm64`: `carplay-audio` = 1, `get-task-allow` = 1, profilo `Radio E45 Development`;
+  - Release `ios-arm64`: `carplay-audio` = 1, `get-task-allow` = 0, profilo `Radio E45 AppStore`;
+  - Release Mac Catalyst: firmata con `Radio E45 Mac AppStore`, entitlement invariati (niente CarPlay), `codesign --verify --deep --strict` ok.
+- Prossimo passo: P3 e seguenti di `device-test-plan.md` (installare la build Debug sull'iPhone e ripetere B1).

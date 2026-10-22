@@ -297,7 +297,10 @@ public class LiveStreamAudioService : IAudioService
         if (candidates.Length == 0)
             return;
 
+        long probeStarted = Environment.TickCount64;
         string? winner = await _streamUrlProber.ProbeFirstReachableAsync(candidates, ct);
+        _logger.LogInformation("Stream URL probe: {Winner} chosen among {Count} in {Ms} ms",
+            winner ?? "none", candidates.Length, Environment.TickCount64 - probeStarted);
 
         if (winner is null)
         {

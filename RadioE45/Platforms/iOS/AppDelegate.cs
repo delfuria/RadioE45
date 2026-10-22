@@ -1,6 +1,7 @@
 ﻿using AVFoundation;
 using Foundation;
 using MediaPlayer;
+using Microsoft.Extensions.Logging;
 using RadioE45.Services.Audio;
 using UIKit;
 
@@ -18,6 +19,10 @@ public class AppDelegate : MauiUIApplicationDelegate
         audioSession.SetActive(true, out _);
 
         bool result = base.FinishedLaunching(application, launchOptions);
+
+        ILoggerFactory? loggerFactory = IPlatformApplication.Current?.Services?.GetService<ILoggerFactory>();
+        if (loggerFactory is not null)
+            AudioSessionDiagnostics.Start(loggerFactory.CreateLogger("AudioSession"));
 
         // Set up lock-screen / CarPlay remote control handlers. Must run after base
         // so that the MAUI DI container (IPlatformApplication.Current) is ready.
