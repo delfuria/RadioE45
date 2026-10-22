@@ -32,11 +32,7 @@
 1. Build App Store con lo script fuori dal repository: `~/Library/CloudStorage/OneDrive-Personale/Lavori/RadioE45-Scripts/scripts/build-applestore-ios.sh`.
    - Cosa fa: restore pulito, `dotnet publish` Release con AOT, firma `Radio E45 AppStore` ed `Entitlements.plist`, poi controlla firma, `get-task-allow`, Team ID, bundle ID, versione, `ITSAppUsesNonExemptEncryption`, privacy manifest e profilo incorporato, e valida con `xcrun altool --validate-app`.
    - Output: `scripts/store-packages/RadioE45.ipa` (in quella cartella).
-   - Lo script **non controlla CarPlay**. Per farlo controllare anche a lui, aggiungere dopo il controllo del Team ID:
-
-     ```bash
-     echo "$ENT" | grep -q "com.apple.developer.carplay-audio" || { echo "[ERRORE] Entitlement CarPlay assente"; exit 1; }
-     ```
+   - Dal 22 ottobre lo script controlla anche l'entitlement CarPlay, subito dopo il Team ID, e si ferma con `[ERRORE] Entitlement CarPlay assente` se manca.
 2. Caricamento con Transporter (`open -a Transporter`) o `xcrun altool --upload-app`.
 3. Prima di caricare, verificare che l'IPA contenga l'entitlement CarPlay:
 
@@ -84,17 +80,24 @@ Gli screenshot dello store sono solo per iPhone e iPad: non ci sono screenshot C
 
 ## 5. App Review Information → Notes
 
-Testo completo da incollare: le note già usate per la guideline 5.2.3 ([`../APP-REVIEW-5.2.3.md`](../APP-REVIEW-5.2.3.md)) più la parte CarPlay.
+Testo completo da incollare: le note già presenti in App Store Connect (guideline 5.2.3, vedi anche [`../APP-REVIEW-5.2.3.md`](../APP-REVIEW-5.2.3.md), e 5.1.1(ii) per la rete locale) più la parte CarPlay in fondo. Gli allegati (dichiarazione firmata e lettera di autorizzazione) restano quelli già caricati nella sezione Attachment: se App Store Connect li ha tolti con la nuova versione, ricaricarli.
 
 ```
-The app contains no third-party content or catalog. It ships only with the Radio E45
-station (operated by the developer) and the official AzuraCast demo station. Any other
-station is added by the user via public URL, like adding a podcast feed by URL in a
-podcast player; the app does not host, store or rebroadcast audio.
+Radio E45 is a territorial web radio project in preparation (https://radioe45.it/);
+an association is being formed. I, Stefano Del Furia, am one of its founders. I develop the app and maintain the backend (AzuraCast server) that hosts the stream. The station's
+broadcast is currently for demonstration purposes only.
 
-On first launch the app shows Terms of Use (also available in Settings > Info) that make the user responsible for the streams
-added and give rights holders a contact for reports and removal requests:
-support@radioe45.it
+Attached documents: (1) my signed declaration; (2) a signed letter of authorization from Roldano Zappala, the person in charge of Radio E45 and registrant of the domain
+radioe45.it, authorizing me to publish and distribute the app and the stream.
+
+The app contains no third-party catalog. It includes only the Radio E45 station and the official AzuraCast demo station; any other station is added by the user via public URL.
+Terms of Use with a contact for rights holders (support@radioe45.it) are shown at first launch and available in Settings > Info.
+
+Local network (Guideline 5.1.1(ii)):
+- The app includes NSLocalNetworkUsageDescription (localized en/it/pl).
+- With the default stations (Radio E45 and the AzuraCast demo station) the app connects only to public internet addresses, so no local network prompt appears.
+- The prompt appears only if the user manually adds a station hosted on a private network address (e.g. http://192.168.x.x:8000/radio.mp3), such as a personal AzuraCast server. In that case the app connects to it so the user can listen to their own station.
+- To see the prompt: Channel > Press "+" button and add a station with a LAN address, then start playback.
 
 CarPlay (CarPlay Audio App entitlement)
 Radio E45 is a live internet radio app. In CarPlay it uses only the list and now playing templates.
