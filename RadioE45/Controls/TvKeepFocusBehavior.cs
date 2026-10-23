@@ -37,7 +37,7 @@ public sealed class TvKeepFocusBehavior : Behavior<Button>
         if (_restoreFocus)
         {
             _restoreFocus = false;
-            button.Dispatcher.Dispatch(() => button.Focus());
+            button.Dispatcher.Dispatch(() => TvFocus.Request(button));
         }
     }
 

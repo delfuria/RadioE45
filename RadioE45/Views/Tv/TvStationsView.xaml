@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="RadioE45.Views.Tv.TvStationsView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels;assembly=RadioE45.Core"
+    xmlns:models="clr-namespace:RadioE45.Models;assembly=RadioE45.Core"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    x:DataType="vm:RadioListViewModel">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Resources/Styles/TvStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <!-- Elenco delle stazioni per la TV: OK su una stazione la seleziona e torna al lettore.
+         Aggiunta, modifica ed eliminazione: T4. -->
+    <!-- Padding laterale: la riga con il focus si ingrandisce e verrebbe tagliata dai bordi dello ScrollView -->
+    <ScrollView Padding="16,24,16,16">
+        <VerticalStackLayout x:Name="StationsLayout" Spacing="14" BindableLayout.ItemsSource="{Binding Stations}">
+
+            <BindableLayout.EmptyView>
+                <Label
+                    Text="{loc:Translate RadioList_Empty}"
+                    FontSize="26"
+                    TextColor="{DynamicResource SecondaryText}" />
+            </BindableLayout.EmptyView>
+
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="models:AzuraStation">
+                    <Button
+                        Style="{StaticResource TvButton}"
+                        HorizontalOptions="Start"
+                        MinimumWidthRequest="560"
+                        FontSize="26"
+                        Text="{Binding Name}"
+                        ContentLayout="Right,16"
+                        Command="{Binding PlayCommand}"
+                        CommandParameter="{Binding .}"
+                        IsEnabled="{Binding IsOnline}">
+                        <Button.Triggers>
+                            <!-- Stazione in ascolto: puntino a destra del nome (colore del testo, visibile anche con il focus) -->
+                            <DataTrigger TargetType="Button" Binding="{Binding IsActive}" Value="True">
+                                <Setter Property="ImageSource">
+                                    <Setter.Value>
+                                        <FontImageSource Glyph="&#xF111;" FontFamily="FaSolid" Size="14" Color="{DynamicResource PrimaryText}" />
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentView>

@@ -22,8 +22,8 @@
   since: "0.44"
   page: Shell
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
-  tvNotes: "Fila di pulsanti focusabili, non una barra di tab: On Air e Stations sempre visibili, Request e Podcast solo con la capability"
+  status: { maui: done, desktop: done, web: done, tv: limited }
+  tvNotes: "Fila di pulsanti focusabili (On Air, Channels): Request e Podcast, visibili solo con la capability, arrivano in T5"
   notes: "Uno: NavigationView (§8); tab Richieste (S8.5) e Podcast (S8.6) legate a OnAirViewModel tramite ShellPage.OnAirViewModel"
 
 - id: shell.menu.station-header
@@ -63,8 +63,8 @@
   title: Termini d'uso mostrati una volta al primo avvio (App Review 5.2.3)
   since: "0.44"
   page: Shell
-  status: { maui: done, desktop: done, web: done, tv: todo }
-  tvNotes: "Solo al primo utilizzo, con il focus iniziale sul pulsante; non si rilegge da nessuna parte"
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Dialogo proprio della TV (focus iniziale sul pulsante, testo scorrevole), solo al primo utilizzo prima della proposta di stazioni; verificato sull'emulatore con installazione pulita il 2026-10-22"
 
 - id: shell.system-media-controls
   title: Metadati e tasti multimediali di sistema (lock screen iOS, Centro di controllo macOS, SMTC Windows)
@@ -129,7 +129,8 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Copertina 340x340 dp con segnaposto"
   notes: "Web: limite accettato, la copertina generica di AzuraCast (redirect a /static/img/generic_song.jpg, es. jingle) non ha CORS e resta il segnaposto (roadmap §5)"
 
 - id: onair.menu-button
@@ -145,14 +146,16 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Badge LIVE sulla copertina; non ancora visto in diretta sull'emulatore"
 
 - id: onair.station-badge
   title: Badge della stazione con nome, preferito, numero di ascoltatori e badge HLS
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: limited }
+  tvNotes: "Nome stazione, ascoltatori e badge HLS; la stella del preferito arriva in T4"
   notes: "Uno: icone Font Awesome al posto delle emoji MAUI (nessun font emoji nel renderer Skia web). 0.48: badge HLS centrato verticalmente in MAUI (VerticalOptions=Center), come già in Uno: stessa altezza del badge della stazione"
 
 - id: onair.favorite
@@ -167,14 +170,14 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
 
 - id: onair.track-progress
   title: Avanzamento del brano con tempo trascorso e durata
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
 
 - id: onair.next-track
   title: Prossimo brano (copertina, titolo, artista)
@@ -195,7 +198,8 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Play/pausa con il focus che resta sul pulsante (TvKeepFocusBehavior) e indicatore di buffering"
   notes: "Web: nessun autoplay, ogni avvio parte da un gesto dell'utente (§5): all'apertura stazione selezionata e now playing, niente play né ripresa automatica (IAppEnvironment.CanAutoplay)"
 
 - id: onair.station-switch
@@ -219,7 +223,7 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
 
 - id: onair.song-history
   title: Ultimi brani trasmessi, sezione espandibile
@@ -252,23 +256,24 @@
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
-  tvNotes: "Nella sezione Stations"
+  status: { maui: done, desktop: done, web: done, tv: limited }
+  tvNotes: "Nome della stazione e puntino sulla stazione in ascolto; logo, descrizione, preferita e badge HLS in T6"
 
 - id: radiolist.offline-indicator
   title: Indicatore di stazione offline
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: limited }
+  tvNotes: "Una stazione offline è disabilitata e non si può selezionare; nessuna etichetta testuale"
 
 - id: radiolist.select-and-play
   title: Selezione di una stazione e avvio della riproduzione
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
-  tvNotes: "OK sulla stazione"
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "OK sulla stazione: la riproduzione parte e si torna a On Air; il focus iniziale è sulla stazione in ascolto"
 
 - id: radiolist.edit-delete
   title: Modifica ed eliminazione (con conferma) da swipe o menu contestuale
@@ -301,7 +306,8 @@
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Primo avvio senza stazioni: domanda sulle stazioni di prova nel dialogo della TV, poi parte la riproduzione; verificato sull'emulatore con installazione pulita il 2026-10-22"
 
 - id: radiolist.add-button
   title: Pulsante flottante per aggiungere una stazione

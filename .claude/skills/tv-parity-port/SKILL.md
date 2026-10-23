@@ -11,7 +11,7 @@ La TV è la stessa app MAUI Android del telefono: le viste TV stanno in `RadioE4
 
 ## 0. Prerequisiti
 
-- Input: un **feature id** (es. `onair.playback-controls`), il nome di una **pagina TV** (es. `TvNowPlayingPage`) oppure un **range git**. Se manca, chiedere quale.
+- Input: un **feature id** (es. `onair.playback-controls`), il nome di una **pagina TV** (es. `TvNowPlayingView`) oppure un **range git**. Se manca, chiedere quale.
 - Leggere la sessione corrente in `docs/ANDROID-TV-ROADMAP.md` §6: eseguire solo ciò che appartiene alla sessione in corso.
 - Se la funzione è `tv: n/a` in `parity/features.yaml`, **non portarla**: la decisione è già presa (es. impostazioni, menu laterale) ed è nel campo `tvNotes`. Cambiarla solo su richiesta dell'utente, aggiornando prima il roadmap §8.
 - Sulla TV non si cerca la parità: se durante il lavoro una funzione `todo` si rivela inutile o inutilizzabile col telecomando, proporre `n/a` con `tvNotes` invece di forzarla.

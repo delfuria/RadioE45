@@ -1,18 +1,31 @@
 using CommunityToolkit.Maui;
 using RadioE45.ViewModels;
+using RadioE45.Views.Tv;
 
 namespace RadioE45.Services.Platform;
 
 public sealed class MauiNavigationService : INavigationService
 {
     private readonly IPopupService _popupService;
+    private readonly TvHostAccessor _tv;
 
-    public MauiNavigationService(IPopupService popupService)
+    public MauiNavigationService(IPopupService popupService, TvHostAccessor tv)
     {
         _popupService = popupService;
+        _tv = tv;
     }
 
-    public Task GoToOnAirAsync() => GoToAsync("//OnAirPage");
+    // On TV there is no Shell: the TV root page switches its own section (docs/ANDROID-TV-ROADMAP.md §4).
+    public Task GoToOnAirAsync()
+    {
+        if (_tv.Current is { } tv)
+        {
+            tv.ShowSection(TvSection.OnAir);
+            return Task.CompletedTask;
+        }
+
+        return GoToAsync("//OnAirPage");
+    }
 
     public Task GoBackAsync() => GoToAsync("..");
 

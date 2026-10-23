@@ -4,8 +4,8 @@
 #
 #   tools/tv-focus-probe.sh now                       focus attuale
 #   tools/tv-focus-probe.sh keys DOWN RIGHT CENTER    manda i tasti e stampa il focus dopo ciascuno
-#   tools/tv-focus-probe.sh tour [--expect "A,B,C"]   percorso a serpentina con il D-pad; con --expect
-#                                                      esce con 1 se qualche etichetta non è raggiunta
+#   tools/tv-focus-probe.sh tour [--expect "A,B,C"]   esplora tutti i tasti del D-pad da ogni elemento raggiunto; con
+#                                                      --expect esce con 1 se qualche etichetta non è raggiunta (TRACE=1 mostra gli archi)
 #
 # Tasti: UP DOWN LEFT RIGHT CENTER (D-pad); ogni altro nome diventa KEYCODE_<nome> (BACK, HOME, MEDIA_PLAY_PAUSE).
 # Ambiente: ANDROID_SERIAL (default emulator-5554), ADB (default ~/Library/Android/sdk/platform-tools/adb).
@@ -79,54 +79,114 @@ tour)
     expect=""
     if [[ "${1:-}" == "--expect" ]]; then expect="${2:-}"; fi
 
-    seen_file="$tmp/seen"
-    : >"$seen_file"
-    record() { grep -qxF -- "$1" "$seen_file" || printf '%s\n' "$1" >>"$seen_file"; }
+    # Esplora il grafo del focus: da ogni elemento raggiunto prova SU/GIÙ/SINISTRA/DESTRA, ricorda dove
+    # porta ogni tasto e, finita la strada davanti, torna (seguendo gli archi noti) a un elemento con
+    # direzioni ancora da provare. Un percorso "per righe" non basta: in un layout con una fila in alto
+    # e una lista sotto, SINISTRA dalla lista salta alla fila (cerca il vicino più prossimo nella direzione).
+    ADB="$ADB" SERIAL="$SERIAL" SETTLE="$SETTLE" MAX_PRESSES="${MAX_PRESSES:-80}" TRACE="${TRACE:-}" EXPECT="$expect" \
+        python3 -I - <<'PY'
+import os, subprocess, sys, tempfile, time
+import xml.etree.ElementTree as ET
+from collections import deque
 
-    # Percorre una riga in una direzione finché il focus non cambia più.
-    walk() {
-        local dir="$1" cur next steps=0
-        cur="$(focus)"
-        record "$cur"
-        while ((steps < MAX_STEPS)); do
-            press "$dir"
-            next="$(focus)"
-            [[ "$next" == "$cur" ]] && break
-            record "$next"
-            cur="$next"
-            ((steps++))
-        done
-    }
+adb, serial = os.environ["ADB"], os.environ["SERIAL"]
+settle, max_presses = float(os.environ["SETTLE"]), int(os.environ["MAX_PRESSES"])
+trace, expect = bool(os.environ.get("TRACE")), os.environ.get("EXPECT", "")
+keys = {"UP": "KEYCODE_DPAD_UP", "DOWN": "KEYCODE_DPAD_DOWN", "LEFT": "KEYCODE_DPAD_LEFT", "RIGHT": "KEYCODE_DPAD_RIGHT"}
+dirs = ["DOWN", "RIGHT", "UP", "LEFT"]
+tmp = tempfile.mkdtemp()
 
-    row=0
-    while ((row < 8)); do
-        walk LEFT
-        walk RIGHT
-        before="$(focus)"
-        press DOWN
-        after="$(focus)"
-        [[ "$after" == "$before" ]] && break
-        record "$after"
-        ((row++))
-    done
+def run(*a):
+    return subprocess.run([adb, "-s", serial, *a], capture_output=True, text=True)
 
-    echo "Elementi raggiunti dal D-pad:"
-    while IFS= read -r line; do echo "  - $(show "$line")"; done <"$seen_file"
+def focus():
+    run("shell", "uiautomator", "dump", "/sdcard/tv-focus.xml")
+    path = os.path.join(tmp, "ui.xml")
+    run("pull", "/sdcard/tv-focus.xml", path)
+    try:
+        nodes = [n for n in ET.parse(path).getroot().iter("node") if n.get("focused") == "true"]
+    except Exception:
+        return ("none", "", "")
+    if not nodes:
+        return ("none", "", "")
+    n = nodes[-1]
+    return (n.get("text") or n.get("content-desc") or "", n.get("class") or "", n.get("bounds") or "")
 
-    if [[ -n "$expect" ]]; then
-        missing=0
-        IFS=',' read -ra wanted <<<"$expect"
-        for w in "${wanted[@]}"; do
-            w="${w#"${w%%[![:space:]]*}"}"
-            w="${w%"${w##*[![:space:]]}"}"
-            if ! grep -qF -- "$w" "$seen_file"; then
-                echo "NON RAGGIUNTO: $w"
-                missing=1
-            fi
-        done
-        if ((missing)); then exit 1; fi
-        echo "Tutte le etichette attese sono raggiungibili."
-    fi
+def label(state):
+    text = state[0]
+    if not text:
+        return "(senza etichetta)"
+    if not text.isprintable():
+        return "(icona U+%04X)" % ord(text[0])
+    return text
+
+presses = 0
+def press(d):
+    global presses
+    run("shell", "input", "keyevent", keys[d])
+    presses += 1
+    time.sleep(settle)
+
+edges, seen = {}, []
+def see(state):
+    if state not in seen:
+        seen.append(state)
+
+cur = focus()
+see(cur)
+
+def untried(state):
+    return [d for d in dirs if (state, d) not in edges]
+
+def route_to_untried(start):
+    queue, visited = deque([(start, [])]), {start}
+    while queue:
+        state, path = queue.popleft()
+        if state != start and untried(state):
+            return path
+        for d in dirs:
+            nxt = edges.get((state, d))
+            if nxt is not None and nxt not in visited:
+                visited.add(nxt)
+                queue.append((nxt, path + [d]))
+    return None
+
+while presses < max_presses:
+    todo = untried(cur)
+    if todo:
+        d = todo[0]
+        press(d)
+        nxt = focus()
+        edges[(cur, d)] = nxt
+        if trace:
+            print(f"  {label(cur)} --{d}--> {label(nxt)}", file=sys.stderr)
+        see(nxt)
+        cur = nxt
+        continue
+    route = route_to_untried(cur)
+    if not route:
+        break
+    for d in route:
+        press(d)
+    cur = focus()
+    see(cur)
+
+print("Elementi raggiunti dal D-pad:")
+for s in seen:
+    print(f"  - {label(s)}  [{s[1]} {s[2]}]")
+if presses >= max_presses:
+    print(f"(fermato dopo {max_presses} tasti: alzare MAX_PRESSES se la pagina è grande)")
+
+if expect:
+    labels = [s[0] for s in seen]
+    missing = [w.strip() for w in expect.split(",") if w.strip() and not any(w.strip() in l for l in labels)]
+    for w in missing:
+        print(f"NON RAGGIUNTO: {w}")
+    if missing:
+        sys.exit(1)
+    print("Tutte le etichette attese sono raggiungibili.")
+PY
+    exit $?
     ;;
 
 *)

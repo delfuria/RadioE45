@@ -64,7 +64,26 @@
 - page: OnAir
   maui: RadioE45/Views/OnAirPage.xaml
   uno: RadioE45.Uno/Views/OnAirPage.xaml
-  tv: RadioE45/Views/Tv/TvNowPlayingPage.xaml
+  tv: RadioE45/Views/Tv/TvNowPlayingView.xaml
+  ignoreTv:
+    - name: ActivateAsync
+      reason: "Lo chiama TvRootPage all'avvio (come OnAirPage.OnAppearing sul telefono)"
+    - name: ArtworkHeight
+      reason: "Altezza adattiva della copertina sul telefono; sulla TV è fissa a 340 dp"
+    - name: Volume
+      reason: "Il volume è del televisore e si regola dal telecomando (onair.volume n/a)"
+    - name: IsMuted
+      reason: "Il volume è del televisore (onair.volume n/a)"
+    - name: SetVolumeCommand
+      reason: "Il volume è del televisore (onair.volume n/a)"
+    - name: ToggleMuteCommand
+      reason: "Il volume è del televisore (onair.volume n/a)"
+    - name: IsBusy
+      reason: "Solo per il pull to refresh del telefono (onair.pull-to-refresh n/a)"
+    - name: RefreshNowPlayingCommand
+      reason: "Pull to refresh: su TV il now playing si aggiorna da solo (onair.pull-to-refresh n/a)"
+    - name: Tab_OnAir
+      reason: "Titolo della pagina MAUI; su TV l'etichetta è nel pulsante di sezione di TvRootPage"
   viewmodels: [OnAirViewModel]
   ignore:
     - name: Tab_OnAir
@@ -75,7 +94,16 @@
 - page: RadioList
   maui: RadioE45/Views/RadioListPage.xaml
   uno: RadioE45.Uno/Views/RadioListPage.xaml
-  tv: RadioE45/Views/Tv/TvStationsPage.xaml
+  tv: RadioE45/Views/Tv/TvStationsView.xaml
+  ignoreTv:
+    - name: MoveStationAsync
+      reason: "Riordino col trascinamento: non esiste col D-pad (radiolist.reorder n/a)"
+    - name: MoveStationToEndAsync
+      reason: "Riordino col trascinamento: non esiste col D-pad (radiolist.reorder n/a)"
+    - name: Common_Delete
+      reason: "Etichetta della voce di swipe del telefono; su TV l'eliminazione è un'azione sulla stazione (T4)"
+    - name: Tab_Radio
+      reason: "Titolo della pagina MAUI; su TV l'etichetta è nel pulsante di sezione di TvRootPage"
   viewmodels: [RadioListViewModel]
   ignore:
     - name: Common_Delete
@@ -113,7 +141,7 @@
 - page: SongRequest
   maui: RadioE45/Views/SongRequestPage.xaml
   uno: RadioE45.Uno/Views/SongRequestPage.xaml
-  tv: RadioE45/Views/Tv/TvRequestPage.xaml
+  tv: RadioE45/Views/Tv/TvRequestView.xaml
   viewmodels: [SongRequestViewModel]
   ignore:
     - name: Tab_Request
@@ -122,13 +150,13 @@
 - page: PodcastList
   maui: RadioE45/Views/PodcastListPage.xaml
   uno: RadioE45.Uno/Views/PodcastListPage.xaml
-  tv: RadioE45/Views/Tv/TvPodcastListPage.xaml
+  tv: RadioE45/Views/Tv/TvPodcastListView.xaml
   viewmodels: [PodcastListViewModel]
   ignore: []
 
 - page: PodcastEpisodes
   maui: RadioE45/Views/PodcastEpisodesPage.xaml
   uno: RadioE45.Uno/Views/PodcastEpisodesPage.xaml
-  tv: RadioE45/Views/Tv/TvPodcastEpisodesPage.xaml
+  tv: RadioE45/Views/Tv/TvPodcastEpisodesView.xaml
   viewmodels: [PodcastEpisodesViewModel]
   ignore: []

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="RadioE45.Views.Tv.TvNowPlayingView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels;assembly=RadioE45.Core"
+    xmlns:controls="clr-namespace:RadioE45.Controls"
+    x:DataType="vm:OnAirViewModel">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Resources/Styles/TvStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <toolkit:BoolToObjectConverter x:Key="PlayPauseGlyph" x:TypeArguments="x:String" TrueObject="&#xF04C;" FalseObject="&#xF04B;" />
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <!-- Lettore per la TV: copertina a sinistra, informazioni e controllo a destra. Stessa logica del telefono
+         (OnAirViewModel); qui solo layout e binding. Prossimo brano, preferita, cambio stazione e Schedule: T4. -->
+    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="48" Padding="0,24,0,0">
+
+        <Border
+            Grid.Column="0"
+            WidthRequest="340"
+            HeightRequest="340"
+            VerticalOptions="Start"
+            StrokeShape="RoundRectangle 20"
+            Stroke="{DynamicResource CardElevated}"
+            StrokeThickness="1"
+            BackgroundColor="{DynamicResource CardBackground}">
+            <Grid>
+                <Image
+                    Source="{Binding ArtworkUrl}"
+                    Aspect="AspectFill"
+                    IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNotNullConverter}}" />
+                <Image
+                    Source="radio_placeholder.png"
+                    Aspect="AspectFit"
+                    Margin="48"
+                    IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNullConverter}}" />
+                <Border
+                    HorizontalOptions="End"
+                    VerticalOptions="Start"
+                    Margin="12"
+                    BackgroundColor="{StaticResource LiveRed}"
+                    StrokeShape="RoundRectangle 6"
+                    Stroke="Transparent"
+                    Padding="12,5"
+                    IsVisible="{Binding NowPlaying.IsLive}">
+                    <Label
+                        Text="• LIVE"
+                        TextColor="White"
+                        FontSize="18"
+                        FontAttributes="Bold" />
+                </Border>
+            </Grid>
+        </Border>
+
+        <VerticalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Start">
+
+            <HorizontalStackLayout Spacing="16" VerticalOptions="Center">
+                <Border
+                    BackgroundColor="{DynamicResource Accent}"
+                    StrokeShape="RoundRectangle 14"
+                    Stroke="Transparent"
+                    Padding="18,6">
+                    <Label
+                        Text="{Binding CurrentStation.Name}"
+                        FontSize="24"
+                        FontAttributes="Bold"
+                        TextColor="White" />
+                </Border>
+                <Label
+                    Text="{Binding NowPlaying.ListenerCount, StringFormat='👥 {0}'}"
+                    FontSize="22"
+                    TextColor="{DynamicResource MutedText}"
+                    VerticalOptions="Center" />
+                <Border
+                    BackgroundColor="{StaticResource HlsGreen}"
+                    StrokeShape="RoundRectangle 12"
+                    Stroke="Transparent"
+                    Padding="12,4"
+                    VerticalOptions="Center"
+                    IsVisible="{Binding IsHlsActive}">
+                    <Label Text="HLS" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}" />
+                </Border>
+            </HorizontalStackLayout>
+
+            <Label
+                Text="{Binding NowPlaying.Title}"
+                Margin="0,18,0,0"
+                FontSize="38"
+                FontAttributes="Bold"
+                MaxLines="2"
+                LineBreakMode="TailTruncation"
+                TextColor="{DynamicResource PrimaryText}" />
+            <Label
+                Text="{Binding NowPlaying.Artist}"
+                FontSize="28"
+                MaxLines="1"
+                LineBreakMode="TailTruncation"
+                TextColor="{DynamicResource SecondaryText}" />
+
+            <ProgressBar
+                Margin="0,18,0,0"
+                Progress="{Binding TrackProgress}"
+                ProgressColor="{DynamicResource Accent}"
+                BackgroundColor="{DynamicResource CardElevated}" />
+            <Grid ColumnDefinitions="*,*">
+                <Label Grid.Column="0" Text="{Binding ElapsedTimeText}" FontSize="20" TextColor="{DynamicResource MutedText}" />
+                <Label Grid.Column="1" Text="{Binding TotalTimeText}" FontSize="20" TextColor="{DynamicResource MutedText}" HorizontalOptions="End" />
+            </Grid>
+
+            <Label
+                Text="{Binding ErrorMessage}"
+                FontSize="22"
+                TextColor="{StaticResource LiveRed}"
+                IsVisible="{Binding ErrorMessage, Converter={toolkit:IsStringNotNullOrEmptyConverter}}" />
+
+            <HorizontalStackLayout Spacing="24" Margin="0,18,0,0">
+                <Button
+                    x:Name="PlayPause"
+                    Style="{StaticResource TvButton}"
+                    FontFamily="FaSolid"
+                    FontSize="36"
+                    MinimumWidthRequest="160"
+                    Text="{Binding IsPlaying, Converter={StaticResource PlayPauseGlyph}}"
+                    Command="{Binding PlayPauseCommand}">
+                    <Button.Behaviors>
+                        <controls:TvKeepFocusBehavior />
+                    </Button.Behaviors>
+                </Button>
+                <ActivityIndicator
+                    IsRunning="{Binding IsBuffering}"
+                    IsVisible="{Binding IsBuffering}"
+                    Color="{DynamicResource Accent}"
+                    VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+    </Grid>
+</ContentView>

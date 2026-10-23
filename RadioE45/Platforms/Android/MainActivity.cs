@@ -39,6 +39,12 @@ public class MainActivity : MauiAppCompatActivity
 #pragma warning disable CS0612
     public override void OnBackPressed()
     {
+        // Android TV has no Shell: the TV root page closes its dialog or goes back to On Air first;
+        // only from On Air does Back send the app to the background (below).
+        if (Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault()?.Page is RadioE45.Views.Tv.ITvHost tvHost
+            && tvHost.HandleBack())
+            return;
+
         var navigation = Shell.Current?.Navigation;
         bool canNavigateBack = navigation is not null &&
             (navigation.NavigationStack.Count > 1 || navigation.ModalStack.Count > 0);

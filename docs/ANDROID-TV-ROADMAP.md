@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code. Modellato su `docs/LINUX-UNO-ROADMAP.md` (stesso sistema di parità, stesse regole di processo).
 > Analisi di fattibilità e rischi: [`ANDROID-TV.md`](ANDROID-TV.md). Ultimo aggiornamento: 2026-10-22 (app v0.48).
-> Stato: **T0, T1 e T2 completate; prossima sessione: T3** (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
+> Stato: **T0–T3 completate; prossima sessione: T4** (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
 
 ---
 
@@ -69,7 +69,7 @@ Il nome della classe activity (`crc64...`) è generato da .NET: se cambia, legge
 - Al primo avvio il dialogo dei termini d'uso non ha il focus sul pulsante: serve prima un movimento del D-pad (es. `DPAD_DOWN`), poi `DPAD_CENTER`. Con la vista TV il pulsante dovrà avere il focus iniziale.
 
 ### 2.3 Mappa del focus (verifica automatizzabile)
-`uiautomator dump` restituisce l'elemento con `focused="true"`. Mandando una sequenza di tasti e leggendo il focus a ogni passo si ottiene la **mappa di raggiungibilità**: ogni controllo azionabile della vista TV deve essere raggiungibile col D-pad. In T2 diventa uno script (`tools/tv-focus-probe.sh`) usato come criterio di uscita delle sessioni UI, al posto dell'impressione visiva.
+`uiautomator dump` restituisce l'elemento con `focused="true"`. Mandando una sequenza di tasti e leggendo il focus a ogni passo si ottiene la **mappa di raggiungibilità**: ogni controllo azionabile della vista TV deve essere raggiungibile col D-pad. È lo script `tools/tv-focus-probe.sh` (`tour --expect "etichette"`), criterio di uscita delle sessioni UI al posto dell'impressione visiva. Il tour esplora tutto il grafo del focus e richiede circa un minuto per pagina (un `uiautomator dump` per tasto).
 
 ---
 
@@ -102,6 +102,23 @@ Il nome della classe activity (`crc64...`) è generato da .NET: se cambia, legge
 | DB vuoto | Sull'emulatore le stazioni non c'erano: senza stazione la pagina resta su «Waiting...». Il seed passa dalla pagina Stazioni (T3). Per le prove ho inserito le due stazioni predefinite nel DB dell'emulatore (scaricando il file, `sqlite3` sul Mac, rimettendolo con `run-as`) |
 | Osservazione | Una volta, al primo avvio dopo un'installazione, la chiamata Refit è fallita con `FileNotFoundException: System.Net.Quic`. Non riprodotta in 2 avvii a freddo successivi. Non è specifica della TV: da tenere d'occhio, in particolare sul TV reale (T7) |
 
+
+### Misure di T3 (2026-10-22, primo avvio e navigazione)
+
+| Verifica | Esito |
+|---|---|
+| Primo avvio, installazione pulita (`pm clear`) | Termini d'uso con il focus sul pulsante → OK → domanda sulle stazioni di prova con il focus su «Yes» → OK → il DB si popola, parte RadioE45, la vista torna a On Air |
+| **Focus rifiutato nel dialogo** | `Focus()` rispondeva `True` ma il focus non si agganciava: la finestra è in *touch mode* subito dopo un avvio a freddo e il pulsante non è `focusableInTouchMode` (letto dallo stato nativo: `inTouchMode=True`, `focusableInTouch=False`, `nativeRequest=False`). Con `RequestFocusFromTouch` (helper `TvFocus`) il focus si aggancia |
+| **Lista stazioni vuota** | Il ViewModel aveva 2 stazioni ma il layout 0 figli; `ErrorMessage` conteneva `targetType needs to be assignable from System.String`. Causa: un `MultiBinding` con `BoolToObjectConverter` nel testo del pulsante, che lancia alla creazione dei figli e viene inghiottito dal `SafeExecuteAsync` della lista. Sostituito da un `DataTrigger` che imposta l'icona |
+| Elenco stazioni | Focus iniziale sulla stazione in ascolto; D-pad raggiunge entrambe le stazioni; il puntino marca quella attiva |
+| Selezione | OK su «AzuraTest Radio»: la riproduzione passa ad AzuraTest, la vista torna a On Air, il focus è sul pulsante play |
+| Indietro | Da Channels torna a On Air; da On Air l'app va in background e l'audio continua (`state=3`); la riapertura riporta la stessa activity |
+| Tour del focus | Il primo tour «a serpentina per righe» non raggiungeva l'ultima stazione (3 volte su 3 dopo la prima): `LEFT` da una riga della lista salta alla fila di pulsanti in alto (Android cerca il vicino più prossimo nella direzione), quindi il percorso ripassava sempre dagli stessi elementi. Sostituito da un'esplorazione del grafo del focus: prova SU/GIÙ/SINISTRA/DESTRA da ogni elemento, ricorda gli archi e ritorna dove restano direzioni da provare (`TRACE=1` li stampa). Dal grafo: GIÙ da On Air o da Channels porta alla prima stazione, SINISTRA dalla lista porta a On Air |
+| Dialogo e margini di sicurezza | La scheda arrivava quasi ai bordi dello schermo: area scorrevole del messaggio ridotta a 230 dp. L'altezza del dialogo dei termini resta dentro 27 dp sopra e sotto |
+| Indietro nei dialoghi | Sui termini chiude (come l'AlertDialog del telefono, quindi i termini risultano accettati); sulle stazioni di prova equivale a «No» e si torna a On Air |
+| Bordo ingrandito tagliato | La riga e il pulsante del dialogo con focus (scala 1,08) venivano tagliati dai bordi di `ScrollView` e `Border`: serve padding intorno ai controlli che si ingrandiscono |
+| Crash nativo (1 volta) | `SIGSEGV` in `libmonodroid.so` (`EmbeddedAssemblies::open_from_bundles`) nel thread pool, subito dopo «Yes» al primo avvio dopo un'installazione. Non riprodotto in 2 primi avvii puliti successivi. Collegato all'osservazione `System.Net.Quic` di T2: entrambi sono errori del caricatore di assembly, solo al primo avvio dopo un'installazione di debug (fast deployment). **Da riprovare con una build Release** (T7) prima di considerarlo chiuso |
+
 ---
 
 ## 4. Architettura di destinazione
@@ -126,12 +143,12 @@ App Android (un solo APK/AAB)
 
 | Pagina TV | Pagina telefono | ViewModel |
 |---|---|---|
-| `Tv/TvNowPlayingPage` (stazione corrente, controlli play/pausa, avanti/indietro, accesso a Schedule; il volume è del televisore, `onair.volume` è `n/a`) | `OnAirPage` | `OnAirViewModel` |
-| `Tv/TvStationsPage` (sezione **Stazioni**, solo TV: lista con selezione, focus iniziale sulla stazione corrente, azioni di gestione) | `RadioListPage` | `RadioListViewModel` |
+| `Tv/TvNowPlayingView` (stazione corrente, controlli play/pausa, avanti/indietro, accesso a Schedule; il volume è del televisore, `onair.volume` è `n/a`) | `OnAirPage` | `OnAirViewModel` |
+| `Tv/TvStationsView` (sezione **Stazioni**, solo TV: lista con selezione, focus iniziale sulla stazione corrente, azioni di gestione) | `RadioListPage` | `RadioListViewModel` |
 | `Tv/TvScheduleDialog` (palinsesto leggibile da lontano, scorrimento col D-pad) | `SchedulePopup` | `ScheduleViewModel` |
-| `Tv/TvRequestPage` (richiesta brani, come sul telefono) | `SongRequestPage` | `SongRequestViewModel` |
-| `Tv/TvPodcastListPage` | `PodcastListPage` | `PodcastListViewModel` |
-| `Tv/TvPodcastEpisodesPage` | `PodcastEpisodesPage` | `PodcastEpisodesViewModel` |
+| `Tv/TvRequestView` (richiesta brani, come sul telefono) | `SongRequestPage` | `SongRequestViewModel` |
+| `Tv/TvPodcastListView` | `PodcastListPage` | `PodcastListViewModel` |
+| `Tv/TvPodcastEpisodesView` | `PodcastEpisodesPage` | `PodcastEpisodesViewModel` |
 | Impostazioni e menu laterale | `SettingsPage`, flyout di `AppShell` | `n/a` su TV (decisione 2026-10-22) |
 | Aggiungi, modifica, elimina stazione | `AddStationPage`, `EditStationPage` | `Tv/TvAddStationPage`, `Tv/TvEditStationPage`, aperte dalla sezione Stazioni; ViewModel `AddStationViewModel`, `EditStationViewModel` |
 
@@ -199,26 +216,30 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 - Rinviato a T4: dialogo dei termini d'uso con focus iniziale sul pulsante (non è nella pagina TV)
 - Da provare: regressione del telefono (la `Shell` non deve cambiare); build `dotnet build RadioE45.slnx` verde
 
-### T3 — Navigazione a pulsanti, lettore e selezione stazioni · Mac + emulatore
-- [ ] Fila di pulsanti focusabili (On Air, Stations sempre; Request e Podcast solo con la capability, aggiunti in T5) con focus e sezione corrente ben visibili
-- [ ] `TvNowPlayingPage`: logo/copertina, titolo e artista, stato, ascoltatori
-- [ ] `TvStationsPage`: lista, focus iniziale sulla stazione corrente, selezione con OK
-- [ ] Binding a `OnAirViewModel` e `RadioListViewModel`; `features.yaml` e `pages.yaml` aggiornati
-- [ ] Uscita: riproduzione di una stazione dall'emulatore, mappa del focus completa, ParityCheck 0 o 1
+### T3 — Navigazione a pulsanti, lettore e selezione stazioni · Mac + emulatore — ✅ completata 2026-10-22
+- [x] `TvRootPage` come contenitore: fila di pulsanti focusabili (On Air, Channels; Request e Podcast in T5), sezione corrente sottolineata, area sezione, dialogo proprio. Registra un `ITvHost` (`Views/Tv/ITvHost.cs`)
+- [x] `MauiNavigationService` e `MauiDialogService` usano l'`ITvHost` quando non c'è la Shell (`GoToOnAirAsync`, `ConfirmAsync`, `AlertAsync`): i ViewModel del telefono restano invariati
+- [x] `TvNowPlayingView`: copertina, badge LIVE, stazione, ascoltatori, HLS, titolo, artista, avanzamento, errore, play/pausa con buffering
+- [x] `TvStationsView`: elenco (BindableLayout in ScrollView), puntino sulla stazione in ascolto, focus iniziale sulla stazione corrente, OK seleziona e torna a On Air
+- [x] `TvDialogOverlay` (Controls): dialogo con focus iniziale sul pulsante principale, testo scorrevole, focus intrappolato, Indietro annulla
+- [x] **Primo avvio** (installazione pulita): Termini d'uso → domanda sulle stazioni di prova → riproduzione. Termini d'uso anticipati da T4
+- [x] Indietro: dialogo → chiude; sezione diversa da On Air → torna a On Air; On Air → app in background (`MainActivity.OnBackPressed`)
+- [x] Parità aggiornata (13 feature `tv` portate a `done` o `limited`); `ParityCheck` a 1, solo debito dichiarato
+- [x] Uscita: la mappa del focus raggiunge On Air, Channels e le due stazioni; selezione e riproduzione verificate sull'emulatore
 
 ### T4 — Controlli, Schedule e gestione stazioni · Mac + emulatore
 - [ ] Play/pausa e avanti/indietro stazione (il volume resta del televisore); tasti media del telecomando verso la sessione Media3
 - [ ] `TvScheduleDialog`: palinsesto con scorrimento col D-pad
 - [ ] Gestione stazioni dalla sezione Stations: `TvAddStationPage`, `TvEditStationPage`, eliminazione con conferma; tastiera su schermo
-- [ ] Dialogo dei termini d'uso solo al primo utilizzo, con focus iniziale sul pulsante
+- [x] Dialogo dei termini d'uso solo al primo utilizzo, con focus iniziale sul pulsante (anticipato e fatto in T3)
 - [ ] Stati di errore e offline leggibili da lontano
 - [ ] Uscita: tutti i controlli raggiungibili e comandabili col solo D-pad e tasti media
 
 ### T5 — Richieste e podcast · Mac + emulatore
-- [ ] `TvRequestPage` con `SongRequestViewModel`; pulsante **Request** visibile solo con la capability
+- [ ] `TvRequestView` con `SongRequestViewModel`; pulsante **Request** visibile solo con la capability
 - [ ] Pulsante **Podcast** visibile solo con la capability
 - [ ] Verifica del servizio che riproduce gli episodi su Android e convivenza con `RadioPlaybackService` (prima di costruire la UI)
-- [ ] `TvPodcastListPage`, `TvPodcastEpisodesPage`, mini player con seek da D-pad
+- [ ] `TvPodcastListView`, `TvPodcastEpisodesView`, mini player con seek da D-pad
 - [ ] Uscita: ascolto di un episodio dall'emulatore, ripresa dalla posizione salvata, parità aggiornata
 
 ### T6 — Rifinitura 10 piedi · Mac + emulatore
@@ -294,6 +315,7 @@ Nessuna decisione aperta. Lo spike T2 può ancora cambiare i dettagli della fila
 | 2026-10-22 | T1 | Piattaforma `tv` in features/pages, `ParityCheck --include-tv`, 12 test, skill `tv-parity-port`, hook. Inventario: 44 `todo`, il resto `n/a` con motivo o `done` (launcher) |
 | 2026-10-22 | T1 (revisione) | La TV non cerca la parità ma la copertura dichiarata: gate `--strict-tv` indipendente da `--strict`; triage di 3 `todo` in `n/a` (VU meter, link personalizzati, ritardo per stazione): restano 41 `todo` |
 | 2026-10-22 | T2 | Spike: `DeviceIdiom.TV` → `TvRootPage`, fila di pulsanti con focus, `tools/tv-focus-probe.sh`, `TvKeepFocusBehavior`, `docs/parity/MAUI-TO-TV.md`; tasti media e Indietro verificati |
+| 2026-10-22 | T3 | `TvRootPage` contenitore + `ITvHost`, `TvNowPlayingView`, `TvStationsView`, `TvDialogOverlay`, `TvFocus`; primo avvio (termini → stazioni di prova → riproduzione), selezione e Indietro verificati |
 
 ---
 

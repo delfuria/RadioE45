@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="RadioE45.Controls.TvDialogOverlay"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/Styles/TvStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <!-- Dialogo proprio della TV: l'AlertDialog di Android non ha un pulsante con il focus iniziale
+         (misurato, ROADMAP §2.2) e un telecomando non può usarlo. Qui il pulsante principale lo ha. -->
+    <Grid BackgroundColor="#CC000000">
+        <Border
+            WidthRequest="760"
+            VerticalOptions="Center"
+            HorizontalOptions="Center"
+            Padding="36,28"
+            StrokeShape="RoundRectangle 20"
+            Stroke="{DynamicResource CardElevated}"
+            StrokeThickness="1"
+            BackgroundColor="{DynamicResource CardBackground}">
+            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="24">
+                <Label
+                    x:Name="TitleLabel"
+                    Grid.Row="0"
+                    FontSize="30"
+                    FontAttributes="Bold"
+                    TextColor="{DynamicResource PrimaryText}" />
+                <ScrollView Grid.Row="1" MaximumHeightRequest="230">
+                    <Label
+                        x:Name="MessageLabel"
+                        FontSize="20"
+                        TextColor="{DynamicResource SecondaryText}" />
+                </ScrollView>
+                <HorizontalStackLayout Grid.Row="2" Spacing="20" HorizontalOptions="End" Padding="14,10">
+                    <Button x:Name="CancelButton" Style="{StaticResource TvButton}" Clicked="OnCancelClicked" />
+                    <Button x:Name="AcceptButton" Style="{StaticResource TvButton}" Clicked="OnAcceptClicked" />
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentView>

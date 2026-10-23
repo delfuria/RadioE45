@@ -209,7 +209,10 @@ public static class MauiProgram
         builder.Services.AddTransient<PodcastListPage>();
         builder.Services.AddTransient<PodcastEpisodesPage>();
         builder.Services.AddTransient<SongRequestPage>();
+        builder.Services.AddSingleton<RadioE45.Views.Tv.TvHostAccessor>();
         builder.Services.AddTransient<RadioE45.Views.Tv.TvRootPage>();
+        builder.Services.AddTransient<RadioE45.Views.Tv.TvNowPlayingView>();
+        builder.Services.AddTransient<RadioE45.Views.Tv.TvStationsView>();
 
         DatabaseLoggerProvider dbLoggerProvider = new();
         builder.Services.AddSingleton(dbLoggerProvider);

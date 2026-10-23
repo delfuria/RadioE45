@@ -10,6 +10,14 @@ La TV è la stessa app MAUI Android. Le viste TV sono `ContentPage` in `RadioE45
 - **Niente `Shell` su TV:** su TV non c'è `Shell.Current`. `MainActivity.OnBackPressed` lo gestisce già (con `Shell.Current` nullo manda l'app in background).
 - **Audio:** il player sta nel servizio Media3 e la pagina TV non ha `MediaElement`. Come `OnAirPage`, la pagina chiama `IMediaElementHost.Initialize` per collegare il `MediaController`, qui con `null` e sotto `#if ANDROID` (su Android l'argomento è ignorato).
 
+## 1b. Contenitore, sezioni e servizi (T3)
+
+- **`TvRootPage`** è il contenitore: fila di pulsanti in alto, `ContentView` della sezione sotto, `TvDialogOverlay` sopra a tutto. Le sezioni sono `ContentView` (`TvNowPlayingView`, `TvStationsView`) con il ViewModel iniettato dalla DI e implementano `ITvSection` (`OnShownAsync` per caricare i dati, `FocusDefault` per il focus iniziale).
+- **`ITvHost`** (`Views/Tv/ITvHost.cs`) è ciò che `TvRootPage` offre ai servizi: `ShowSection`, `ConfirmAsync`, `AlertAsync`, `HandleBack`. `TvHostAccessor` (singleton) lo tiene; è nullo su ogni altro dispositivo.
+- **Servizi di piattaforma:** `MauiNavigationService` e `MauiDialogService` usano l'host quando c'è (su TV `Shell.Current` è nullo e prima `GoToOnAirAsync` non faceva nulla e `ConfirmAsync` rispondeva sempre «no»). I ViewModel non cambiano: `RadioListViewModel` chiede la conferma delle stazioni di prova e torna a On Air attraverso gli stessi servizi.
+- **Una sezione nuova** = una `ContentView` in `Views/Tv/`, un valore in `TvSection`, un pulsante nella fila, un percorso `tv` in `parity/pages.yaml`. Gli XAML in `Views/Tv/` devono essere tutti mappati; i componenti senza pagina gemella (come `TvDialogOverlay`) stanno in `Controls/`.
+- **Indietro:** `MainActivity.OnBackPressed` chiede prima a `ITvHost.HandleBack()`: chiude il dialogo, o torna a On Air; solo da On Air l'app va in background.
+
 ## 2. Layout
 
 | Cosa | Valore |
@@ -26,7 +34,7 @@ Colori e temi: stesse risorse dinamiche del telefono (`PageBackground`, `CardEle
 
 | Telefono | TV |
 |---|---|
-| Tab della `Shell` (On Air, Richieste, Podcast) | Fila di `Button` focusabili in alto: On Air e Stations sempre, Request e Podcast solo con la capability (`NowPlaying.RequestsEnabled`, `HasPodcasts`) |
+| Tab della `Shell` (On Air, Richieste, Podcast) | Fila di `Button` focusabili in alto: On Air e Stations sempre, Request e Podcast solo con la capability (`NowPlaying.RequestsEnabled`, `HasPodcasts`; in T3 ci sono On Air e Channels) |
 | Menu laterale (flyout) e Impostazioni | Non esistono su TV (`n/a`) |
 | Tocco su un controllo | OK del telecomando (`DPAD_CENTER`) = click del `Button` |
 | Swipe, trascinamento, pull to refresh | Non esistono (`n/a` o azione su un pulsante focusabile) |
@@ -51,8 +59,23 @@ Colori e temi: stesse risorse dinamiche del telefono (`PageBackground`, `CardEle
   </Button>
   ```
 
+- **Touch mode:** subito dopo un avvio a freddo la finestra è in touch mode e `Focus()` viene rifiutato (il pulsante non è `focusableInTouchMode`; `Focus()` risponde comunque `True`). Usare sempre `TvFocus.Request(controllo)` (`RadioE45/Controls/TvFocus.cs`), che chiama `RequestFocusFromTouch` su Android. Misurato.
+- **Dopo aver mostrato una vista nascosta** (il dialogo) il focus va richiesto più volte a breve distanza finché si aggancia: `TvDialogOverlay` riprova fino a 6 volte.
+- **Controlli che si ingrandiscono:** lo stato `Focused` scala il controllo di 1,08; i contenitori (`ScrollView`, `Border`) lo tagliano. Lasciare padding intorno (16 dp per le liste, 14 dp per i pulsanti del dialogo). Misurato.
+- **Intrappolare il focus in un dialogo:** disabilitare il resto della pagina (`Chrome.IsEnabled = false`) finché il dialogo è aperto, e ripristinare il focus sulla sezione alla chiusura.
 - **Etichette per la mappa del focus:** `tools/tv-focus-probe.sh` legge il testo del controllo. Un pulsante con solo un'icona (glifo) ha etichetta vuota: dargli `SemanticProperties.Description`.
-- **Verifica:** `tools/tv-focus-probe.sh tour --expect "On Air,Channels,Request"`. Ogni controllo azionabile della pagina deve comparire tra i raggiunti.
+- **Verifica:** `tools/tv-focus-probe.sh tour --expect "On Air,Channels,Radio E45"`. Ogni controllo azionabile della pagina deve comparire tra i raggiunti. Il tour esplora il grafo del focus (non per righe: `SINISTRA` da una lista salta alla fila di pulsanti in alto) e dura circa un minuto per pagina.
+- **Margini di sicurezza anche per i dialoghi:** la scheda del dialogo deve stare dentro 27 dp sopra e sotto; l'area scorrevole del messaggio è limitata a 230 dp.
+
+## 4b. Liste e binding (T3)
+
+- **Liste:** `ScrollView` con `VerticalStackLayout` e `BindableLayout.ItemsSource`; ogni riga è un `Button` con stile `TvButton` (focusabile e con stato `Focused`). Android fa scorrere lo `ScrollView` fino al controllo che prende il focus. Va bene per elenchi brevi (le stazioni); una `CollectionView` non è stata provata col D-pad.
+- **Elemento attivo:** non usare `MultiBinding` con i convertitori del Toolkit nel testo di un pulsante: lancia `targetType needs to be assignable from System.String` alla creazione dei figli e l'eccezione viene inghiottita dal `SafeExecuteAsync` del ViewModel, lasciando la lista vuota senza errori visibili (misurato). Usare un `DataTrigger` che imposta `ImageSource` (`FontImageSource`, glifo `FaSolid`).
+- **Sintomo da riconoscere:** lista vuota senza il messaggio di lista vuota → leggere `ErrorMessage` del ViewModel.
+
+## 4c. Primo avvio
+
+Su installazione pulita l'ordine è lo stesso di `AppShell`: `ActivateAsync` → Termini d'uso (una volta) → se non ci sono stazioni, sezione Channels, che chiede se aggiungere quelle di prova → riproduzione. Per provarlo sull'emulatore: `adb shell pm clear com.radioe45.app`, poi avviare l'app.
 
 ## 5. Tasti del telecomando
 
