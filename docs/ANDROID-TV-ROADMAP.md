@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code. Modellato su `docs/LINUX-UNO-ROADMAP.md` (stesso sistema di parità, stesse regole di processo).
 > Analisi di fattibilità e rischi: [`ANDROID-TV.md`](ANDROID-TV.md). Ultimo aggiornamento: 2026-10-23 (app v0.48).
-> Stato: **T0–T5 completate; prossima sessione: T6** (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
+> Stato: **T0–T6 completate; prossima sessione: T7** (TV Sony reale, serve il dispositivo) (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
 
 ---
 
@@ -146,6 +146,16 @@ Il nome della classe activity (`crc64...`) è generato da .NET: se cambia, legge
 | Stazione di avvio | Senza impostazioni, `IAppEnvironment.AlwaysStartsWithFavorite` (`DeviceIdiom.TV`) fa partire sempre la preferita; senza preferiti la prima della lista. Provato: preferito = Radio Cartoni → dopo il riavvio parte quella; tolto il preferito → parte Radio E45 (la prima) |
 | Righe larghe | Con scala 1,08 una riga da ~1000 dp esce di 40 dp per lato e il bordo scompare: `TvRowButton` ha scala 1 e bordo di 6 dp (canali, palinsesto, risultati, richieste, podcast, episodi) |
 
+### Misure di T6 (2026-10-23, rifinitura)
+
+| Verifica | Esito |
+|---|---|
+| Mappa del focus | `tv-focus-probe.sh tour` su On Air (8 controlli) e su Channels (stazioni, modifica, elimina, Aggiungi, Aggiorna): tutte le etichette raggiungibili, nessuna perdita di focus (la voce `none` del primo giro non si è ripetuta con `TRACE=1`) |
+| Lingue | Italiano e polacco forzati con un file `lang.txt` letto da una build di prova (poi tolta): la fila di sezioni, il lettore, Richieste e Canali entrano nello schermo. L'etichetta «Offline» era tagliata («Off…»): la riga della stazione (larghezza minima 560 dp) più modifica, elimina ed etichetta superava lo spazio; ora 440 dp |
+| Lista lunga | 370 righe di richieste (`BindableLayout` in uno `ScrollView`): scorrimento col D-pad senza frame lenti (0 su 297, 99° percentile 14 ms); memoria da 265 a 334 MB di PSS all'apertura (circa 190 KB per riga); l'apertura richiede alcuni secondi. Le richieste sono a pagine da 10, quindi in pratica non succede; l'elenco episodi non è paginato, ma un podcast ha di norma poche decine di episodi |
+| Sessione multimediale | `dumpsys media_session`: sessione Media3 attiva con titolo e artista e azioni di play, pausa e avanti; la scheda della home TV si guarda sul Sony (T7) |
+| Server locale | Radio Casa (`192.168.1.71`) non era raggiungibile dall'emulatore durante la sessione (`EHOSTUNREACH`, il Mac lo raggiungeva): le prove sono state fatte con AzuraTest e Radio E45 |
+
 ---
 
 ## 4. Architettura di destinazione
@@ -271,10 +281,10 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 
 ### T6 — Rifinitura 10 piedi · Mac + emulatore
 - [x] Brano successivo (`onair.next-track`): copertina piccola (36 dp, al posto di un'etichetta) e una riga «titolo – artista» sotto i tempi nella colonna delle informazioni, solo se il server lo pubblica; verificato con titolo su due righe e testo lungo (troncato con i puntini). Cronologia dei brani (`onair.song-history`): `n/a`, non si visualizza (decisione 2026-10-23)
-- [ ] Stringhe in it/en/pl, dimensioni testo, margini di sicurezza, immagini, tema
-- [ ] Prestazioni su lista lunga e immagini, uso memoria
-- [ ] Triage finale dei `tv: todo` rimasti: ognuno diventa `done`, `limited` o `n/a` con `tvNotes` (la parità non è l'obiettivo, §5)
-- [ ] Uscita: revisione degli screenshot, nessun elemento non focusabile, `ParityCheck --strict-tv` senza errori
+- [x] Stringhe in it/en/pl, dimensioni testo, margini di sicurezza, immagini, tema (schermate in italiano e polacco riviste; corretta l'etichetta «Offline» tagliata)
+- [x] Prestazioni su lista lunga e immagini, uso memoria (misure in §3)
+- [x] Triage finale dei `tv: todo` rimasti: ognuno diventa `done`, `limited` o `n/a` con `tvNotes` (la parità non è l'obiettivo, §5)
+- [x] Uscita: revisione degli screenshot, nessun elemento non focusabile, `ParityCheck --strict-tv` senza errori
 
 ### T7 — TV Sony Google TV reale · Mac + TV
 - [ ] Abilitare il debug di rete sul TV, `adb connect`, installazione
@@ -347,7 +357,7 @@ Nessuna decisione aperta. Lo spike T2 può ancora cambiare i dettagli della fila
 | 2026-10-22 | T3 | `TvRootPage` contenitore + `ITvHost`, `TvNowPlayingView`, `TvStationsView`, `TvDialogOverlay`, `TvFocus`; primo avvio (termini → stazioni di prova → riproduzione), selezione e Indietro verificati |
 | 2026-10-23 | T4 | Cambio stazione e preferito sul lettore, `TvScheduleView`, gestione stazioni (`TvAddStationView`, `TvEditStationView`, azioni nella lista), `ITvHost.GoBack/ShowEditStation`; ParityCheck legge anche `<Binding Path=…/>`
 | 2026-10-23 | T5 | `TvRequestView`, `TvPodcastListView`, `TvPodcastEpisodesView`; pulsanti Request/Podcast con la capability; `PodcastEpisodesViewModel` con `SeekBy` e `Cycle*`; `ITvSection.OnHiddenAsync`; `TvRowButton`; servizio podcast verificato; la TV non si annuncia nel changelog prima del rilascio (`ANDROID-TV-CHANGELOG-PENDING.md`) |
-| 2026-10-23 | T6 (in corso) | Brano successivo su TV (copertina e riga sotto i tempi), cronologia `n/a`; resta il resto di T6 |
+| 2026-10-23 | T6 | Brano successivo su TV (copertina e riga sotto i tempi), cronologia `n/a`; schermate it/pl riviste, «Offline» non più tagliato; prestazioni misurate; `shell.system-media-controls` e `tv.focus` chiusi; `--strict-tv` senza errori |
 
 ---
 

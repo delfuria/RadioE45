@@ -70,8 +70,8 @@
   title: Metadati e tasti multimediali di sistema (lock screen iOS, Centro di controllo macOS, SMTC Windows)
   since: "0.44"
   page: Shell
-  status: { maui: done, desktop: done, web: done, tv: todo }
-  tvNotes: "Tasti media verificati (tv.media-keys); resta da vedere la scheda In riproduzione della home TV"
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Verificato (emulatore, 2026-10-23): la sessione Media3 è attiva con titolo e artista e le azioni di play, pausa e avanti; i tasti media del telecomando funzionano (tv.media-keys). La scheda «In riproduzione» della home del Sony si guarda in T7"
   notes: "Desktop: MPRIS solo su Linux (macOS e Windows senza bus di sessione: nessun controllo), Services/Desktop/MprisNowPlayingService; web: Media Session API, Services/Browser/BrowserMediaSession. Comandi play/pausa come MAUI iOS (SystemMediaCommands); avanti/indietro = stazione successiva/precedente come Android Auto (MAUI iOS/macOS li ha disabilitati); niente seek"
 
 - id: shell.tab-icons
@@ -603,9 +603,9 @@
   title: Ogni controllo azionabile è raggiungibile col D-pad, con focus iniziale sensato e stato di focus ben visibile
   since: "0.49"
   page: Shell
-  status: { maui: n/a, desktop: n/a, web: n/a, tv: todo }
+  status: { maui: n/a, desktop: n/a, web: n/a, tv: done }
   notes: "Solo Android TV"
-  tvNotes: "Criterio: mappa del focus (tools/tv-focus-probe.sh, ROADMAP §2.3). Spike T2: fila di pulsanti e play raggiungibili, stato Focused visibile, focus mantenuto dopo OK (TvKeepFocusBehavior); restano le pagine di T3-T5"
+  tvNotes: "Verificato (emulatore, T6): mappa del focus (tools/tv-focus-probe.sh tour) su On Air e Channels senza perdite e con tutte le etichette raggiungibili; Request, Podcast, episodi, Schedule, Aggiungi e Modifica provati col D-pad in T4-T5. Stato Focused visibile ovunque (TvButton, TvRowButton, TvImageButton, TvEntry)"
 
 - id: tv.media-keys
   title: Tasti media del telecomando (play/pausa, avanti, indietro) comandano la riproduzione

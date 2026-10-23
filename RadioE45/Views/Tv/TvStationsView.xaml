@@ -71,7 +71,7 @@
                         <HorizontalStackLayout Spacing="16">
                             <Button
                                 Style="{StaticResource TvRowButton}"
-                                MinimumWidthRequest="560"
+                                MinimumWidthRequest="440"
                                 FontSize="26"
                                 Text="{Binding Name}"
                                 ContentLayout="Right,16"

@@ -84,6 +84,9 @@ Colori e temi: stesse risorse dinamiche del telefono (`PageBackground`, `CardEle
 - **`MediaElement` nella vista TV:** il servizio podcast la riceve con `IMediaElementHost.Initialize` da `Loaded`, ogni volta che la vista si riattacca; la radio non la usa (Media3).
 - **`CommandParameter` numerico:** `<Button.CommandParameter><x:Double>30</x:Double></Button.CommandParameter>`; una stringa non converte in `double`.
 
+- **Larghezza delle righe con elementi accanto:** somma i bordi (pulsante + modifica + elimina + etichetta) e confrontala con lo spazio dello `ScrollView` (960 dp meno margini di sicurezza e padding): l'etichetta «Offline» era tagliata. Provare sempre in italiano e polacco, che hanno parole più lunghe.
+- **Liste lunghe:** `BindableLayout` crea tutte le righe (370 righe ≈ +70 MB e alcuni secondi all'apertura, scorrimento fluido); per elenchi che possono superare qualche centinaio di righe serve la paginazione, come nelle richieste.
+
 ## 4c. Primo avvio
 
 Su installazione pulita l'ordine è lo stesso di `AppShell`: `ActivateAsync` → Termini d'uso (una volta) → se non ci sono stazioni, sezione Channels, che chiede se aggiungere quelle di prova → riproduzione. Per provarlo sull'emulatore: `adb shell pm clear com.radioe45.app`, poi avviare l'app.
