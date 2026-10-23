@@ -19,10 +19,11 @@ Want to try RadioE45 before the public release? Join the preliminary tests:
 
 ## Platforms
 - iOS 15+
-- Android 8.0+ (API 26)
+- Android 8.0+ (API 26), including Android TV and Google TV
 - macOS (Mac Catalyst) 15+
 - Windows 10 (build 17763+)
 - Linux (preview): Debian/Ubuntu-based distributions, `.deb` package for x64 and arm64
+- Web: modern desktop and mobile browsers, nothing to install (installable as an app)
 
 ## Features
 - Background audio streaming (iOS: native AVPlayer for HLS and an in-app AudioQueue player for MP3/AAC streams; Android: Media3; Mac Catalyst and Windows: `CommunityToolkit.Maui.MediaElement`)
@@ -40,6 +41,8 @@ Want to try RadioE45 before the public release? Join the preliminary tests:
 - Update check: once a day, on the first launch, the app tells you when a newer version is available (App Store on iOS, Microsoft Store or GitHub Releases on Windows, GitHub Releases for the Linux `.deb`, the site itself on the web), and Settings has a manual check
 - Apple CarPlay support (iOS)
 - Android Auto support
+- Web app in the browser, built with Uno Platform and installable as an app
+- Android TV and Google TV support, with remote-control (D-pad) screens
 
 ## Android Auto
 
