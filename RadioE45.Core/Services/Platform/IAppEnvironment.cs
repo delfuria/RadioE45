@@ -36,4 +36,10 @@ public interface IAppEnvironment
     /// shown, but the user presses Play. Read at every use: it can turn true later.
     /// </summary>
     bool CanAutoplay => true;
+
+    /// <summary>
+    /// True where the user cannot change the "start with favorite station" setting (Android TV has no
+    /// settings screen): a favorite station then always wins at launch, otherwise it would have no effect.
+    /// </summary>
+    bool AlwaysStartsWithFavorite => false;
 }

@@ -260,7 +260,7 @@ public partial class OnAirViewModel : BaseViewModel
     private async Task SelectDefaultStationAsync()
     {
         AppSettings settings = await _settingsRepo.GetAsync();
-        AzuraStation? station = settings.StartWithFavorite ? _catalog.GetFavorite() : null;
+        AzuraStation? station = settings.StartWithFavorite || _environment.AlwaysStartsWithFavorite ? _catalog.GetFavorite() : null;
         station ??= _catalog.GetFirst();
 
         if (station is not null)

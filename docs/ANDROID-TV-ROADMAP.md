@@ -142,6 +142,8 @@ Il nome della classe activity (`crc64...`) è generato da .NET: se cambia, legge
 | Focus del mini player | Quando compare, Android toglie il focus alla riga che ha avviato l'episodio e lo manda al primo controllo della pagina («On Air»). La vista lo porta sul tasto play/pausa alla comparsa del mini player e sulla lista quando sparisce (non quando si esce dalla sezione) |
 | Richieste | Elenco da 370 brani in 37 pagine; la paginazione sta accanto alla ricerca (raggiungibile senza scorrere), il filtro segue il testo, la tastiera su schermo si apre con OK. L'invio della richiesta non è stato provato: il server è la radio reale |
 | Capability | Il pulsante Request compare solo se `NowPlaying.RequestsEnabled`, Podcast solo se `HasPodcasts`. Subito dopo un cambio stazione resta per un attimo quello della stazione precedente (il `NowPlaying` si aggiorna col sondaggio); `TvRootPage` esce da una sezione che non vale più, come i tab del telefono |
+| Controlli del lettore | Con quattro pulsanti (precedente, play, successivo, Schedule) a destra della copertina l'ultimo usciva dal bordo: la riga dei controlli sta sotto copertina e informazioni, centrata (copertina 300 dp, il testo sotto i pulsanti finisce a ~510 dp su 540). Schedule: il focus parte da Close |
+| Stazione di avvio | Senza impostazioni, `IAppEnvironment.AlwaysStartsWithFavorite` (`DeviceIdiom.TV`) fa partire sempre la preferita; senza preferiti la prima della lista. Provato: preferito = Radio Cartoni → dopo il riavvio parte quella; tolto il preferito → parte Radio E45 (la prima) |
 | Righe larghe | Con scala 1,08 una riga da ~1000 dp esce di 40 dp per lato e il bordo scompare: `TvRowButton` ha scala 1 e bordo di 6 dp (canali, palinsesto, risultati, richieste, podcast, episodi) |
 
 ---

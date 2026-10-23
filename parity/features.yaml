@@ -193,7 +193,7 @@
   page: OnAir
   viewmodel: OnAirViewModel
   status: { maui: done, desktop: done, web: done, tv: limited }
-  tvNotes: "Pulsante Schedule accanto ai controlli (solo se la stazione ha un palinsesto); il prossimo brano e la riga compatta arrivano in T6"
+  tvNotes: "Pulsante Schedule nella riga dei controlli, centrata sotto copertina e informazioni (solo se la stazione ha un palinsesto); il prossimo brano e la riga compatta arrivano in T6"
 
 - id: onair.playback-controls
   title: Play/pausa (pausa live = chiusura stream, ripresa in diretta) e indicatore di buffering
@@ -388,7 +388,7 @@
   page: Settings
   viewmodel: SettingsViewModel
   status: { maui: done, desktop: done, web: done, tv: n/a }
-  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
+  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22): se c'è una stazione preferita parte sempre quella (IAppEnvironment.AlwaysStartsWithFavorite, verificato sull'emulatore), altrimenti la prima della lista"
   notes: "Web: la stazione viene selezionata ma non avviata (nessun autoplay, §5)"
 
 - id: settings.playback.latency-offset
@@ -498,7 +498,7 @@
   page: Schedule
   viewmodel: ScheduleViewModel
   status: { maui: done, desktop: done, web: done, tv: done }
-  tvNotes: "Vista a schermo intero (non pannello dal basso): una riga focusabile per fascia, il D-pad scorre l'elenco; Indietro o Chiudi tornano al lettore"
+  tvNotes: "Vista a schermo intero (non pannello dal basso): una riga focusabile per fascia, il focus parte da Chiudi e il D-pad scorre l'elenco; Indietro o Chiudi tornano al lettore"
   notes: "Uno: ScheduleDialog in un pannello della shell che sale dal basso (S8.4); chiusura con ✕, clic fuori, Esc o trascinamento verso il basso della maniglia"
 
 - id: schedule.live-badge

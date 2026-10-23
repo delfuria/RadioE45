@@ -58,6 +58,45 @@ public class OnAirViewModelActivateTests
         _audio.Received().SetVolume(vm.Volume);
     }
 
+    // Android TV has no settings screen: a favorite station always starts, whatever the (unreachable) setting says.
+    [Fact]
+    public async Task Where_the_favorite_always_starts_it_wins_over_the_first_station()
+    {
+        AzuraStation favorite = new() { Id = 2, StationId = 2, Name = "Favorite", IsFavorite = true };
+        OnAirViewModel vm = CreateViewModel(canAutoplay: true);
+        _environment.AlwaysStartsWithFavorite.Returns(true);
+        _catalog.GetFavorite().Returns(favorite);
+
+        await vm.ActivateAsync();
+
+        Assert.Same(favorite, vm.CurrentStation);
+        await _audio.Received(1).PlayAsync(favorite);
+    }
+
+    [Fact]
+    public async Task Where_the_favorite_always_starts_the_first_station_is_used_when_there_is_none()
+    {
+        OnAirViewModel vm = CreateViewModel(canAutoplay: true);
+        _environment.AlwaysStartsWithFavorite.Returns(true);
+        _catalog.GetFavorite().Returns((AzuraStation?)null);
+
+        await vm.ActivateAsync();
+
+        Assert.Same(_station, vm.CurrentStation);
+    }
+
+    [Fact]
+    public async Task Elsewhere_the_favorite_is_ignored_unless_the_setting_asks_for_it()
+    {
+        AzuraStation favorite = new() { Id = 2, StationId = 2, Name = "Favorite", IsFavorite = true };
+        OnAirViewModel vm = CreateViewModel(canAutoplay: true);
+        _catalog.GetFavorite().Returns(favorite);
+
+        await vm.ActivateAsync();
+
+        Assert.Same(_station, vm.CurrentStation);
+    }
+
     [Fact]
     public async Task Without_autoplay_the_default_station_is_selected_but_not_played()
     {

@@ -19,14 +19,15 @@
         </ResourceDictionary>
     </ContentView.Resources>
 
-    <!-- Lettore per la TV: copertina a sinistra, informazioni e controllo a destra. Stessa logica del telefono
+    <!-- Lettore per la TV: copertina a sinistra, informazioni a destra, controlli centrati sotto. Stessa logica del telefono
          (OnAirViewModel); qui solo layout e binding. Prossimo brano e ultimi brani: T6. -->
-    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="48" Padding="0,24,0,0">
+    <Grid ColumnDefinitions="Auto,*" RowDefinitions="*,Auto" ColumnSpacing="48" Padding="0,16,0,0">
 
         <Border
+            Grid.Row="0"
             Grid.Column="0"
-            WidthRequest="340"
-            HeightRequest="340"
+            WidthRequest="300"
+            HeightRequest="300"
             VerticalOptions="Start"
             StrokeShape="RoundRectangle 20"
             Stroke="{DynamicResource CardElevated}"
@@ -60,7 +61,7 @@
             </Grid>
         </Border>
 
-        <VerticalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Start">
+        <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="10" VerticalOptions="Start">
 
             <HorizontalStackLayout Spacing="16" VerticalOptions="Center">
                 <Border
@@ -130,73 +131,75 @@
                 FontSize="22"
                 TextColor="{StaticResource LiveRed}"
                 IsVisible="{Binding ErrorMessage, Converter={toolkit:IsStringNotNullOrEmptyConverter}}" />
-
-            <HorizontalStackLayout Spacing="16" Margin="0,18,0,0">
-                <VerticalStackLayout Spacing="4" WidthRequest="130" VerticalOptions="Start" IsVisible="{Binding ShowPreviousStation}">
-                    <Button
-                        Style="{StaticResource TvButton}"
-                        FontFamily="FaSolid"
-                        FontSize="30"
-                        Text="&#xF048;"
-                        Command="{Binding PreviousStationCommand}"
-                        SemanticProperties.Description="{Binding PreviousStationName}">
-                        <Button.Behaviors>
-                            <controls:TvKeepFocusBehavior />
-                        </Button.Behaviors>
-                    </Button>
-                    <Label
-                        Text="{Binding PreviousStationName}"
-                        FontSize="16"
-                        MaxLines="1"
-                        LineBreakMode="TailTruncation"
-                        HorizontalTextAlignment="Center"
-                        TextColor="{DynamicResource MutedText}" />
-                </VerticalStackLayout>
-                <Button
-                    x:Name="PlayPause"
-                    Style="{StaticResource TvButton}"
-                    FontFamily="FaSolid"
-                    FontSize="36"
-                    MinimumWidthRequest="160"
-                    VerticalOptions="Start"
-                    Text="{Binding IsPlaying, Converter={StaticResource PlayPauseGlyph}}"
-                    Command="{Binding PlayPauseCommand}">
-                    <Button.Behaviors>
-                        <controls:TvKeepFocusBehavior />
-                    </Button.Behaviors>
-                </Button>
-                <VerticalStackLayout Spacing="4" WidthRequest="130" VerticalOptions="Start" IsVisible="{Binding ShowNextStation}">
-                    <Button
-                        Style="{StaticResource TvButton}"
-                        FontFamily="FaSolid"
-                        FontSize="30"
-                        Text="&#xF051;"
-                        Command="{Binding NextStationCommand}"
-                        SemanticProperties.Description="{Binding NextStationName}">
-                        <Button.Behaviors>
-                            <controls:TvKeepFocusBehavior />
-                        </Button.Behaviors>
-                    </Button>
-                    <Label
-                        Text="{Binding NextStationName}"
-                        FontSize="16"
-                        MaxLines="1"
-                        LineBreakMode="TailTruncation"
-                        HorizontalTextAlignment="Center"
-                        TextColor="{DynamicResource MutedText}" />
-                </VerticalStackLayout>
-                <Button
-                    Style="{StaticResource TvButton}"
-                    VerticalOptions="Start"
-                    Text="{loc:Translate Tab_Schedule}"
-                    Command="{Binding ShowScheduleCommand}"
-                    IsVisible="{Binding HasSchedule}" />
-                <ActivityIndicator
-                    IsRunning="{Binding IsBuffering}"
-                    IsVisible="{Binding IsBuffering}"
-                    Color="{DynamicResource Accent}"
-                    VerticalOptions="Center" />
-            </HorizontalStackLayout>
         </VerticalStackLayout>
+
+        <!-- Controlli sotto copertina e informazioni, centrati: con quattro pulsanti (precedente, play, successivo,
+             Schedule) a destra della copertina l'ultimo usciva dal bordo -->
+    <HorizontalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="16" Margin="0,20,0,0" HorizontalOptions="Center">
+        <VerticalStackLayout Spacing="4" WidthRequest="130" VerticalOptions="Start" IsVisible="{Binding ShowPreviousStation}">
+            <Button
+                Style="{StaticResource TvButton}"
+                FontFamily="FaSolid"
+                FontSize="30"
+                Text="&#xF048;"
+                Command="{Binding PreviousStationCommand}"
+                SemanticProperties.Description="{Binding PreviousStationName}">
+                <Button.Behaviors>
+                    <controls:TvKeepFocusBehavior />
+                </Button.Behaviors>
+            </Button>
+            <Label
+                Text="{Binding PreviousStationName}"
+                FontSize="16"
+                MaxLines="1"
+                LineBreakMode="TailTruncation"
+                HorizontalTextAlignment="Center"
+                TextColor="{DynamicResource MutedText}" />
+        </VerticalStackLayout>
+        <Button
+            x:Name="PlayPause"
+            Style="{StaticResource TvButton}"
+            FontFamily="FaSolid"
+            FontSize="36"
+            MinimumWidthRequest="160"
+            VerticalOptions="Start"
+            Text="{Binding IsPlaying, Converter={StaticResource PlayPauseGlyph}}"
+            Command="{Binding PlayPauseCommand}">
+            <Button.Behaviors>
+                <controls:TvKeepFocusBehavior />
+            </Button.Behaviors>
+        </Button>
+        <VerticalStackLayout Spacing="4" WidthRequest="130" VerticalOptions="Start" IsVisible="{Binding ShowNextStation}">
+            <Button
+                Style="{StaticResource TvButton}"
+                FontFamily="FaSolid"
+                FontSize="30"
+                Text="&#xF051;"
+                Command="{Binding NextStationCommand}"
+                SemanticProperties.Description="{Binding NextStationName}">
+                <Button.Behaviors>
+                    <controls:TvKeepFocusBehavior />
+                </Button.Behaviors>
+            </Button>
+            <Label
+                Text="{Binding NextStationName}"
+                FontSize="16"
+                MaxLines="1"
+                LineBreakMode="TailTruncation"
+                HorizontalTextAlignment="Center"
+                TextColor="{DynamicResource MutedText}" />
+        </VerticalStackLayout>
+        <Button
+            Style="{StaticResource TvButton}"
+            VerticalOptions="Start"
+            Text="{loc:Translate Tab_Schedule}"
+            Command="{Binding ShowScheduleCommand}"
+            IsVisible="{Binding HasSchedule}" />
+        <ActivityIndicator
+            IsRunning="{Binding IsBuffering}"
+            IsVisible="{Binding IsBuffering}"
+            Color="{DynamicResource Accent}"
+            VerticalOptions="Center" />
+    </HorizontalStackLayout>
     </Grid>
 </ContentView>

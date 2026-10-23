@@ -18,12 +18,8 @@ public partial class TvScheduleView : ContentView, ITvSection
 
     public Task OnShownAsync() => _viewModel.LoadScheduleCommand.ExecuteAsync(null);
 
-    // The remote starts from the first slot (the list scrolls from there), else from Close.
-    public void FocusDefault() => Dispatcher.Dispatch(() =>
-    {
-        Button? target = ScheduleLayout.Children.OfType<Button>().FirstOrDefault(b => b.IsEnabled) ?? CloseButton;
-        TvFocus.Request(target);
-    });
+    // The remote starts from Close: the slots are reached by moving down, and Back or OK closes the screen.
+    public void FocusDefault() => Dispatcher.Dispatch(() => TvFocus.Request(CloseButton));
 
     private void OnCloseClicked(object? sender, EventArgs e) => _host.Current?.GoBack();
 }

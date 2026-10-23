@@ -16,9 +16,10 @@ Da aggiornare con le funzioni delle sessioni successive (richieste, podcast, bra
 |---|---|---|
 | T2–T3 | Pagina radice con barra On Air / Canali, player con play/pausa, lista canali, Termini d'uso | Base della riga «Android TV» |
 | T5 | Richieste di brani (ricerca con la tastiera, pagine) e podcast (elenco, episodi, filtri, player con ±30 s, ripresa dall'ultima posizione), visibili solo se la stazione li supporta | Da aggiungere alla bozza |
+| T5 (dopo) | All'avvio parte sempre la stazione preferita, se c'è (la TV non ha impostazioni); altrimenti la prima | Da aggiungere alla bozza |
 | T4 | Stazione precedente/successiva, cuore dei preferiti, Palinsesto a schermo intero, canali: aggiungi, modifica, elimina (con conferma), aggiorna; tastiera su schermo | Inclusa nella bozza sopra |
 
-Modifiche di T5 su codice condiviso (nessun effetto visibile fuori dalla TV): `PodcastEpisodesViewModel.SeekByCommand` e `CycleStatus/Season/EpisodeNumberCommand`, stringhe `Request_PreviousPage` / `Request_NextPage` (it, en, pl), `ITvHost.ShowPodcastEpisodes`, `ITvSection.OnHiddenAsync`.
+Modifiche di T5 su codice condiviso (nessun effetto visibile fuori dalla TV): `PodcastEpisodesViewModel.SeekByCommand` e `CycleStatus/Season/EpisodeNumberCommand`, stringhe `Request_PreviousPage` / `Request_NextPage` (it, en, pl), `ITvHost.ShowPodcastEpisodes`, `ITvSection.OnHiddenAsync`, `IAppEnvironment.AlwaysStartsWithFavorite` (vera solo su TV, usata da `OnAirViewModel`; 3 test).
 
 Modifiche di T4 su codice condiviso con le altre piattaforme (nessun effetto visibile fuori dalla TV): `AddStationViewModel.Reset()`, `EditStationViewModel.ReloadAsync()`, comandi `ToggleSelected` e `ToggleCustomInfo`, stringa `RadioList_Refresh` (it, en, pl), `ITvHost.GoBack/ShowEditStation`, `XamlScanner` di ParityCheck.
 
