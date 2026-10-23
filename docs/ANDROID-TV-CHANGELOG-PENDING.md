@@ -6,9 +6,9 @@ Eccezione alla regola 11 di `CLAUDE.md`, valida solo per le modifiche **visibili
 
 ## Bozza della riga di rilascio (inglese)
 
-> **Android TV:** the app now runs on Android TV and Google TV with a remote-friendly screen: now playing with previous/next station and favorite, the schedule, and adding, editing and deleting stations with the on-screen keyboard.
+> **Android TV:** the app now runs on Android TV and Google TV with a remote-friendly screen: now playing with the next track, previous/next station and favorite, song requests, podcasts, the schedule, and adding, editing and deleting stations with the on-screen keyboard.
 
-Da aggiornare con le funzioni delle sessioni successive (richieste, podcast, brano successivo, cronologia, controlli multimediali di sistema).
+Bozza completa (T9, 2026-10-23): include richieste, podcast e brano successivo; la cronologia e i controlli multimediali di sistema non ci sono (`n/a`). **Resta qui:** la riga si sposta in `CHANGELOG.md` solo con `/release-prep` al rilascio TV, non prima.
 
 ## Modifiche associate per sessione
 

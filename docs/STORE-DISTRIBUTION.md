@@ -50,6 +50,32 @@ L'output è `scripts/store-packages/RadioE45.aab`.
 4. Carica il file `RadioE45.aab`
 5. Compila le note di rilascio e invia per la revisione
 
+### Android TV / Google TV
+
+La TV usa lo **stesso AAB** del telefono (stesso `com.radioe45.app`): non c'è un secondo pacchetto. Il manifest dichiara `leanback` e `touchscreen` con `required="false"` e il banner di avvio, quindi Play lo mostra anche sui dispositivi TV.
+
+**ABI (controllo obbligatorio prima di caricare).** Il `RadioE45.csproj` fissa per Release `RuntimeIdentifiers = android-arm;android-arm64;android-x64`. Senza `android-arm` l'AAB conteneva solo `arm64-v8a` e `x86_64`, e i TV a 32 bit (il Sony BRAVIA 4K VH21 di prova è `armeabi-v7a`) non potevano installarlo. Dopo `./build-store-android.sh` verificare:
+
+```bash
+unzip -l scripts/store-packages/RadioE45.aab | awk '{print $4}' | grep -E '^base/lib/[^/]+/' | cut -d/ -f3 | sort | uniq -c
+# atteso: arm64-v8a, armeabi-v7a, x86_64 (circa 150 file ciascuno)
+```
+
+**Play Console** (una tantum):
+1. **Rilascio → Configurazione → Impostazioni avanzate → Fattori di forma → Android TV**: aggiungere il form factor e abilitare la distribuzione. Compilare il questionario/controlli di qualità TV che la console propone (navigazione col D-pad, nessuna dipendenza dal touch, banner presente).
+2. **Presenza sullo store → Scheda dello store principale → Android TV**: caricare gli asset TV:
+   - **Banner TV** 1280x720: `docs/images/tv/banner-1280x720.png` (logo E45, senza trasparenza).
+   - **Screenshot TV** 16:9 (1920x1080, PNG senza alfa): `docs/images/tv/01-home.png`, `02-request.png`, `03-schedule.png`, `04-channels.png` (stessa numerazione delle altre piattaforme).
+3. Testi: la scheda è quella del telefono. In **Descrizione completa** aggiungere in inglese (vedi sotto) una riga sulla TV.
+
+Testo da aggiungere alla descrizione completa (inglese):
+
+> **On your TV:** Radio E45 also runs on Android TV and Google TV, designed for the remote control — now playing with previous/next station and favorites, song requests, podcasts, the schedule, and adding or editing stations with the on-screen keyboard.
+
+**Test prima di caricare:** installare l'AAB (o un APK `android-arm`) sul TV Sony e sull'emulatore `Television_1080p`, come in `ANDROID-TV-ROADMAP.md` §2. Il gate di parità TV (`dotnet run --project tools/ParityCheck -- --strict-tv`) deve restituire 0 (nessun `tv todo`).
+
+> Gli screenshot si fanno sempre con **Radio E45** sintonizzata (Canali → Radio E45), mai con le stazioni di prova; `adb exec-out screencap -p`, poi togliere l'alfa.
+
 ---
 
 ## Apple App Store (iOS)

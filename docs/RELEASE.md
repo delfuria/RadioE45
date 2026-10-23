@@ -15,7 +15,7 @@ Le build si fanno in locale (firme Apple, Inno Setup, keystore Android). GitHub 
 3. **Pacchetti**: build locali e caricamento sulla bozza (es. `./build-deb-linux.sh --upload v0.47`; per gli altri file `gh release upload v0.47 <file>`). File attesi: `RadioE45.apk`, `RadioE45.dmg`, `radioe45_<ver>_amd64.deb`, `radioe45_<ver>_arm64.deb`, `RadioE45_Setup_x64.exe`, `RadioE45_Setup_arm64.exe`, `RadioE45_<ver>_portable_win-x64.zip`, `RadioE45_<ver>_portable_win-arm64.zip`.
 4. **Smoke test Linux** (facoltativo): Actions → Linux .deb → Run workflow con `release_tag` = `v0.47`.
 5. **Pubblicazione**: Actions → Release → Run workflow → `publish`. Se manca un pacchetto, fallisce e lo elenca; altrimenti pubblica, crea il tag sul commit della bozza e la marca `latest`.
-6. **Store**: Google Play, App Store, Mac App Store e Microsoft Store (vedi `STORE-DISTRIBUTION.md`; testi in `store-descriptions.md`, in inglese). Il sito web si aggiorna con `pages.yml` al push su `main`.
+6. **Store**: Google Play, App Store, Mac App Store e Microsoft Store (vedi `STORE-DISTRIBUTION.md`; testi in `store-descriptions.md`, in inglese). Per Google Play controllare che l'AAB contenga `armeabi-v7a` (serve ai TV a 32 bit) e, per la TV, banner e screenshot di `docs/images/tv/` (sezione «Android TV / Google TV» di `STORE-DISTRIBUTION.md`). Il sito web si aggiorna con `pages.yml` al push su `main`.
 
 ## Se qualcosa va storto
 

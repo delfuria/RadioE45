@@ -197,6 +197,11 @@
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     </PropertyGroup>
 
+    <!-- The default Release ABIs are arm64 and x64 only; some Android TVs (e.g. the Sony BRAVIA VH21) are 32-bit armeabi-v7a -->
+    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' AND '$(Configuration)' == 'Release'">
+        <RuntimeIdentifiers>android-arm;android-arm64;android-x64</RuntimeIdentifiers>
+    </PropertyGroup>
+
     <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
         <PackageReference Include="Xamarin.AndroidX.LocalBroadcastManager" Version="1.1.0.24" />
 

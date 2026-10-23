@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code. Modellato su `docs/LINUX-UNO-ROADMAP.md` (stesso sistema di parità, stesse regole di processo).
 > Analisi di fattibilità e rischi: [`ANDROID-TV.md`](ANDROID-TV.md). Ultimo aggiornamento: 2026-10-23 (app v0.48).
-> Stato: **T0–T7 completate; prossima sessione: T9** (T8, Fire TV, rinviata) (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
+> Stato: **T0–T7 e T9 completate** (T8, Fire TV, rinviata); resta solo il rilascio con `/release-prep` (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
 
 ---
 
@@ -314,11 +314,11 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 - [ ] Verificare che lo stesso APK funzioni; requisiti dell'Amazon Appstore
 - [ ] Uscita: `limited` o `done` dichiarato; altrimenti fuori ambito
 
-### T9 — Distribuzione · Mac
-- [ ] **ABI:** il pacchetto di rilascio deve includere `armeabi-v7a` (il Sony è a 32 bit e un Debug `arm64` non si installa): controllare `RuntimeIdentifiers` del build di rilascio e dell'AAB prima di caricare
-- [ ] Play Console: form factor Android TV, screenshot 16:9 (almeno 1280x720), banner, questionario TV
-- [ ] Testi di store in inglese; riga in `CHANGELOG.md` sotto `[Unreleased]`
-- [ ] `docs/STORE-DISTRIBUTION.md` e `docs/RELEASE.md` aggiornati; `--strict-tv` verde (nessun `todo` residuo)
+### T9 — Distribuzione · Mac — ✅ completata 2026-10-23 (resta il rilascio)
+- [x] **ABI:** misurato che l'AAB di rilascio aveva solo `arm64-v8a` e `x86_64`; `RadioE45.csproj` fissa per Release `android-arm;android-arm64;android-x64`; verificato con `dotnet publish -c Release -p:AndroidPackageFormat=aab` (151 file per ABI, tutte e tre presenti)
+- [x] Play Console: passi per form factor Android TV, banner 1280x720 e screenshot 16:9 scritti in `STORE-DISTRIBUTION.md`; asset in `docs/images/tv/` (`01-home`, `02-request`, `03-schedule`, `04-channels` a 1920x1080 senza alfa, `banner-1280x720.png`). Il caricamento nella console è manuale
+- [x] Testo di store in inglese (riga TV per la descrizione completa, in `STORE-DISTRIBUTION.md`); riga di changelog in inglese pronta in `ANDROID-TV-CHANGELOG-PENDING.md`: **non** messa sotto `[Unreleased]` per decisione dell'utente (la TV non si annuncia prima del rilascio), la sposta `/release-prep`
+- [x] `docs/STORE-DISTRIBUTION.md` e `docs/RELEASE.md` aggiornati; `--strict-tv` senza `tv todo` (exit 1 solo per il debito desktop/web dichiarato `settings.diagnostics.crash-reports`)
 - [ ] Release con la skill `release-prep` (comandi proposti, mai eseguiti da Claude)
 
 ### Stima indicativa
@@ -378,6 +378,7 @@ Nessuna decisione aperta. Lo spike T2 può ancora cambiare i dettagli della fila
 | 2026-10-23 | T5 | `TvRequestView`, `TvPodcastListView`, `TvPodcastEpisodesView`; pulsanti Request/Podcast con la capability; `PodcastEpisodesViewModel` con `SeekBy` e `Cycle*`; `ITvSection.OnHiddenAsync`; `TvRowButton`; servizio podcast verificato; la TV non si annuncia nel changelog prima del rilascio (`ANDROID-TV-CHANGELOG-PENDING.md`) |
 | 2026-10-23 | T6 | Brano successivo su TV (copertina e riga sotto i tempi), cronologia `n/a`; schermate it/pl riviste, «Offline» non più tagliato; prestazioni misurate; `shell.system-media-controls` e `tv.focus` chiusi; `--strict-tv` senza errori |
 | 2026-10-23 | T7 | Sony BRAVIA 4K VH21 (Google TV, Android 12, 32 bit): installazione (`android-arm`, `adb install -r -t`), prove con telecomando vero e standby; corretti il ritorno dai podcast e la riconnessione in diretta dopo la pausa (anche telefono); schermata di avvio con la versione; scheda in home e Watch Next: non fattibili |
+| 2026-10-23 | T9 | ABI `armeabi-v7a` aggiunta all'AAB di rilascio (prima mancava); screenshot TV 1920x1080 e banner 1280x720 in `docs/images/tv/`; sezione Android TV in `STORE-DISTRIBUTION.md`, nota in `RELEASE.md`; bozza finale del changelog nel file pending; `--strict-tv` senza `tv todo` |
 
 ---
 
