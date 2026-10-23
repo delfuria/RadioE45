@@ -211,6 +211,15 @@
   ignore:
     - name: Tab_Request
       reason: "MAUI page title; on Uno the tab label lives in ShellPage and the page has no title bar"
+  ignoreTv:
+    - name: ArtworkUrl
+      reason: "songrequest.list limited: senza copertina, a distanza non serve"
+    - name: DismissErrorCommand
+      reason: "Il messaggio d'errore non si chiude col tocco: sparisce alla richiesta successiva"
+    - name: Request_Submit
+      reason: "Il pulsante «Richiedi» del telefono è tutta la riga su TV (OK sulla riga)"
+    - name: Tab_Request
+      reason: "L'etichetta del tab sta nei pulsanti di sezione di TvRootPage, non nella vista"
 
 - page: PodcastList
   maui: RadioE45/Views/PodcastListPage.xaml
@@ -218,6 +227,11 @@
   tv: RadioE45/Views/Tv/TvPodcastListView.xaml
   viewmodels: [PodcastListViewModel]
   ignore: []
+  ignoreTv:
+    - name: ArtworkUrl
+      reason: "podcastlist.list limited: senza copertina"
+    - name: Description
+      reason: "podcastlist.list limited: senza descrizione, non si legge a distanza"
 
 - page: PodcastEpisodes
   maui: RadioE45/Views/PodcastEpisodesPage.xaml
@@ -225,3 +239,30 @@
   tv: RadioE45/Views/Tv/TvPodcastEpisodesView.xaml
   viewmodels: [PodcastEpisodesViewModel]
   ignore: []
+  ignoreTv:
+    - name: ArtworkUrl
+      reason: "podcastepisodes.list limited: senza copertina"
+    - name: Description
+      reason: "podcastepisodes.list limited: senza descrizione"
+    - name: PublishedAt
+      reason: "podcastepisodes.list limited: senza data di pubblicazione"
+    - name: ResumePositionText
+      reason: "podcastepisodes.list limited: la posizione salvata non è in riga, il mini player la mostra all'avvio"
+    - name: SeekCommand
+      reason: "Slider non usabile col telecomando: ±30 s (SeekByCommand)"
+    - name: SeasonOptions
+      reason: "Menu a tendina sostituiti da pulsanti che ciclano le opzioni (CycleSeasonCommand)"
+    - name: EpisodeNumberOptions
+      reason: "Menu a tendina sostituiti da pulsanti che ciclano le opzioni (CycleEpisodeNumberCommand)"
+    - name: StatusOptions
+      reason: "Menu a tendina sostituiti da pulsanti che ciclano le opzioni (CycleStatusCommand)"
+    - name: IsStaleForCurrentStation
+      reason: "Il controllo lo fa TvRootPage al cambio stazione"
+    - name: PropertyChanged
+      reason: "Evento del ViewModel, non un binding"
+    - name: SelectedEpisodeNumber
+      reason: "Il filtro è un pulsante che cicla le opzioni: il binding è SelectedEpisodeNumber.Label (Cycle*Command del ViewModel)"
+    - name: SelectedSeason
+      reason: "Il filtro è un pulsante che cicla le opzioni: il binding è SelectedSeason.Label (Cycle*Command del ViewModel)"
+    - name: SelectedStatus
+      reason: "Il filtro è un pulsante che cicla le opzioni: il binding è SelectedStatus.Label (Cycle*Command del ViewModel)"

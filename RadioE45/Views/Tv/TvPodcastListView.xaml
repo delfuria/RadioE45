@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="RadioE45.Views.Tv.TvPodcastListView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels;assembly=RadioE45.Core"
+    xmlns:models="clr-namespace:RadioE45.Models;assembly=RadioE45.Core"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    x:DataType="vm:PodcastListViewModel">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Resources/Styles/TvStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <!-- Elenco podcast per la TV: una riga per podcast (titolo e numero di episodi), OK apre gli episodi.
+         Copertina e descrizione del telefono non ci sono: a distanza non si leggono. -->
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12" Padding="0,24,0,0">
+
+        <Label
+            Grid.Row="0"
+            Padding="16,0"
+            Text="{loc:Translate Tab_Podcasts}"
+            FontSize="40"
+            FontAttributes="Bold"
+            TextColor="{DynamicResource PrimaryText}" />
+
+        <Label
+            Grid.Row="1"
+            Padding="16,0"
+            Text="{Binding ErrorMessage}"
+            FontSize="22"
+            TextColor="{StaticResource LiveRed}"
+            IsVisible="{Binding ErrorMessage, Converter={toolkit:IsStringNotNullOrEmptyConverter}}" />
+
+        <ActivityIndicator
+            Grid.Row="2"
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            Color="{DynamicResource Accent}"
+            VerticalOptions="Start"
+            HorizontalOptions="Start"
+            Margin="16,24,0,0" />
+
+        <ScrollView Grid.Row="2" Padding="40,16,40,16">
+            <VerticalStackLayout x:Name="PodcastsLayout" Spacing="12" BindableLayout.ItemsSource="{Binding Podcasts}">
+
+                <BindableLayout.EmptyView>
+                    <Label
+                        Text="{loc:Translate Podcast_Empty}"
+                        FontSize="26"
+                        TextColor="{DynamicResource SecondaryText}"
+                        IsVisible="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}" />
+                </BindableLayout.EmptyView>
+
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:AzuraCastPodcast">
+                        <Button
+                            Style="{StaticResource TvRowButton}"
+                            FontSize="26"
+                            LineBreakMode="TailTruncation"
+                            Command="{Binding SelectCommand}"
+                            CommandParameter="{Binding .}">
+                            <Button.Text>
+                                <MultiBinding StringFormat="{}{0}   ·   {1}">
+                                    <Binding Path="Title" />
+                                    <Binding Path="EpisodeCountText" />
+                                </MultiBinding>
+                            </Button.Text>
+                        </Button>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentView>

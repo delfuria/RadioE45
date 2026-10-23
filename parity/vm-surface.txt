@@ -88,6 +88,9 @@ PodcastEpisodesViewModel : type
 PodcastEpisodesViewModel.Activate() : void
 PodcastEpisodesViewModel.Cleanup() : void
 PodcastEpisodesViewModel.CurrentEpisode : AzuraCastPodcastEpisode { get; set; }
+PodcastEpisodesViewModel.CycleEpisodeNumberCommand : IRelayCommand { get; }
+PodcastEpisodesViewModel.CycleSeasonCommand : IRelayCommand { get; }
+PodcastEpisodesViewModel.CycleStatusCommand : IRelayCommand { get; }
 PodcastEpisodesViewModel.ElapsedTimeText : string { get; set; }
 PodcastEpisodesViewModel.EmptyEpisodesText : string { get; set; }
 PodcastEpisodesViewModel.EpisodeNumberOptions : List<PodcastFilterOption<int>> { get; set; }
@@ -101,6 +104,7 @@ PodcastEpisodesViewModel.PlaybackProgress : double { get; set; }
 PodcastEpisodesViewModel.PodcastId : string { get; set; }
 PodcastEpisodesViewModel.PodcastTitle : string { get; set; }
 PodcastEpisodesViewModel.SeasonOptions : List<PodcastFilterOption<int>> { get; set; }
+PodcastEpisodesViewModel.SeekByCommand : IAsyncRelayCommand<double> { get; }
 PodcastEpisodesViewModel.SeekCommand : IAsyncRelayCommand<double> { get; }
 PodcastEpisodesViewModel.SelectedEpisodeNumber : PodcastFilterOption<int> { get; set; }
 PodcastEpisodesViewModel.SelectedSeason : PodcastFilterOption<int> { get; set; }

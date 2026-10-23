@@ -60,8 +60,16 @@ public sealed class MauiNavigationService : INavigationService
         return GoToAsync($"EditStationPage?id={stationId}");
     }
 
-    public Task GoToPodcastEpisodesAsync(string podcastId, string podcastTitle) =>
-        GoToAsync($"PodcastEpisodesPage?podcastId={Uri.EscapeDataString(podcastId)}&podcastTitle={Uri.EscapeDataString(podcastTitle)}");
+    public Task GoToPodcastEpisodesAsync(string podcastId, string podcastTitle)
+    {
+        if (_tv.Current is { } tv)
+        {
+            tv.ShowPodcastEpisodes(podcastId, podcastTitle);
+            return Task.CompletedTask;
+        }
+
+        return GoToAsync($"PodcastEpisodesPage?podcastId={Uri.EscapeDataString(podcastId)}&podcastTitle={Uri.EscapeDataString(podcastTitle)}");
+    }
 
     // Canali e Impostazioni vengono sempre impilate sopra il tab OnAir: così il "//OnAirPage"
     // con cui quelle pagine tornano indietro svuota lo stack in modo pulito.

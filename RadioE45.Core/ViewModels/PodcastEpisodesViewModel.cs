@@ -316,6 +316,42 @@ public partial class PodcastEpisodesViewModel : BaseViewModel
         await _podcastPlayerService.SeekAsync(target);
     }
 
+    // Relative seek for views without a slider (remote control): +/- a few seconds from the player's position.
+    [RelayCommand]
+    private async Task SeekByAsync(double seconds)
+    {
+        if (CurrentEpisode is null || CurrentEpisode.Duration <= TimeSpan.Zero || !IsLoadedInPlayer(CurrentEpisode))
+            return;
+
+        TimeSpan target = _podcastPlayerService.Position + TimeSpan.FromSeconds(seconds);
+        if (target < TimeSpan.Zero)
+            target = TimeSpan.Zero;
+        else if (target > CurrentEpisode.Duration)
+            target = CurrentEpisode.Duration;
+
+        await _podcastPlayerService.SeekAsync(target);
+    }
+
+    // Filters for views without a drop-down (remote control): each press selects the next option, wrapping around.
+    [RelayCommand]
+    private void CycleStatus() => SelectedStatus = NextOption(StatusOptions, SelectedStatus);
+
+    [RelayCommand]
+    private void CycleSeason() => SelectedSeason = NextOption(SeasonOptions, SelectedSeason);
+
+    [RelayCommand]
+    private void CycleEpisodeNumber() => SelectedEpisodeNumber = NextOption(EpisodeNumberOptions, SelectedEpisodeNumber);
+
+    private static PodcastFilterOption<T>? NextOption<T>(List<PodcastFilterOption<T>> options, PodcastFilterOption<T>? current)
+        where T : struct
+    {
+        if (options.Count == 0)
+            return null;
+
+        int index = current is null ? -1 : options.IndexOf(current);
+        return options[(index + 1) % options.Count];
+    }
+
     public async Task StopPlaybackAsync()
     {
         if (CurrentEpisode is null)

@@ -8,6 +8,9 @@ public enum TvSection
     Schedule,
     AddStation,
     EditStation,
+    Request,
+    Podcasts,
+    PodcastEpisodes,
 }
 
 /// <summary>
@@ -22,7 +25,10 @@ public interface ITvHost
     /// <summary>Opens the edit form of a station.</summary>
     void ShowEditStation(int stationId);
 
-    /// <summary>Leaves a sub-section (schedule, add or edit station) for the section it was opened from.</summary>
+    /// <summary>Opens the episodes of a podcast.</summary>
+    void ShowPodcastEpisodes(string podcastId, string podcastTitle);
+
+    /// <summary>Leaves a sub-section (schedule, add or edit station, podcast episodes) for the section it was opened from.</summary>
     void GoBack();
 
     Task<bool> ConfirmAsync(string title, string message, string accept, string cancel);
@@ -38,6 +44,9 @@ public interface ITvSection
 {
     /// <summary>Called when the section becomes visible (loads data).</summary>
     Task OnShownAsync();
+
+    /// <summary>Called when the section is replaced by another one (stops what it was doing).</summary>
+    Task OnHiddenAsync() => Task.CompletedTask;
 
     /// <summary>Puts the remote's focus on the main control of the section.</summary>
     void FocusDefault();

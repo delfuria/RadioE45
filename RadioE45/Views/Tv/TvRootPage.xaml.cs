@@ -16,6 +16,9 @@ public partial class TvRootPage : ContentPage, ITvHost
     private readonly TvScheduleView _schedule;
     private readonly TvAddStationView _addStation;
     private readonly TvEditStationView _editStation;
+    private readonly TvRequestView _request;
+    private readonly TvPodcastListView _podcasts;
+    private readonly TvPodcastEpisodesView _podcastEpisodes;
     private TvSection _section = TvSection.OnAir;
     private bool _isInitialized;
 
@@ -29,7 +32,10 @@ public partial class TvRootPage : ContentPage, ITvHost
         TvStationsView stations,
         TvScheduleView schedule,
         TvAddStationView addStation,
-        TvEditStationView editStation)
+        TvEditStationView editStation,
+        TvRequestView request,
+        TvPodcastListView podcasts,
+        TvPodcastEpisodesView podcastEpisodes)
     {
         InitializeComponent();
         _onAirViewModel = onAirViewModel;
@@ -41,6 +47,14 @@ public partial class TvRootPage : ContentPage, ITvHost
         _schedule = schedule;
         _addStation = addStation;
         _editStation = editStation;
+        _request = request;
+        _podcasts = podcasts;
+        _podcastEpisodes = podcastEpisodes;
+
+        // Request and Podcast appear only when the current station supports them (same properties as the phone's tabs).
+        NavRequestBox.BindingContext = onAirViewModel;
+        NavPodcastsBox.BindingContext = onAirViewModel;
+        onAirViewModel.PropertyChanged += OnOnAirPropertyChanged;
 
         // Navigation and dialog services find the TV host here (there is no Shell on TV).
         hostAccessor.Current = this;
@@ -65,6 +79,9 @@ public partial class TvRootPage : ContentPage, ITvHost
         TvSection.Schedule => _schedule,
         TvSection.AddStation => _addStation,
         TvSection.EditStation => _editStation,
+        TvSection.Request => _request,
+        TvSection.Podcasts => _podcasts,
+        TvSection.PodcastEpisodes => _podcastEpisodes,
         _ => _nowPlaying,
     };
 
@@ -72,6 +89,7 @@ public partial class TvRootPage : ContentPage, ITvHost
     private static TvSection ParentOf(TvSection section) => section switch
     {
         TvSection.AddStation or TvSection.EditStation => TvSection.Stations,
+        TvSection.PodcastEpisodes => TvSection.Podcasts,
         _ => TvSection.OnAir,
     };
 
@@ -116,6 +134,12 @@ public partial class TvRootPage : ContentPage, ITvHost
         await ShowSectionAsync(TvSection.EditStation);
     });
 
+    public void ShowPodcastEpisodes(string podcastId, string podcastTitle) => Dispatcher.Dispatch(async () =>
+    {
+        _podcastEpisodes.Open(podcastId, podcastTitle);
+        await ShowSectionAsync(TvSection.PodcastEpisodes);
+    });
+
     public void GoBack() => ShowSection(ParentOf(_section));
 
     public Task<bool> ConfirmAsync(string title, string message, string accept, string cancel) =>
@@ -143,8 +167,31 @@ public partial class TvRootPage : ContentPage, ITvHost
 
     // -------------------------------------------------------------------------------------------
 
+    // What the phone does with its tabs: a station change or a lost capability takes the user out of a
+    // section that no longer applies.
+    private void OnOnAirPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not (nameof(OnAirViewModel.CurrentStation) or nameof(OnAirViewModel.HasPodcasts) or nameof(OnAirViewModel.NowPlaying)))
+            return;
+
+        TvSection? target = _section switch
+        {
+            TvSection.PodcastEpisodes when !_onAirViewModel.HasPodcasts => TvSection.OnAir,
+            TvSection.PodcastEpisodes when e.PropertyName == nameof(OnAirViewModel.CurrentStation) => TvSection.Podcasts,
+            TvSection.Podcasts when !_onAirViewModel.HasPodcasts => TvSection.OnAir,
+            TvSection.Request when !_onAirViewModel.NowPlaying.RequestsEnabled => TvSection.OnAir,
+            _ => null,
+        };
+
+        if (target is { } section)
+            ShowSection(section);
+    }
+
     private async Task ShowSectionAsync(TvSection section)
     {
+        if (_section != section)
+            await CurrentSection.OnHiddenAsync();
+
         _section = section;
         ITvSection view = CurrentSection;
         SectionHost.Content = (View)view;
@@ -161,12 +208,17 @@ public partial class TvRootPage : ContentPage, ITvHost
     private void UpdateNav()
     {
         // Sub-sections keep their parent's button underlined.
-        bool onAirSide = _section is TvSection.OnAir or TvSection.Schedule;
-        NavOnAirMark.IsVisible = onAirSide;
-        NavStationsMark.IsVisible = !onAirSide;
+        NavOnAirMark.IsVisible = _section is TvSection.OnAir or TvSection.Schedule;
+        NavRequestMark.IsVisible = _section is TvSection.Request;
+        NavPodcastsMark.IsVisible = _section is TvSection.Podcasts or TvSection.PodcastEpisodes;
+        NavStationsMark.IsVisible = _section is TvSection.Stations or TvSection.AddStation or TvSection.EditStation;
     }
 
     private void OnNavOnAirClicked(object? sender, EventArgs e) => ShowSection(TvSection.OnAir);
+
+    private void OnNavRequestClicked(object? sender, EventArgs e) => ShowSection(TvSection.Request);
+
+    private void OnNavPodcastsClicked(object? sender, EventArgs e) => ShowSection(TvSection.Podcasts);
 
     private void OnNavStationsClicked(object? sender, EventArgs e) => ShowSection(TvSection.Stations);
 }

@@ -164,7 +164,7 @@ public class PodcastEpisodesViewModelTabSwitchTests
         Assert.Equal("0:42", Card.ResumePositionText);
     }
 
-    private sealed class InMemoryProgressRepository : IPodcastProgressRepository
+    internal sealed class InMemoryProgressRepository : IPodcastProgressRepository
     {
         public Dictionary<string, PodcastEpisodeProgress> Saved { get; } = [];
 
@@ -185,7 +185,7 @@ public class PodcastEpisodesViewModelTabSwitchTests
         }
     }
 
-    private sealed class FakePodcastPlayer : IPodcastMediaPlayer
+    internal sealed class FakePodcastPlayer : IPodcastMediaPlayer
     {
         public List<string> Opened { get; } = [];
         public List<TimeSpan> Seeks { get; } = [];
@@ -242,7 +242,7 @@ public class PodcastEpisodesViewModelTabSwitchTests
         }
     }
 
-    private sealed class InlineDispatcher : IUiDispatcher
+    internal sealed class InlineDispatcher : IUiDispatcher
     {
         public bool IsUiThread => true;
         public void Post(Action action) => action();

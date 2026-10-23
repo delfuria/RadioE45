@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="RadioE45.Views.Tv.TvRequestView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels;assembly=RadioE45.Core"
+    xmlns:models="clr-namespace:RadioE45.Models;assembly=RadioE45.Core"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    x:DataType="vm:SongRequestViewModel">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Resources/Styles/TvStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <!-- Richieste per la TV: ricerca con la tastiera su schermo (il filtro segue il testo), una riga per brano che
+         si richiede con OK, pagina precedente/successiva accanto alla ricerca (così restano raggiungibili senza
+         scorrere l'elenco). Stessa logica del telefono (SongRequestViewModel). -->
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12" Padding="0,24,0,0">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="16" Padding="16,0">
+            <Entry
+                x:Name="SearchEntry"
+                Grid.Column="0"
+                Style="{StaticResource TvEntry}"
+                Placeholder="{loc:Translate Request_SearchPlaceholder}"
+                Text="{Binding SearchText}"
+                ReturnType="Search"
+                SemanticProperties.Description="{loc:Translate Request_SearchPlaceholder}" />
+            <Button
+                Grid.Column="1"
+                Style="{StaticResource TvButton}"
+                FontFamily="FaSolid"
+                Text="&#xF053;"
+                Command="{Binding PreviousPageCommand}"
+                IsEnabled="{Binding CanGoToPreviousPage}"
+                SemanticProperties.Description="{loc:Translate Request_PreviousPage}" />
+            <Label Grid.Column="2" VerticalOptions="Center" FontSize="24" TextColor="{DynamicResource SecondaryText}">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="{Binding PageNumber}" />
+                        <Span Text=" / " />
+                        <Span Text="{Binding TotalPages}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Button
+                Grid.Column="3"
+                Style="{StaticResource TvButton}"
+                FontFamily="FaSolid"
+                Text="&#xF054;"
+                Command="{Binding NextPageCommand}"
+                IsEnabled="{Binding CanGoToNextPage}"
+                SemanticProperties.Description="{loc:Translate Request_NextPage}" />
+        </Grid>
+
+        <Label
+            Grid.Row="1"
+            Padding="16,0"
+            Text="{Binding ErrorMessage}"
+            FontSize="22"
+            TextColor="{StaticResource LiveRed}"
+            IsVisible="{Binding ErrorMessage, Converter={toolkit:IsStringNotNullOrEmptyConverter}}" />
+
+        <ActivityIndicator
+            Grid.Row="2"
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            Color="{DynamicResource Accent}"
+            VerticalOptions="Start"
+            HorizontalOptions="Start"
+            Margin="16,24,0,0" />
+
+        <!-- Padding: la riga con il focus verrebbe tagliata dai bordi dello ScrollView -->
+        <ScrollView Grid.Row="2" Padding="40,16,40,16">
+            <VerticalStackLayout x:Name="SongsLayout" Spacing="12" BindableLayout.ItemsSource="{Binding Songs}">
+
+                <BindableLayout.EmptyView>
+                    <Label
+                        Text="{Binding EmptyResultsText}"
+                        FontSize="26"
+                        TextColor="{DynamicResource SecondaryText}"
+                        IsVisible="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}" />
+                </BindableLayout.EmptyView>
+
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:AzuraCastRequestItem">
+                        <Button
+                            Style="{StaticResource TvRowButton}"
+                            FontSize="24"
+                            LineBreakMode="TailTruncation"
+                            ContentLayout="Right,16"
+                            Command="{Binding RequestCommand}"
+                            CommandParameter="{Binding .}">
+                            <Button.Text>
+                                <MultiBinding StringFormat="{}{0} – {1}">
+                                    <Binding Path="Title" />
+                                    <Binding Path="Artist" />
+                                </MultiBinding>
+                            </Button.Text>
+                            <Button.Triggers>
+                                <!-- Richiesta inviata: spunta a destra del brano (resta la riga, il comando non fa più nulla) -->
+                                <DataTrigger TargetType="Button" Binding="{Binding IsRequested}" Value="True">
+                                    <Setter Property="ImageSource">
+                                        <Setter.Value>
+                                            <FontImageSource Glyph="&#xF00C;" FontFamily="FaSolid" Size="22" Color="{DynamicResource PrimaryText}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <!-- Invio in corso -->
+                                <DataTrigger TargetType="Button" Binding="{Binding IsRequesting}" Value="True">
+                                    <Setter Property="ImageSource">
+                                        <Setter.Value>
+                                            <FontImageSource Glyph="&#xF110;" FontFamily="FaSolid" Size="22" Color="{DynamicResource PrimaryText}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentView>

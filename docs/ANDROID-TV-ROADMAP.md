@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code. Modellato su `docs/LINUX-UNO-ROADMAP.md` (stesso sistema di parità, stesse regole di processo).
 > Analisi di fattibilità e rischi: [`ANDROID-TV.md`](ANDROID-TV.md). Ultimo aggiornamento: 2026-10-23 (app v0.48).
-> Stato: **T0–T4 completate; prossima sessione: T5** (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
+> Stato: **T0–T5 completate; prossima sessione: T6** (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
 
 ---
 
@@ -133,6 +133,17 @@ Il nome della classe activity (`crc64...`) è generato da .NET: se cambia, legge
 | Bordo ingrandito tagliato (di nuovo) | La riga larga con il focus (scala 1,08) era tagliata a sinistra nell'elenco: padding 28 dp per le stazioni, 40 dp per le righe larghe di Schedule e dei risultati |
 | Primo avvio dopo `pm clear` | Termini (focus sul pulsante) → stazioni di prova → riproduzione: invariato rispetto a T3 |
 
+### Misure di T5 (2026-10-23, richieste e podcast)
+
+| Verifica | Esito |
+|---|---|
+| Servizio podcast su Android | `PodcastPlayerService` (Core `PodcastPlaybackService` + `MediaElementPodcastPlayer`) usa una `MediaElement` ospitata da una vista: sul telefono quella di `PodcastEpisodesPage`, qui quella di `TvPodcastEpisodesView` (invisibile, passata al servizio da `Loaded`). È separata dalla radio, che gira nel servizio Media3 (`RadioPlaybackService`): convivono come sul telefono (l'avvio dell'episodio ferma la radio, tornare su On Air ferma l'episodio). Nessuna modifica al servizio |
+| Riproduzione | Episodio di 27 s dal server di prova: parte, il mini player mostra tempi e barra, +30 s lo porta a fine e lo segna come finito (spunta); uscire dalla schermata lo ferma, rientrare riparte dalla posizione salvata (0:06, non da 0) |
+| Focus del mini player | Quando compare, Android toglie il focus alla riga che ha avviato l'episodio e lo manda al primo controllo della pagina («On Air»). La vista lo porta sul tasto play/pausa alla comparsa del mini player e sulla lista quando sparisce (non quando si esce dalla sezione) |
+| Richieste | Elenco da 370 brani in 37 pagine; la paginazione sta accanto alla ricerca (raggiungibile senza scorrere), il filtro segue il testo, la tastiera su schermo si apre con OK. L'invio della richiesta non è stato provato: il server è la radio reale |
+| Capability | Il pulsante Request compare solo se `NowPlaying.RequestsEnabled`, Podcast solo se `HasPodcasts`. Subito dopo un cambio stazione resta per un attimo quello della stazione precedente (il `NowPlaying` si aggiorna col sondaggio); `TvRootPage` esce da una sezione che non vale più, come i tab del telefono |
+| Righe larghe | Con scala 1,08 una riga da ~1000 dp esce di 40 dp per lato e il bordo scompare: `TvRowButton` ha scala 1 e bordo di 6 dp (canali, palinsesto, risultati, richieste, podcast, episodi) |
+
 ---
 
 ## 4. Architettura di destinazione
@@ -250,11 +261,11 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 - [x] Uscita: mappa del focus completa su On Air, Channels e form di modifica; schedule, aggiunta (con ricerca reale), eliminazione e modifica provate col solo D-pad. **Non provati:** salvataggio di una modifica, Schedule con un live in corso, stazione offline
 
 ### T5 — Richieste e podcast · Mac + emulatore
-- [ ] `TvRequestView` con `SongRequestViewModel`; pulsante **Request** visibile solo con la capability
-- [ ] Pulsante **Podcast** visibile solo con la capability
-- [ ] Verifica del servizio che riproduce gli episodi su Android e convivenza con `RadioPlaybackService` (prima di costruire la UI)
-- [ ] `TvPodcastListView`, `TvPodcastEpisodesView`, mini player con seek da D-pad
-- [ ] Uscita: ascolto di un episodio dall'emulatore, ripresa dalla posizione salvata, parità aggiornata
+- [x] `TvRequestView` con `SongRequestViewModel`; pulsante **Request** visibile solo con la capability (`NowPlaying.RequestsEnabled`)
+- [x] Pulsante **Podcast** visibile solo con la capability
+- [x] Verifica del servizio che riproduce gli episodi su Android e convivenza con `RadioPlaybackService` (prima di costruire la UI)
+- [x] `TvPodcastListView`, `TvPodcastEpisodesView`, mini player con seek da D-pad (±30 s, `SeekByCommand`); filtri come pulsanti che ciclano le opzioni (`Cycle*Command`)
+- [x] Uscita: ascolto di un episodio dall'emulatore, ripresa dalla posizione salvata, parità aggiornata
 
 ### T6 — Rifinitura 10 piedi · Mac + emulatore
 - [ ] Stringhe in it/en/pl, dimensioni testo, margini di sicurezza, immagini, tema
@@ -331,6 +342,7 @@ Nessuna decisione aperta. Lo spike T2 può ancora cambiare i dettagli della fila
 | 2026-10-22 | T2 | Spike: `DeviceIdiom.TV` → `TvRootPage`, fila di pulsanti con focus, `tools/tv-focus-probe.sh`, `TvKeepFocusBehavior`, `docs/parity/MAUI-TO-TV.md`; tasti media e Indietro verificati |
 | 2026-10-22 | T3 | `TvRootPage` contenitore + `ITvHost`, `TvNowPlayingView`, `TvStationsView`, `TvDialogOverlay`, `TvFocus`; primo avvio (termini → stazioni di prova → riproduzione), selezione e Indietro verificati |
 | 2026-10-23 | T4 | Cambio stazione e preferito sul lettore, `TvScheduleView`, gestione stazioni (`TvAddStationView`, `TvEditStationView`, azioni nella lista), `ITvHost.GoBack/ShowEditStation`; ParityCheck legge anche `<Binding Path=…/>`
+| 2026-10-23 | T5 | `TvRequestView`, `TvPodcastListView`, `TvPodcastEpisodesView`; pulsanti Request/Podcast con la capability; `PodcastEpisodesViewModel` con `SeekBy` e `Cycle*`; `ITvSection.OnHiddenAsync`; `TvRowButton`; servizio podcast verificato; la TV non si annuncia nel changelog prima del rilascio (`ANDROID-TV-CHANGELOG-PENDING.md`) |
 
 ---
 

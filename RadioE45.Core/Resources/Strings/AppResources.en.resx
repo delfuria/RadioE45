@@ -100,6 +100,8 @@
 
   <data name="Request_SearchPlaceholder" xml:space="preserve"><value>Search artist or title…</value></data>
   <data name="Request_Submit" xml:space="preserve"><value>Request</value></data>
+  <data name="Request_PreviousPage" xml:space="preserve"><value>Previous page</value></data>
+  <data name="Request_NextPage" xml:space="preserve"><value>Next page</value></data>
   <data name="Request_NoSongs" xml:space="preserve"><value>No requestable songs available</value></data>
   <data name="Request_NoSongsFiltered" xml:space="preserve"><value>No songs match your search</value></data>
   <data name="Request_Err_TooRecent" xml:space="preserve"><value>You already submitted a request recently. Wait {0} minutes before submitting another one.</value></data>

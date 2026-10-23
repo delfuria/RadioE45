@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="RadioE45.Views.Tv.TvPodcastEpisodesView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels;assembly=RadioE45.Core"
+    xmlns:models="clr-namespace:RadioE45.Models;assembly=RadioE45.Core"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    xmlns:controls="clr-namespace:RadioE45.Controls"
+    x:DataType="vm:PodcastEpisodesViewModel">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Resources/Styles/TvStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <toolkit:BoolToObjectConverter x:Key="PlayPauseGlyph" x:TypeArguments="x:String" TrueObject="&#xF04C;" FalseObject="&#xF04B;" />
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <!-- Episodi per la TV: filtri come pulsanti che passano all'opzione successiva (nessun menu a tendina), mini player
+         sopra l'elenco con ±30 s al posto dello slider, una riga per episodio. Stessa logica del telefono
+         (PodcastEpisodesViewModel). La MediaElement è quella del podcast: invisibile, passata al servizio. -->
+    <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10" Padding="0,16,0,0">
+
+        <toolkit:MediaElement x:Name="PodcastPlayer" IsVisible="False" HeightRequest="0" WidthRequest="0" />
+
+        <Label
+            Grid.Row="0"
+            Padding="16,0"
+            Text="{Binding PodcastTitle}"
+            FontSize="34"
+            FontAttributes="Bold"
+            MaxLines="1"
+            LineBreakMode="TailTruncation"
+            TextColor="{DynamicResource PrimaryText}" />
+
+        <HorizontalStackLayout Grid.Row="1" Spacing="20" Padding="16,0">
+            <VerticalStackLayout Spacing="2">
+                <Label Text="{loc:Translate Podcast_FilterStatusLabel}" FontSize="16" TextColor="{DynamicResource MutedText}" />
+                <Button x:Name="StatusButton" Style="{StaticResource TvButton}" FontSize="22" Text="{Binding SelectedStatus.Label}" Command="{Binding CycleStatusCommand}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="2">
+                <Label Text="{loc:Translate Podcast_FilterSeasonLabel}" FontSize="16" TextColor="{DynamicResource MutedText}" />
+                <Button Style="{StaticResource TvButton}" FontSize="22" Text="{Binding SelectedSeason.Label}" Command="{Binding CycleSeasonCommand}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="2">
+                <Label Text="{loc:Translate Podcast_FilterEpisodeLabel}" FontSize="16" TextColor="{DynamicResource MutedText}" />
+                <Button Style="{StaticResource TvButton}" FontSize="22" Text="{Binding SelectedEpisodeNumber.Label}" Command="{Binding CycleEpisodeNumberCommand}" />
+            </VerticalStackLayout>
+        </HorizontalStackLayout>
+
+        <!-- Mini player: compare quando un episodio è caricato -->
+        <VerticalStackLayout Grid.Row="2" Spacing="6" Padding="16,0" IsVisible="{Binding CurrentEpisode, Converter={toolkit:IsNotNullConverter}}">
+            <Label
+                Text="{Binding CurrentEpisode.Title}"
+                FontSize="24"
+                MaxLines="1"
+                LineBreakMode="TailTruncation"
+                TextColor="{DynamicResource PrimaryText}" />
+            <ProgressBar
+                Progress="{Binding PlaybackProgress}"
+                ProgressColor="{DynamicResource Accent}"
+                BackgroundColor="{DynamicResource CardElevated}" />
+            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="16">
+                <Button
+                    Grid.Column="0"
+                    Style="{StaticResource TvButton}"
+                    FontSize="22"
+                    Text="−30 s"
+                    Command="{Binding SeekByCommand}">
+                    <Button.CommandParameter>
+                        <x:Double>-30</x:Double>
+                    </Button.CommandParameter>
+                    <Button.Behaviors>
+                        <controls:TvKeepFocusBehavior />
+                    </Button.Behaviors>
+                </Button>
+                <Button
+                    Grid.Column="1"
+                    x:Name="PlayPauseButton"
+                    Style="{StaticResource TvButton}"
+                    FontFamily="FaSolid"
+                    FontSize="26"
+                    MinimumWidthRequest="110"
+                    Text="{Binding IsPlaying, Converter={StaticResource PlayPauseGlyph}}"
+                    Command="{Binding PlayPauseCommand}">
+                    <Button.Behaviors>
+                        <controls:TvKeepFocusBehavior />
+                    </Button.Behaviors>
+                </Button>
+                <Button
+                    Grid.Column="2"
+                    Style="{StaticResource TvButton}"
+                    FontSize="22"
+                    Text="+30 s"
+                    Command="{Binding SeekByCommand}">
+                    <Button.CommandParameter>
+                        <x:Double>30</x:Double>
+                    </Button.CommandParameter>
+                    <Button.Behaviors>
+                        <controls:TvKeepFocusBehavior />
+                    </Button.Behaviors>
+                </Button>
+                <Label Grid.Column="4" Text="{Binding ElapsedTimeText}" FontSize="22" VerticalOptions="Center" HorizontalOptions="End" TextColor="{DynamicResource MutedText}" />
+                <Label Grid.Column="5" Text="{Binding TotalTimeText, StringFormat='/ {0}'}" FontSize="22" VerticalOptions="Center" TextColor="{DynamicResource MutedText}" />
+            </Grid>
+        </VerticalStackLayout>
+
+        <Label
+            Grid.Row="3"
+            Padding="16,0"
+            Text="{Binding ErrorMessage}"
+            FontSize="22"
+            TextColor="{StaticResource LiveRed}"
+            IsVisible="{Binding ErrorMessage, Converter={toolkit:IsStringNotNullOrEmptyConverter}}" />
+
+        <ActivityIndicator
+            Grid.Row="3"
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            Color="{DynamicResource Accent}"
+            VerticalOptions="Start"
+            HorizontalOptions="Start"
+            Margin="16,24,0,0" />
+
+        <ScrollView Grid.Row="3" Padding="40,12,40,12">
+            <VerticalStackLayout x:Name="EpisodesLayout" Spacing="10" BindableLayout.ItemsSource="{Binding Episodes}">
+
+                <BindableLayout.EmptyView>
+                    <Label
+                        Text="{Binding EmptyEpisodesText}"
+                        FontSize="26"
+                        TextColor="{DynamicResource SecondaryText}"
+                        IsVisible="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}" />
+                </BindableLayout.EmptyView>
+
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:AzuraCastPodcastEpisode">
+                        <Button
+                            Style="{StaticResource TvRowButton}"
+                            FontSize="22"
+                            LineBreakMode="TailTruncation"
+                            ContentLayout="Right,16"
+                            Command="{Binding PlayCommand}"
+                            CommandParameter="{Binding .}">
+                            <Button.Text>
+                                <MultiBinding StringFormat="{}{0}   {1}   {2}">
+                                    <Binding Path="Title" />
+                                    <Binding Path="SeasonEpisodeText" />
+                                    <Binding Path="DurationText" />
+                                </MultiBinding>
+                            </Button.Text>
+                            <Button.Triggers>
+                                <!-- Stato di ascolto a destra: orologio = iniziato, spunta = finito (nessuna icona = da ascoltare) -->
+                                <DataTrigger TargetType="Button" Binding="{Binding ProgressState}" Value="InProgress">
+                                    <Setter Property="ImageSource">
+                                        <Setter.Value>
+                                            <FontImageSource Glyph="&#xF017;" FontFamily="FaSolid" Size="20" Color="{DynamicResource PrimaryText}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Button" Binding="{Binding ProgressState}" Value="Completed">
+                                    <Setter Property="ImageSource">
+                                        <Setter.Value>
+                                            <FontImageSource Glyph="&#xF00C;" FontFamily="FaSolid" Size="20" Color="{DynamicResource PrimaryText}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentView>

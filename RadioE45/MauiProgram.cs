@@ -216,7 +216,9 @@ public static class MauiProgram
         builder.Services.AddTransient<RadioE45.Views.Tv.TvScheduleView>();
         builder.Services.AddTransient<RadioE45.Views.Tv.TvAddStationView>();
         builder.Services.AddTransient<RadioE45.Views.Tv.TvEditStationView>();
-
+        builder.Services.AddTransient<RadioE45.Views.Tv.TvRequestView>();
+        builder.Services.AddTransient<RadioE45.Views.Tv.TvPodcastListView>();
+        builder.Services.AddTransient<RadioE45.Views.Tv.TvPodcastEpisodesView>();
         DatabaseLoggerProvider dbLoggerProvider = new();
         builder.Services.AddSingleton(dbLoggerProvider);
 

@@ -105,6 +105,8 @@
   <!-- Song request -->
   <data name="Request_SearchPlaceholder" xml:space="preserve"><value>Cerca artista o titolo…</value></data>
   <data name="Request_Submit" xml:space="preserve"><value>Richiedi</value></data>
+  <data name="Request_PreviousPage" xml:space="preserve"><value>Pagina precedente</value></data>
+  <data name="Request_NextPage" xml:space="preserve"><value>Pagina successiva</value></data>
   <data name="Request_NoSongs" xml:space="preserve"><value>Nessun brano richiedibile</value></data>
   <data name="Request_NoSongsFiltered" xml:space="preserve"><value>Nessun brano corrisponde alla ricerca</value></data>
   <data name="Request_Err_TooRecent" xml:space="preserve"><value>Hai già inviato una richiesta di recente. Attendi {0} minuti prima di inviarne un'altra.</value></data>
