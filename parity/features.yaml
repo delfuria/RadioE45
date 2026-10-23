@@ -70,8 +70,8 @@
   title: Metadati e tasti multimediali di sistema (lock screen iOS, Centro di controllo macOS, SMTC Windows)
   since: "0.44"
   page: Shell
-  status: { maui: done, desktop: done, web: done, tv: done }
-  tvNotes: "Verificato (emulatore, 2026-10-23): la sessione Media3 è attiva con titolo e artista e le azioni di play, pausa e avanti; i tasti media del telecomando funzionano (tv.media-keys). La scheda «In riproduzione» della home del Sony si guarda in T7"
+  status: { maui: done, desktop: done, web: done, tv: limited }
+  tvNotes: "Sony Bravia (Google TV, Android 12), 2026-10-23: sessione Media3 attiva con titolo, artista e azioni di play, pausa e avanti; i tasti media del telecomando funzionano. La home di Google TV non mostra nessuna scheda «In riproduzione» per un'app di sola radio (non è una funzione dell'app: serve l'API Watch Next, pensata per i video). Allo standby il TV mette in pausa la sessione e al risveglio torna alla Home: la radio riparte con Play"
   notes: "Desktop: MPRIS solo su Linux (macOS e Windows senza bus di sessione: nessun controllo), Services/Desktop/MprisNowPlayingService; web: Media Session API, Services/Browser/BrowserMediaSession. Comandi play/pausa come MAUI iOS (SystemMediaCommands); avanti/indietro = stazione successiva/precedente come Android Auto (MAUI iOS/macOS li ha disabilitati); niente seek"
 
 - id: shell.tab-icons
@@ -598,6 +598,14 @@
   status: { maui: n/a, desktop: n/a, web: n/a, tv: done }
   notes: "Solo Android TV"
   tvNotes: "Manifest leanback, banner 320x180, intent LEANBACK_LAUNCHER; verificato sull'emulatore il 2026-10-22"
+
+- id: tv.splash
+  title: Schermata di avvio con logo e numero di versione, mentre l'app carica e parte la radio
+  since: "0.49"
+  page: Shell
+  status: { maui: n/a, desktop: n/a, web: n/a, tv: done }
+  notes: "Solo Android TV"
+  tvNotes: "TvSplashOverlay sopra a tutto per almeno 2 s (logo, nome, «Versione x», indicatore); poi svanisce e il telecomando riceve il focus. Il telefono mostra solo la splash di sistema"
 
 - id: tv.focus
   title: Ogni controllo azionabile è raggiungibile col D-pad, con focus iniziale sensato e stato di focus ben visibile

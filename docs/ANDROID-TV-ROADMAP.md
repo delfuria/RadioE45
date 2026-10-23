@@ -2,7 +2,7 @@
 
 > Documento operativo, da riprendere a ogni sessione Claude Code. Modellato su `docs/LINUX-UNO-ROADMAP.md` (stesso sistema di parità, stesse regole di processo).
 > Analisi di fattibilità e rischi: [`ANDROID-TV.md`](ANDROID-TV.md). Ultimo aggiornamento: 2026-10-23 (app v0.48).
-> Stato: **T0–T6 completate; prossima sessione: T7** (TV Sony reale, serve il dispositivo) (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
+> Stato: **T0–T7 completate; prossima sessione: T9** (T8, Fire TV, rinviata) (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
 
 ---
 
@@ -156,6 +156,24 @@ Il nome della classe activity (`crc64...`) è generato da .NET: se cambia, legge
 | Sessione multimediale | `dumpsys media_session`: sessione Media3 attiva con titolo e artista e azioni di play, pausa e avanti; la scheda della home TV si guarda sul Sony (T7) |
 | Server locale | Radio Casa (`192.168.1.71`) non era raggiungibile dall'emulatore durante la sessione (`EHOSTUNREACH`, il Mac lo raggiungeva): le prove sono state fatte con AzuraTest e Radio E45 |
 
+### Misure di T7 (2026-10-23, Sony BRAVIA 4K VH21)
+
+| Verifica | Esito |
+|---|---|
+| Dispositivo | BRAVIA 4K VH21, Google TV su Android 12 (API 31), `armeabi-v7a` (solo 32 bit), 4 GB di dati con ~600 MB liberi, schermo 3840×2160 con dimensione logica 1920×1080 a 320 dpi: la pagina logica è 960×540 dp come sull'emulatore e l'interfaccia è identica |
+| Installazione | Il Debug di default è `android-arm64` e non si installa (`ABI`); con `-p:RuntimeIdentifier=android-arm` l'APK è di 61 MB e `adb install -r -t` funziona. L'installazione veloce di `dotnet build -t:Install` fallisce per spazio insufficiente. **Da verificare in T9:** il pacchetto di rilascio per il Play Store deve includere `armeabi-v7a`, altrimenti l'app non si installa su questo televisore |
+| Avvio e riproduzione | Icona e banner nella home, Termini d'uso (focus su «Ho letto»), stazioni di prova, Radio E45 in onda con copertina, brano successivo e pulsante Palinsesto; sessione Media3 in riproduzione |
+| Telecomando vero | Frecce, OK, Indietro e tasti media: tutto OK (prova dell'utente) |
+| Home | Con Home l'audio continua |
+| Scheda in home | La home di Google TV non mostra nessuna scheda «In riproduzione»: non dipende dall'app (servirebbe l'API Watch Next, pensata per i video); `shell.system-media-controls` passa a `limited` |
+| Standby | Il tasto di accensione spegne lo schermo («schermo spento»): il Sony silenzia il dispositivo e **mette in pausa la sessione multimediale** (`state=2` dopo ~0,7 s), il processo resta vivo. Al risveglio il TV torna alla Home e la radio resta in pausa: serve Play o riaprire l'app. Su Android la pausa è uno `Stop()` del lettore (`Media3AudioService.PauseAsync`), quindi Play riprepara il flusso dal punto in diretta; i tempi sullo schermo avanzano comunque perché sono la posizione del brano in diretta sul server. **Deciso (2026-10-23): si lascia così**, è il comportamento standard di Google TV |
+| Server locale | Radio Casa (`192.168.1.71`) è raggiungibile dal Sony (stesso Wi-Fi): flusso e `nowplaying` risposte 200 |
+| Ritorno dai podcast | Su TV la vista «In onda» non riavviava la radio al ritorno (sul telefono lo fa `OnAirPage.OnAppearing`): ora `TvNowPlayingView.OnShownAsync` chiama `ActivateAsync`. Verificato dall'utente sul Sony |
+| Riconnessione dopo la pausa | Dopo uno standby il Play riprendeva dal buffer di prima (radio non più in diretta). `RadioPlaybackService` ora chiude e riapre il flusso se la pausa è durata più di 5 s (`OnPlayWhenReadyChanged`). Verificato dall'utente sul Sony, vale anche per telefono e Android Auto |
+| Voce Watch Next | Una voce di tipo «stazione» inserita con `adb` (a nome di `com.android.shell`) non compare nella home di Google TV: la home sembra mostrare solo video; non si costruisce la funzione |
+| Schermata di avvio | `TvSplashOverlay` con logo, nome e «Versione x» per almeno 2 s, poi dissolvenza e focus al telecomando; resta la splash di sistema (sfondo bianco) un istante prima |
+| Memoria e spazio | Il Sony ha ~4 GB di dati e li riempie (600 MB liberi, poi 250): `pm trim-caches` libera la cache, l'installazione richiede ~200 MB liberi più la soglia di sistema |
+
 ---
 
 ## 4. Architettura di destinazione
@@ -287,9 +305,9 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 - [x] Uscita: revisione degli screenshot, nessun elemento non focusabile, `ParityCheck --strict-tv` senza errori
 
 ### T7 — TV Sony Google TV reale · Mac + TV
-- [ ] Abilitare il debug di rete sul TV, `adb connect`, installazione
-- [ ] Audio, rete, standby e spegnimento, telecomando vero, tasti media
-- [ ] Uscita: esiti e differenze rispetto all'emulatore scritti in §3
+- [x] Abilitare il debug di rete sul TV, `adb connect`, installazione (Sony BRAVIA 4K VH21, Android 12, **armeabi-v7a a 32 bit**: costruire con `-p:RuntimeIdentifier=android-arm` e installare con `adb install -r -t`; l'installazione veloce di Debug non entra nei ~600 MB liberi)
+- [x] Audio, rete, standby e spegnimento, telecomando vero, tasti media, Richieste, Aggiungi stazione con la tastiera, podcast, Schedule e perdita di rete: provati dall'utente sul Sony, tutto OK dopo le correzioni (ritorno dai podcast, riconnessione dopo la pausa)
+- [x] Uscita: esiti e differenze rispetto all'emulatore scritti in §3 («Misure di T7»)
 
 ### T8 — Fire TV · ⏸ rinviata (2026-10-22, dopo Google TV)
 - [ ] Il dispositivo Fire TV c'è: ripartire da qui a Google TV chiuso
@@ -297,6 +315,7 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 - [ ] Uscita: `limited` o `done` dichiarato; altrimenti fuori ambito
 
 ### T9 — Distribuzione · Mac
+- [ ] **ABI:** il pacchetto di rilascio deve includere `armeabi-v7a` (il Sony è a 32 bit e un Debug `arm64` non si installa): controllare `RuntimeIdentifiers` del build di rilascio e dell'AAB prima di caricare
 - [ ] Play Console: form factor Android TV, screenshot 16:9 (almeno 1280x720), banner, questionario TV
 - [ ] Testi di store in inglese; riga in `CHANGELOG.md` sotto `[Unreleased]`
 - [ ] `docs/STORE-DISTRIBUTION.md` e `docs/RELEASE.md` aggiornati; `--strict-tv` verde (nessun `todo` residuo)
@@ -358,6 +377,7 @@ Nessuna decisione aperta. Lo spike T2 può ancora cambiare i dettagli della fila
 | 2026-10-23 | T4 | Cambio stazione e preferito sul lettore, `TvScheduleView`, gestione stazioni (`TvAddStationView`, `TvEditStationView`, azioni nella lista), `ITvHost.GoBack/ShowEditStation`; ParityCheck legge anche `<Binding Path=…/>`
 | 2026-10-23 | T5 | `TvRequestView`, `TvPodcastListView`, `TvPodcastEpisodesView`; pulsanti Request/Podcast con la capability; `PodcastEpisodesViewModel` con `SeekBy` e `Cycle*`; `ITvSection.OnHiddenAsync`; `TvRowButton`; servizio podcast verificato; la TV non si annuncia nel changelog prima del rilascio (`ANDROID-TV-CHANGELOG-PENDING.md`) |
 | 2026-10-23 | T6 | Brano successivo su TV (copertina e riga sotto i tempi), cronologia `n/a`; schermate it/pl riviste, «Offline» non più tagliato; prestazioni misurate; `shell.system-media-controls` e `tv.focus` chiusi; `--strict-tv` senza errori |
+| 2026-10-23 | T7 | Sony BRAVIA 4K VH21 (Google TV, Android 12, 32 bit): installazione (`android-arm`, `adb install -r -t`), prove con telecomando vero e standby; corretti il ritorno dai podcast e la riconnessione in diretta dopo la pausa (anche telefono); schermata di avvio con la versione; scheda in home e Watch Next: non fattibili |
 
 ---
 

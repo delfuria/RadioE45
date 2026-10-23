@@ -414,6 +414,26 @@ public sealed class RadioPlaybackService : MediaLibraryService
         player.Play();
     }
 
+    // A live stream that stayed paused for a while (the TV's standby pauses the session, a media key, a long call)
+    // would resume from the buffer it kept: minutes behind what everyone else hears. Past this pause length a
+    // Play closes the connection and opens it again at the live edge, as when the app starts from scratch.
+    private static readonly TimeSpan ReconnectAfterPause = TimeSpan.FromSeconds(5);
+
+    private void ReconnectToLiveEdge()
+    {
+        // Posted: the player must not be driven from inside its own listener callback.
+        new Handler(Looper.MainLooper!).Post(() =>
+        {
+            IExoPlayer? player = _player;
+            if (player is null || player.PlaybackState == BasePlayer.InterfaceConsts.StateIdle)
+                return;
+
+            _logger?.LogInformation("RadioPlaybackService: resumed after a long pause, reconnecting to the live stream");
+            player.Stop();
+            player.Prepare();
+        });
+    }
+
     // A URL that reaches READY is the working one — forget its fallback progress.
     private void OnStreamReady()
     {
@@ -427,7 +447,23 @@ public sealed class RadioPlaybackService : MediaLibraryService
 
         public PlayerListener(RadioPlaybackService service) => _service = service;
 
+        private DateTime? _pausedSince;
+
         public void OnPlayerError(PlaybackException? error) => _service.OnStreamError();
+
+        public void OnPlayWhenReadyChanged(bool playWhenReady, int reason)
+        {
+            if (!playWhenReady)
+            {
+                _pausedSince ??= DateTime.UtcNow;
+                return;
+            }
+
+            DateTime? since = _pausedSince;
+            _pausedSince = null;
+            if (since is { } pausedAt && DateTime.UtcNow - pausedAt > ReconnectAfterPause)
+                _service.ReconnectToLiveEdge();
+        }
 
         public void OnPlaybackStateChanged(int playbackState)
         {

@@ -187,6 +187,7 @@
   <data name="Common_Delete" xml:space="preserve"><value>Elimina</value></data>
   <data name="Common_Cancel" xml:space="preserve"><value>Annulla</value></data>
   <data name="Common_Save" xml:space="preserve"><value>Salva</value></data>
+  <data name="Splash_Version" xml:space="preserve"><value>Versione {0}</value></data>
   <data name="Common_Close" xml:space="preserve"><value>Chiudi</value></data>
 
   <!-- Error prefixes (shown as "prefix: message") -->

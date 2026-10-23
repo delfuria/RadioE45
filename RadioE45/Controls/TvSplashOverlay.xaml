@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="RadioE45.Controls.TvSplashOverlay"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Schermata di avvio della TV: logo, nome e numero di versione mentre l'app carica le stazioni e parte la radio.
+         Sta sopra a tutto finché l'avvio non è finito, poi svanisce (TvRootPage). -->
+    <Grid BackgroundColor="{DynamicResource PageBackground}">
+        <VerticalStackLayout Spacing="18" VerticalOptions="Center" HorizontalOptions="Center">
+            <Image
+                Source="radioe45_png.png"
+                WidthRequest="180"
+                HeightRequest="180"
+                Aspect="AspectFit"
+                HorizontalOptions="Center" />
+            <Label
+                Text="Radio E45"
+                FontSize="48"
+                FontAttributes="Bold"
+                HorizontalTextAlignment="Center"
+                TextColor="{DynamicResource PrimaryText}" />
+            <Label
+                x:Name="VersionLabel"
+                FontSize="22"
+                HorizontalTextAlignment="Center"
+                TextColor="{DynamicResource MutedText}" />
+            <ActivityIndicator
+                IsRunning="True"
+                Color="{DynamicResource Accent}"
+                WidthRequest="36"
+                HeightRequest="36"
+                Margin="0,18,0,0"
+                HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentView>

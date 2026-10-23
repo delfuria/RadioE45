@@ -43,5 +43,6 @@
         </Grid>
 
         <controls:TvDialogOverlay x:Name="Dialog" IsVisible="False" />
+        <controls:TvSplashOverlay x:Name="Splash" />
     </Grid>
 </ContentPage>

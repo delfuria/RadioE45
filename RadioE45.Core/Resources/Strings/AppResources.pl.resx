@@ -180,6 +180,7 @@
   <data name="Common_Delete" xml:space="preserve"><value>Usuń</value></data>
   <data name="Common_Cancel" xml:space="preserve"><value>Anuluj</value></data>
   <data name="Common_Save" xml:space="preserve"><value>Zapisz</value></data>
+  <data name="Splash_Version" xml:space="preserve"><value>Wersja {0}</value></data>
   <data name="Common_Close" xml:space="preserve"><value>Zamknij</value></data>
 
   <data name="Err_Init" xml:space="preserve"><value>Inicjalizacja</value></data>

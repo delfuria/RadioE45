@@ -1,6 +1,8 @@
 using RadioE45.Services.Audio;
 using RadioE45.Services.Data;
 using RadioE45.Services.Legal;
+using RadioE45.Services.Localization;
+using RadioE45.Services.Platform;
 using RadioE45.ViewModels;
 
 namespace RadioE45.Views.Tv;
@@ -21,12 +23,14 @@ public partial class TvRootPage : ContentPage, ITvHost
     private readonly TvPodcastEpisodesView _podcastEpisodes;
     private TvSection _section = TvSection.OnAir;
     private bool _isInitialized;
+    private static readonly TimeSpan MinimumSplashTime = TimeSpan.FromMilliseconds(2000);
 
     public TvRootPage(
         OnAirViewModel onAirViewModel,
         IAudioService audioService,
         IRadioRepository radioRepository,
         ITermsService termsService,
+        IAppEnvironment environment,
         TvHostAccessor hostAccessor,
         TvNowPlayingView nowPlaying,
         TvStationsView stations,
@@ -42,6 +46,10 @@ public partial class TvRootPage : ContentPage, ITvHost
         _audioService = audioService;
         _radioRepository = radioRepository;
         _termsService = termsService;
+
+        // Start-up screen with the version: on top of everything until the first load is done.
+        Splash.Version = LocalizationResourceManager.Instance.Format("Splash_Version", environment.VersionString);
+        Chrome.IsEnabled = false;
         _nowPlaying = nowPlaying;
         _stations = stations;
         _schedule = schedule;
@@ -109,12 +117,22 @@ public partial class TvRootPage : ContentPage, ITvHost
             return;
 
         _isInitialized = true;
+        DateTime started = DateTime.UtcNow;
 #if ANDROID
         // As on OnAirPage: the Media3 service owns the player and ignores the MediaElement, but
         // Initialize connects the MediaController. There is no MediaElement on the TV page.
         (_audioService as IMediaElementHost)?.Initialize(null!);
 #endif
         await _onAirViewModel.ActivateAsync();
+
+        // The splash screen stays long enough to be read, then fades out and the remote gets the focus.
+        TimeSpan remaining = MinimumSplashTime - (DateTime.UtcNow - started);
+        if (remaining > TimeSpan.Zero)
+            await Task.Delay(remaining);
+
+        await Splash.HideAsync();
+        Chrome.IsEnabled = true;
+        CurrentSection.FocusDefault();
 
         // First launch, in the same order as AppShell: the Terms of Use (once), then, with no stations,
         // the list that proposes the sample ones. Later launches skip both.
