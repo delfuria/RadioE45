@@ -22,19 +22,19 @@
 
             <HorizontalStackLayout Grid.Row="0" Spacing="20">
                 <VerticalStackLayout Spacing="6">
-                    <Button x:Name="NavOnAir" Style="{StaticResource TvButton}" Text="{loc:Translate Tab_OnAir}" Clicked="OnNavOnAirClicked" />
+                    <Button x:Name="NavOnAir" Style="{StaticResource TvButton}" ImageSource="tv_nav_onair.png" ContentLayout="Left,12" Text="{loc:Translate Tab_OnAir}" Clicked="OnNavOnAirClicked" />
                     <BoxView x:Name="NavOnAirMark" HeightRequest="4" CornerRadius="2" Color="{DynamicResource Accent}" />
                 </VerticalStackLayout>
                 <VerticalStackLayout x:Name="NavRequestBox" Spacing="6" IsVisible="{Binding NowPlaying.RequestsEnabled}">
-                    <Button x:Name="NavRequest" Style="{StaticResource TvButton}" Text="{loc:Translate Tab_Request}" Clicked="OnNavRequestClicked" />
+                    <Button x:Name="NavRequest" Style="{StaticResource TvButton}" ImageSource="tab_request.png" ContentLayout="Left,12" Text="{loc:Translate Tab_Request}" Clicked="OnNavRequestClicked" />
                     <BoxView x:Name="NavRequestMark" HeightRequest="4" CornerRadius="2" Color="{DynamicResource Accent}" IsVisible="False" />
                 </VerticalStackLayout>
                 <VerticalStackLayout x:Name="NavPodcastsBox" Spacing="6" IsVisible="{Binding HasPodcasts}">
-                    <Button x:Name="NavPodcasts" Style="{StaticResource TvButton}" Text="{loc:Translate Tab_Podcasts}" Clicked="OnNavPodcastsClicked" />
+                    <Button x:Name="NavPodcasts" Style="{StaticResource TvButton}" ImageSource="tab_podcast.png" ContentLayout="Left,12" Text="{loc:Translate Tab_Podcasts}" Clicked="OnNavPodcastsClicked" />
                     <BoxView x:Name="NavPodcastsMark" HeightRequest="4" CornerRadius="2" Color="{DynamicResource Accent}" IsVisible="False" />
                 </VerticalStackLayout>
                 <VerticalStackLayout Spacing="6">
-                    <Button x:Name="NavStations" Style="{StaticResource TvButton}" Text="{loc:Translate Tab_Radio}" Clicked="OnNavStationsClicked" />
+                    <Button x:Name="NavStations" Style="{StaticResource TvButton}" ImageSource="tv_nav_channels.png" ContentLayout="Left,12" Text="{loc:Translate Tab_Radio}" Clicked="OnNavStationsClicked" />
                     <BoxView x:Name="NavStationsMark" HeightRequest="4" CornerRadius="2" Color="{DynamicResource Accent}" IsVisible="False" />
                 </VerticalStackLayout>
             </HorizontalStackLayout>

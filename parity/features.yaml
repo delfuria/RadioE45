@@ -509,7 +509,7 @@
   page: Schedule
   viewmodel: ScheduleViewModel
   status: { maui: done, desktop: done, web: done, tv: limited }
-  tvNotes: "Icona a sinistra della fascia (microfono = streamer in diretta, pallino = in onda, orologio = streamer in orario); nessuna etichetta testuale"
+  tvNotes: "Icona a sinistra della fascia come su MAUI: microfono = streamer (in diretta o in programma), nota = playlist; gli stati in corso la sostituiscono (pallino = playlist in onda, orologio = streamer in orario ma non collegato); nessuna etichetta testuale né riquadro"
 
 # --- Song requests ---------------------------------------------------------------------------
 

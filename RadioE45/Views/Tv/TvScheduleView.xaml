@@ -19,7 +19,8 @@
 
     <!-- Palinsesto per la TV: a schermo intero al posto del pannello dal basso. Ogni fascia è un pulsante focusabile,
          così il D-pad scorre l'elenco (Android porta la riga con il focus dentro lo ScrollView).
-         Icona a sinistra: microfono = streamer in diretta, pallino = in onda, orologio = streamer in orario. -->
+         Icona a sinistra come su MAUI: microfono = streamer, nota = playlist; gli stati in corso la sostituiscono
+         (pallino = playlist in onda, orologio = streamer in orario ma non ancora collegato). -->
     <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14" Padding="0,24,0,0">
 
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
@@ -82,11 +83,21 @@
                                     <Binding Path="Name" />
                                 </MultiBinding>
                             </Button.Text>
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="&#xF001;" FontFamily="FaSolid" Size="22" Color="{DynamicResource MutedText}" />
+                            </Button.ImageSource>
                             <Button.Triggers>
-                                <DataTrigger TargetType="Button" Binding="{Binding ShowLiveBadge}" Value="True">
+                                <DataTrigger TargetType="Button" Binding="{Binding IsStreamer}" Value="True">
                                     <Setter Property="ImageSource">
                                         <Setter.Value>
                                             <FontImageSource Glyph="&#xF130;" FontFamily="FaSolid" Size="24" Color="{DynamicResource PrimaryText}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Button" Binding="{Binding ShowLiveBadge}" Value="True">
+                                    <Setter Property="ImageSource">
+                                        <Setter.Value>
+                                            <FontImageSource Glyph="&#xF130;" FontFamily="FaSolid" Size="30" Color="{DynamicResource PrimaryText}" />
                                         </Setter.Value>
                                     </Setter>
                                 </DataTrigger>
