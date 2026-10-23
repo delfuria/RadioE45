@@ -62,6 +62,39 @@ about 20 seconds before the first sound (analysis in
 [`docs/carplay-ios/carplay-mp3-start-delay.md`](docs/carplay-ios/carplay-mp3-start-delay.md)).
 Architecture, files and test procedure: [`docs/carplay-ios/`](docs/carplay-ios/README.md).
 
+## Run it in the browser
+
+Radio E45 also runs in the browser, with no installation: open
+**<https://delfuria.github.io/RadioE45/>** on a desktop or mobile browser and press Play.
+
+The web app is built with [Uno Platform](https://platform.uno/) (`net10.0-browserwasm`, WebAssembly) and
+shares its logic with the native apps through `RadioE45.Core`: the same stations, now playing, song
+requests, podcasts and schedule, with the same view models. It can also be installed as an app from the
+browser menu (progressive web app), and it checks by itself when a newer version is available.
+
+It is published automatically to GitHub Pages from `main`
+([`pages.yml`](.github/workflows/pages.yml)). To build and run it locally see
+[Linux and Web (Uno Platform)](#linux-and-web-uno-platform) below.
+
+## Android TV and Google TV
+
+The Android app also runs on Android TV and Google TV, with screens designed for the remote control and
+for viewing from the couch. It is the same app and the same package as the phone version: on a TV it
+shows a dedicated interface instead of the touch one.
+
+- **On Air:** cover art, title and artist, progress, listener count, the next track when the station
+  publishes it, previous/next station and favorite
+- **Request:** search songs with the on-screen keyboard and send a request, when the station enables it
+- **Podcasts:** shows and episodes, with the saved position and ±30 s seek from the D-pad, when the
+  station has podcasts
+- **Schedule:** the station's programs at full screen, with streamers marked by a microphone
+- **Channels:** choose the station, and add, edit or delete stations
+
+Everything is reachable with the D-pad (up, down, left, right, OK, Back) and the media keys of the
+remote. The TV has no settings page and no side menu. Tested on the Android TV emulator and on a Sony
+BRAVIA Google TV; the release package includes `armeabi-v7a`, needed by 32-bit TVs. Plan, measurements
+and remaining decisions: [`docs/ANDROID-TV-ROADMAP.md`](docs/ANDROID-TV-ROADMAP.md).
+
 ## Documentation
 All documentation lives in [`docs/`](docs/):
 
