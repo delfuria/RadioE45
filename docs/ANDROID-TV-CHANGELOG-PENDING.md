@@ -16,6 +16,7 @@ Da aggiornare con le funzioni delle sessioni successive (richieste, podcast, bra
 |---|---|---|
 | T2–T3 | Pagina radice con barra On Air / Canali, player con play/pausa, lista canali, Termini d'uso | Base della riga «Android TV» |
 | T5 | Richieste di brani (ricerca con la tastiera, pagine) e podcast (elenco, episodi, filtri, player con ±30 s, ripresa dall'ultima posizione), visibili solo se la stazione li supporta | Da aggiungere alla bozza |
+| T6 | Il brano successivo sotto i tempi del lettore | Da aggiungere alla bozza |
 | T5 (dopo) | All'avvio parte sempre la stazione preferita, se c'è (la TV non ha impostazioni); altrimenti la prima | Da aggiungere alla bozza |
 | T4 | Stazione precedente/successiva, cuore dei preferiti, Palinsesto a schermo intero, canali: aggiungi, modifica, elimina (con conferma), aggiorna; tastiera su schermo | Inclusa nella bozza sopra |
 

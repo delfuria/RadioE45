@@ -185,7 +185,8 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Copertina piccola (36 dp) e una riga «titolo – artista» sotto i tempi, troncata con i puntini; compare solo se il server pubblica il brano successivo. Niente etichetta: la copertina basta. Verificato sull'emulatore anche con un titolo su due righe"
 
 - id: onair.schedule-entry
   title: Accesso al palinsesto accanto al prossimo brano, o riga compatta se manca il prossimo brano
@@ -233,7 +234,8 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Decisione 2026-10-23: la cronologia dei brani non si visualizza su TV (non serve a distanza e non è focusabile)"
 
 - id: onair.pull-to-refresh
   title: Aggiornamento manuale del now playing (pull to refresh)

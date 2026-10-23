@@ -270,6 +270,7 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 - [x] Uscita: ascolto di un episodio dall'emulatore, ripresa dalla posizione salvata, parità aggiornata
 
 ### T6 — Rifinitura 10 piedi · Mac + emulatore
+- [x] Brano successivo (`onair.next-track`): copertina piccola (36 dp, al posto di un'etichetta) e una riga «titolo – artista» sotto i tempi nella colonna delle informazioni, solo se il server lo pubblica; verificato con titolo su due righe e testo lungo (troncato con i puntini). Cronologia dei brani (`onair.song-history`): `n/a`, non si visualizza (decisione 2026-10-23)
 - [ ] Stringhe in it/en/pl, dimensioni testo, margini di sicurezza, immagini, tema
 - [ ] Prestazioni su lista lunga e immagini, uso memoria
 - [ ] Triage finale dei `tv: todo` rimasti: ognuno diventa `done`, `limited` o `n/a` con `tvNotes` (la parità non è l'obiettivo, §5)
@@ -329,6 +330,7 @@ T1 un giorno; T2 un giorno; T3 e T4 circa una settimana insieme; T5 due o tre gi
 Nessuna decisione aperta. Lo spike T2 può ancora cambiare i dettagli della fila di pulsanti (§4) se il focus non si comporta come previsto.
 
 ---
+- **2026-10-23:** il brano successivo si visualizza (copertina piccola e una riga di testo sotto i tempi), la cronologia dei brani no.
 
 ## 9. Registro delle sessioni
 
@@ -345,6 +347,7 @@ Nessuna decisione aperta. Lo spike T2 può ancora cambiare i dettagli della fila
 | 2026-10-22 | T3 | `TvRootPage` contenitore + `ITvHost`, `TvNowPlayingView`, `TvStationsView`, `TvDialogOverlay`, `TvFocus`; primo avvio (termini → stazioni di prova → riproduzione), selezione e Indietro verificati |
 | 2026-10-23 | T4 | Cambio stazione e preferito sul lettore, `TvScheduleView`, gestione stazioni (`TvAddStationView`, `TvEditStationView`, azioni nella lista), `ITvHost.GoBack/ShowEditStation`; ParityCheck legge anche `<Binding Path=…/>`
 | 2026-10-23 | T5 | `TvRequestView`, `TvPodcastListView`, `TvPodcastEpisodesView`; pulsanti Request/Podcast con la capability; `PodcastEpisodesViewModel` con `SeekBy` e `Cycle*`; `ITvSection.OnHiddenAsync`; `TvRowButton`; servizio podcast verificato; la TV non si annuncia nel changelog prima del rilascio (`ANDROID-TV-CHANGELOG-PENDING.md`) |
+| 2026-10-23 | T6 (in corso) | Brano successivo su TV (copertina e riga sotto i tempi), cronologia `n/a`; resta il resto di T6 |
 
 ---
 

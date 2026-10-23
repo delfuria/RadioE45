@@ -20,7 +20,7 @@
     </ContentView.Resources>
 
     <!-- Lettore per la TV: copertina a sinistra, informazioni a destra, controlli centrati sotto. Stessa logica del telefono
-         (OnAirViewModel); qui solo layout e binding. Prossimo brano e ultimi brani: T6. -->
+         (OnAirViewModel); qui solo layout e binding. Prossimo brano (copertina piccola e una riga di testo) sotto i tempi; la cronologia dei brani non c'è su TV (decisione 2026-10-23). -->
     <Grid ColumnDefinitions="Auto,*" RowDefinitions="*,Auto" ColumnSpacing="48" Padding="0,16,0,0">
 
         <Border
@@ -61,18 +61,21 @@
             </Grid>
         </Border>
 
-        <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="10" VerticalOptions="Start">
+        <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="8" VerticalOptions="Start">
 
             <HorizontalStackLayout Spacing="16" VerticalOptions="Center">
                 <Border
                     BackgroundColor="{DynamicResource Accent}"
                     StrokeShape="RoundRectangle 14"
                     Stroke="Transparent"
-                    Padding="18,6">
+                    HeightRequest="40"
+                    Padding="18,0">
                     <Label
                         Text="{Binding CurrentStation.Name}"
                         FontSize="24"
                         FontAttributes="Bold"
+                        VerticalOptions="Center"
+                        VerticalTextAlignment="Center"
                         TextColor="White" />
                 </Border>
                 <Label
@@ -103,27 +106,63 @@
 
             <Label
                 Text="{Binding NowPlaying.Title}"
-                Margin="0,18,0,0"
-                FontSize="38"
+                Margin="0,8,0,0"
+                FontSize="32"
                 FontAttributes="Bold"
                 MaxLines="2"
                 LineBreakMode="TailTruncation"
                 TextColor="{DynamicResource PrimaryText}" />
             <Label
                 Text="{Binding NowPlaying.Artist}"
-                FontSize="28"
+                FontSize="26"
                 MaxLines="1"
                 LineBreakMode="TailTruncation"
                 TextColor="{DynamicResource SecondaryText}" />
 
             <ProgressBar
-                Margin="0,18,0,0"
+                Margin="0,10,0,0"
                 Progress="{Binding TrackProgress}"
                 ProgressColor="{DynamicResource Accent}"
                 BackgroundColor="{DynamicResource CardElevated}" />
             <Grid ColumnDefinitions="*,*">
                 <Label Grid.Column="0" Text="{Binding ElapsedTimeText}" FontSize="20" TextColor="{DynamicResource MutedText}" />
                 <Label Grid.Column="1" Text="{Binding TotalTimeText}" FontSize="20" TextColor="{DynamicResource MutedText}" HorizontalOptions="End" />
+            </Grid>
+
+            <!-- Prossimo brano: copertina piccola e una riga di testo sotto i tempi, solo se il server lo pubblica -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14" Margin="0,2,0,0" IsVisible="{Binding NowPlaying.Next, Converter={toolkit:IsNotNullConverter}}">
+                <Border
+                    Grid.Column="0"
+                    WidthRequest="36"
+                    HeightRequest="36"
+                    StrokeShape="RoundRectangle 8"
+                    Stroke="Transparent"
+                    VerticalOptions="Center">
+                    <Grid>
+                        <Image
+                            Source="{Binding NowPlaying.Next.ArtworkUrl}"
+                            Aspect="AspectFill"
+                            IsVisible="{Binding NowPlaying.Next.ArtworkUrl, Converter={toolkit:IsNotNullConverter}}" />
+                        <Image
+                            Source="radio_placeholder.png"
+                            Aspect="AspectFit"
+                            IsVisible="{Binding NowPlaying.Next.ArtworkUrl, Converter={toolkit:IsNullConverter}}" />
+                    </Grid>
+                </Border>
+                <Label
+                    Grid.Column="1"
+                    FontSize="24"
+                    MaxLines="1"
+                    LineBreakMode="TailTruncation"
+                    VerticalOptions="Center"
+                    TextColor="{DynamicResource SecondaryText}">
+                    <Label.Text>
+                        <MultiBinding StringFormat="{}{0} – {1}">
+                            <Binding Path="NowPlaying.Next.Title" />
+                            <Binding Path="NowPlaying.Next.Artist" />
+                        </MultiBinding>
+                    </Label.Text>
+                </Label>
             </Grid>
 
             <Label

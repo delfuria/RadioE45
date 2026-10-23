@@ -66,6 +66,20 @@
   uno: RadioE45.Uno/Views/OnAirPage.xaml
   tv: RadioE45/Views/Tv/TvNowPlayingView.xaml
   ignoreTv:
+    - name: IsSongHistoryExpanded
+      reason: "onair.song-history n/a: la cronologia non si visualizza su TV (decisione 2026-10-23)"
+    - name: NowPlaying.SongHistory
+      reason: "onair.song-history n/a: la cronologia non si visualizza su TV (decisione 2026-10-23)"
+    - name: ToggleSongHistoryCommand
+      reason: "onair.song-history n/a: la cronologia non si visualizza su TV (decisione 2026-10-23)"
+    - name: OnAir_RecentlyPlayed
+      reason: "onair.song-history n/a: la cronologia non si visualizza su TV (decisione 2026-10-23)"
+    - name: ShowScheduleOnlyRow
+      reason: "Riga compatta del palinsesto: su TV il pulsante Schedule sta già tra i controlli"
+    - name: Artist
+      reason: "Riga della cronologia dei brani: onair.song-history n/a su TV (decisione 2026-10-23)"
+    - name: Title
+      reason: "Riga della cronologia dei brani: onair.song-history n/a su TV (decisione 2026-10-23)"
     - name: ActivateAsync
       reason: "Lo chiama TvRootPage all'avvio (come OnAirPage.OnAppearing sul telefono)"
     - name: ArtworkHeight
