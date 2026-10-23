@@ -7,7 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.49] - 2026-10-23
+
+### New
+- **Android TV:** the app now runs on Android TV and Google TV with a remote-friendly screen: now playing with the next track, previous/next station and favorite, song requests, podcasts, the schedule, and adding, editing and deleting stations with the on-screen keyboard.
+
 ### Fixed
+- **Android:** resuming the radio after a long pause (for example after the TV or a media key paused it) now reconnects to the live stream instead of playing the old buffered audio.
 - **Schedule:** with a larger text size the schedule panel on iPhone and Android now uses the full screen width instead of a narrow window, and the "On Air" badge keeps its normal height.
 
 ## [0.48] - 2026-10-22

@@ -1,5 +1,7 @@
 # Android TV — voci di changelog in sospeso
 
+> **2026-10-23:** la riga «Android TV» e la riga «Fixed» sulla riconnessione sono state spostate in `CHANGELOG.md`, sezione `[0.49]` (`/release-prep 0.49`). Da qui in poi le voci TV seguono la regola 11 di `CLAUDE.md`; questo file resta come storico.
+
 Decisione (2026-10-23): la TV **non si annuncia** in `CHANGELOG.md` prima del rilascio TV. Le sessioni T1–T9 non aggiungono righe sotto `## [Unreleased]`: le modifiche si accumulano qui, e la riga (o le righe) in inglese si scrive/scrivono al rilascio della TV (`/release-prep`).
 
 Eccezione alla regola 11 di `CLAUDE.md`, valida solo per le modifiche **visibili solo sulla TV**. Una modifica che cambia anche telefono/desktop/web resta soggetta alla regola 11.
