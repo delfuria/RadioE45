@@ -7,6 +7,7 @@
     xmlns:vm="clr-namespace:RadioE45.ViewModels;assembly=RadioE45.Core"
     xmlns:models="clr-namespace:RadioE45.Models;assembly=RadioE45.Core"
     xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    xmlns:controls="clr-namespace:RadioE45.Controls"
     x:DataType="vm:RadioListViewModel">
 
     <ContentView.Resources>
@@ -17,44 +18,102 @@
         </ResourceDictionary>
     </ContentView.Resources>
 
-    <!-- Elenco delle stazioni per la TV: OK su una stazione la seleziona e torna al lettore.
-         Aggiunta, modifica ed eliminazione: T4. -->
-    <!-- Padding laterale: la riga con il focus si ingrandisce e verrebbe tagliata dai bordi dello ScrollView -->
-    <ScrollView Padding="16,24,16,16">
-        <VerticalStackLayout x:Name="StationsLayout" Spacing="14" BindableLayout.ItemsSource="{Binding Stations}">
+    <!-- Elenco delle stazioni per la TV: OK su una stazione la seleziona e torna al lettore. A destra di ogni nome
+         modifica ed elimina (al posto di swipe e menu contestuale); sopra l'elenco aggiungi e aggiorna (al posto del
+         pulsante flottante e del pull to refresh). -->
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12" Padding="0,24,0,0">
 
-            <BindableLayout.EmptyView>
-                <Label
-                    Text="{loc:Translate RadioList_Empty}"
-                    FontSize="26"
-                    TextColor="{DynamicResource SecondaryText}" />
-            </BindableLayout.EmptyView>
+        <HorizontalStackLayout Grid.Row="0" Spacing="20" Padding="28,0">
+            <Button
+                x:Name="AddButton"
+                Style="{StaticResource TvButton}"
+                Text="{loc:Translate AddStation_Title}"
+                Command="{Binding NavigateToAddStationCommand}" />
+            <Button
+                x:Name="RefreshButton"
+                Style="{StaticResource TvButton}"
+                FontFamily="FaSolid"
+                Text="&#xF021;"
+                Command="{Binding ForceReloadStationsCommand}"
+                SemanticProperties.Description="{loc:Translate RadioList_Refresh}">
+                <Button.Behaviors>
+                    <controls:TvKeepFocusBehavior />
+                </Button.Behaviors>
+            </Button>
+            <ActivityIndicator
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}"
+                Color="{DynamicResource Accent}"
+                VerticalOptions="Center" />
+        </HorizontalStackLayout>
 
-            <BindableLayout.ItemTemplate>
-                <DataTemplate x:DataType="models:AzuraStation">
-                    <Button
-                        Style="{StaticResource TvButton}"
-                        HorizontalOptions="Start"
-                        MinimumWidthRequest="560"
+        <Label
+            Grid.Row="1"
+            Padding="16,0"
+            Text="{Binding ErrorMessage}"
+            FontSize="22"
+            TextColor="{StaticResource LiveRed}"
+            IsVisible="{Binding ErrorMessage, Converter={toolkit:IsStringNotNullOrEmptyConverter}}" />
+
+        <!-- Padding laterale: la riga con il focus si ingrandisce e verrebbe tagliata dai bordi dello ScrollView -->
+        <ScrollView Grid.Row="2" Padding="28,16,28,16">
+            <VerticalStackLayout x:Name="StationsLayout" Spacing="14" BindableLayout.ItemsSource="{Binding Stations}">
+
+                <BindableLayout.EmptyView>
+                    <Label
+                        Text="{loc:Translate RadioList_Empty}"
                         FontSize="26"
-                        Text="{Binding Name}"
-                        ContentLayout="Right,16"
-                        Command="{Binding PlayCommand}"
-                        CommandParameter="{Binding .}"
-                        IsEnabled="{Binding IsOnline}">
-                        <Button.Triggers>
-                            <!-- Stazione in ascolto: puntino a destra del nome (colore del testo, visibile anche con il focus) -->
-                            <DataTrigger TargetType="Button" Binding="{Binding IsActive}" Value="True">
-                                <Setter Property="ImageSource">
-                                    <Setter.Value>
-                                        <FontImageSource Glyph="&#xF111;" FontFamily="FaSolid" Size="14" Color="{DynamicResource PrimaryText}" />
-                                    </Setter.Value>
-                                </Setter>
-                            </DataTrigger>
-                        </Button.Triggers>
-                    </Button>
-                </DataTemplate>
-            </BindableLayout.ItemTemplate>
-        </VerticalStackLayout>
-    </ScrollView>
+                        TextColor="{DynamicResource SecondaryText}" />
+                </BindableLayout.EmptyView>
+
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:AzuraStation">
+                        <HorizontalStackLayout Spacing="16">
+                            <Button
+                                Style="{StaticResource TvRowButton}"
+                                MinimumWidthRequest="560"
+                                FontSize="26"
+                                Text="{Binding Name}"
+                                ContentLayout="Right,16"
+                                Command="{Binding PlayCommand}"
+                                CommandParameter="{Binding .}"
+                                IsEnabled="{Binding IsOnline}">
+                                <Button.Triggers>
+                                    <!-- Stazione in ascolto: puntino a destra del nome (colore del testo, visibile anche con il focus) -->
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsActive}" Value="True">
+                                        <Setter Property="ImageSource">
+                                            <Setter.Value>
+                                                <FontImageSource Glyph="&#xF111;" FontFamily="FaSolid" Size="14" Color="{DynamicResource PrimaryText}" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                            <Button
+                                Style="{StaticResource TvButton}"
+                                FontFamily="FaSolid"
+                                Text="&#xF303;"
+                                Command="{Binding EditCommand}"
+                                CommandParameter="{Binding .}"
+                                SemanticProperties.Description="{loc:Translate RadioList_EditStation}" />
+                            <Button
+                                Style="{StaticResource TvButton}"
+                                FontFamily="FaSolid"
+                                Text="&#xF1F8;"
+                                Command="{Binding DeleteCommand}"
+                                CommandParameter="{Binding .}"
+                                SemanticProperties.Description="{loc:Translate RadioList_DeleteStation}" />
+                            <!-- Una stazione offline non si può selezionare: l'etichetta spiega perché il pulsante è spento -->
+                            <Label
+                                Text="{loc:Translate RadioList_Offline}"
+                                FontSize="22"
+                                VerticalOptions="Center"
+                                TextColor="{StaticResource LiveRed}"
+                                IsVisible="{Binding IsOnline, Converter={toolkit:InvertedBoolConverter}}" />
+                        </HorizontalStackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentView>

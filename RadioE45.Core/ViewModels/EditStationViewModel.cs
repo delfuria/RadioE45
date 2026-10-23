@@ -79,6 +79,9 @@ public partial class EditStationViewModel : BaseViewModel
         _ = LoadStationAsync(value);
     }
 
+    // Reloads the form from the database (a view that stays alive reopens the same station).
+    public Task ReloadAsync() => LoadStationAsync(StationId);
+
     private async Task LoadStationAsync(int id)
     {
         await SafeExecuteAsync(async () =>
@@ -151,6 +154,10 @@ public partial class EditStationViewModel : BaseViewModel
 
     private static string? NullIfBlank(string value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    // Toggle for views without a checkbox (remote control).
+    [RelayCommand]
+    private void ToggleCustomInfo() => HasCustomInfo = !HasCustomInfo;
 
     [RelayCommand]
     private async Task CancelAsync()

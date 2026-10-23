@@ -1,22 +1,22 @@
 namespace RadioE45.Controls;
 
-// Android TV: un pulsante il cui comando asincrono è in esecuzione è disabilitato (CanExecute false)
+// Android TV: un pulsante (Button o ImageButton) il cui comando asincrono è in esecuzione è disabilitato (CanExecute false)
 // e Android toglie il focus a una vista disabilitata: il focus passa al primo elemento della pagina
 // e non torna indietro. Misurato sull'emulatore (docs/ANDROID-TV-ROADMAP.md §3): dopo OK su Play il
 // focus saltava su "On Air". Il comportamento ridà il focus al pulsante quando si riabilita.
 // Solo input/focus, nessuna logica: il ViewModel resta quello del telefono.
-public sealed class TvKeepFocusBehavior : Behavior<Button>
+public sealed class TvKeepFocusBehavior : Behavior<VisualElement>
 {
     private bool _restoreFocus;
 
-    protected override void OnAttachedTo(Button button)
+    protected override void OnAttachedTo(VisualElement button)
     {
         base.OnAttachedTo(button);
         button.PropertyChanged += OnPropertyChanged;
         button.Unfocused += OnUnfocused;
     }
 
-    protected override void OnDetachingFrom(Button button)
+    protected override void OnDetachingFrom(VisualElement button)
     {
         button.PropertyChanged -= OnPropertyChanged;
         button.Unfocused -= OnUnfocused;
@@ -25,7 +25,7 @@ public sealed class TvKeepFocusBehavior : Behavior<Button>
 
     private void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (sender is not Button button || e.PropertyName != nameof(VisualElement.IsEnabled))
+        if (sender is not VisualElement button || e.PropertyName != nameof(VisualElement.IsEnabled))
             return;
 
         if (!button.IsEnabled)
@@ -44,7 +44,7 @@ public sealed class TvKeepFocusBehavior : Behavior<Button>
     // Se la vista perde il focus perché si è disabilitata, la proprietà può cambiare dopo l'evento.
     private void OnUnfocused(object? sender, FocusEventArgs e)
     {
-        if (sender is Button { IsEnabled: false })
+        if (sender is VisualElement { IsEnabled: false })
             _restoreFocus = true;
     }
 }

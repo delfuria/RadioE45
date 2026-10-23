@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="RadioE45.Views.Tv.TvEditStationView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels;assembly=RadioE45.Core"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    x:DataType="vm:EditStationViewModel">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Resources/Styles/TvStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <!-- Modifica di una stazione per la TV: nome, nome breve e descrizione con la tastiera su schermo (OK sul campo).
+         Link, contatti e ritardo personalizzato non ci sono (editstation.custom-links / latency-override n/a). -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12" Padding="0,24,0,0">
+
+        <Label
+            Grid.Row="0"
+            Padding="16,0"
+            Text="{loc:Translate EditStation_Title}"
+            FontSize="40"
+            FontAttributes="Bold"
+            TextColor="{DynamicResource PrimaryText}" />
+
+        <Label
+            Grid.Row="1"
+            Padding="16,0"
+            Text="{Binding ErrorMessage}"
+            FontSize="22"
+            TextColor="{StaticResource LiveRed}"
+            IsVisible="{Binding ErrorMessage, Converter={toolkit:IsStringNotNullOrEmptyConverter}}" />
+
+        <!-- Padding: il pulsante con il focus si ingrandisce e verrebbe tagliato dai bordi dello ScrollView -->
+        <ScrollView Grid.Row="2" Padding="16,12,16,12">
+            <VerticalStackLayout Spacing="12">
+
+                <Label Text="{Binding UrlBase}" FontSize="20" TextColor="{DynamicResource MutedText}" />
+
+                <Label Text="{loc:Translate EditStation_Name}" FontSize="20" TextColor="{DynamicResource SecondaryText}" />
+                <Entry
+                    x:Name="NameEntry"
+                    Style="{StaticResource TvEntry}"
+                    Text="{Binding Name}"
+                    SemanticProperties.Description="{loc:Translate EditStation_Name}" />
+
+                <Label Text="{loc:Translate EditStation_ShortName}" FontSize="20" TextColor="{DynamicResource SecondaryText}" />
+                <Entry
+                    Style="{StaticResource TvEntry}"
+                    Text="{Binding ShortName}"
+                    SemanticProperties.Description="{loc:Translate EditStation_ShortName}" />
+
+                <Label Text="{loc:Translate EditStation_Description}" FontSize="20" TextColor="{DynamicResource SecondaryText}" />
+                <Entry
+                    Style="{StaticResource TvEntry}"
+                    Text="{Binding Description}"
+                    SemanticProperties.Description="{loc:Translate EditStation_Description}" />
+
+                <!-- Senza le informazioni personalizzate il nome e la descrizione modificati non sostituiscono quelli del server -->
+                <Button
+                    Style="{StaticResource TvButton}"
+                    HorizontalOptions="Start"
+                    Margin="0,8,0,0"
+                    Text="{loc:Translate EditStation_UseCustomInfo}"
+                    ContentLayout="Left,16"
+                    Command="{Binding ToggleCustomInfoCommand}">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding HasCustomInfo}" Value="True">
+                            <Setter Property="ImageSource">
+                                <Setter.Value>
+                                    <FontImageSource Glyph="&#xF14A;" FontFamily="FaSolid" Size="24" Color="{DynamicResource PrimaryText}" />
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding HasCustomInfo}" Value="False">
+                            <Setter Property="ImageSource">
+                                <Setter.Value>
+                                    <FontImageSource Glyph="&#xF0C8;" FontFamily="FaSolid" Size="24" Color="{DynamicResource PrimaryText}" />
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <HorizontalStackLayout Grid.Row="3" Spacing="20" HorizontalOptions="End" Margin="16,0,16,12">
+            <Button
+                Style="{StaticResource TvButton}"
+                Text="{loc:Translate Common_Cancel}"
+                Command="{Binding CancelCommand}"
+                IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}" />
+            <Button
+                Style="{StaticResource TvButton}"
+                Text="{loc:Translate Common_Save}"
+                Command="{Binding SaveCommand}"
+                IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}" />
+        </HorizontalStackLayout>
+    </Grid>
+</ContentView>

@@ -104,6 +104,14 @@
       reason: "Etichetta della voce di swipe del telefono; su TV l'eliminazione è un'azione sulla stazione (T4)"
     - name: Tab_Radio
       reason: "Titolo della pagina MAUI; su TV l'etichetta è nel pulsante di sezione di TvRootPage"
+    - name: Description
+      reason: "Su TV la riga mostra solo il nome e il puntino della stazione in ascolto: per scegliere col telecomando non serve altro (radiolist.list limited)"
+    - name: HlsEnabled
+      reason: "Il badge HLS è sul lettore, non nell'elenco TV (radiolist.list limited)"
+    - name: IsFavorite
+      reason: "Il preferito si imposta dal lettore (onair.favorite), non dall'elenco TV (radiolist.list limited)"
+    - name: LogoUrl
+      reason: "Nessun logo nell'elenco TV (radiolist.list limited)"
   viewmodels: [RadioListViewModel]
   ignore:
     - name: Common_Delete
@@ -112,14 +120,62 @@
 - page: AddStation
   maui: RadioE45/Views/AddStationPage.xaml
   uno: RadioE45.Uno/Views/AddStationPage.xaml
-  tv: RadioE45/Views/Tv/TvAddStationPage.xaml
+  tv: RadioE45/Views/Tv/TvAddStationView.xaml
+  ignoreTv:
+    - name: Station.Description
+      reason: "I risultati mostrano solo il nome: la descrizione allungherebbe la riga senza aiutare a sceglierla col telecomando"
+    - name: Station.HasDescription
+      reason: "Come Station.Description: nessuna descrizione nei risultati TV"
+    - name: Title
+      reason: "Titolo della pagina MAUI; su TV non c'è barra del titolo e il pulsante di sezione resta sottolineato"
   viewmodels: [AddStationViewModel, StationSelectionItem]
   ignore: []
 
 - page: EditStation
   maui: RadioE45/Views/EditStationPage.xaml
   uno: RadioE45.Uno/Views/EditStationPage.xaml
-  tv: RadioE45/Views/Tv/TvEditStationPage.xaml
+  tv: RadioE45/Views/Tv/TvEditStationView.xaml
+  ignoreTv:
+    - name: AzuraStationId
+      reason: "L'ID AzuraCast non si mostra su TV: è un dato tecnico che non si può cambiare"
+    - name: ContactEmail
+      reason: "editstation.custom-links n/a: i contatti si mostrano solo nel menu laterale, che su TV non c'è"
+    - name: ContactPhone
+      reason: "editstation.custom-links n/a: i contatti si mostrano solo nel menu laterale, che su TV non c'è"
+    - name: SocialUrl1
+      reason: "editstation.custom-links n/a: i social si mostrano solo nel menu laterale, che su TV non c'è"
+    - name: SocialUrl2
+      reason: "editstation.custom-links n/a: i social si mostrano solo nel menu laterale, che su TV non c'è"
+    - name: SocialUrl3
+      reason: "editstation.custom-links n/a: i social si mostrano solo nel menu laterale, che su TV non c'è"
+    - name: WebsiteUrl
+      reason: "editstation.custom-links n/a: il sito si mostra solo nel menu laterale, che su TV non c'è"
+    - name: OverrideLatencyOffset
+      reason: "editstation.latency-override n/a: impostazione avanzata, su TV vale il valore globale"
+    - name: LatencyOffsetSeconds
+      reason: "editstation.latency-override n/a: impostazione avanzata, su TV vale il valore globale"
+    - name: Title
+      reason: "Titolo della pagina MAUI; su TV il form ha un titolo proprio (EditStation_Title)"
+    - name: EditStation_ContactEmail
+      reason: "editstation.custom-links n/a"
+    - name: EditStation_ContactPhone
+      reason: "editstation.custom-links n/a"
+    - name: EditStation_SocialUrl1
+      reason: "editstation.custom-links n/a"
+    - name: EditStation_SocialUrl2
+      reason: "editstation.custom-links n/a"
+    - name: EditStation_SocialUrl3
+      reason: "editstation.custom-links n/a"
+    - name: EditStation_WebsiteUrl
+      reason: "editstation.custom-links n/a"
+    - name: EditStation_Section_Links
+      reason: "editstation.custom-links n/a: nessuna sezione dei link"
+    - name: EditStation_OverrideLatencyOffset
+      reason: "editstation.latency-override n/a"
+    - name: EditStation_StationId
+      reason: "L'ID AzuraCast non si mostra su TV"
+    - name: EditStation_UrlBase
+      reason: "Su TV l'indirizzo del server è mostrato senza etichetta sopra i campi"
   viewmodels: [EditStationViewModel]
   ignore: []
 
@@ -134,7 +190,16 @@
 - page: Schedule
   maui: RadioE45/Views/SchedulePopup.xaml
   uno: RadioE45.Uno/Views/ScheduleDialog.xaml
-  tv: RadioE45/Views/Tv/TvScheduleDialog.xaml
+  tv: RadioE45/Views/Tv/TvScheduleView.xaml
+  ignoreTv:
+    - name: IsStreamer
+      reason: "Sul telefono distingue l'icona accanto al nome; su TV lo stato è nell'icona del badge (schedule.live-badge limited)"
+    - name: Schedule_Now
+      reason: "schedule.live-badge limited: su TV il badge è un'icona (pallino)"
+    - name: Schedule_Live
+      reason: "schedule.live-badge limited: su TV il badge è un'icona (microfono)"
+    - name: Schedule_InSchedule
+      reason: "schedule.live-badge limited: su TV il badge è un'icona (orologio)"
   viewmodels: [ScheduleViewModel]
   ignore: []
 

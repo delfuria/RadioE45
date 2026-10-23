@@ -15,7 +15,8 @@ La TV è la stessa app MAUI Android. Le viste TV sono `ContentPage` in `RadioE45
 - **`TvRootPage`** è il contenitore: fila di pulsanti in alto, `ContentView` della sezione sotto, `TvDialogOverlay` sopra a tutto. Le sezioni sono `ContentView` (`TvNowPlayingView`, `TvStationsView`) con il ViewModel iniettato dalla DI e implementano `ITvSection` (`OnShownAsync` per caricare i dati, `FocusDefault` per il focus iniziale).
 - **`ITvHost`** (`Views/Tv/ITvHost.cs`) è ciò che `TvRootPage` offre ai servizi: `ShowSection`, `ConfirmAsync`, `AlertAsync`, `HandleBack`. `TvHostAccessor` (singleton) lo tiene; è nullo su ogni altro dispositivo.
 - **Servizi di piattaforma:** `MauiNavigationService` e `MauiDialogService` usano l'host quando c'è (su TV `Shell.Current` è nullo e prima `GoToOnAirAsync` non faceva nulla e `ConfirmAsync` rispondeva sempre «no»). I ViewModel non cambiano: `RadioListViewModel` chiede la conferma delle stazioni di prova e torna a On Air attraverso gli stessi servizi.
-- **Una sezione nuova** = una `ContentView` in `Views/Tv/`, un valore in `TvSection`, un pulsante nella fila, un percorso `tv` in `parity/pages.yaml`. Gli XAML in `Views/Tv/` devono essere tutti mappati; i componenti senza pagina gemella (come `TvDialogOverlay`) stanno in `Controls/`.
+- **Sezioni e sottosezioni (T4):** `TvSection` ha le sezioni della fila (`OnAir`, `Stations`) e le sottosezioni `Schedule`, `AddStation`, `EditStation`, che non hanno un pulsante: il pulsante del genitore resta sottolineato. `ITvHost.GoBack()` torna al genitore (Schedule → On Air, Aggiungi/Modifica → Stations); `MauiNavigationService` lo usa per `GoBackAsync`, `GoToAddStationAsync`, `GoToEditStationAsync(id)` e `ShowScheduleAsync`, così i ViewModel del telefono restano invariati. Le viste vivono quanto `TvRootPage`: ogni visita deve ripartire pulita (`AddStationViewModel.Reset()`, `EditStationViewModel.ReloadAsync()`).
+- **Una sezione nuova** = una `ContentView` in `Views/Tv/`, un valore in `TvSection`, un pulsante nella fila (o una sottosezione), un percorso `tv` in `parity/pages.yaml`. Gli XAML in `Views/Tv/` devono essere tutti mappati; i componenti senza pagina gemella (come `TvDialogOverlay`) stanno in `Controls/`.
 - **Indietro:** `MainActivity.OnBackPressed` chiede prima a `ITvHost.HandleBack()`: chiude il dialogo, o torna a On Air; solo da On Air l'app va in background.
 
 ## 2. Layout
@@ -40,7 +41,10 @@ Colori e temi: stesse risorse dinamiche del telefono (`PageBackground`, `CardEle
 | Swipe, trascinamento, pull to refresh | Non esistono (`n/a` o azione su un pulsante focusabile) |
 | Pulsante flottante | `Button` focusabile nel flusso della pagina |
 | Pannello dal basso (popup) | Finestra a schermo intero con scorrimento col D-pad |
-| `Entry` | Tastiera su schermo di Android TV (da misurare in T4) |
+| `Entry` | `Entry` con stile `TvEntry` (sfondo `Accent` con il focus); OK sul campo apre la tastiera su schermo di Android TV, il focus iniziale no; `ReturnType="Search"` + `ReturnCommand` per «Cerca» (misurato in T4) |
+| `CheckBox` | `Button` con `ImageSource` da `DataTrigger` (quadrato con segno / quadrato) e un comando che inverte il valore (`ToggleSelectedCommand`, `ToggleCustomInfoCommand`) |
+| `CollectionView` di sola lettura (palinsesto) | `ScrollView` + `BindableLayout` di `Button` focusabili: senza un elemento focusabile il D-pad non scorre |
+| Swipe / menu contestuale (modifica, elimina) | Matita e cestino: `Button` con glifo `FaSolid` a destra della riga, con `SemanticProperties.Description` |
 | Emoji come icone (▶ ⏸) | Glifi del font `FaSolid` (`&#xF04B;` play, `&#xF04C;` pausa) |
 
 **Emoji:** su Android l'emoji ⏸ si disegna a colori (arancione) e il selettore di presentazione testuale `U+FE0E` viene ignorato. Misurato. Usare i glifi `FaSolid`, come fa `MenuButton`.
@@ -67,10 +71,12 @@ Colori e temi: stesse risorse dinamiche del telefono (`PageBackground`, `CardEle
 - **Verifica:** `tools/tv-focus-probe.sh tour --expect "On Air,Channels,Radio E45"`. Ogni controllo azionabile della pagina deve comparire tra i raggiunti. Il tour esplora il grafo del focus (non per righe: `SINISTRA` da una lista salta alla fila di pulsanti in alto) e dura circa un minuto per pagina.
 - **Margini di sicurezza anche per i dialoghi:** la scheda del dialogo deve stare dentro 27 dp sopra e sotto; l'area scorrevole del messaggio è limitata a 230 dp.
 
-## 4b. Liste e binding (T3)
+## 4b. Liste e binding (T3, T4)
 
 - **Liste:** `ScrollView` con `VerticalStackLayout` e `BindableLayout.ItemsSource`; ogni riga è un `Button` con stile `TvButton` (focusabile e con stato `Focused`). Android fa scorrere lo `ScrollView` fino al controllo che prende il focus. Va bene per elenchi brevi (le stazioni); una `CollectionView` non è stata provata col D-pad.
 - **Elemento attivo:** non usare `MultiBinding` con i convertitori del Toolkit nel testo di un pulsante: lancia `targetType needs to be assignable from System.String` alla creazione dei figli e l'eccezione viene inghiottita dal `SafeExecuteAsync` del ViewModel, lasciando la lista vuota senza errori visibili (misurato). Usare un `DataTrigger` che imposta `ImageSource` (`FontImageSource`, glifo `FaSolid`).
+- **Il caricamento del XAML avviene a runtime:** un errore nel XAML (comportamento sul tipo sbagliato, converter con tipo di destinazione sbagliato) non rompe la build e fa chiudere l'app all'apertura della vista. Guardare `logcat` (`FATAL EXCEPTION`, `InitializeComponent`). Due casi misurati in T4: `TvKeepFocusBehavior` va su `VisualElement` (serve anche per `ImageButton`), e un `BoolToObjectConverter` su una proprietà `ImageSource` non deve avere `x:TypeArguments="x:String"`.
+- **Pulsanti larghi:** il bordo con il focus si ingrandisce di 1,08, quindi il padding dello `ScrollView` deve essere almeno il 4 % della larghezza per lato (28 dp per le stazioni, 40 dp per le righe larghe).
 - **Sintomo da riconoscere:** lista vuota senza il messaggio di lista vuota → leggere `ErrorMessage` del ViewModel.
 
 ## 4c. Primo avvio
@@ -84,7 +90,7 @@ Su installazione pulita l'ordine è lo stesso di `AppShell`: `ActivateAsync` →
 | Play/pausa, Pausa, Play (`KEYCODE_MEDIA_*`) | Comandano la sessione Media3 | Misurato, nessun codice dedicato |
 | Avanti, Indietro (`KEYCODE_MEDIA_NEXT/PREVIOUS`) | Cambiano stazione | Misurato: il brano passa da RadioE45 ad AzuraTest e ritorna |
 | Indietro (`KEYCODE_BACK`) dalla radice | L'app va in background e l'audio continua; la riapertura riporta l'app in primo piano | Misurato |
-| Indietro in una pagina interna | Risale di un livello | Da realizzare con le pagine di T3-T5 |
+| Indietro in una sottosezione | Schedule → On Air; Aggiungi/Modifica → Channels; con la tastiera aperta la chiude soltanto | Misurato (T4) |
 | D-pad e OK | Spostano il focus e attivano il controllo | Misurato |
 
 ## 6. ParityCheck

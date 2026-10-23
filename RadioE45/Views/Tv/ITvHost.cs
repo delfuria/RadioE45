@@ -5,6 +5,9 @@ public enum TvSection
 {
     OnAir,
     Stations,
+    Schedule,
+    AddStation,
+    EditStation,
 }
 
 /// <summary>
@@ -15,6 +18,12 @@ public enum TvSection
 public interface ITvHost
 {
     void ShowSection(TvSection section);
+
+    /// <summary>Opens the edit form of a station.</summary>
+    void ShowEditStation(int stationId);
+
+    /// <summary>Leaves a sub-section (schedule, add or edit station) for the section it was opened from.</summary>
+    void GoBack();
 
     Task<bool> ConfirmAsync(string title, string message, string accept, string cancel);
 

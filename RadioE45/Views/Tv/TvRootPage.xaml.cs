@@ -13,6 +13,9 @@ public partial class TvRootPage : ContentPage, ITvHost
     private readonly ITermsService _termsService;
     private readonly TvNowPlayingView _nowPlaying;
     private readonly TvStationsView _stations;
+    private readonly TvScheduleView _schedule;
+    private readonly TvAddStationView _addStation;
+    private readonly TvEditStationView _editStation;
     private TvSection _section = TvSection.OnAir;
     private bool _isInitialized;
 
@@ -23,7 +26,10 @@ public partial class TvRootPage : ContentPage, ITvHost
         ITermsService termsService,
         TvHostAccessor hostAccessor,
         TvNowPlayingView nowPlaying,
-        TvStationsView stations)
+        TvStationsView stations,
+        TvScheduleView schedule,
+        TvAddStationView addStation,
+        TvEditStationView editStation)
     {
         InitializeComponent();
         _onAirViewModel = onAirViewModel;
@@ -32,6 +38,9 @@ public partial class TvRootPage : ContentPage, ITvHost
         _termsService = termsService;
         _nowPlaying = nowPlaying;
         _stations = stations;
+        _schedule = schedule;
+        _addStation = addStation;
+        _editStation = editStation;
 
         // Navigation and dialog services find the TV host here (there is no Shell on TV).
         hostAccessor.Current = this;
@@ -50,7 +59,21 @@ public partial class TvRootPage : ContentPage, ITvHost
         Loaded += OnLoaded;
     }
 
-    private ITvSection CurrentSection => _section == TvSection.Stations ? _stations : _nowPlaying;
+    private ITvSection CurrentSection => _section switch
+    {
+        TvSection.Stations => _stations,
+        TvSection.Schedule => _schedule,
+        TvSection.AddStation => _addStation,
+        TvSection.EditStation => _editStation,
+        _ => _nowPlaying,
+    };
+
+    // The section the Back button (or a finished form) returns to.
+    private static TvSection ParentOf(TvSection section) => section switch
+    {
+        TvSection.AddStation or TvSection.EditStation => TvSection.Stations,
+        _ => TvSection.OnAir,
+    };
 
     private void OnLoaded(object? sender, EventArgs e)
     {
@@ -87,6 +110,14 @@ public partial class TvRootPage : ContentPage, ITvHost
 
     public void ShowSection(TvSection section) => Dispatcher.Dispatch(async () => await ShowSectionAsync(section));
 
+    public void ShowEditStation(int stationId) => Dispatcher.Dispatch(async () =>
+    {
+        _editStation.Open(stationId);
+        await ShowSectionAsync(TvSection.EditStation);
+    });
+
+    public void GoBack() => ShowSection(ParentOf(_section));
+
     public Task<bool> ConfirmAsync(string title, string message, string accept, string cancel) =>
         Dispatcher.DispatchAsync(() => Dialog.ShowAsync(title, message, accept, cancel));
 
@@ -103,7 +134,7 @@ public partial class TvRootPage : ContentPage, ITvHost
 
         if (_section != TvSection.OnAir)
         {
-            ShowSection(TvSection.OnAir);
+            GoBack();
             return true;
         }
 
@@ -129,8 +160,10 @@ public partial class TvRootPage : ContentPage, ITvHost
 
     private void UpdateNav()
     {
-        NavOnAirMark.IsVisible = _section == TvSection.OnAir;
-        NavStationsMark.IsVisible = _section == TvSection.Stations;
+        // Sub-sections keep their parent's button underlined.
+        bool onAirSide = _section is TvSection.OnAir or TvSection.Schedule;
+        NavOnAirMark.IsVisible = onAirSide;
+        NavStationsMark.IsVisible = !onAirSide;
     }
 
     private void OnNavOnAirClicked(object? sender, EventArgs e) => ShowSection(TvSection.OnAir);

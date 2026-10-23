@@ -27,11 +27,38 @@ public sealed class MauiNavigationService : INavigationService
         return GoToAsync("//OnAirPage");
     }
 
-    public Task GoBackAsync() => GoToAsync("..");
+    public Task GoBackAsync()
+    {
+        if (_tv.Current is { } tv)
+        {
+            tv.GoBack();
+            return Task.CompletedTask;
+        }
 
-    public Task GoToAddStationAsync() => GoToAsync("AddStationPage");
+        return GoToAsync("..");
+    }
 
-    public Task GoToEditStationAsync(int stationId) => GoToAsync($"EditStationPage?id={stationId}");
+    public Task GoToAddStationAsync()
+    {
+        if (_tv.Current is { } tv)
+        {
+            tv.ShowSection(TvSection.AddStation);
+            return Task.CompletedTask;
+        }
+
+        return GoToAsync("AddStationPage");
+    }
+
+    public Task GoToEditStationAsync(int stationId)
+    {
+        if (_tv.Current is { } tv)
+        {
+            tv.ShowEditStation(stationId);
+            return Task.CompletedTask;
+        }
+
+        return GoToAsync($"EditStationPage?id={stationId}");
+    }
 
     public Task GoToPodcastEpisodesAsync(string podcastId, string podcastTitle) =>
         GoToAsync($"PodcastEpisodesPage?podcastId={Uri.EscapeDataString(podcastId)}&podcastTitle={Uri.EscapeDataString(podcastTitle)}");
@@ -85,6 +112,12 @@ public sealed class MauiNavigationService : INavigationService
 
     public async Task ShowScheduleAsync()
     {
+        if (_tv.Current is { } tv)
+        {
+            tv.ShowSection(TvSection.Schedule);
+            return;
+        }
+
         if (Shell.Current is null)
             return;
 

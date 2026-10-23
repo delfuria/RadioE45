@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="RadioE45.Views.Tv.TvScheduleView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels;assembly=RadioE45.Core"
+    xmlns:models="clr-namespace:RadioE45.Models;assembly=RadioE45.Core"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    x:DataType="vm:ScheduleViewModel">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Resources/Styles/TvStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <!-- Palinsesto per la TV: a schermo intero al posto del pannello dal basso. Ogni fascia è un pulsante focusabile,
+         così il D-pad scorre l'elenco (Android porta la riga con il focus dentro lo ScrollView).
+         Icona a sinistra: microfono = streamer in diretta, pallino = in onda, orologio = streamer in orario. -->
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14" Padding="0,24,0,0">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+            <Label
+                Grid.Column="0"
+                Text="{loc:Translate Tab_Schedule}"
+                FontSize="40"
+                FontAttributes="Bold"
+                VerticalOptions="Center"
+                TextColor="{DynamicResource PrimaryText}" />
+            <Button
+                x:Name="CloseButton"
+                Grid.Column="1"
+                Style="{StaticResource TvButton}"
+                Text="{loc:Translate Common_Close}"
+                Clicked="OnCloseClicked" />
+        </Grid>
+
+        <Label
+            Grid.Row="1"
+            Text="{Binding ErrorMessage}"
+            FontSize="22"
+            TextColor="{StaticResource LiveRed}"
+            IsVisible="{Binding ErrorMessage, Converter={toolkit:IsStringNotNullOrEmptyConverter}}" />
+
+        <ActivityIndicator
+            Grid.Row="2"
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            Color="{DynamicResource Accent}"
+            VerticalOptions="Start"
+            HorizontalOptions="Start"
+            Margin="16,24,0,0" />
+
+        <!-- Padding: la riga con il focus si ingrandisce e verrebbe tagliata dai bordi dello ScrollView -->
+        <ScrollView Grid.Row="2" Padding="40,16,40,16">
+            <VerticalStackLayout x:Name="ScheduleLayout" Spacing="12" BindableLayout.ItemsSource="{Binding ScheduleItems}">
+
+                <BindableLayout.EmptyView>
+                    <Label
+                        Text="{loc:Translate Schedule_Empty}"
+                        FontSize="26"
+                        IsVisible="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
+                        TextColor="{DynamicResource SecondaryText}" />
+                </BindableLayout.EmptyView>
+
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:PlaylistSchedule">
+                        <Button
+                            Style="{StaticResource TvRowButton}"
+                            HorizontalOptions="Start"
+                            MinimumWidthRequest="760"
+                            FontSize="26"
+                            ContentLayout="Left,18"
+                            LineBreakMode="TailTruncation">
+                            <Button.Text>
+                                <MultiBinding StringFormat="{}{0:ddd d MMM}   {0:HH:mm} – {1:HH:mm}   {2}">
+                                    <Binding Path="Start" />
+                                    <Binding Path="End" />
+                                    <Binding Path="Name" />
+                                </MultiBinding>
+                            </Button.Text>
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button" Binding="{Binding ShowLiveBadge}" Value="True">
+                                    <Setter Property="ImageSource">
+                                        <Setter.Value>
+                                            <FontImageSource Glyph="&#xF130;" FontFamily="FaSolid" Size="24" Color="{DynamicResource PrimaryText}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Button" Binding="{Binding ShowPlaylistOnAirBadge}" Value="True">
+                                    <Setter Property="ImageSource">
+                                        <Setter.Value>
+                                            <FontImageSource Glyph="&#xF111;" FontFamily="FaSolid" Size="18" Color="{DynamicResource PrimaryText}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Button" Binding="{Binding ShowInScheduleBadge}" Value="True">
+                                    <Setter Property="ImageSource">
+                                        <Setter.Value>
+                                            <FontImageSource Glyph="&#xF017;" FontFamily="FaSolid" Size="22" Color="{DynamicResource PrimaryText}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentView>

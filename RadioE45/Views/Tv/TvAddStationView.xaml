@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="RadioE45.Views.Tv.TvAddStationView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels;assembly=RadioE45.Core"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    x:DataType="vm:AddStationViewModel">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Resources/Styles/TvStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <!-- Aggiunta di stazioni per la TV: l'indirizzo si scrive con la tastiera su schermo (OK sul campo), poi Cerca;
+         ogni risultato è un pulsante che spunta o toglie la stazione; in fondo Aggiungi / Annulla. -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12" Padding="0,24,0,0">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="20" Padding="16,0">
+            <Entry
+                x:Name="UrlEntry"
+                Grid.Column="0"
+                Style="{StaticResource TvEntry}"
+                Placeholder="{loc:Translate AddStation_UrlPlaceholder}"
+                Text="{Binding UrlBase}"
+                Keyboard="Url"
+                ReturnType="Search"
+                ReturnCommand="{Binding SearchCommand}"
+                SemanticProperties.Description="{loc:Translate AddStation_UrlPlaceholder}" />
+            <Button
+                Grid.Column="1"
+                Style="{StaticResource TvButton}"
+                Text="{loc:Translate AddStation_Search}"
+                Command="{Binding SearchCommand}"
+                IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}" />
+        </Grid>
+
+        <Label
+            Grid.Row="1"
+            Padding="16,0"
+            Text="{Binding ErrorMessage}"
+            FontSize="22"
+            TextColor="{StaticResource LiveRed}"
+            IsVisible="{Binding ErrorMessage, Converter={toolkit:IsStringNotNullOrEmptyConverter}}" />
+
+        <Grid Grid.Row="2">
+            <VerticalStackLayout
+                Spacing="16"
+                Padding="16,16"
+                VerticalOptions="Start"
+                IsVisible="{Binding HasResults, Converter={toolkit:InvertedBoolConverter}}">
+                <ActivityIndicator
+                    IsRunning="{Binding IsBusy}"
+                    IsVisible="{Binding IsBusy}"
+                    HorizontalOptions="Start"
+                    Color="{DynamicResource Accent}" />
+                <Label
+                    Text="{loc:Translate AddStation_Prompt}"
+                    FontSize="24"
+                    TextColor="{DynamicResource SecondaryText}"
+                    IsVisible="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}" />
+            </VerticalStackLayout>
+
+            <!-- Padding: la riga con il focus si ingrandisce e verrebbe tagliata dai bordi dello ScrollView -->
+            <ScrollView Padding="40,16,40,16" IsVisible="{Binding HasResults}">
+                <VerticalStackLayout x:Name="ResultsLayout" Spacing="12" BindableLayout.ItemsSource="{Binding AvailableStations}">
+
+                    <BindableLayout.EmptyView>
+                        <Label
+                            Text="{loc:Translate AddStation_NoResults}"
+                            FontSize="26"
+                            TextColor="{DynamicResource SecondaryText}" />
+                    </BindableLayout.EmptyView>
+
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:StationSelectionItem">
+                            <Button
+                                Style="{StaticResource TvRowButton}"
+                                HorizontalOptions="Start"
+                                MinimumWidthRequest="620"
+                                FontSize="26"
+                                Text="{Binding Station.Name}"
+                                ContentLayout="Right,16"
+                                Command="{Binding ToggleSelectedCommand}"
+                                IsEnabled="{Binding IsAlreadyAdded, Converter={toolkit:InvertedBoolConverter}}">
+                                <Button.Triggers>
+                                    <!-- Spuntata (o già aggiunta): quadrato con il segno, altrimenti quadrato vuoto -->
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="ImageSource">
+                                            <Setter.Value>
+                                                <FontImageSource Glyph="&#xF14A;" FontFamily="FaSolid" Size="24" Color="{DynamicResource PrimaryText}" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsSelected}" Value="False">
+                                        <Setter Property="ImageSource">
+                                            <Setter.Value>
+                                                <FontImageSource Glyph="&#xF0C8;" FontFamily="FaSolid" Size="24" Color="{DynamicResource PrimaryText}" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+
+        <Button
+            x:Name="BottomButton"
+            Grid.Row="3"
+            Style="{StaticResource TvButton}"
+            HorizontalOptions="End"
+            Margin="16,0,16,12"
+            Text="{Binding BottomButtonText}"
+            Command="{Binding BottomActionCommand}"
+            IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}" />
+    </Grid>
+</ContentView>

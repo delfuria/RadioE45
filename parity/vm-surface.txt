@@ -6,6 +6,7 @@ AddStationViewModel.BottomActionCommand : IAsyncRelayCommand { get; }
 AddStationViewModel.BottomButtonText : string { get; }
 AddStationViewModel.HasResults : bool { get; set; }
 AddStationViewModel.HasSelections : bool { get; }
+AddStationViewModel.Reset() : void
 AddStationViewModel.SearchCommand : IAsyncRelayCommand { get; }
 AddStationViewModel.SelectedCount : int { get; set; }
 AddStationViewModel.UrlBase : string { get; set; }
@@ -35,12 +36,14 @@ EditStationViewModel.HasCustomInfo : bool { get; set; }
 EditStationViewModel.LatencyOffsetSeconds : int { get; set; }
 EditStationViewModel.Name : string { get; set; }
 EditStationViewModel.OverrideLatencyOffset : bool { get; set; }
+EditStationViewModel.ReloadAsync() : Task
 EditStationViewModel.SaveCommand : IAsyncRelayCommand { get; }
 EditStationViewModel.ShortName : string { get; set; }
 EditStationViewModel.SocialUrl1 : string { get; set; }
 EditStationViewModel.SocialUrl2 : string { get; set; }
 EditStationViewModel.SocialUrl3 : string { get; set; }
 EditStationViewModel.StationId : int { get; set; }
+EditStationViewModel.ToggleCustomInfoCommand : IRelayCommand { get; }
 EditStationViewModel.UrlBase : string { get; set; }
 EditStationViewModel.WebsiteUrl : string { get; set; }
 OnAirViewModel : type
@@ -161,4 +164,5 @@ StationSelectionItem : type
 StationSelectionItem.IsAlreadyAdded : bool { get; }
 StationSelectionItem.IsSelected : bool { get; set; }
 StationSelectionItem.Station : AzuraCastStationListItem { get; }
+StationSelectionItem.ToggleSelectedCommand : IRelayCommand { get; }
 StationSelectionItem.UrlBase : string { get; }

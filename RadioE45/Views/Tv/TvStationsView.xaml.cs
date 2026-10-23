@@ -19,13 +19,14 @@ public partial class TvStationsView : ContentView, ITvSection
     // dialog service, which on TV is the host's own dialog), otherwise refreshes the catalog.
     public Task OnShownAsync() => _viewModel.LoadStationsCommand.ExecuteAsync(null);
 
-    // The remote starts from the station that is playing, else from the first one it can select.
+    // The remote starts from the station that is playing, else from the first one it can select,
+    // else from the "add station" button.
     public void FocusDefault() => Dispatcher.Dispatch(() =>
     {
         Button? target = null;
-        foreach (View child in StationsLayout.Children.OfType<View>())
+        foreach (HorizontalStackLayout row in StationsLayout.Children.OfType<HorizontalStackLayout>())
         {
-            if (child is not Button { IsEnabled: true } button)
+            if (row.Children.OfType<Button>().FirstOrDefault() is not { IsEnabled: true } button)
                 continue;
 
             if (button.BindingContext is AzuraStation { IsActive: true })
@@ -37,7 +38,6 @@ public partial class TvStationsView : ContentView, ITvSection
             target ??= button;
         }
 
-        if (target is not null)
-            TvFocus.Request(target);
+        TvFocus.Request(target ?? AddButton);
     });
 }

@@ -1,8 +1,8 @@
 # RadioE45 su Android TV / Google TV — Piano operativo
 
 > Documento operativo, da riprendere a ogni sessione Claude Code. Modellato su `docs/LINUX-UNO-ROADMAP.md` (stesso sistema di parità, stesse regole di processo).
-> Analisi di fattibilità e rischi: [`ANDROID-TV.md`](ANDROID-TV.md). Ultimo aggiornamento: 2026-10-22 (app v0.48).
-> Stato: **T0–T3 completate; prossima sessione: T4** (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
+> Analisi di fattibilità e rischi: [`ANDROID-TV.md`](ANDROID-TV.md). Ultimo aggiornamento: 2026-10-23 (app v0.48).
+> Stato: **T0–T4 completate; prossima sessione: T5** (§6). Aggiornare le checkbox e il registro (§9) alla fine di ogni sessione.
 
 ---
 
@@ -32,6 +32,7 @@
 5. **Stringhe uniche** nei `.resx` del Core (it neutro, en, pl). Ogni testo TV nuovo passa da lì.
 6. **Test sempre su emulatore prima del device reale**; ogni sessione che tocca la UI produce screenshot e la mappa del focus (§2.3).
 7. Vincoli dell'utente già validi: niente commit, tag o push eseguiti da Claude (solo testo del messaggio, in inglese); testi di store e changelog in inglese; dopo ogni modifica `.cs` diagnostica LSP e `dotnet build`; niente `rm -rf`.
+8. Changelog: la TV non si annuncia prima del rilascio TV; le voci si accumulano in [`ANDROID-TV-CHANGELOG-PENDING.md`](ANDROID-TV-CHANGELOG-PENDING.md), niente righe sotto `[Unreleased]`.
 
 ---
 
@@ -118,6 +119,19 @@ Il nome della classe activity (`crc64...`) è generato da .NET: se cambia, legge
 | Indietro nei dialoghi | Sui termini chiude (come l'AlertDialog del telefono, quindi i termini risultano accettati); sulle stazioni di prova equivale a «No» e si torna a On Air |
 | Bordo ingrandito tagliato | La riga e il pulsante del dialogo con focus (scala 1,08) venivano tagliati dai bordi di `ScrollView` e `Border`: serve padding intorno ai controlli che si ingrandiscono |
 | Crash nativo (1 volta) | `SIGSEGV` in `libmonodroid.so` (`EmbeddedAssemblies::open_from_bundles`) nel thread pool, subito dopo «Yes» al primo avvio dopo un'installazione. Non riprodotto in 2 primi avvii puliti successivi. Collegato all'osservazione `System.Net.Quic` di T2: entrambi sono errori del caricatore di assembly, solo al primo avvio dopo un'installazione di debug (fast deployment). **Da riprovare con una build Release** (T7) prima di considerarlo chiuso |
+
+### Misure di T4 (2026-10-23, controlli, schedule e gestione stazioni)
+
+| Verifica | Esito |
+|---|---|
+| **Crash all'apertura** (due volte) | 1) `TvKeepFocusBehavior` era `Behavior<Button>`: agganciato a un `ImageButton` (il cuore) lancia durante il caricamento del XAML e l'app si chiude. Ora è `Behavior<VisualElement>`. 2) `BoolToObjectConverter` con `x:TypeArguments="x:String"` su `ImageButton.Source`: stessa `targetType needs to be assignable from System.String` di T3 (la proprietà è `ImageSource`); senza argomenti di tipo funziona. Il caricamento XAML avviene a runtime: l'errore compare solo all'avvio, la build non lo vede |
+| Tastiera su schermo | OK su un `Entry` apre la tastiera di Android TV (Gboard); il focus iniziale su un `Entry` **non** la apre. Si naviga col D-pad, il tasto di invio mostra la lente (`ReturnType="Search"`) e lancia `SearchCommand`; la finestra si sposta in su e la tastiera copre la parte bassa. Indietro chiude prima la tastiera, poi risale. `adb shell input text` scrive nel campo mentre la tastiera è aperta |
+| Schedule | La riga è un `Button` con il testo da un `MultiBinding` con `StringFormat` (nessun convertitore: non lancia). Il D-pad scorre l'elenco, la riga con il focus entra nello `ScrollView` |
+| Conferma di eliminazione | Il dialogo della TV (`TvDialogOverlay`) ha il focus su «Delete»; dopo la conferma il focus torna sulla stazione attiva e l'elenco si aggiorna da solo |
+| Aggiunta | Ricerca su un server reale: i risultati compaiono, la spunta passa dal pulsante (`ToggleSelectedCommand`), «Add selected (1)» è raggiungibile con GIÙ dopo l'ultimo risultato; l'elenco delle stazioni si aggiorna al ritorno |
+| Pulsante con comando asincrono | `TvKeepFocusBehavior` serve anche su Aggiorna e sul cuore: il focus resta sul pulsante |
+| Bordo ingrandito tagliato (di nuovo) | La riga larga con il focus (scala 1,08) era tagliata a sinistra nell'elenco: padding 28 dp per le stazioni, 40 dp per le righe larghe di Schedule e dei risultati |
+| Primo avvio dopo `pm clear` | Termini (focus sul pulsante) → stazioni di prova → riproduzione: invariato rispetto a T3 |
 
 ---
 
@@ -227,13 +241,13 @@ Ogni sessione è eseguibile e verificabile da un agente: criteri di uscita ogget
 - [x] Parità aggiornata (13 feature `tv` portate a `done` o `limited`); `ParityCheck` a 1, solo debito dichiarato
 - [x] Uscita: la mappa del focus raggiunge On Air, Channels e le due stazioni; selezione e riproduzione verificate sull'emulatore
 
-### T4 — Controlli, Schedule e gestione stazioni · Mac + emulatore
-- [ ] Play/pausa e avanti/indietro stazione (il volume resta del televisore); tasti media del telecomando verso la sessione Media3
-- [ ] `TvScheduleDialog`: palinsesto con scorrimento col D-pad
-- [ ] Gestione stazioni dalla sezione Stations: `TvAddStationPage`, `TvEditStationPage`, eliminazione con conferma; tastiera su schermo
+### T4 — Controlli, Schedule e gestione stazioni · Mac + emulatore — ✅ completata 2026-10-23
+- [x] Play/pausa e avanti/indietro stazione sul lettore (il volume resta del televisore); tasti media del telecomando verso la sessione Media3 (già verificati in T2); cuore del preferito accanto al nome della stazione
+- [x] `TvScheduleView`: palinsesto a schermo intero, una riga focusabile per fascia, scorrimento col D-pad; Indietro o Chiudi tornano a On Air. Il pulsante **Schedule** sul lettore compare solo se la stazione ha un palinsesto
+- [x] Gestione stazioni dalla sezione Channels: pulsanti Aggiungi e Aggiorna sopra l'elenco, matita e cestino a destra di ogni stazione; `TvAddStationView` (ricerca, risultati spuntabili, Aggiungi/Annulla), `TvEditStationView` (nome, nome breve, descrizione, info personalizzate, Annulla/Salva), eliminazione con conferma nel dialogo della TV; tastiera su schermo
 - [x] Dialogo dei termini d'uso solo al primo utilizzo, con focus iniziale sul pulsante (anticipato e fatto in T3)
-- [ ] Stati di errore e offline leggibili da lontano
-- [ ] Uscita: tutti i controlli raggiungibili e comandabili col solo D-pad e tasti media
+- [x] Stati di errore e offline: errore del server nella ricerca, errore dell'elenco e dei form in rosso a 22 pt; etichetta «Offline» sulle stazioni spente. L'etichetta Offline non è stata vista sull'emulatore (le stazioni di prova sono online)
+- [x] Uscita: mappa del focus completa su On Air, Channels e form di modifica; schedule, aggiunta (con ricerca reale), eliminazione e modifica provate col solo D-pad. **Non provati:** salvataggio di una modifica, Schedule con un live in corso, stazione offline
 
 ### T5 — Richieste e podcast · Mac + emulatore
 - [ ] `TvRequestView` con `SongRequestViewModel`; pulsante **Request** visibile solo con la capability
@@ -316,6 +330,7 @@ Nessuna decisione aperta. Lo spike T2 può ancora cambiare i dettagli della fila
 | 2026-10-22 | T1 (revisione) | La TV non cerca la parità ma la copertura dichiarata: gate `--strict-tv` indipendente da `--strict`; triage di 3 `todo` in `n/a` (VU meter, link personalizzati, ritardo per stazione): restano 41 `todo` |
 | 2026-10-22 | T2 | Spike: `DeviceIdiom.TV` → `TvRootPage`, fila di pulsanti con focus, `tools/tv-focus-probe.sh`, `TvKeepFocusBehavior`, `docs/parity/MAUI-TO-TV.md`; tasti media e Indietro verificati |
 | 2026-10-22 | T3 | `TvRootPage` contenitore + `ITvHost`, `TvNowPlayingView`, `TvStationsView`, `TvDialogOverlay`, `TvFocus`; primo avvio (termini → stazioni di prova → riproduzione), selezione e Indietro verificati |
+| 2026-10-23 | T4 | Cambio stazione e preferito sul lettore, `TvScheduleView`, gestione stazioni (`TvAddStationView`, `TvEditStationView`, azioni nella lista), `ITvHost.GoBack/ShowEditStation`; ParityCheck legge anche `<Binding Path=…/>`
 
 ---
 

@@ -154,8 +154,8 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: limited }
-  tvNotes: "Nome stazione, ascoltatori e badge HLS; la stella del preferito arriva in T4"
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Nome stazione, ascoltatori, badge HLS e cuore del preferito"
   notes: "Uno: icone Font Awesome al posto delle emoji MAUI (nessun font emoji nel renderer Skia web). 0.48: badge HLS centrato verticalmente in MAUI (VerticalOptions=Center), come già in Uno: stessa altezza del badge della stazione"
 
 - id: onair.favorite
@@ -163,7 +163,8 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Cuore accanto al nome della stazione: OK aggiunge o toglie la stazione dai preferiti"
 
 - id: onair.track-info
   title: Titolo e artista del brano in onda
@@ -191,7 +192,8 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: limited }
+  tvNotes: "Pulsante Schedule accanto ai controlli (solo se la stazione ha un palinsesto); il prossimo brano e la riga compatta arrivano in T6"
 
 - id: onair.playback-controls
   title: Play/pausa (pausa live = chiusura stream, ripresa in diretta) e indicatore di buffering
@@ -207,7 +209,8 @@
   since: "0.44"
   page: OnAir
   viewmodel: OnAirViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Pulsanti precedente/successivo con il nome della stazione sotto, con le stesse regole del telefono (1 stazione: nessuno; 2: solo successiva); anche i tasti media del telecomando"
   notes: "1 stazione: solo play; 2 stazioni: solo successiva; 3 o più: precedente e successiva. Spinner di attesa al posto del VU meter (riga in alto a destra)"
 
 - id: onair.volume
@@ -257,7 +260,7 @@
   page: RadioList
   viewmodel: RadioListViewModel
   status: { maui: done, desktop: done, web: done, tv: limited }
-  tvNotes: "Nome della stazione e puntino sulla stazione in ascolto; logo, descrizione, preferita e badge HLS in T6"
+  tvNotes: "Nome della stazione e puntino sulla stazione in ascolto; logo, descrizione, preferita e badge HLS non sono nell'elenco TV (bastano nome e puntino per scegliere col telecomando; da riconsiderare in T6)"
 
 - id: radiolist.offline-indicator
   title: Indicatore di stazione offline
@@ -265,7 +268,7 @@
   page: RadioList
   viewmodel: RadioListViewModel
   status: { maui: done, desktop: done, web: done, tv: limited }
-  tvNotes: "Una stazione offline è disabilitata e non si può selezionare; nessuna etichetta testuale"
+  tvNotes: "Una stazione offline è disabilitata e porta l'etichetta «Offline» in rosso; non si può selezionare"
 
 - id: radiolist.select-and-play
   title: Selezione di una stazione e avvio della riproduzione
@@ -280,8 +283,8 @@
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
-  tvNotes: "Azioni sulla stazione focalizzata, non swipe né menu contestuale"
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Matita e cestino a destra di ogni stazione, non swipe né menu contestuale; l'eliminazione chiede conferma nel dialogo della TV"
   notes: "Uno: menu contestuale (tasto destro, pressione lunga al tocco) al posto dello SwipeView, che è solo touch"
 
 - id: radiolist.reorder
@@ -298,7 +301,8 @@
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Pulsante di aggiornamento (icona) sopra l'elenco, al posto del pull to refresh"
   notes: "Uno: anche F5"
 
 - id: radiolist.empty-seed-prompt
@@ -314,8 +318,8 @@
   since: "0.44"
   page: RadioList
   viewmodel: RadioListViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
-  tvNotes: "Pulsante focusabile, non flottante"
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Pulsante «Aggiungi stazione» sopra l'elenco, non flottante"
 
 # --- Add / edit station ----------------------------------------------------------------------
 
@@ -324,8 +328,8 @@
   since: "0.44"
   page: AddStation
   viewmodel: AddStationViewModel
-  status: { maui: done, desktop: done, web: limited, tv: todo }
-  tvNotes: "Tastiera su schermo di Android TV"
+  status: { maui: done, desktop: done, web: limited, tv: done }
+  tvNotes: "Indirizzo con la tastiera su schermo (OK sul campo); Invio sulla tastiera o il pulsante Cerca. Verificato sull'emulatore il 2026-10-23"
   notes: "Web: funziona solo con server AzuraCast che inviano gli header CORS (§5); Invio nella casella URL = cerca"
 
 - id: addstation.select-and-add
@@ -333,22 +337,24 @@
   since: "0.44"
   page: AddStation
   viewmodel: AddStationViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Ogni risultato è un pulsante che spunta o toglie la stazione (quadrato con segno); le già aggiunte sono spente; in fondo Aggiungi/Annulla"
 
 - id: addstation.errors
   title: Messaggi di stato (prompt iniziale, nessun risultato, errore del server)
   since: "0.44"
   page: AddStation
   viewmodel: AddStationViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Prompt iniziale, nessun risultato ed errore del server, in caratteri grandi"
 
 - id: editstation.form
   title: Modifica di nome, URL, ID, short name e descrizione della stazione
   since: "0.44"
   page: EditStation
   viewmodel: EditStationViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
-  tvNotes: "Tastiera su schermo di Android TV"
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Nome, nome breve e descrizione con la tastiera su schermo, più il pulsante «Usa info personalizzate»; URL e ID si leggono ma non si modificano (come sul telefono)"
 
 - id: editstation.custom-links
   title: Informazioni personalizzate (sito, 3 social, email, telefono) con validazione dei link
@@ -371,7 +377,8 @@
   since: "0.44"
   page: EditStation
   viewmodel: EditStationViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Annulla e Salva in fondo al form; errore sopra il form"
 
 # --- Settings --------------------------------------------------------------------------------
 
@@ -490,8 +497,8 @@
   since: "0.44"
   page: Schedule
   viewmodel: ScheduleViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
-  tvNotes: "Finestra a schermo intero con scorrimento col D-pad, non pannello dal basso"
+  status: { maui: done, desktop: done, web: done, tv: done }
+  tvNotes: "Vista a schermo intero (non pannello dal basso): una riga focusabile per fascia, il D-pad scorre l'elenco; Indietro o Chiudi tornano al lettore"
   notes: "Uno: ScheduleDialog in un pannello della shell che sale dal basso (S8.4); chiusura con ✕, clic fuori, Esc o trascinamento verso il basso della maniglia"
 
 - id: schedule.live-badge
@@ -499,7 +506,8 @@
   since: "0.44"
   page: Schedule
   viewmodel: ScheduleViewModel
-  status: { maui: done, desktop: done, web: done, tv: todo }
+  status: { maui: done, desktop: done, web: done, tv: limited }
+  tvNotes: "Icona a sinistra della fascia (microfono = streamer in diretta, pallino = in onda, orologio = streamer in orario); nessuna etichetta testuale"
 
 # --- Song requests ---------------------------------------------------------------------------
 
@@ -604,4 +612,4 @@
   page: Shell
   status: { maui: n/a, desktop: n/a, web: n/a, tv: limited }
   notes: "Solo Android TV"
-  tvNotes: "Dalla radice verificato (emulatore, 2026-10-22): manda l'app in background e l'audio continua. Il risalire di livello arriva con le pagine di T3-T5"
+  tvNotes: "Verificato (emulatore, 2026-10-23): dialogo → chiude; Schedule → On Air; Aggiungi/Modifica → Channels; Channels → On Air; da On Air l'app va in background e l'audio continua. Le pagine podcast e richieste (T5) useranno lo stesso meccanismo"

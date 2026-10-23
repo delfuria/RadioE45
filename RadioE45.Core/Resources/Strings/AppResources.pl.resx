@@ -73,6 +73,7 @@
 
   <data name="RadioList_Empty" xml:space="preserve"><value>Brak dostępnych stacji</value></data>
   <data name="RadioList_Offline" xml:space="preserve"><value>● Offline</value></data>
+  <data name="RadioList_Refresh" xml:space="preserve"><value>Odśwież</value></data>
   <data name="RadioList_DeleteStation" xml:space="preserve"><value>Usuń stację</value></data>
   <data name="RadioList_EditStation" xml:space="preserve"><value>Edytuj stację</value></data>  <data name="RadioList_ConfirmDeleteMessage" xml:space="preserve"><value>Czy chcesz usunąć „{0}”?</value></data>
   <data name="RadioList_SeedPrompt" xml:space="preserve"><value>Nie wybrano żadnej stacji. Czy chcesz dodać kilka przykładowych?</value></data>

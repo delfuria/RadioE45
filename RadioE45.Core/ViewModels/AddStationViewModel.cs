@@ -67,6 +67,17 @@ public partial class AddStationViewModel : BaseViewModel
         Title = LocalizationResourceManager.Instance["AddStation_Title"];
     }
 
+    // Back to the initial prompt: views that stay alive between visits (TV) call it when shown.
+    public void Reset()
+    {
+        UnsubscribeItems();
+        UrlBase = "";
+        ErrorMessage = null;
+        HasResults = false;
+        AvailableStations = [];
+        SelectedCount = 0;
+    }
+
     [RelayCommand]
     private async Task SearchAsync()
     {

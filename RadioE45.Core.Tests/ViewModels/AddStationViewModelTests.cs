@@ -106,4 +106,45 @@ public class AddStationViewModelTests
         Assert.Empty(_delays);
         Assert.True(vm.HasResults);
     }
+
+    // The TV view lives as long as its root page: every visit has to start from the initial prompt.
+    [Fact]
+    public async Task Reset_returns_to_the_initial_prompt()
+    {
+        _stationList.FetchAsync(PublicHost, Arg.Any<CancellationToken>()).Returns(Stations);
+        AddStationViewModel vm = CreateViewModel(hasLocalNetworkPrivacy: false, PublicHost);
+        await vm.SearchCommand.ExecuteAsync(null);
+        vm.AvailableStations[0].ToggleSelectedCommand.Execute(null);
+        Assert.Equal(1, vm.SelectedCount);
+
+        vm.Reset();
+
+        Assert.Equal("", vm.UrlBase);
+        Assert.False(vm.HasResults);
+        Assert.Empty(vm.AvailableStations);
+        Assert.Equal(0, vm.SelectedCount);
+        Assert.Null(vm.ErrorMessage);
+    }
+
+    [Fact]
+    public void Toggling_a_station_selects_and_deselects_it()
+    {
+        var item = new StationSelectionItem(Stations[0], PublicHost, isAlreadyAdded: false);
+
+        item.ToggleSelectedCommand.Execute(null);
+        Assert.True(item.IsSelected);
+
+        item.ToggleSelectedCommand.Execute(null);
+        Assert.False(item.IsSelected);
+    }
+
+    [Fact]
+    public void Toggling_an_already_added_station_changes_nothing()
+    {
+        var item = new StationSelectionItem(Stations[0], PublicHost, isAlreadyAdded: true);
+
+        item.ToggleSelectedCommand.Execute(null);
+
+        Assert.True(item.IsSelected);
+    }
 }

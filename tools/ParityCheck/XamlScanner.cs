@@ -27,6 +27,10 @@ public static partial class XamlScanner
             Add(members, path);
         }
 
+        // MAUI MultiBinding: <Binding Path="X" /> children
+        foreach (Match m in BindingElementRegex().Matches(xaml))
+            Add(members, m.Groups[1].Value);
+
         // Uno/WinUI: {x:Bind ViewModel.X}, {x:Bind X} (item templates), {x:Bind Path=...} and the
         // paths passed to x:Bind functions: {x:Bind conv:Fn.IsNull(ViewModel.X), Mode=OneWay}
         foreach (Match m in XBindRegex().Matches(xaml))
@@ -120,6 +124,9 @@ public static partial class XamlScanner
 
     [GeneratedRegex(@"\{Binding\b([^{}]*(?:\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}[^{}]*)*)\}")]
     private static partial Regex BindingRegex();
+
+    [GeneratedRegex(@"<Binding\s+Path=""([A-Za-z_][\w.]*)""")]
+    private static partial Regex BindingElementRegex();
 
     [GeneratedRegex(@"\bPath=([A-Za-z_][\w.]*)")]
     private static partial Regex PathRegex();
