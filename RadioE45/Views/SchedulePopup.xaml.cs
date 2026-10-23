@@ -17,9 +17,16 @@ public partial class SchedulePopup : Popup
             BackgroundColor = color;
 
         // Il pannello occupa al massimo ~70% dell'altezza della finestra; oltre, la lista scorre.
-        double windowHeight = Application.Current?.Windows.FirstOrDefault()?.Height ?? 0;
+        Window? window = Application.Current?.Windows.FirstOrDefault();
+        double windowHeight = window?.Height ?? 0;
         if (windowHeight > 0)
             SheetGrid.MaximumHeightRequest = windowHeight * 0.7;
+
+        // Il toolkit dimensiona il popup sul contenuto, ignorando HorizontalOptions=Fill: con i caratteri
+        // ingranditi il pannello restava stretto e centrato. La larghezza si fissa a quella della finestra.
+        double windowWidth = window?.Width ?? 0;
+        if (windowWidth > 0)
+            WidthRequest = windowWidth;
 
         viewModel.LoadScheduleCommand.Execute(null);
     }

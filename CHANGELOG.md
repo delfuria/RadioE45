@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Schedule:** with a larger text size the schedule panel on iPhone and Android now uses the full screen width instead of a narrow window, and the "On Air" badge keeps its normal height.
+
 ## [0.48] - 2026-10-22
 
 ### New

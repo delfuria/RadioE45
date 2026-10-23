@@ -113,6 +113,7 @@
                                 </Label>
                                 <Border
                                     Grid.Column="1"
+                                    VerticalOptions="Center"
                                     BackgroundColor="{DynamicResource Accent}"
                                     StrokeShape="RoundRectangle 8"
                                     Stroke="Transparent"
@@ -127,6 +128,7 @@
                                 </Border>
                                 <Border
                                     Grid.Column="1"
+                                    VerticalOptions="Center"
                                     BackgroundColor="{DynamicResource Accent}"
                                     StrokeShape="RoundRectangle 8"
                                     Stroke="Transparent"
@@ -141,6 +143,7 @@
                                 </Border>
                                 <Border
                                     Grid.Column="1"
+                                    VerticalOptions="Center"
                                     BackgroundColor="Transparent"
                                     StrokeShape="RoundRectangle 8"
                                     Stroke="{DynamicResource Accent}"
