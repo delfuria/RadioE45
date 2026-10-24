@@ -18,6 +18,11 @@ public sealed class MediaElementStreamPlayer : IStreamPlayer
         _mediaElement.StateChanged += OnStateChanged;
         _mediaElement.MediaFailed += OnMediaFailed;
         _mediaElement.MediaEnded += OnMediaEnded;
+
+#if MACCATALYST
+        _mediaElement.HandlerChanged += OnHandlerChanged;
+        DisableAvKitNowPlaying();
+#endif
     }
 
     public bool HasSource => _mediaElement.Source is not null;
@@ -68,7 +73,29 @@ public sealed class MediaElementStreamPlayer : IStreamPlayer
         _mediaElement.StateChanged -= OnStateChanged;
         _mediaElement.MediaFailed -= OnMediaFailed;
         _mediaElement.MediaEnded -= OnMediaEnded;
+#if MACCATALYST
+        _mediaElement.HandlerChanged -= OnHandlerChanged;
+#endif
     }
+
+#if MACCATALYST
+    private void OnHandlerChanged(object? sender, EventArgs e) => DisableAvKitNowPlaying();
+
+    // The toolkit sets UpdatesNowPlayingInfoCenter on its AVPlayerViewController, so AVKit keeps
+    // publishing its own generic entry (app icon and "RadioE45.app") over ours whenever the player
+    // has no item, i.e. while paused (Close drops the source). IosNowPlayingService is the only writer.
+    private void DisableAvKitNowPlaying()
+    {
+        if (_mediaElement.Handler?.PlatformView is not UIKit.UIView host)
+            return;
+
+        foreach (UIKit.UIView sub in host.Subviews)
+        {
+            if (sub.NextResponder is AVKit.AVPlayerViewController controller)
+                controller.UpdatesNowPlayingInfoCenter = false;
+        }
+    }
+#endif
 
     private void OnStateChanged(object? sender, MediaStateChangedEventArgs e)
     {

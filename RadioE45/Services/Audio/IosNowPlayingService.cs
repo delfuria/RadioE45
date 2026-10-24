@@ -109,7 +109,29 @@ public sealed class IosNowPlayingService : IPlatformNowPlayingService
                 nowPlaying.Artwork = artwork;
 
             MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = nowPlaying;
+            SetMacPlaybackState(snapshot.IsPlaying ? MacPlaybackStatePlaying : MacPlaybackStatePaused);
         });
     }
+
+    // macOS ignores PlaybackRate in the info dictionary: Control Center takes play/pause from
+    // MPNowPlayingInfoCenter.playbackState, which AVKit used to drive before it was switched off.
+    // The binding doesn't expose the property, so it is set through the Objective-C runtime.
+    private const nuint MacPlaybackStatePlaying = 1;
+    private const nuint MacPlaybackStatePaused = 2;
+
+    private static void SetMacPlaybackState(nuint state)
+    {
+#if MACCATALYST
+        MPNowPlayingInfoCenter center = MPNowPlayingInfoCenter.DefaultCenter;
+        ObjCRuntime.Selector selector = new("setPlaybackState:");
+        if (center.RespondsToSelector(selector))
+            objc_msgSend(center.Handle, selector.Handle, state);
+#endif
+    }
+
+#if MACCATALYST
+    [System.Runtime.InteropServices.DllImport("/usr/lib/libobjc.dylib", EntryPoint = "objc_msgSend")]
+    private static extern void objc_msgSend(IntPtr receiver, IntPtr selector, nuint state);
+#endif
 }
 #endif
