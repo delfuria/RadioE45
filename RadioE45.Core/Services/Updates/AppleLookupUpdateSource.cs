@@ -6,7 +6,7 @@ using RadioE45.Services.Platform;
 namespace RadioE45.Services.Updates;
 
 /// <summary>
-/// iOS App Store: latest published version from the iTunes Lookup API (no official update API
+/// iOS and Mac App Store: latest published version from the iTunes Lookup API (no official update API
 /// exists). It reflects the published version, not the one in review. The app is sold in every
 /// country, so the device region is enough (docs/APP-UPDATE-ROADMAP.md D8).
 /// </summary>
@@ -16,17 +16,30 @@ public sealed class AppleLookupUpdateSource : IAppUpdateSource
     public const string BundleId = "com.radioe45.app";
     internal const string FallbackCountry = "it";
 
-    private readonly IHttpClientFactory _httpClientFactory;
+    /// <summary>Lookup entity for iOS apps (iPhone and iPad).</summary>
+    public const string IosEntity = "software";
 
-    public AppleLookupUpdateSource(IHttpClientFactory httpClientFactory) =>
+    /// <summary>Lookup entity for Mac apps (Mac App Store, Mac Catalyst build).</summary>
+    public const string MacEntity = "macSoftware";
+
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly string _entity;
+
+    public AppleLookupUpdateSource(IHttpClientFactory httpClientFactory, string entity)
+    {
         _httpClientFactory = httpClientFactory;
+        _entity = entity;
+    }
 
     public bool IsSupported => true;
 
     public async Task<AppUpdateInfo?> GetLatestAsync(CancellationToken cancellationToken)
     {
         string country = NormalizeCountry(RegionInfo.CurrentRegion.TwoLetterISORegionName);
-        Uri uri = new($"https://itunes.apple.com/lookup?bundleId={BundleId}&country={country}");
+        // The cb parameter changes on every request: Apple's CDN caches each URL for about 15 h,
+        // so without it a new release stays invisible for up to a day.
+        long cacheBuster = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        Uri uri = new($"https://itunes.apple.com/lookup?bundleId={BundleId}&entity={_entity}&cb={cacheBuster}&country={country}");
 
         using HttpClient client = _httpClientFactory.CreateClient(HttpClientName);
         using HttpResponseMessage response = await client.GetAsync(uri, cancellationToken);

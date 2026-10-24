@@ -25,7 +25,7 @@ Regole di progetto che pesano su questa feature (`CLAUDE.md`): logica e testi ne
 | D4 | **Struttura**: sessioni indipendenti stile S8.x (§9), ognuna con checklist, file toccati, criteri di uscita e commit. |
 
 | D8 | **L'app iOS è disponibile in tutti i paesi** (2026-10-20) | Lookup con il paese del dispositivo (`RegionInfo.CurrentRegion`), fallback `it` se il paese è vuoto o non valido. Nessun giro su più paesi |
-| D9 | **Mac Catalyst non è pubblicato** sul Mac App Store (2026-10-20) | Mac usa `NullUpdateSource`, nessun avviso. Quando verrà pubblicato: Lookup Apple con l'entity Mac, dopo aver verificato la risposta reale |
+| D9 | **Mac Catalyst: controllo attivo con la Lookup Apple `entity=macSoftware`** (2026-10-24, decisione dell'utente: le versioni Mac e iOS restano allineate) | Stessa sorgente di iOS con l'entity Mac. La Lookup non espone una versione Mac separata: se le versioni divergono, l'avviso segue la versione iOS. Il 2026-10-24 Mac è 0.48.1 e iOS 0.50.1: fino al rilascio Mac l'avviso compare per gli utenti Mac 0.48 |
 | D5 | Frequenza | Check e avviso **una volta al giorno**, al primo avvio del giorno. Il controllo manuale ignora il limite giornaliero |
 | D6 | "Più tardi" | Nessuna memoria per versione: se l'update resta disponibile, riappare al primo avvio del giorno dopo |
 | D7 | Confronto versioni | **Solo Major.Minor** (es. `0.46`). Le patch (`0.46.x`) non generano mai l'avviso, su tutti i canali |
@@ -42,7 +42,7 @@ Regole di progetto che pesano su questa feature (`CLAUDE.md`): logica e testi ne
 | Canale | Piattaforma | Sorgente "ultima versione" | Azione proposta | Dove sta il codice |
 |---|---|---|---|---|
 | Apple App Store | iOS | iTunes Lookup (`bundleId=com.radioe45.app`) | Apri `trackViewUrl` | Core (HttpClient, senza `#if`) |
-| Mac App Store | Mac Catalyst | Lookup con `entity=macSoftware` | Apri `trackViewUrl` | non pubblicato (D9): `NullUpdateSource` |
+| Mac App Store | Mac Catalyst | Lookup con `entity=macSoftware` | Apri `trackViewUrl` | Core (`AppleLookupUpdateSource`, entity Mac), registrata in `MauiProgram` |
 | Microsoft Store | Windows MSIX | `StoreContext.GetAppAndOptionalStorePackageUpdatesAsync` | Apri pagina Store (poi, opz., installa in-app) | MAUI Windows (`#if WINDOWS` nell'head) |
 | Installer Inno | Windows non pacchettizzato | GitHub Releases `latest` | Apri pagina release | Core |
 | `.deb` | Linux Uno desktop | GitHub Releases `latest` | Apri pagina release | Core |
@@ -51,7 +51,7 @@ Regole di progetto che pesano su questa feature (`CLAUDE.md`): logica e testi ne
 
 Verifiche fatte il 2026-10-20 con `curl`:
 - **iOS**: `https://itunes.apple.com/lookup?bundleId=com.radioe45.app&country=it&entity=software` → `resultCount 1`, `version "0.46.6"`, `trackViewUrl "https://apps.apple.com/it/app/radio-e45/id6780274998?uo=4"`, `kind "software"`, feature `iosUniversal`. La risposta è grande (screenshot, descrizione): leggere solo i campi necessari.
-- **Mac**: la stessa chiamata con `entity=macSoftware` restituisce lo **stesso record iOS** (`kind "software"`, nessun `mac-software`). Quindi oggi **non risulta un'app Mac separata** nella Lookup (o è un'unica scheda "iosUniversal" senza build Mac). Conferma dell'utente: l'app Mac **non è ancora pubblicata**, quindi nessun codice Mac finché non lo è (D9).
+- **Mac**: la stessa chiamata con `entity=macSoftware` restituisce lo **stesso record iOS** (`kind "software"`, `features [iosUniversal]`, versione 0.50.1): la Lookup non espone la versione Mac. La pagina web del Mac App Store (`https://apps.apple.com/it/app/radio-e45/id6780274998?platform=mac`) mostra invece **«Versione 0.48.1»** (2026-10-24), mentre la pagina iOS mostra 0.50.1. Quindi la versione Mac può essere diversa da quella iOS (D9).
 - **GitHub**: `releases/latest` → `v0.46.6`, `prerelease:false`. Asset della release: `RadioE45.apk`, `RadioE45.dmg`, `radioe45_0.46.6_amd64.deb`, `radioe45_0.46.6_arm64.deb`, `RadioE45_Setup_x64.exe`, `RadioE45_Setup_arm64.exe`. La stessa release serve **tutte** le piattaforme: il tag non dice a quale canale si riferisce, quindi per il Linux/Inno vale il tag, ma la presenza dell'asset giusto va controllata (vedi U4).
 - Il Microsoft Store dell'app: `https://apps.microsoft.com/detail/9pj0lkl6mnvq` (dal README).
 
@@ -78,7 +78,7 @@ RadioE45.Core
   ViewModels  → l'avviso e il pulsante manuale vivono in SettingsViewModel (stato + comandi)
               + piccolo punto di ingresso allo startup (vedi sotto)
 RadioE45 (MAUI)
-  Services/Platform/MauiUpdateSourceSelector  (iOS → Apple; Mac Catalyst → Null; Windows → Store o GitHub; Android → Null)
+  Services/Platform/MauiUpdateSourceSelector  (iOS → Apple `software`; Mac Catalyst → Apple `macSoftware`; Windows → Store o GitHub; Android → Null)
   Services/Platform/MauiWindowsStoreUpdateSource   (#if WINDOWS nel progetto head)
 RadioE45.Uno
   Services/Shared/UnoUpdateSourceSelector     (Linux/macOS/Windows desktop → GitHub; web → Null/U7)
@@ -114,7 +114,7 @@ Nuove feature (da inserire in U5):
 | `update.startup-prompt` | Avviso aggiornamento all'avvio (primo avvio del giorno) | done | done | n/a (finché non c'è U7) |
 | `settings.update.check` | Impostazioni: "Controlla aggiornamenti", stato e "Aggiorna ora" | done | done | n/a |
 | `update.android` | Controllo aggiornamenti su Android | todo (debito D3) | n/a | n/a |
-| `update.mac` | Controllo aggiornamenti su Mac Catalyst | todo (debito D9, app non pubblicata) | n/a | n/a |
+| `update.mac` | Controllo aggiornamenti su Mac Catalyst | done (Lookup `macSoftware`, D9 superata) | n/a | n/a |
 
 Note obbligatorie per `n/a`/`limited`; per Android dichiarare nelle `notes` che il debito è D3. Aggiornare `pages.yaml` solo se cambiano le pagine.
 
@@ -123,7 +123,8 @@ Note obbligatorie per `n/a`/`limited`; per Android dichiarare nelle `notes` che 
 | Rischio | Impatto | Mitigazione |
 |---|---|---|
 | Confronto versioni sbagliato → prompt perenne | Alto | `AppVersion` unico, troncato a Major.Minor (U0) + test su fixture reali |
-| Mac non pubblicato / Lookup senza record Mac | Basso | D9: `NullUpdateSource` su Mac; al lancio sul Mac App Store ripetere la prova Lookup e attivare Apple |
+| Versione Mac diversa da iOS (0.48 contro 0.50): la Lookup dà la versione iOS, e il Mac riceve un avviso a una versione non ancora pubblicata per Mac | Medio | assunto allineamento futuro (decisione utente 2026-10-24); alla prossima release Mac verificare che la pubblicazione Mac sia allo stesso numero |
+| CDN Apple: risposta vecchia dopo una release | Alto (visto il 2026-10-24) | parametro `cb` per richiesta, più `entity` esplicito (sessione U9) |
 | Windows non pacchettizzato scambiato per Store | Medio | rilevamento esplicito del canale, fallback GitHub, mai aprire la pagina Store a un utente Inno |
 | Release GitHub senza l'asset del canale (es. solo `.deb`) | Medio | la sorgente GitHub controlla che l'asset attesa esista prima di proporre l'update |
 | Prompt fastidioso | Medio | limite giornaliero + dialog non bloccante dopo i Termini |
@@ -167,7 +168,7 @@ Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, 
 ### U3 — Apple (solo iOS) — ✅ completata 2026-10-20 (Lookup reale provata su simulatore iOS)
 - [x] Paese della Lookup: regione del dispositivo, fallback `it` (D8).
 - [x] `AppleLookupUpdateSource` (Core): `bundleId`, `country`, `entity`; lettura di `version` e `trackViewUrl`; fixture di test.
-- [x] `MauiUpdateSourceSelector`: iOS → Apple; Mac Catalyst → `NullUpdateSource` (D9).
+- [x] `MauiUpdateSourceSelector`: iOS → Apple; Mac Catalyst → `NullUpdateSource` (D9). (Mac Catalyst attivato in U9.)
 - [x] Prova reale su iOS (simulatore iPhone 16e) con versione forzata `0.45` (`-p:ApplicationDisplayVersion=0.45 -p:NBGV_SetMauiVersionProperties=false`): dialog "È disponibile la versione 0.46" al primo avvio, nessun dialog al secondo avvio dello stesso giorno.
 - **Uscita:** su iOS il prompt compare con l'URL corretto e "Aggiorna" apre lo Store.
 
@@ -217,6 +218,7 @@ Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, 
 | U5 | 2026-10-20 | ok | `ShellPage` (Uno) lancia `AppUpdatePrompter.CheckAtStartupAsync()` dopo termini e redirect stazioni; righe "Controlla aggiornamenti" / "Aggiorna ora" nella card Info di `SettingsPage` Uno (nascoste se `IsUpdateCheckSupported` è falso). `parity/features.yaml`: `settings.update.check` e `update.startup-prompt` `maui: limited, desktop: limited, web: n/a`; `ParityCheck` 0 senza debito residuo per queste feature. Build Uno desktop e browserwasm ok. **Visto nella VM Linux** (versione forzata `0.45` solo nella copia della VM, poi ripristinata): dialog "Update available / Version 0.46 of Radio E45 is available." con "Update" e "Later". Le righe in Impostazioni su Uno non sono state aperte a schermo |
 | U6 | 2026-10-21 | ok sul ramo non pacchettizzato; Store non provato | `RadioE45/Services/Platform/MauiWindowsStoreUpdateSource.cs` (`#if WINDOWS`): `StoreContext.GetDefault().GetAppAndOptionalStorePackageUpdatesAsync()` (nessuna UI, quindi nessun handle di finestra), versione = Major.Minor del pacchetto aggiornato, azione = apri `ms-windows-store://pdp/?productid=9pj0lkl6mnvq`. Selezione in `MauiProgram`: Windows non pacchettizzato → GitHub (U4), pacchettizzato → Store. **Compilata e avviata nella VM Windows 11 (arm64)** con `dotnet build RadioE45 -f net10.0-windows10.0.19041.0` (0 errori, 0 avvisi; serve la cartella `.git` per NBGV). Build con versione forzata a `0.45` (commit solo nella copia `C:\RadioE45` della VM): al primo avvio del giorno `update.lastCheckDate` viene scritta in `%LOCALAPPDATA%\mobilefx\42646Delfo.RadioE45\Settings\preferences.dat`, cioè il controllo GitHub è partito ed è riuscito. **Dialog non visto a schermo**: `prlctl capture` della VM disegna lo schermo a pezzi e non l'ha mostrato. **Il ramo Store non è provato**: serve un pacchetto MSIX con identità (Store o sideload firmato); non è chiaro se `update.Package.Id.Version` riporti la versione nuova |
 | U8 | 2026-10-21 | ok | Stringhe it/en/pl riviste, log verificati, build di tutta `RadioE45.slnx` pulita (Windows compilato a parte nella VM), 254 test, `ParityCheck --strict` senza debito nuovo, riga in `README.md`. Restano: prova del pacchetto Store e iOS su dispositivo. **Riga manuale provata su simulatore iOS (2026-10-21)**: build `0.45`, il dialog all'avvio compare al primo avvio del nuovo giorno; Impostazioni → Info → "Controlla aggiornamenti" mostra "Disponibile la versione 0.46" e compare "Aggiorna ora" in rosso, che apre Safari (nel simulatore l'URL dell'App Store dà "indirizzo non valido": manca l'app App Store, da verificare su dispositivo) |
+| U9 | 2026-10-24 | ok | **Bug trovato:** l'URL della Lookup iOS non aveva `entity=software` e il CDN Apple serviva una risposta in cache (`0.48.1`) mentre lo store era già `0.50.1`: nessun avviso e "aggiornata" nelle Impostazioni. Ora: `entity` esplicito e `cb` per richiesta (`AppleLookupUpdateSource`). **Mac Catalyst attivato** con `entity=macSoftware` (`MauiProgram`: `IsMacCatalyst` prima di `IsIOS`), `update.mac` a `done`, D9 superata per decisione dell'utente che le versioni restano allineate. Nota: la pagina Mac App Store (`?platform=mac`) il 2026-10-24 mostra 0.48.1, la Lookup restituisce 0.50.1 (record iOS). Verifica: Lookup reale con `curl`, test del Core verdi, `ParityCheck` senza drift non dichiarato. Non provato a schermo |
 | U7 | 2026-10-20 | ok, verificata nel browser | `WebVersionUpdateSource` (Core, 9 test): legge `version.json` accanto all'app con cache-buster, azione = riaprire l'app in `?v=<versione>` in una nuova scheda. `BrowserAppBase` + `RadioE45Update.js` danno la cartella dell'app (`document.baseURI`). `pages.yml` scrive `site/version.json` da `version.json` della radice con `jq`. **Regressione trovata e corretta**: `RadioE45Update.js` non era elencato come `EmbeddedResource` in `RadioE45.Uno.csproj` (gli script WASM vanno elencati uno per uno), quindi il `JSImport` falliva mentre `ShellPage` costruiva il prompter e l'app restava sulla splash. La registrazione web ora è in `try/catch` e ripiega su `NullUpdateSource`, così un controllo rotto non blocca più l'avvio. Provato su pubblicazione Release servita in locale con `version.json` = `0.99`: dialog "È disponibile la versione 0.99", "Aggiorna" apre `?v=0.99` in una nuova scheda |
 
 
@@ -225,5 +227,5 @@ Criterio comune di uscita: `dotnet build RadioE45.slnx` verde, test Core verdi, 
 - Check non bloccante su MAUI (iOS, Windows) e Uno desktop (Linux).
 - Windows distingue Store e installer Inno.
 - Un solo prompt al giorno, al primo avvio; pulsante manuale nelle Impostazioni.
-- Android (D3) e Mac Catalyst (D9) dichiarati come debito in `parity/features.yaml` (`update.android`, `update.mac`).
+- Android (D3) dichiarato come debito in `parity/features.yaml` (`update.android`). Mac Catalyst attivo dal U9 (D9 superata).
 - Stringhe it/en/pl, test del Core verdi, `ParityCheck` 0 o 1, build verde.

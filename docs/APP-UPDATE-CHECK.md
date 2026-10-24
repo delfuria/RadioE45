@@ -27,7 +27,9 @@ Obiettivo: all'avvio l'app verifica se nello store è disponibile una versione p
 ### Apple App Store (iOS, Mac Catalyst)
 
 - Nessuna API ufficiale per il controllo degli aggiornamenti.
-- Si usa la iTunes Lookup API: `https://itunes.apple.com/lookup?bundleId=<bundle>&country=<cc>`.
+- Si usa la iTunes Lookup API: `https://itunes.apple.com/lookup?bundleId=<bundle>&entity=<software|macSoftware>&cb=<unix>&country=<cc>`.
+  - `entity=software` per iOS, `entity=macSoftware` per Mac Catalyst. Finché le versioni Mac e iOS sono allineate il record restituito è lo stesso; la Lookup non espone una versione Mac separata (D9).
+  - `cb` cambia a ogni richiesta: il CDN Apple tiene ogni URL in cache circa 15 ore, senza `cb` una release resta invisibile per un giorno.
   - Campo `results[0].version`: confrontare con la versione corrente.
   - Campo `trackViewUrl`: apre la pagina dell'app nello store.
 - Implementabile con `HttpClient` semplice, quindi anche nel Core (senza `#if`).
@@ -57,6 +59,7 @@ Obiettivo: all'avvio l'app verifica se nello store è disponibile una versione p
 - La Lookup Apple e la GitHub Releases riflettono la versione pubblicata, non quella in review.
 - Errori di rete: check silenzioso, nessun dialog di errore all'avvio.
 - Android e Windows possono aggiornare dentro l'app. Apple e Linux portano solo allo store o alla pagina di download.
+- Lo stato attuale (per canale, sessione per sessione) è in `docs/APP-UPDATE-ROADMAP.md`. Questo file resta l'analisi iniziale.
 - Da decidere: il messaggio è un dialog non bloccante all'avvio (una volta per versione) oppure un banner discreto nelle impostazioni.
 
 ## Ordine di lavoro proposto

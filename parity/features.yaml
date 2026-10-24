@@ -465,7 +465,7 @@
   viewmodel: SettingsViewModel
   status: { maui: limited, desktop: limited, web: limited, tv: n/a }
   tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
-  notes: "docs/APP-UPDATE-ROADMAP.md. La sezione compare solo dove esiste una sorgente: MAUI iOS, Windows (Store e installer), Uno desktop solo su Linux (.deb, GitHub Releases), web (version.json del sito: \"Aggiorna\" apre l'app in una nuova scheda)"
+  notes: "docs/APP-UPDATE-ROADMAP.md. La sezione compare solo dove esiste una sorgente: MAUI iOS, Mac Catalyst, Windows (Store e installer), Uno desktop solo su Linux (.deb, GitHub Releases), web (version.json del sito: \"Aggiorna\" apre l'app in una nuova scheda)"
 
 - id: update.startup-prompt
   title: Avviso di aggiornamento disponibile al primo avvio del giorno, dopo i Termini d'uso ("Aggiorna" / "Più tardi")
@@ -474,7 +474,7 @@
   viewmodel: SettingsViewModel
   status: { maui: limited, desktop: limited, web: limited, tv: n/a }
   tvNotes: "Su TV gli aggiornamenti passano dallo store"
-  notes: "Logica in AppUpdatePrompter (Core). Attivo dove esiste una sorgente: MAUI iOS e Windows, Uno desktop solo su Linux (.deb), web con version.json del sito (solo cambi di Major.Minor)"
+  notes: "Logica in AppUpdatePrompter (Core). Attivo dove esiste una sorgente: MAUI iOS, Mac Catalyst e Windows, Uno desktop solo su Linux (.deb), web con version.json del sito (solo cambi di Major.Minor)"
 
 - id: update.android
   title: Controllo aggiornamenti su Android
@@ -488,9 +488,9 @@
   title: Controllo aggiornamenti su Mac Catalyst
   since: "0.47"
   page: Shell
-  status: { maui: todo, desktop: n/a, web: n/a, tv: n/a }
+  status: { maui: done, desktop: n/a, web: n/a, tv: n/a }
   tvNotes: "Solo Mac"
-  notes: "Debito D9: l'app Mac non è pubblicata sul Mac App Store. Desktop e web non hanno questo canale"
+  notes: "Lookup Apple con entity=macSoftware (docs/APP-UPDATE-ROADMAP.md, D9 superata). Assunto che le versioni Mac e iOS restino allineate; la Lookup non espone la versione Mac, quindi uno scarto temporaneo (2026-10-24: Mac 0.48.1, iOS 0.50.1) produce un avviso verso la versione iOS. Desktop e web non hanno questo canale"
 
 # --- Schedule --------------------------------------------------------------------------------
 

@@ -141,11 +141,15 @@ public static class MauiProgram
         builder.Services.AddRadioE45Core();
 
         // Update check source per distribution channel (docs/APP-UPDATE-ROADMAP.md). Registered after
-        // AddRadioE45Core to replace its NullUpdateSource. Android and Mac Catalyst have no check yet.
+        // AddRadioE45Core to replace its NullUpdateSource. Android has no check yet (D3).
         builder.Services.AddSingleton<IAppUpdateSource>(sp =>
         {
+            // Mac Catalyst first: it must not match the iOS branch.
+            if (OperatingSystem.IsMacCatalyst())
+                return new AppleLookupUpdateSource(sp.GetRequiredService<IHttpClientFactory>(), AppleLookupUpdateSource.MacEntity);
+
             if (OperatingSystem.IsIOS())
-                return ActivatorUtilities.CreateInstance<AppleLookupUpdateSource>(sp);
+                return new AppleLookupUpdateSource(sp.GetRequiredService<IHttpClientFactory>(), AppleLookupUpdateSource.IosEntity);
 
             // Windows: the Store package asks the Store, the Inno Setup installer follows the GitHub release.
             if (OperatingSystem.IsWindows())

@@ -38,7 +38,7 @@ Want to try RadioE45 before the public release? Join the preliminary tests:
 - Recently played tracks list
 - Local persistence with SQLite
 - Dark theme by default
-- Update check: once a day, on the first launch, the app tells you when a newer version is available (App Store on iOS, Microsoft Store or GitHub Releases on Windows, GitHub Releases for the Linux `.deb`, the site itself on the web), and Settings has a manual check
+- Update check: once a day, on the first launch, the app tells you when a newer version is available (App Store on iOS and Mac, Microsoft Store or GitHub Releases on Windows, GitHub Releases for the Linux `.deb`, the site itself on the web), and Settings has a manual check
 - Apple CarPlay support (iOS)
 - Android Auto support
 - Web app in the browser, built with Uno Platform and installable as an app

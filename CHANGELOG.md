@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### New
+- **Mac:** the app now checks once a day whether a newer version is available and has a manual check in Settings.
+
+### Fixed
+- **Updates (iPhone and iPad):** the update check now sees a new version as soon as it is published on the App Store, instead of missing it for up to a day.
+
 ## [0.50] - 2026-10-24
 
 ### Fixed

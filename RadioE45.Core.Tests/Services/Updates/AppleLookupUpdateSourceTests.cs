@@ -74,6 +74,7 @@ public class AppleLookupUpdateSourceTests
         Assert.Equal(new AppVersion(0, 46), info!.Version);
         Assert.Equal("itunes.apple.com", handler.LastUri!.Host);
         Assert.Contains("bundleId=com.radioe45.app", handler.LastUri.Query);
+        Assert.Contains("entity=software", handler.LastUri.Query);
         Assert.Matches("country=[a-z]{2}$", handler.LastUri.Query);
     }
 
@@ -93,11 +94,23 @@ public class AppleLookupUpdateSourceTests
         await Assert.ThrowsAnyAsync<JsonException>(() => source.GetLatestAsync(TestContext.Current.CancellationToken));
     }
 
-    private static AppleLookupUpdateSource Create(StubHandler handler)
+    [Fact]
+    public async Task The_mac_source_asks_for_the_mac_entity()
+    {
+        var handler = new StubHandler(HttpStatusCode.OK, Found);
+        AppleLookupUpdateSource source = Create(handler, AppleLookupUpdateSource.MacEntity);
+
+        await source.GetLatestAsync(TestContext.Current.CancellationToken);
+
+        Assert.Contains("entity=macSoftware", handler.LastUri!.Query);
+        Assert.DoesNotContain("entity=software", handler.LastUri.Query);
+    }
+
+    private static AppleLookupUpdateSource Create(StubHandler handler, string entity = AppleLookupUpdateSource.IosEntity)
     {
         var factory = Substitute.For<IHttpClientFactory>();
         factory.CreateClient(AppleLookupUpdateSource.HttpClientName).Returns(_ => new HttpClient(handler, disposeHandler: false));
-        return new AppleLookupUpdateSource(factory);
+        return new AppleLookupUpdateSource(factory, entity);
     }
 
     private sealed class StubHandler(HttpStatusCode status, string body) : HttpMessageHandler
