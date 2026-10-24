@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.50] - 2026-10-24
+
 ### Fixed
 - **Pause:** pausing the radio from the Mac Control Center or media keys, or from the notification, lock screen or Bluetooth controls on Android, now stops the stream, so resuming puts you back on the live broadcast instead of the delayed buffered audio.
 - **Mac Control Center:** while the radio is paused, the cover and track title no longer flicker to the app icon and name.
