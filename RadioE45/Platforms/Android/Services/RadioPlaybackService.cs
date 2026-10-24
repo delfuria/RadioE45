@@ -129,7 +129,7 @@ public sealed class RadioPlaybackService : MediaLibraryService
             _player?.AddListener(_playerListener);
 
             _libraryCallback = new LibraryCallback(this);
-            MediaLibrarySession.Builder builder = new MediaLibrarySession.Builder(this, _player, _libraryCallback)!;
+            MediaLibrarySession.Builder builder = new MediaLibrarySession.Builder(this, new LivePlayer(_player!), _libraryCallback)!;
 
             // Tapping the media notification, lock-screen or the Android Auto card should open the app.
             PendingIntent? sessionActivity = BuildSessionActivity();
@@ -439,6 +439,26 @@ public sealed class RadioPlaybackService : MediaLibraryService
     {
         if (_player?.CurrentMediaItem?.MediaId is { } mediaId)
             _streamAttempts.TryRemove(mediaId, out _);
+    }
+
+    // Pause from the session (notification, lock screen, Bluetooth, media keys, Android Auto) must not
+    // keep the connection open: ExoPlayer would go on buffering and Play would resume minutes behind
+    // the live edge. Pause closes the stream like the in-app pause (Media3AudioService.PauseAsync);
+    // Play on a closed stream opens it again at the live edge.
+    private sealed class LivePlayer : ForwardingPlayer
+    {
+        private readonly IExoPlayer _inner;
+
+        public LivePlayer(IExoPlayer inner) : base(inner) => _inner = inner;
+
+        public override void Pause() => _inner.Stop();
+
+        public override void Play()
+        {
+            if (_inner.PlaybackState == BasePlayer.InterfaceConsts.StateIdle && _inner.MediaItemCount > 0)
+                _inner.Prepare();
+            _inner.Play();
+        }
     }
 
     private sealed class PlayerListener : Java.Lang.Object, IPlayerListener

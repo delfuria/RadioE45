@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Pause:** pausing the radio from the Mac Control Center or media keys, or from the notification, lock screen or Bluetooth controls on Android, now stops the stream, so resuming puts you back on the live broadcast instead of the delayed buffered audio.
+
 ## [0.49] - 2026-10-23
 
 ### New
