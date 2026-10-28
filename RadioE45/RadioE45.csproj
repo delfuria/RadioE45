@@ -265,6 +265,31 @@
         <NBGV_SetMauiVersionProperties>false</NBGV_SetMauiVersionProperties>
     </PropertyGroup>
 
+    <!-- Resizetizer's ProcessMauiFonts declares only mauifont.stamp as its output, while the font copies
+         (resizetizer/f/) and the AndroidAsset items are produced inside the target body. If the stamp
+         survives but the copies are gone (partial clean, IDE build), MSBuild skips the target and the
+         APK/AAB ships without Font Awesome and Open Sans: every icon renders as an empty box and the
+         build still reports success (v0.50 APK). The first target drops a stale stamp so the target
+         runs again; the second fails the build if a font is still missing. -->
+    <Target Name="DropStaleMauiFontStamp"
+            BeforeTargets="ProcessMauiFonts"
+            Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+        <ItemGroup>
+            <_StaleFontCheck Include="@(MauiFont)" Condition="!Exists('$(_MauiIntermediateFonts)%(Filename)%(Extension)')" />
+        </ItemGroup>
+        <Delete Files="$(_MauiFontStampFile)" Condition="'@(_StaleFontCheck)' != ''" />
+    </Target>
+
+    <Target Name="VerifyMauiFontsPresent"
+            AfterTargets="ProcessMauiFonts"
+            Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+        <ItemGroup>
+            <_MissingFont Include="@(MauiFont)" Condition="!Exists('$(_MauiIntermediateFonts)%(Filename)%(Extension)')" />
+        </ItemGroup>
+        <Error Condition="'@(_MissingFont)' != ''"
+               Text="Font(s) missing from '$(_MauiIntermediateFonts)': @(_MissingFont->'%(Filename)%(Extension)', ', '). The package would ship without them; delete obj and rebuild." />
+    </Target>
+
     <Target Name="RestoreWindowsVersionConvention"
             DependsOnTargets="GetBuildVersion"
             BeforeTargets="MauiGeneratePackageAppxManifest"
