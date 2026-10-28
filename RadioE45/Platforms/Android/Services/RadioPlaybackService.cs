@@ -567,6 +567,25 @@ public sealed class RadioPlaybackService : MediaLibraryService
                 _service.ReconnectToLiveEdge();
         }
 
+        // A call or the assistant takes audio focus only for a while: ExoPlayer then keeps playWhenReady
+        // and sets a suppression reason instead, so OnPlayWhenReadyChanged above never sees it. Past the
+        // same threshold the stream resumed on the connection it kept idle all that time — behind live.
+        private DateTime? _suppressedSince;
+
+        public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason)
+        {
+            if (playbackSuppressionReason != BasePlayer.InterfaceConsts.PlaybackSuppressionReasonNone)
+            {
+                _suppressedSince ??= DateTime.UtcNow;
+                return;
+            }
+
+            DateTime? since = _suppressedSince;
+            _suppressedSince = null;
+            if (since is { } suppressedAt && DateTime.UtcNow - suppressedAt > ReconnectAfterPause)
+                _service.ReconnectToLiveEdge();
+        }
+
         public void OnPlaybackStateChanged(int playbackState)
         {
             if (playbackState == BasePlayer.InterfaceConsts.StateReady)

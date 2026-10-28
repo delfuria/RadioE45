@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 - **Updates (iPhone and iPad):** the update check now sees a new version as soon as it is published on the App Store, instead of missing it for up to a day.
 - **Android:** when the connection drops completely (a tunnel, a coverage gap), the radio now keeps trying to reconnect and resumes by itself when the network is back, instead of staying silent until you press Play.
+- **Android:** after a phone call or a voice assistant request interrupts the radio for more than a few seconds, it now resumes on the live broadcast instead of continuing from older audio.
 
 ## [0.50] - 2026-10-24
 
