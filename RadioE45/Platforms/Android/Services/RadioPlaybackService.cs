@@ -61,6 +61,11 @@ public sealed class RadioPlaybackService : MediaLibraryService
     // because it's touched from the player thread (errors) and the session callback tasks (resolve).
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, int> _streamAttempts = new();
 
+    // Re-opens the stream with a bounded backoff once every candidate URL has failed (a tunnel, a coverage
+    // gap longer than the buffer). Cancelled by anything that ends the intent to play — see CancelRecovery.
+    private readonly StreamRecoveryBackoff _recovery = new();
+    private string? _recoveryMediaId;
+
     private static IServiceProvider? Services => IPlatformApplication.Current?.Services;
 
     private static IAzuraStationCatalog? Catalog => Services?.GetService<IAzuraStationCatalog>();
@@ -129,7 +134,7 @@ public sealed class RadioPlaybackService : MediaLibraryService
             _player?.AddListener(_playerListener);
 
             _libraryCallback = new LibraryCallback(this);
-            MediaLibrarySession.Builder builder = new MediaLibrarySession.Builder(this, new LivePlayer(_player!), _libraryCallback)!;
+            MediaLibrarySession.Builder builder = new MediaLibrarySession.Builder(this, new LivePlayer(_player!, CancelRecovery), _libraryCallback)!;
 
             // Tapping the media notification, lock-screen or the Android Auto card should open the app.
             PendingIntent? sessionActivity = BuildSessionActivity();
@@ -157,6 +162,8 @@ public sealed class RadioPlaybackService : MediaLibraryService
     // Backgrounding (home button, screen off, another app) is untouched and still plays.
     public override void OnTaskRemoved(Intent? rootIntent)
     {
+        CancelRecovery();
+
         IExoPlayer? player = _player;
         if (player is not null)
         {
@@ -179,6 +186,8 @@ public sealed class RadioPlaybackService : MediaLibraryService
 
     public override void OnDestroy()
     {
+        CancelRecovery();
+
         _session?.Release();
         _session = null;
 
@@ -400,9 +409,10 @@ public sealed class RadioPlaybackService : MediaLibraryService
         int nextAttempt = (_streamAttempts.TryGetValue(mediaId, out int a) ? a : 0) + 1;
         if (nextAttempt >= candidateCount)
         {
-            // Every candidate failed — reset so a later manual retry starts from the best URL again.
+            // Every candidate failed — reset so the retry (or a later manual Play) starts from the best URL again.
             _streamAttempts.TryRemove(mediaId, out _);
             _logger?.LogWarning("RadioPlaybackService: all {Count} stream URLs failed for station {Id}", candidateCount, mediaId);
+            ScheduleRecovery(mediaId);
             return;
         }
 
@@ -412,6 +422,50 @@ public sealed class RadioPlaybackService : MediaLibraryService
         player.ReplaceMediaItem(index, BuildStationItem(station, playable: true, metadataOverride: current.MediaMetadata));
         player.Prepare();
         player.Play();
+    }
+
+    // After the last candidate failed (no network at all), try again with a growing delay instead of
+    // leaving the radio silent until the listener presses Play. Bounded by StreamRecoveryBackoff and
+    // dropped by CancelRecovery, so it never revives a stream the listener paused, stopped or left.
+    private void ScheduleRecovery(string mediaId)
+    {
+        if (!_recovery.TryScheduleNext(out TimeSpan delay, out int generation))
+        {
+            _logger?.LogWarning("RadioPlaybackService: giving up recovery of station {Id} after {Attempts} attempts", mediaId, _recovery.Attempt);
+            return;
+        }
+
+        _recoveryMediaId = mediaId;
+        _logger?.LogInformation("RadioPlaybackService: recovery #{Attempt} for station {Id} in {Delay}s", _recovery.Attempt, mediaId, (int)delay.TotalSeconds);
+        new Handler(Looper.MainLooper!).PostDelayed(() => RecoverStream(mediaId, generation), (long)delay.TotalMilliseconds);
+    }
+
+    private void RecoverStream(string mediaId, int generation)
+    {
+        IExoPlayer? player = _player;
+        if (player is null || !_recovery.IsCurrent(generation) || !player.PlayWhenReady)
+            return;
+
+        int index = player.CurrentMediaItemIndex;
+        MediaItem? current = player.CurrentMediaItem;
+        if (index < 0 || current?.MediaId != mediaId)
+            return;
+
+        AzuraStation? station = Catalog?.Stations.FirstOrDefault(s => s.Id.ToString() == mediaId);
+        if (station is null)
+            return;
+
+        _logger?.LogInformation("RadioPlaybackService: recovery attempt {Attempt} for station {Id}", _recovery.Attempt, mediaId);
+        player.ReplaceMediaItem(index, BuildStationItem(station, playable: true, metadataOverride: current.MediaMetadata));
+        player.Prepare();
+        player.Play();
+    }
+
+    // The listener no longer wants this stream (pause, stop, another station, app closed) or it plays again.
+    private void CancelRecovery()
+    {
+        _recovery.Cancel();
+        _recoveryMediaId = null;
     }
 
     // A live stream that stayed paused for a while (the TV's standby pauses the session, a media key, a long call)
@@ -439,6 +493,15 @@ public sealed class RadioPlaybackService : MediaLibraryService
     {
         if (_player?.CurrentMediaItem?.MediaId is { } mediaId)
             _streamAttempts.TryRemove(mediaId, out _);
+
+        CancelRecovery();
+    }
+
+    // A different station means a different stream: its failures start from the first backoff step.
+    private void OnMediaItemChanged(string? mediaId)
+    {
+        if (_recoveryMediaId is not null && mediaId != _recoveryMediaId)
+            CancelRecovery();
     }
 
     // Pause from the session (notification, lock screen, Bluetooth, media keys, Android Auto) must not
@@ -448,13 +511,30 @@ public sealed class RadioPlaybackService : MediaLibraryService
     private sealed class LivePlayer : ForwardingPlayer
     {
         private readonly IExoPlayer _inner;
+        private readonly Action _cancelRecovery;
 
-        public LivePlayer(IExoPlayer inner) : base(inner) => _inner = inner;
+        public LivePlayer(IExoPlayer inner, Action cancelRecovery) : base(inner)
+        {
+            _inner = inner;
+            _cancelRecovery = cancelRecovery;
+        }
 
-        public override void Pause() => _inner.Stop();
+        public override void Pause()
+        {
+            _cancelRecovery();
+            _inner.Stop();
+        }
+
+        public override void Stop()
+        {
+            _cancelRecovery();
+            _inner.Stop();
+        }
 
         public override void Play()
         {
+            // Play on a failed stream reopens it right away: the pending backoff retry is redundant.
+            _cancelRecovery();
             if (_inner.PlaybackState == BasePlayer.InterfaceConsts.StateIdle && _inner.MediaItemCount > 0)
                 _inner.Prepare();
             _inner.Play();
@@ -475,6 +555,8 @@ public sealed class RadioPlaybackService : MediaLibraryService
         {
             if (!playWhenReady)
             {
+                // Paused, or audio focus lost: not the moment to reopen the stream.
+                _service.CancelRecovery();
                 _pausedSince ??= DateTime.UtcNow;
                 return;
             }
@@ -490,6 +572,8 @@ public sealed class RadioPlaybackService : MediaLibraryService
             if (playbackState == BasePlayer.InterfaceConsts.StateReady)
                 _service.OnStreamReady();
         }
+
+        public void OnMediaItemTransition(MediaItem? mediaItem, int reason) => _service.OnMediaItemChanged(mediaItem?.MediaId);
     }
 
     private static async Task<IList<AzuraStation>> GetStationsAsync()
