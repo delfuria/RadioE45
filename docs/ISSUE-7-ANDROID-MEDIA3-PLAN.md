@@ -9,6 +9,14 @@ Ownership split:
 
 The Android implementation has one `MediaLibraryService`, one Media3 session, one player. Phone, notification, Bluetooth, Android Auto and Android TV share it. Do not add a second player/session and do not attach the legacy `AudioFocusManager` to Media3.
 
+## Execution status
+
+| Step | Status | Notes |
+|---|---|---|
+| M1 — fonts (A) | **Done, not committed** | The v0.50 GitHub APK has no font (0/4); v0.49 APK and the v0.50 AAB have all four, so Play is not affected. Reproduced in a throwaway copy: with `mauifont.stamp` surviving and the rest of `obj/Release/net10.0-android` gone, the build exits 0 and the APK has no font. `dotnet clean -f net10.0-android -c Release` alone does not reproduce it (it removes the stamp too), so the exact trigger of the v0.50 APK is unproven. Fix: `DropStaleMauiFontStamp` and `VerifyMauiFontsPresent` in `RadioE45.csproj` (Android only; verified 4/4 fonts on the stale state), plus a font check next to the ABI check in `build-android.sh` and `build-store-android.sh` (outside the repo). Open: rebuild and re-upload the v0.50 APK, or wait for the next release. |
+| M2 — B.1 retry | In progress | |
+| M3–M7 | Not started | |
+
 ## Already handled / no change
 
 | Point | Why |
