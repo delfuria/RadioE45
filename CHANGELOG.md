@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.51] - 2026-10-28
+
 ### New
 - **Mac:** the app now checks once a day whether a newer version is available and has a manual check in Settings.
 
