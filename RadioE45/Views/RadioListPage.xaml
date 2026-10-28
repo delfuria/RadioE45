@@ -27,7 +27,9 @@
                     Spacing="12"
                     Padding="32">
                     <Label
-                        Text="📻"
+                        Text="&#xf8d7;"
+                        FontFamily="FaSolid"
+                        TextColor="{DynamicResource MutedText}"
                         FontSize="48"
                         HorizontalTextAlignment="Center" />
                     <Label
@@ -95,7 +97,9 @@
                                         Aspect="AspectFill"
                                         IsVisible="{Binding LogoUrl, Converter={toolkit:IsNotNullConverter}}" />
                                     <Label
-                                        Text ="📻"
+                                        Text="&#xf8d7;"
+                                        FontFamily="FaSolid"
+                                        TextColor="{DynamicResource MutedText}"
                                         FontSize="22"
                                         HorizontalOptions="Center"
                                         VerticalOptions="Center"
@@ -148,7 +152,8 @@
                             <!-- Indicatore stazione attiva -->
                             <Label
                                 Grid.Column="2"
-                                Text="▶"
+                                Text="&#xf04b;"
+                                FontFamily="FaSolid"
                                 TextColor="{DynamicResource Accent}"
                                 FontSize="16"
                                 VerticalOptions="Center"
@@ -157,7 +162,8 @@
                             <!-- Maniglia di trascinamento per riordino (solo visuale, il drag parte da tutta la riga) -->
                             <Label
                                 Grid.Column="3"
-                                Text="☰"
+                                Text="&#xf0c9;"
+                                FontFamily="FaSolid"
                                 FontSize="20"
                                 TextColor="{DynamicResource MutedText}"
                                 WidthRequest="44"
@@ -185,7 +191,8 @@
 
         <!-- Refresh -->
         <Button
-            Text="⟳"
+            Text="&#xf021;"
+            FontFamily="FaSolid"
             Command="{Binding ForceReloadStationsCommand}"
             IsEnabled="{Binding IsBusy, Converter={toolkit:InvertedBoolConverter}}"
             HorizontalOptions="Start"

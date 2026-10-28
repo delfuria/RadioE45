@@ -82,6 +82,14 @@
   tvNotes: "I pulsanti di sezione TV hanno solo l'etichetta"
   notes: "MAUI: immagini tab_onair/tab_request/tab_podcast; Uno: glifi Font Awesome (play, nota musicale, microfono) nella NavigationView, seguono tema e selezione"
 
+- id: shell.control-icons
+  title: Icone dei controlli (precedente/successivo, play/pausa, muto, ascoltatori, elenco canali, aggiorna) con glifi Font Awesome al posto delle emoji
+  since: "0.51"
+  page: Shell
+  status: { maui: done, desktop: done, web: done, tv: done }
+  notes: "MAUI: FaSolid al posto di ⏮ ⏭ ⏸ ▶ ◀ 🔊 🔇 👥 📻 ☰ ⟳ (le emoji dipendono dal produttore del telefono e ignorano il colore del tema); Uno usava già gli stessi glifi (nessun font emoji nel renderer Skia web), nessuna modifica"
+  tvNotes: "Solo l'icona degli ascoltatori nella vista in onda (le altre icone TV erano già Font Awesome)"
+
 - id: shell.pwa
   title: App web installabile (PWA) con icone, finestra propria e avvio della shell senza il server web
   since: "0.45"

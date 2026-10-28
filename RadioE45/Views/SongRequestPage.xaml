@@ -201,7 +201,8 @@
 
             <Button
                 Grid.Column="0"
-                Text="◀"
+                Text="&#xf0d9;"
+                FontFamily="FaSolid"
                 Command="{Binding PreviousPageCommand}"
                 IsEnabled="{Binding CanGoToPreviousPage}"
                 BackgroundColor="{DynamicResource CardElevated}"
@@ -228,7 +229,8 @@
 
             <Button
                 Grid.Column="2"
-                Text="▶"
+                Text="&#xf0da;"
+                FontFamily="FaSolid"
                 Command="{Binding NextPageCommand}"
                 IsEnabled="{Binding CanGoToNextPage}"
                 BackgroundColor="{DynamicResource CardElevated}"

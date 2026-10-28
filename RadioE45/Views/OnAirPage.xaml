@@ -14,8 +14,8 @@
     <ContentPage.Resources>
         <toolkit:InvertedBoolConverter x:Key="InvertBool" />
         <toolkit:BoolToObjectConverter x:Key="FavoriteIconConverter" TrueObject="heart_filled.png" FalseObject="heart_outline.png" />
-        <toolkit:BoolToObjectConverter x:Key="PlayPauseTextConverter" x:TypeArguments="x:String" TrueObject="⏸" FalseObject="▶" />
-        <toolkit:BoolToObjectConverter x:Key="MuteTextConverter" x:TypeArguments="x:String" TrueObject="🔇" FalseObject="🔊" />
+        <toolkit:BoolToObjectConverter x:Key="PlayPauseTextConverter" x:TypeArguments="x:String" TrueObject="&#xf04c;" FalseObject="&#xf04b;" />
+        <toolkit:BoolToObjectConverter x:Key="MuteTextConverter" x:TypeArguments="x:String" TrueObject="&#xf6a9;" FalseObject="&#xf028;" />
         <toolkit:BoolToObjectConverter x:Key="ChevronTextConverter" x:TypeArguments="x:String" TrueObject="▲" FalseObject="▼" />
     </ContentPage.Resources>
 
@@ -116,9 +116,15 @@
 
                             <!-- Ascoltatori -->
                             <Label
-                                Text="{Binding NowPlaying.ListenerCount, StringFormat='👥 {0}'}"
                                 Style="{StaticResource CaptionLabel}"
-                                VerticalOptions="Center" />
+                                VerticalOptions="Center">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="&#xf0c0;" FontFamily="FaSolid" />
+                                        <Span Text="{Binding NowPlaying.ListenerCount, StringFormat=' {0}'}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
                         </HorizontalStackLayout>
 
                         <HorizontalStackLayout
@@ -290,7 +296,8 @@
                              centra il pulsante (44) sulla verticale del play (68) -->
                         <VerticalStackLayout WidthRequest="76" Spacing="4" VerticalOptions="Start" Margin="0,12,0,0" IsVisible="{Binding ShowPreviousStation}">
                             <Button
-                                Text="⏮"
+                                Text="&#xf048;"
+                                FontFamily="FaSolid"
                                 BackgroundColor="{DynamicResource CardElevated}"
                                 TextColor="{DynamicResource MutedText}"
                                 CornerRadius="22"
@@ -320,7 +327,8 @@
                         <!-- Stazione successiva -->
                         <VerticalStackLayout WidthRequest="76" Spacing="4" VerticalOptions="Start" Margin="0,12,0,0" IsVisible="{Binding ShowNextStation}">
                             <Button
-                                Text="⏭"
+                                Text="&#xf051;"
+                                FontFamily="FaSolid"
                                 BackgroundColor="{DynamicResource CardElevated}"
                                 TextColor="{DynamicResource MutedText}"
                                 CornerRadius="22"
@@ -343,6 +351,7 @@
                         <Button
                             IsVisible="{OnPlatform Default=False, iOS=True, Android=True}"
                             Text="{Binding IsMuted, Converter={StaticResource MuteTextConverter}}"
+                            FontFamily="FaSolid"
                             Command="{Binding ToggleMuteCommand}"
                             BackgroundColor="{DynamicResource CardElevated}"
                             TextColor="{DynamicResource MutedText}"
@@ -365,6 +374,7 @@
                         <Button
                             Grid.Column="0"
                             Text="{Binding IsMuted, Converter={StaticResource MuteTextConverter}}"
+                            FontFamily="FaSolid"
                             Command="{Binding ToggleMuteCommand}"
                             BackgroundColor="Transparent"
                             TextColor="{DynamicResource MutedText}"

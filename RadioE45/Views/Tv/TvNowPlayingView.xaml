@@ -79,10 +79,16 @@
                         TextColor="White" />
                 </Border>
                 <Label
-                    Text="{Binding NowPlaying.ListenerCount, StringFormat='👥 {0}'}"
                     FontSize="22"
                     TextColor="{DynamicResource MutedText}"
-                    VerticalOptions="Center" />
+                    VerticalOptions="Center">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="&#xf0c0;" FontFamily="FaSolid" />
+                            <Span Text="{Binding NowPlaying.ListenerCount, StringFormat=' {0}'}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
                 <Border
                     BackgroundColor="{StaticResource HlsGreen}"
                     StrokeShape="RoundRectangle 12"

@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### New
 - **Mac:** the app now checks once a day whether a newer version is available and has a manual check in Settings.
 
+### Improved
+- **Icons:** the player, station list and song request buttons now use the same crisp icons as the rest of the app instead of emoji, so they look identical on every phone and follow the app colors.
+
 ### Fixed
 - **Updates (iPhone and iPad):** the update check now sees a new version as soon as it is published on the App Store, instead of missing it for up to a day.
 - **Android:** when the connection drops completely (a tunnel, a coverage gap), the radio now keeps trying to reconnect and resumes by itself when the network is back, instead of staying silent until you press Play.
