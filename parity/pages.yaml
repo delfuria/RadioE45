@@ -201,6 +201,14 @@
   viewmodels: [SettingsViewModel]
   ignore: []
 
+- page: OpenSourceLicenses
+  maui: RadioE45/Views/OpenSourceLicensesPage.xaml
+  uno: RadioE45.Uno/Views/OpenSourceLicensesPage.xaml
+  tv: n/a
+  tvReason: "Nessuna impostazione su TV (decisione 2026-10-22, docs/ANDROID-TV-ROADMAP.md §1)"
+  viewmodels: [OpenSourceLicensesViewModel]
+  ignore: []
+
 - page: Schedule
   maui: RadioE45/Views/SchedulePopup.xaml
   uno: RadioE45.Uno/Views/ScheduleDialog.xaml

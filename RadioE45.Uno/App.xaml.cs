@@ -199,6 +199,7 @@ public partial class App : Application
         services.AddTransient<AddStationViewModel>();
         services.AddTransient<EditStationViewModel>();
         services.AddTransient<SettingsViewModel>();
+        services.AddTransient<OpenSourceLicensesViewModel>();
         // One instance like the MAUI tab page: it subscribes to OnAirViewModel to follow the
         // station, so a new one at every visit of the tab would stay subscribed forever.
         services.AddSingleton<PodcastListViewModel>();

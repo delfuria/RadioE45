@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### New
+- **Settings → Info:** new "Open source licenses" screen with the copyright notices and license texts of the libraries and fonts the app uses.
+
 ### Fixed
 - **Android:** when the connection comes back after a gap, the radio now resumes right away instead of waiting for the next retry, and it also resumes after a long gap (a tunnel, a garage) without pressing Play.
 - **Android Auto:** swiping the app away on the phone no longer stops the radio in the car; the app closes by itself 15 seconds after the car disconnects, and the song title, artist and cover keep following the song and the station you pick in the car.

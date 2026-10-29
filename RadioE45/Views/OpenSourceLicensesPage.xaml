@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RadioE45.Views.OpenSourceLicensesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels;assembly=RadioE45.Core"
+    x:DataType="vm:OpenSourceLicensesViewModel"
+    Title="{Binding Title}"
+    Shell.NavBarIsVisible="True"
+    Shell.TabBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="12" Padding="16,16,16,32">
+            <Label
+                Text="{Binding IntroText}"
+                TextColor="{DynamicResource MutedText}"
+                FontSize="14" />
+
+            <Label
+                Text="{Binding NoticesText}"
+                TextColor="{DynamicResource PrimaryText}"
+                FontSize="12"
+                LineBreakMode="WordWrap" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -145,6 +145,9 @@ public partial class SettingsViewModel : BaseViewModel
     private Task ShowTermsAsync() => _terms.ShowAsync();
 
     [RelayCommand]
+    private Task OpenLicensesAsync() => _navigation.GoToOpenSourceLicensesAsync();
+
+    [RelayCommand]
     private async Task CheckForUpdatesAsync()
     {
         if (!_updateCoordinator.IsSupported)

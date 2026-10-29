@@ -322,6 +322,25 @@
 
                         <Border Style="{StaticResource Divider}" />
 
+                        <Button Style="{StaticResource RowButton}" Command="{x:Bind ViewModel.OpenLicensesCommand}" MinHeight="32">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{loc:Translate Key=Settings_OpenSourceLicenses}" Style="{StaticResource SettingLabel}" VerticalAlignment="Center" />
+                                <FontIcon
+                                    Grid.Column="1"
+                                    FontFamily="{StaticResource FaSolid}"
+                                    Glyph="&#xf054;"
+                                    FontSize="14"
+                                    Foreground="{ThemeResource MutedTextBrush}"
+                                    VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+
+                        <Border Style="{StaticResource Divider}" />
+
                         <Button Style="{StaticResource RowButton}" Command="{x:Bind ViewModel.ShowTermsCommand}" MinHeight="32">
                             <Grid>
                                 <Grid.ColumnDefinitions>

@@ -84,6 +84,9 @@ OnAirViewModel.ToggleSongHistoryCommand : IRelayCommand { get; }
 OnAirViewModel.TotalTimeText : string { get; set; }
 OnAirViewModel.TrackProgress : double { get; set; }
 OnAirViewModel.Volume : double { get; set; }
+OpenSourceLicensesViewModel : type
+OpenSourceLicensesViewModel.IntroText : string { get; }
+OpenSourceLicensesViewModel.NoticesText : string { get; }
 PodcastEpisodesViewModel : type
 PodcastEpisodesViewModel.Activate() : void
 PodcastEpisodesViewModel.Cleanup() : void
@@ -139,6 +142,7 @@ SettingsViewModel.IsDebugBuild : bool { get; }
 SettingsViewModel.IsUpdateAvailable : bool { get; set; }
 SettingsViewModel.IsUpdateCheckSupported : bool { get; }
 SettingsViewModel.MustUpdate : bool { get; set; }
+SettingsViewModel.OpenLicensesCommand : IAsyncRelayCommand { get; }
 SettingsViewModel.PlaybackLatencyOffsetSeconds : int { get; set; }
 SettingsViewModel.PreferHlsStream : bool { get; set; }
 SettingsViewModel.RequestPageSize : int { get; set; }

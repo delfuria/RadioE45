@@ -449,6 +449,14 @@
   status: { maui: done, desktop: done, web: done, tv: n/a }
   tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
 
+- id: settings.info.open-source-licenses
+  title: Impostazioni, Info, licenze open source (note di copyright e testi delle licenze dei componenti e dei font, THIRD-PARTY-NOTICES.txt)
+  since: "0.52"
+  page: OpenSourceLicenses
+  viewmodel: OpenSourceLicensesViewModel
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
+
 - id: settings.diagnostics.crash-reports
   title: Consenso all'invio dei crash report, crash di test, avviso di riavvio
   since: "0.44"

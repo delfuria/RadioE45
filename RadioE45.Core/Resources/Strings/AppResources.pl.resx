@@ -213,6 +213,9 @@ Aplikacja jest udostępniana „tak jak jest”. Nie odpowiadamy za strumienie p
 
 Warunki możesz przeczytać ponownie w dowolnym momencie w Ustawienia → Info.</value></data>
   <data name="Settings_Terms" xml:space="preserve"><value>Warunki korzystania</value></data>
+  <data name="Settings_OpenSourceLicenses" xml:space="preserve"><value>Licencje open source</value></data>
+  <data name="OpenSource_Title" xml:space="preserve"><value>Licencje open source</value></data>
+  <data name="OpenSource_Intro" xml:space="preserve"><value>Radio E45 korzysta z poniższych komponentów open source i fontów. Dalej znajdują się noty o prawach autorskich i teksty licencji.</value></data>
   <data name="Update_Title" xml:space="preserve"><value>Dostępna aktualizacja</value></data>
   <data name="Update_Message" xml:space="preserve"><value>Dostępna jest wersja {0} aplikacji Radio E45.</value></data>
   <data name="Update_Accept" xml:space="preserve"><value>Aktualizuj</value></data>

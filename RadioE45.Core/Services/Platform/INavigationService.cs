@@ -14,6 +14,9 @@ public interface INavigationService
 
     Task GoToAddStationAsync();
 
+    /// <summary>Opens Settings → Info → Open source licenses, stacked above the current page.</summary>
+    Task GoToOpenSourceLicensesAsync();
+
     Task GoToEditStationAsync(int stationId);
 
     Task GoToPodcastEpisodesAsync(string podcastId, string podcastTitle);
