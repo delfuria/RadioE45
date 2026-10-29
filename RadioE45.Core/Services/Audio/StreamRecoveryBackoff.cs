@@ -62,6 +62,20 @@ public sealed class StreamRecoveryBackoff
         lock (_gate) return generation == _generation;
     }
 
+    /// <summary>
+    /// Supersedes any pending retry and starts a fresh schedule: the network came back, so the retry should not
+    /// wait for the timer, and a recovery that had given up gets its whole budget again. Returns the generation
+    /// of the retry the caller runs right away.
+    /// </summary>
+    public int Restart()
+    {
+        lock (_gate)
+        {
+            _attempt = 0;
+            return ++_generation;
+        }
+    }
+
     /// <summary>Invalidates any pending retry and resets the attempt count (playback resumed, or the listener stopped it).</summary>
     public void Cancel()
     {

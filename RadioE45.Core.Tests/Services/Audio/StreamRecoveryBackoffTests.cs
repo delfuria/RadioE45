@@ -59,6 +59,35 @@ public sealed class StreamRecoveryBackoffTests
     }
 
     [Fact]
+    public void Restart_SupersedesThePendingRetryAndStartsAgainFromTheFirstDelay()
+    {
+        StreamRecoveryBackoff backoff = new();
+        backoff.TryScheduleNext(out _, out int pending);
+        backoff.TryScheduleNext(out _, out _);
+
+        int restarted = backoff.Restart();
+
+        Assert.False(backoff.IsCurrent(pending));
+        Assert.True(backoff.IsCurrent(restarted));
+        Assert.Equal(0, backoff.Attempt);
+        backoff.TryScheduleNext(out TimeSpan delay, out _);
+        Assert.Equal(TimeSpan.FromSeconds(3), delay);
+    }
+
+    [Fact]
+    public void Restart_ReopensBudgetAfterGivingUp()
+    {
+        StreamRecoveryBackoff backoff = new();
+        for (int i = 0; i < StreamRecoveryBackoff.MaxAttempts; i++)
+            backoff.TryScheduleNext(out _, out _);
+        Assert.False(backoff.TryScheduleNext(out _, out _));
+
+        backoff.Restart();
+
+        Assert.True(backoff.TryScheduleNext(out _, out _));
+    }
+
+    [Fact]
     public void NewSchedule_SupersedesThePreviousOne()
     {
         StreamRecoveryBackoff backoff = new();

@@ -66,6 +66,10 @@ public sealed class RadioPlaybackService : MediaLibraryService
     private readonly StreamRecoveryBackoff _recovery = new();
     private string? _recoveryMediaId;
 
+    // Only registered while a recovery is wanted (see WatchNetwork). Held in a field: Java keeps just a
+    // weak reference to the callback.
+    private Android.Net.ConnectivityManager.NetworkCallback? _networkCallback;
+
     private static IServiceProvider? Services => IPlatformApplication.Current?.Services;
 
     private static IAzuraStationCatalog? Catalog => Services?.GetService<IAzuraStationCatalog>();
@@ -436,8 +440,88 @@ public sealed class RadioPlaybackService : MediaLibraryService
         }
 
         _recoveryMediaId = mediaId;
+        WatchNetwork();
         _logger?.LogInformation("RadioPlaybackService: recovery #{Attempt} for station {Id} in {Delay}s", _recovery.Attempt, mediaId, (int)delay.TotalSeconds);
         new Handler(Looper.MainLooper!).PostDelayed(() => RecoverStream(mediaId, generation), (long)delay.TotalMilliseconds);
+    }
+
+    // The timer alone leaves the radio silent until the next step (up to 30 s) after the network is back, and
+    // for good once the attempts ran out (a long tunnel or garage). While a recovery is wanted, a default
+    // network coming back retries at once with a fresh schedule. _recoveryMediaId stays set after giving up,
+    // which is what keeps this armed until the listener pauses, stops, changes station or the stream plays.
+    private void WatchNetwork()
+    {
+        if (_networkCallback is not null)
+            return;
+
+        try
+        {
+            if (GetSystemService(ConnectivityService) is not Android.Net.ConnectivityManager manager)
+                return;
+
+            _networkCallback = new RecoveryNetworkCallback(this, manager.ActiveNetwork);
+            manager.RegisterDefaultNetworkCallback(_networkCallback);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "RadioPlaybackService: could not watch the network, recovery stays timer-only");
+            _networkCallback = null;
+        }
+    }
+
+    private void StopWatchingNetwork()
+    {
+        Android.Net.ConnectivityManager.NetworkCallback? callback = _networkCallback;
+        if (callback is null)
+            return;
+
+        _networkCallback = null;
+        try
+        {
+            (GetSystemService(ConnectivityService) as Android.Net.ConnectivityManager)?.UnregisterNetworkCallback(callback);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogDebug(ex, "RadioPlaybackService: network callback was already gone");
+        }
+    }
+
+    // Binder thread: hop to the main looper before touching the player.
+    private void OnNetworkReturned()
+    {
+        new Handler(Looper.MainLooper!).Post(() =>
+        {
+            string? mediaId = _recoveryMediaId;
+            IExoPlayer? player = _player;
+            if (mediaId is null || player is null || !player.PlayWhenReady)
+                return;
+
+            _logger?.LogInformation("RadioPlaybackService: network is back, retrying station {Id} now", mediaId);
+            RecoverStream(mediaId, _recovery.Restart());
+        });
+    }
+
+    private sealed class RecoveryNetworkCallback : Android.Net.ConnectivityManager.NetworkCallback
+    {
+        private readonly RadioPlaybackService _service;
+        private Android.Net.Network? _alreadyUp;
+
+        public RecoveryNetworkCallback(RadioPlaybackService service, Android.Net.Network? alreadyUp)
+        {
+            _service = service;
+            _alreadyUp = alreadyUp;
+        }
+
+        public override void OnAvailable(Android.Net.Network network)
+        {
+            // Registering reports the network that is already up: not news, the stream failed on it.
+            if (_alreadyUp is not null && _alreadyUp.Equals(network))
+                return;
+
+            _service.OnNetworkReturned();
+        }
+
+        public override void OnLost(Android.Net.Network network) => _alreadyUp = null;
     }
 
     private void RecoverStream(string mediaId, int generation)
@@ -466,6 +550,7 @@ public sealed class RadioPlaybackService : MediaLibraryService
     {
         _recovery.Cancel();
         _recoveryMediaId = null;
+        StopWatchingNetwork();
     }
 
     // A live stream that stayed paused for a while (the TV's standby pauses the session, a media key, a long call)
