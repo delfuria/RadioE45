@@ -66,6 +66,9 @@ public sealed class RadioPlaybackService : MediaLibraryService
     private readonly StreamRecoveryBackoff _recovery = new();
     private string? _recoveryMediaId;
 
+    // Set when the backoff ran out: from then on the session shows the error, until the listener acts.
+    private bool _recoveryGaveUp;
+
     // Only registered while a recovery is wanted (see WatchNetwork). Held in a field: Java keeps just a
     // weak reference to the callback.
     private Android.Net.ConnectivityManager.NetworkCallback? _networkCallback;
@@ -87,6 +90,7 @@ public sealed class RadioPlaybackService : MediaLibraryService
     {
         base.OnCreate();
 
+        _current = this;
         _logger = Services?.GetService<ILogger<RadioPlaybackService>>();
 
         try
@@ -138,7 +142,7 @@ public sealed class RadioPlaybackService : MediaLibraryService
             _player?.AddListener(_playerListener);
 
             _libraryCallback = new LibraryCallback(this);
-            MediaLibrarySession.Builder builder = new MediaLibrarySession.Builder(this, new LivePlayer(_player!, CancelRecovery), _libraryCallback)!;
+            MediaLibrarySession.Builder builder = new MediaLibrarySession.Builder(this, new LivePlayer(_player!, CancelRecovery, () => !_recoveryGaveUp), _libraryCallback)!;
 
             // Tapping the media notification, lock-screen or the Android Auto card should open the app.
             PendingIntent? sessionActivity = BuildSessionActivity();
@@ -164,8 +168,25 @@ public sealed class RadioPlaybackService : MediaLibraryService
     // removal, so that all three heads behave the same: iOS force-quit kills the audio session and
     // a Windows MediaElement dies with its window, neither platform being able to do otherwise.
     // Backgrounding (home button, screen off, another app) is untouched and still plays.
+    //
+    // One exception: with Android Auto connected, the radio belongs to the car as much as to the phone, and
+    // ending it there leaves the driver on an empty station list. The close is then deferred until the car
+    // is gone (CloseWhenAutoIsGone): same end result, only later.
     public override void OnTaskRemoved(Intent? rootIntent)
     {
+        if (IsCarConnected())
+        {
+            _logger?.LogInformation("RadioPlaybackService: app closed while Android Auto is connected, closing {Delay}s after it leaves", (int)CloseDelayAfterAuto.TotalSeconds);
+            BeginCloseWatch();
+            return;
+        }
+
+        CloseApp();
+    }
+
+    private void CloseApp()
+    {
+        EndCloseWatch();
         CancelRecovery();
 
         IExoPlayer? player = _player;
@@ -188,8 +209,182 @@ public sealed class RadioPlaybackService : MediaLibraryService
         Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
     }
 
+    // The app was swiped away while Android Auto was connected, so the close is pending. The controllers are
+    // polled rather than waited for through session callbacks: the answer that matters is "is the car still
+    // there", and a missed callback would leave a closed app playing on the phone for good.
+    private static readonly TimeSpan CloseDelayAfterAuto = TimeSpan.FromSeconds(15);
+    private static readonly TimeSpan CloseWatchInterval = TimeSpan.FromSeconds(3);
+    private bool _closeWhenAutoLeaves;
+    private int _closeGeneration;
+    private DateTime? _autoGoneSince;
+    private INowPlayingService? _closeWatchNowPlaying;
+    private static RadioPlaybackService? _current;
+
+    private bool IsAutoController(MediaSession.ControllerInfo controller)
+        => _session is { } session && (session.IsAutoCompanionController(controller) || session.IsAutomotiveController(controller));
+
+    private bool HasAutoController()
+    {
+        IList<MediaSession.ControllerInfo>? controllers = _session?.ConnectedControllers;
+        return controllers is not null && controllers.Any(IsAutoController);
+    }
+
+    // The Android Auto app keeps its media controller bound to the session after the car is gone, so the
+    // controller list says nothing about the car. The connection state Android Auto publishes for apps does
+    // (androidx.car.app CarConnection): 0 not connected, 1 native Android Automotive, 2 projection. If it
+    // cannot be read, fall back to the controllers: the radio may then outlive the car, but never ends under it.
+    private bool IsCarConnected()
+    {
+        try
+        {
+            using Android.Database.ICursor? cursor = ContentResolver?.Query(
+                Android.Net.Uri.Parse("content://androidx.car.app.connection")!, new[] { "CarConnectionState" }, null, null, null);
+            if (cursor is not null && cursor.MoveToFirst())
+            {
+                int column = cursor.GetColumnIndex("CarConnectionState");
+                if (column >= 0)
+                    return cursor.GetInt(column) != 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogDebug(ex, "RadioPlaybackService: car connection state not readable");
+        }
+
+        return HasAutoController();
+    }
+
+    private void BeginCloseWatch()
+    {
+        _closeWhenAutoLeaves = true;
+        _autoGoneSince = null;
+        int generation = ++_closeGeneration;
+
+        // The app's own now-playing push is gone with its screen, so the song in the car would freeze.
+        _closeWatchNowPlaying = Services?.GetService<INowPlayingService>();
+        if (_closeWatchNowPlaying is not null)
+            _closeWatchNowPlaying.NowPlayingUpdated += OnNowPlayingWhileClosing;
+        FollowStationWhileClosing(_player?.CurrentMediaItem?.MediaId);
+
+        new Handler(Looper.MainLooper!).PostDelayed(() => CheckCloseWatch(generation), (long)CloseWatchInterval.TotalMilliseconds);
+    }
+
+    private void EndCloseWatch()
+    {
+        _closeWhenAutoLeaves = false;
+        _autoGoneSince = null;
+        _closeGeneration++;
+
+        if (_closeWatchNowPlaying is not null)
+            _closeWatchNowPlaying.NowPlayingUpdated -= OnNowPlayingWhileClosing;
+        _closeWatchNowPlaying = null;
+        _followedMediaId = null;
+    }
+
+    // The app's own polling follows the station the app chose. With the app gone and the car picking another
+    // station, nothing would poll it and the song of the previous station would stay on the session, so the
+    // service starts the polling for whatever station is playing (a new start replaces the previous one).
+    private string? _followedMediaId;
+
+    private void FollowStationWhileClosing(string? mediaId)
+    {
+        INowPlayingService? nowPlaying = _closeWatchNowPlaying;
+        if (!_closeWhenAutoLeaves || nowPlaying is null || mediaId is null || mediaId == _followedMediaId)
+            return;
+
+        AzuraStation? station = Catalog?.Stations.FirstOrDefault(s => s.Id.ToString() == mediaId);
+        if (station is null)
+            return;
+
+        _followedMediaId = mediaId;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await nowPlaying.StartPollingAsync(station, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "RadioPlaybackService: could not follow the now playing of station {Id} while closing", mediaId);
+            }
+        });
+    }
+
+    private void CheckCloseWatch(int generation)
+    {
+        if (generation != _closeGeneration || !_closeWhenAutoLeaves)
+            return;
+
+        if (IsCarConnected())
+        {
+            if (_autoGoneSince is not null)
+                _logger?.LogInformation("RadioPlaybackService: Android Auto is back, the close is cancelled until it leaves again");
+            _autoGoneSince = null;
+        }
+        else
+        {
+            if (_autoGoneSince is null)
+            {
+                _autoGoneSince = DateTime.UtcNow;
+                _logger?.LogInformation("RadioPlaybackService: Android Auto left, closing in {Delay}s unless it comes back", (int)CloseDelayAfterAuto.TotalSeconds);
+            }
+            else if (DateTime.UtcNow - _autoGoneSince.Value >= CloseDelayAfterAuto)
+            {
+                _logger?.LogInformation("RadioPlaybackService: Android Auto is gone, closing the app that was swiped away");
+                CloseApp();
+                return;
+            }
+        }
+
+        new Handler(Looper.MainLooper!).PostDelayed(() => CheckCloseWatch(generation), (long)CloseWatchInterval.TotalMilliseconds);
+    }
+
+    // While the close is pending nothing in the app pushes the song to the session any more (the screen that
+    // did is gone), so the service does it: same fields the app sets, same item, no restart of the stream.
+    private void OnNowPlayingWhileClosing(object? sender, NowPlayingInfo info)
+    {
+        new Handler(Looper.MainLooper!).Post(() =>
+        {
+            IExoPlayer? player = _player;
+            MediaItem? current = player?.CurrentMediaItem;
+            if (!_closeWhenAutoLeaves || player is null || current is null || string.IsNullOrWhiteSpace(info.Title)
+                || current.MediaId != _followedMediaId)
+                return;
+
+            if (current.MediaMetadata?.Title?.ToString() == info.Title && current.MediaMetadata?.Artist?.ToString() == info.Artist)
+                return;
+
+            MediaMetadata.Builder metadata = new MediaMetadata.Builder()!
+                .SetTitle(info.Title)!
+                .SetArtist(info.Artist)!
+                .SetSubtitle(info.Artist)!
+                .SetIsPlayable(Java.Lang.Boolean.True)!
+                .SetMediaType((Java.Lang.Integer)MediaMetadata.MediaTypeRadioStation)!;
+
+            if (!string.IsNullOrEmpty(info.ArtworkUrl))
+                metadata.SetArtworkUri(Android.Net.Uri.Parse(info.ArtworkUrl));
+
+            player.ReplaceMediaItem(player.CurrentMediaItemIndex, current.BuildUpon()!.SetMediaMetadata(metadata.Build())!.Build()!);
+        });
+    }
+
+    // MainActivity: the listener opened the app again after swiping it away with the car connected. It is
+    // open now, so it must not be closed under their hands when the car leaves.
+    internal static void NotifyAppOpened()
+    {
+        if (_current is { _closeWhenAutoLeaves: true } service)
+        {
+            service._logger?.LogInformation("RadioPlaybackService: app opened again, the pending close is cancelled");
+            service.EndCloseWatch();
+        }
+    }
+
     public override void OnDestroy()
     {
+        if (ReferenceEquals(_current, this))
+            _current = null;
+
+        EndCloseWatch();
         CancelRecovery();
 
         _session?.Release();
@@ -400,6 +595,11 @@ public sealed class RadioPlaybackService : MediaLibraryService
         if (player is null || player.MediaItemCount == 0)
             return;
 
+        // Paused while the stream was still opening: it failed, but nobody is waiting for it. Trying the next
+        // URL would end in player.Play() and undo the pause; the Play that comes later opens it again.
+        if (!player.PlayWhenReady)
+            return;
+
         int index = player.CurrentMediaItemIndex;
         MediaItem? current = player.CurrentMediaItem;
         if (index < 0 || current?.MediaId is not { } mediaId)
@@ -436,6 +636,8 @@ public sealed class RadioPlaybackService : MediaLibraryService
         if (!_recovery.TryScheduleNext(out TimeSpan delay, out int generation))
         {
             _logger?.LogWarning("RadioPlaybackService: giving up recovery of station {Id} after {Attempts} attempts", mediaId, _recovery.Attempt);
+            _recoveryGaveUp = true;
+            NudgeSession();
             return;
         }
 
@@ -545,11 +747,26 @@ public sealed class RadioPlaybackService : MediaLibraryService
         player.Play();
     }
 
+    // The session reads the player error through LivePlayer, which hides it while a recovery is running. When the
+    // recovery gives up nothing in the player changes, so the session would go on showing a buffering stream
+    // for good: a harmless change of playback speed (nothing is playing, the stream is closed) makes it read the
+    // player again and report the error.
+    private void NudgeSession()
+    {
+        IExoPlayer? player = _player;
+        if (player is null)
+            return;
+
+        player.PlaybackParameters = new PlaybackParameters(1.001f);
+        player.PlaybackParameters = PlaybackParameters.Default;
+    }
+
     // The listener no longer wants this stream (pause, stop, another station, app closed) or it plays again.
     private void CancelRecovery()
     {
         _recovery.Cancel();
         _recoveryMediaId = null;
+        _recoveryGaveUp = false;
         StopWatchingNetwork();
     }
 
@@ -608,6 +825,8 @@ public sealed class RadioPlaybackService : MediaLibraryService
     {
         if (_recoveryMediaId is not null && mediaId != _recoveryMediaId)
             CancelRecovery();
+
+        FollowStationWhileClosing(mediaId);
     }
 
     // Pause from the session (notification, lock screen, Bluetooth, media keys, Android Auto, in-app) is a
@@ -618,11 +837,46 @@ public sealed class RadioPlaybackService : MediaLibraryService
     {
         private readonly IExoPlayer _inner;
         private readonly Action _cancelRecovery;
+        private readonly Func<bool> _mayRecover;
 
-        public LivePlayer(IExoPlayer inner, Action cancelRecovery) : base(inner)
+        public LivePlayer(IExoPlayer inner, Action cancelRecovery, Func<bool> mayRecover) : base(inner)
         {
             _inner = inner;
             _cancelRecovery = cancelRecovery;
+            _mayRecover = mayRecover;
+        }
+
+        // While the service is still retrying (a coverage gap, a bad URL with fallbacks left) the stream is not
+        // failed, it is being reopened. Reporting the player error would put Android Auto on a full-screen
+        // "Source error" with no controls, and back on the now-playing screen at every retry. So the session
+        // sees a buffering stream until the retries run out; only then the error is real.
+        private bool IsRecovering => _inner.PlayWhenReady && _inner.PlayerError is not null && _mayRecover();
+
+        // A stream that fails while the listener has it paused is not a failure they can see or act on: Play
+        // opens it again. Showing it would turn a pause into "Source error".
+        private bool PausedAfterFailure => !_inner.PlayWhenReady && _inner.PlayerError is not null;
+
+        public override PlaybackException? PlayerError => IsRecovering || PausedAfterFailure ? null : _inner.PlayerError;
+
+        // A stream that is still opening when the listener pauses stays BUFFERING in the player, and the session
+        // maps BUFFERING to a buffering state whatever playWhenReady says: the car keeps showing a stream that
+        // is loading, with the pause button, though the listener asked for silence. A paused player is READY
+        // to the session, which then reports PAUSED.
+        public override int PlaybackState
+        {
+            get
+            {
+                int state = _inner.PlaybackState;
+                if (IsRecovering)
+                    return BasePlayer.InterfaceConsts.StateBuffering;
+
+                if (PausedAfterFailure)
+                    return BasePlayer.InterfaceConsts.StateReady;
+
+                return !_inner.PlayWhenReady && state == BasePlayer.InterfaceConsts.StateBuffering
+                    ? BasePlayer.InterfaceConsts.StateReady
+                    : state;
+            }
         }
 
         public override void Pause()

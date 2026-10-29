@@ -56,6 +56,7 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IMedia
 
     public async Task PlayAsync(AzuraStation station)
     {
+        CancelPendingStop();
         _currentStation = station;
         _streamOpenedRaised = false;
         _lastArtist = _lastTitle = _lastArtworkUrl = null;
@@ -73,28 +74,77 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IMedia
     // Pause "vero": la sessione resta PAUSED (Android Auto non torna all'elenco stazioni). Il ritorno
     // in diretta lo garantisce RadioPlaybackService: dopo una pausa lunga il Play chiude il flusso e
     // lo riapre al live edge (ReconnectToLiveEdge).
-    public Task PauseAsync() => WithControllerAsync(c => c.Pause());
-
-    public Task ResumeAsync() => WithControllerAsync(c =>
+    public Task PauseAsync()
     {
-        if (c.PlaybackState == BasePlayer.InterfaceConsts.StateIdle)
-            c.Prepare();
-        c.Play();
-    });
+        CancelPendingStop();
+        return WithControllerAsync(c => c.Pause());
+    }
+
+    public Task ResumeAsync()
+    {
+        CancelPendingStop();
+        return WithControllerAsync(c =>
+        {
+            if (c.PlaybackState == BasePlayer.InterfaceConsts.StateIdle)
+                c.Prepare();
+            c.Play();
+        });
+    }
+
+    // The view model stops the stream before it plays another station (SelectStationAsync), and Stop() plus
+    // ClearMediaItems() drop the session to NONE with an empty queue for as long as the new stream takes to
+    // open: Android Auto reads that as the end of the radio and leaves the now-playing screen. So a stop
+    // first goes silent with a pause, and only becomes a real stop if no PlayAsync follows within the grace
+    // period. The listener hears no difference: audio is gone at once either way.
+    private static readonly TimeSpan StopGrace = TimeSpan.FromSeconds(3);
+    private CancellationTokenSource? _pendingStop;
+
+    private void CancelPendingStop()
+    {
+        CancellationTokenSource? pending = Interlocked.Exchange(ref _pendingStop, null);
+        pending?.Cancel();
+        pending?.Dispose();
+    }
 
     public async Task StopAsync()
     {
         _currentStation = null;
-        await WithControllerAsync(c =>
+        CancelPendingStop();
+        CancellationTokenSource grace = new();
+        _pendingStop = grace;
+
+        await WithControllerAsync(c => c.Pause());
+        _ = FinishStopAsync(grace);
+    }
+
+    private async Task FinishStopAsync(CancellationTokenSource grace)
+    {
+        try
         {
-            c.Stop();
-            c.ClearMediaItems();
-        });
+            await Task.Delay(StopGrace, grace.Token);
+            if (!ReferenceEquals(Interlocked.CompareExchange(ref _pendingStop, null, grace), grace))
+                return;
+
+            await WithControllerAsync(c =>
+            {
+                c.Stop();
+                c.ClearMediaItems();
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            // A new station or a resume took over: nothing left to stop.
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Media3AudioService: deferred stop failed");
+        }
     }
 
     public void StopImmediate()
     {
         _currentStation = null;
+        CancelPendingStop();
         MediaController? c = _controller;
         if (c is null)
             return;

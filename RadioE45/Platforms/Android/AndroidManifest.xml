@@ -14,6 +14,10 @@
 		     attributes on the class; it serves Android Auto, the media notification and legacy
 		     MediaBrowser clients from a single ExoPlayer session. -->
 	</application>
+	<!-- Android 11+ package visibility: the Android Auto app publishes the car connection state through a content provider (RadioPlaybackService.IsCarConnected). -->
+	<queries>
+		<package android:name="com.google.android.projection.gearhead" />
+	</queries>
 	<!-- Android TV / Google TV / Fire TV: required="false" keeps the app installable on phones and tablets. -->
 	<uses-feature android:name="android.software.leanback" android:required="false" />
 	<uses-feature android:name="android.hardware.touchscreen" android:required="false" />

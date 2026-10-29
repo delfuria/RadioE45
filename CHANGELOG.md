@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 - **Android:** when the connection comes back after a gap, the radio now resumes right away instead of waiting for the next retry, and it also resumes after a long gap (a tunnel, a garage) without pressing Play.
+- **Android Auto:** swiping the app away on the phone no longer stops the radio in the car; the app closes by itself 15 seconds after the car disconnects, and the song title, artist and cover keep following the song and the station you pick in the car.
+- **Android Auto:** changing station from the phone (next, previous or the list) no longer sends the car back to the station list.
+- **Android Auto:** while the radio reconnects after a coverage gap, the car screen no longer flips between the now-playing screen and a full-screen "Source error"; it shows the radio buffering, and the error only appears if reconnecting fails for good.
+- **Android:** pressing pause while the radio is reconnecting no longer makes it start again by itself, and in Android Auto it no longer ends on a "Source error".
 - **Android Auto:** pausing the radio no longer sends you back to the station list; the now-playing screen stays and Play still puts you back on the live broadcast.
 - **Android Auto:** after you pick a station, the song title, artist and cover now show up within a few seconds instead of only at the next song.
 
