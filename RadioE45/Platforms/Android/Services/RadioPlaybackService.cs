@@ -483,8 +483,29 @@ public sealed class RadioPlaybackService : MediaLibraryService
                 return;
 
             _logger?.LogInformation("RadioPlaybackService: resumed after a long pause, reconnecting to the live stream");
-            player.Stop();
-            player.Prepare();
+
+            MediaItem? current = player.CurrentMediaItem;
+            AzuraStation? station = current?.MediaId is { } mediaId
+                ? Catalog?.Stations.FirstOrDefault(s => s.Id.ToString() == mediaId)
+                : null;
+            if (current is null || station is null)
+            {
+                player.Stop();
+                player.Prepare();
+                return;
+            }
+
+            // Stop() goes through STATE_IDLE, which Android Auto reads as NONE and leaves the now-playing
+            // screen. Replacing the item with a new cache key and tag makes ExoPlayer build a new media
+            // source (same URI and metadata alone would only update the item in place), so the stream
+            // reconnects at the live edge and the state goes straight to BUFFERING.
+            string reconnectId = Guid.NewGuid().ToString("N");
+            MediaItem fresh = BuildStationItem(station, playable: true, metadataOverride: current.MediaMetadata)
+                .BuildUpon()!
+                .SetCustomCacheKey(reconnectId)!
+                .SetTag(new Java.Lang.String(reconnectId))!
+                .Build()!;
+            player.ReplaceMediaItem(player.CurrentMediaItemIndex, fresh);
         });
     }
 
@@ -504,10 +525,10 @@ public sealed class RadioPlaybackService : MediaLibraryService
             CancelRecovery();
     }
 
-    // Pause from the session (notification, lock screen, Bluetooth, media keys, Android Auto) must not
-    // keep the connection open: ExoPlayer would go on buffering and Play would resume minutes behind
-    // the live edge. Pause closes the stream like the in-app pause (Media3AudioService.PauseAsync);
-    // Play on a closed stream opens it again at the live edge.
+    // Pause from the session (notification, lock screen, Bluetooth, media keys, Android Auto, in-app) is a
+    // real pause, so the session reports PAUSED: Stop() would report NONE and Android Auto drops its
+    // now-playing screen. It must still not resume minutes behind the live edge: past ReconnectAfterPause
+    // the Play that follows closes the stream and opens it again at the live edge (PlayerListener).
     private sealed class LivePlayer : ForwardingPlayer
     {
         private readonly IExoPlayer _inner;
@@ -522,7 +543,7 @@ public sealed class RadioPlaybackService : MediaLibraryService
         public override void Pause()
         {
             _cancelRecovery();
-            _inner.Stop();
+            _inner.Pause();
         }
 
         public override void Stop()

@@ -70,9 +70,10 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IMedia
         });
     }
 
-    // Pause "vero" (c.Pause()) lascerebbe connessione e buffer attivi come su iOS/Windows —
-    // Stop() forza STATE_IDLE e chiude la ricezione; ResumeAsync riprepara da capo (live edge).
-    public Task PauseAsync() => WithControllerAsync(c => c.Stop());
+    // Pause "vero": la sessione resta PAUSED (Android Auto non torna all'elenco stazioni). Il ritorno
+    // in diretta lo garantisce RadioPlaybackService: dopo una pausa lunga il Play chiude il flusso e
+    // lo riapre al live edge (ReconnectToLiveEdge).
+    public Task PauseAsync() => WithControllerAsync(c => c.Pause());
 
     public Task ResumeAsync() => WithControllerAsync(c =>
     {
@@ -254,8 +255,20 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IMedia
         IsHlsActive = mediaItem.MediaMetadata?.Extras?.GetBoolean(RadioPlaybackService.HlsExtraKey, false) ?? false;
 
         AzuraStation? station = _catalog.Stations.FirstOrDefault(s => s.Id == stationId);
-        if (station is null || station.Id == _currentStation?.Id)
+        if (station is null)
             return;
+
+        if (station.Id == _currentStation?.Id)
+        {
+            // Same station, but the item no longer carries the song we last pushed: the service rebuilt it
+            // with the station's own metadata (Android Auto picked the station again). Forget the cache so
+            // the next now-playing push puts the song back instead of waiting for the next track.
+            string? itemTitle = mediaItem.MediaMetadata?.Title?.ToString();
+            if (_lastTitle is not null && itemTitle != _lastTitle)
+                _lastArtist = _lastTitle = _lastArtworkUrl = null;
+
+            return;
+        }
 
         _currentStation = station;
         // Reset the metadata cache so the first now-playing push for the new station always lands.

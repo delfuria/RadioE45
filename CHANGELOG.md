@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Android Auto:** pausing the radio no longer sends you back to the station list; the now-playing screen stays and Play still puts you back on the live broadcast.
+- **Android Auto:** after you pick a station, the song title, artist and cover now show up within a few seconds instead of only at the next song.
+
 ## [0.51] - 2026-10-28
 
 ### New
