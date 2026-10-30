@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.52] - 2026-10-30
+
 ### New
 - **Settings → Info:** new "Open source licenses" row that opens the copyright notices and license texts of the libraries and fonts the app uses in your browser.
 
@@ -22,7 +24,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Android Auto:** pausing the radio no longer sends you back to the station list; the now-playing screen stays and Play still puts you back on the live broadcast.
 - **Android Auto:** when the app is closed and you press Play or pick a station in the car, the song title, artist and cover now show up instead of only the station name.
 - **Android Auto:** after you pick a station, the song title, artist and cover now show up within a few seconds instead of only at the next song.
-
 - **Android Auto:** the station list in the car now updates by itself when you add, edit, remove or reorder stations on the phone.
 - **Desktop:** turning on "Prefer HLS" now takes effect at the next station change, even if the direct stream was working before.
 
