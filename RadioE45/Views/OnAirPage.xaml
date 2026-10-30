@@ -92,12 +92,26 @@
                             BackgroundColor="{DynamicResource Accent}"
                             StrokeShape="RoundRectangle 12"
                             Stroke="Transparent"
-                            Padding="8,2">
-                            <Label
-                                Text="{Binding CurrentStation.Name}"
-                                TextColor="{DynamicResource PrimaryText}"
-                                FontSize="11"
-                                FontAttributes="Bold" />
+                            Padding="8,2"
+                            SemanticProperties.Hint="{loc:Translate OnAir_StreamInfoHint}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ShowStreamInfoCommand}" />
+                            </Border.GestureRecognizers>
+                            <!-- Il tocco sul nome apre le info dello stream: l'icona lo rende scopribile -->
+                            <HorizontalStackLayout Spacing="5">
+                                <Label
+                                    Text="{Binding CurrentStation.Name}"
+                                    TextColor="{DynamicResource PrimaryText}"
+                                    FontSize="11"
+                                    FontAttributes="Bold"
+                                    VerticalOptions="Center" />
+                                <Label
+                                    Text="&#xf05a;"
+                                    FontFamily="FaSolid"
+                                    TextColor="{DynamicResource PrimaryText}"
+                                    FontSize="10"
+                                    VerticalOptions="Center" />
+                            </HorizontalStackLayout>
                         </Border>
 
                         <HorizontalStackLayout

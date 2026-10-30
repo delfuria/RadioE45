@@ -205,6 +205,7 @@ public partial class App : Application
         services.AddTransient<PodcastEpisodesViewModel>();
         services.AddTransient<SongRequestViewModel>();
         services.AddTransient<ScheduleViewModel>();
+        services.AddTransient<StreamInfoViewModel>();
 
         services.AddTransient<ShellPage>();
     }

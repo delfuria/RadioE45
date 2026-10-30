@@ -76,6 +76,7 @@ OnAirViewModel.ShowNextStation : bool { get; }
 OnAirViewModel.ShowPreviousStation : bool { get; }
 OnAirViewModel.ShowScheduleCommand : IAsyncRelayCommand { get; }
 OnAirViewModel.ShowScheduleOnlyRow : bool { get; }
+OnAirViewModel.ShowStreamInfoCommand : IAsyncRelayCommand { get; }
 OnAirViewModel.ShutdownAsync() : Task
 OnAirViewModel.StopCommand : IAsyncRelayCommand { get; }
 OnAirViewModel.ToggleFavoriteCommand : IAsyncRelayCommand { get; }
@@ -117,16 +118,27 @@ PodcastListViewModel.LoadPodcastsCommand : IAsyncRelayCommand { get; }
 PodcastListViewModel.Podcasts : ObservableCollection<AzuraCastPodcast> { get; set; }
 PodcastListViewModel.SelectPodcastCommand : IAsyncRelayCommand<AzuraCastPodcast> { get; }
 RadioListViewModel : type
+RadioListViewModel.CanReorder : bool { get; }
+RadioListViewModel.ClearFilterCommand : IRelayCommand { get; }
 RadioListViewModel.DeleteStationCommand : IAsyncRelayCommand<AzuraStation> { get; }
 RadioListViewModel.EditStationCommand : IAsyncRelayCommand<AzuraStation> { get; }
+RadioListViewModel.EmptyMessage : string { get; }
+RadioListViewModel.FilterText : string { get; set; }
+RadioListViewModel.FilteredStations : ObservableCollection<AzuraStation> { get; set; }
 RadioListViewModel.ForceReloadStationsCommand : IAsyncRelayCommand { get; }
+RadioListViewModel.HasFilter : bool { get; }
+RadioListViewModel.IsGridMode : bool { get; }
+RadioListViewModel.IsListMode : bool { get; }
 RadioListViewModel.LoadStationsCommand : IAsyncRelayCommand { get; }
 RadioListViewModel.MoveStationAsync(AzuraStation, AzuraStation) : Task
 RadioListViewModel.MoveStationToEndAsync(AzuraStation) : Task
 RadioListViewModel.NavigateToAddStationCommand : IAsyncRelayCommand { get; }
 RadioListViewModel.OnAirViewModel : OnAirViewModel { get; }
 RadioListViewModel.SelectAndPlayCommand : IAsyncRelayCommand<AzuraStation> { get; }
+RadioListViewModel.ShowGridViewCommand : IRelayCommand { get; }
+RadioListViewModel.ShowListViewCommand : IRelayCommand { get; }
 RadioListViewModel.Stations : ObservableCollection<AzuraStation> { get; set; }
+RadioListViewModel.ViewMode : StationListViewMode { get; set; }
 ScheduleViewModel : type
 ScheduleViewModel.LoadScheduleCommand : IAsyncRelayCommand { get; }
 ScheduleViewModel.ScheduleItems : ObservableCollection<PlaylistSchedule> { get; set; }
@@ -172,3 +184,16 @@ StationSelectionItem.IsSelected : bool { get; set; }
 StationSelectionItem.Station : AzuraCastStationListItem { get; }
 StationSelectionItem.ToggleSelectedCommand : IRelayCommand { get; }
 StationSelectionItem.UrlBase : string { get; }
+StreamInfoRow : type
+StreamInfoRow.<Clone>$() : StreamInfoRow
+StreamInfoRow.Deconstruct(string&, string&) : void
+StreamInfoRow.Equals(StreamInfoRow) : bool
+StreamInfoRow.Equals(object) : bool
+StreamInfoRow.GetHashCode() : int
+StreamInfoRow.Label : string { get; set; }
+StreamInfoRow.ToString() : string
+StreamInfoRow.Value : string { get; set; }
+StreamInfoViewModel : type
+StreamInfoViewModel.LoadCommand : IAsyncRelayCommand { get; }
+StreamInfoViewModel.Rows : ObservableCollection<StreamInfoRow> { get; set; }
+StreamInfoViewModel.ToRows(StreamInfo) : ObservableCollection<StreamInfoRow> static

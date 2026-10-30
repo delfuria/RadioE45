@@ -71,6 +71,11 @@
   <data name="OnAir_NoStationSelected" xml:space="preserve"><value>No station selected.</value></data>
   <data name="OnAir_RecentlyPlayed" xml:space="preserve"><value>Recently played</value></data>
 
+  <data name="RadioList_FilterPlaceholder" xml:space="preserve"><value>Filter stations</value></data>
+  <data name="RadioList_ClearFilter" xml:space="preserve"><value>Clear filter</value></data>
+  <data name="RadioList_ViewList" xml:space="preserve"><value>List</value></data>
+  <data name="RadioList_ViewGrid" xml:space="preserve"><value>Large icons</value></data>
+  <data name="RadioList_NoResults" xml:space="preserve"><value>No stations found</value></data>
   <data name="RadioList_Empty" xml:space="preserve"><value>No stations available</value></data>
   <data name="RadioList_Offline" xml:space="preserve"><value>● Offline</value></data>
   <data name="RadioList_Refresh" xml:space="preserve"><value>Refresh</value></data>
@@ -183,6 +188,18 @@
   <data name="Common_Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="Common_Save" xml:space="preserve"><value>Save</value></data>
   <data name="Splash_Version" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="StreamInfo_Title" xml:space="preserve"><value>Stream info</value></data>
+  <data name="StreamInfo_Station" xml:space="preserve"><value>Station</value></data>
+  <data name="StreamInfo_Address" xml:space="preserve"><value>Address</value></data>
+  <data name="StreamInfo_Format" xml:space="preserve"><value>Format</value></data>
+  <data name="StreamInfo_Bitrate" xml:space="preserve"><value>Bitrate</value></data>
+  <data name="StreamInfo_SampleRate" xml:space="preserve"><value>Sample rate</value></data>
+  <data name="StreamInfo_Channels" xml:space="preserve"><value>Channels</value></data>
+  <data name="StreamInfo_Genre" xml:space="preserve"><value>Genre</value></data>
+  <data name="StreamInfo_Mono" xml:space="preserve"><value>mono</value></data>
+  <data name="StreamInfo_Stereo" xml:space="preserve"><value>stereo</value></data>
+  <data name="Err_StreamInfo" xml:space="preserve"><value>Could not read the stream information</value></data>
+  <data name="OnAir_StreamInfoHint" xml:space="preserve"><value>Stream info</value></data>
   <data name="Common_Close" xml:space="preserve"><value>Close</value></data>
 
   <data name="Err_Init" xml:space="preserve"><value>Initialization</value></data>

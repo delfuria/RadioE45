@@ -23,7 +23,68 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Style="{StaticResource PageTitleLabel}" Text="{loc:Translate Key=Tab_Radio}" />
+        <StackPanel Grid.Row="0">
+            <TextBlock Style="{StaticResource PageTitleLabel}" Text="{loc:Translate Key=Tab_Radio}" />
+
+            <!-- Toolbar: filter (applies while typing) and view choice -->
+            <Grid ColumnSpacing="8" Margin="16,0,16,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <!-- The built-in delete button only shows while focused: the clear button below stays visible whenever a filter is active (shrunk in OnFilterBoxLoaded) -->
+                    <TextBox
+                        x:Name="FilterBox"
+                        Style="{StaticResource CardTextBox}"
+                        Text="{x:Bind ViewModel.FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        PlaceholderText="{loc:Translate Key=RadioList_FilterPlaceholder}"
+                        AutomationProperties.Name="{loc:Translate Key=RadioList_FilterPlaceholder}"
+                        Loaded="OnFilterBoxLoaded" />
+                    <Button
+                        Style="{StaticResource IconButton}"
+                        FontFamily="{StaticResource FaSolid}"
+                        Content="&#xf00d;"
+                        Width="36"
+                        Height="32"
+                        Margin="0,0,4,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource MutedTextBrush}"
+                        Command="{x:Bind ViewModel.ClearFilterCommand}"
+                        Visibility="{x:Bind conv:Fn.Visible(ViewModel.HasFilter), Mode=OneWay}"
+                        AutomationProperties.Name="{loc:Translate Key=RadioList_ClearFilter}" />
+                </Grid>
+
+                <Button
+                    Grid.Column="1"
+                    Style="{StaticResource IconButton}"
+                    FontFamily="{StaticResource FaSolid}"
+                    Content="&#xf03a;"
+                    Width="44"
+                    Height="32"
+                    Background="{ThemeResource CardElevatedBrush}"
+                    Opacity="{x:Bind conv:Fn.DimmedIf(ViewModel.IsGridMode), Mode=OneWay}"
+                    Command="{x:Bind ViewModel.ShowListViewCommand}"
+                    AutomationProperties.Name="{loc:Translate Key=RadioList_ViewList}"
+                    ToolTipService.ToolTip="{loc:Translate Key=RadioList_ViewList}" />
+
+                <Button
+                    Grid.Column="2"
+                    Style="{StaticResource IconButton}"
+                    FontFamily="{StaticResource FaSolid}"
+                    Content="&#xf00a;"
+                    Width="44"
+                    Height="32"
+                    Background="{ThemeResource CardElevatedBrush}"
+                    Opacity="{x:Bind conv:Fn.DimmedIf(ViewModel.IsListMode), Mode=OneWay}"
+                    Command="{x:Bind ViewModel.ShowGridViewCommand}"
+                    AutomationProperties.Name="{loc:Translate Key=RadioList_ViewGrid}"
+                    ToolTipService.ToolTip="{loc:Translate Key=RadioList_ViewGrid}" />
+            </Grid>
+        </StackPanel>
 
         <!-- Empty list -->
         <StackPanel
@@ -32,18 +93,19 @@
             VerticalAlignment="Center"
             Spacing="12"
             Padding="32"
-            Visibility="{x:Bind conv:Fn.IsEmpty(ViewModel.Stations), Mode=OneWay}">
+            Visibility="{x:Bind conv:Fn.IsEmpty(ViewModel.FilteredStations), Mode=OneWay}">
             <FontIcon
                 FontFamily="{StaticResource FaSolid}"
                 Glyph="&#xf8d7;"
                 FontSize="48"
                 Foreground="{ThemeResource MutedTextBrush}" />
-            <TextBlock Style="{StaticResource SubtitleLabel}" Text="{loc:Translate Key=RadioList_Empty}" />
+            <TextBlock Style="{StaticResource SubtitleLabel}" Text="{x:Bind ViewModel.EmptyMessage, Mode=OneWay}" />
         </StackPanel>
 
         <ListView
             Grid.Row="1"
-            ItemsSource="{x:Bind ViewModel.Stations, Mode=OneWay}"
+            ItemsSource="{x:Bind ViewModel.FilteredStations, Mode=OneWay}"
+            Visibility="{x:Bind conv:Fn.Visible(ViewModel.IsListMode), Mode=OneWay}"
             SelectionMode="None"
             Padding="0,0,0,8">
 
@@ -202,6 +264,116 @@
                     Drop="OnDropAtEnd" />
             </ListView.Footer>
         </ListView>
+
+        <!-- Large icons view: no reordering (no drag handle); edit and delete from the context menu -->
+        <GridView
+            Grid.Row="1"
+            ItemsSource="{x:Bind ViewModel.FilteredStations, Mode=OneWay}"
+            Visibility="{x:Bind conv:Fn.Visible(ViewModel.IsGridMode), Mode=OneWay}"
+            SelectionMode="None"
+            IsItemClickEnabled="False"
+            Padding="8,0,8,80">
+
+            <GridView.ItemTemplate>
+                <DataTemplate x:DataType="models:AzuraStation">
+                    <Border
+                        Style="{StaticResource CardBorder}"
+                        Width="168"
+                        Padding="0">
+                        <Border.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem
+                                    Text="{loc:Translate Key=RadioList_EditStation}"
+                                    Command="{x:Bind EditCommand}"
+                                    CommandParameter="{x:Bind}" />
+                                <MenuFlyoutItem
+                                    Text="{loc:Translate Key=RadioList_DeleteStation}"
+                                    Command="{x:Bind DeleteCommand}"
+                                    CommandParameter="{x:Bind}" />
+                            </MenuFlyout>
+                        </Border.ContextFlyout>
+
+                        <Button
+                            Style="{StaticResource IconButton}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Padding="8"
+                            Command="{x:Bind PlayCommand}"
+                            CommandParameter="{x:Bind}">
+                            <StackPanel Spacing="8">
+                                <Border
+                                    Height="110"
+                                    CornerRadius="12"
+                                    Background="{StaticResource AccentBrush}">
+                                    <Grid>
+                                        <FontIcon
+                                            FontFamily="{StaticResource FaSolid}"
+                                            Glyph="&#xf8d7;"
+                                            FontSize="36"
+                                            Foreground="{ThemeResource PrimaryTextBrush}" />
+                                        <Image
+                                            Source="{x:Bind conv:Fn.Image(LogoUrl)}"
+                                            Stretch="UniformToFill"
+                                            Visibility="{x:Bind conv:Fn.IsNotNull(LogoUrl)}" />
+                                        <!-- Active station -->
+                                        <Border
+                                            Width="26"
+                                            Height="26"
+                                            CornerRadius="13"
+                                            Background="#66000000"
+                                            Margin="6"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Top"
+                                            Visibility="{x:Bind IsActive, Mode=OneWay}">
+                                            <FontIcon
+                                                FontFamily="{StaticResource FaSolid}"
+                                                Glyph="&#xf04b;"
+                                                FontSize="12"
+                                                Foreground="White" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                    <TextBlock
+                                        Text="{x:Bind Name}"
+                                        Foreground="{ThemeResource PrimaryTextBrush}"
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        TextTrimming="CharacterEllipsis"
+                                        MaxWidth="120"
+                                        VerticalAlignment="Center" />
+                                    <Image
+                                        Source="ms-appx:///Assets/Images/heart_filled.png"
+                                        Width="12"
+                                        Height="12"
+                                        VerticalAlignment="Center"
+                                        Visibility="{x:Bind IsFavorite}" />
+                                    <Border
+                                        Background="{StaticResource AccentBrush}"
+                                        CornerRadius="6"
+                                        Padding="5,1"
+                                        VerticalAlignment="Center"
+                                        Visibility="{x:Bind HlsEnabled}">
+                                        <TextBlock
+                                            Text="HLS"
+                                            Foreground="{ThemeResource PrimaryTextBrush}"
+                                            FontSize="10"
+                                            FontWeight="Bold" />
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock
+                                    Text="{loc:Translate Key=RadioList_Offline}"
+                                    Foreground="{ThemeResource MutedTextBrush}"
+                                    FontSize="12"
+                                    FontStyle="Italic"
+                                    HorizontalAlignment="Center"
+                                    Visibility="{x:Bind conv:Fn.Collapsed(IsOnline)}" />
+                            </StackPanel>
+                        </Button>
+                    </Border>
+                </DataTemplate>
+            </GridView.ItemTemplate>
+        </GridView>
 
         <!-- Refresh -->
         <Button

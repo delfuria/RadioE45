@@ -30,4 +30,7 @@ public class AzuraCastStationDetailResponse
 
     [JsonPropertyName("hls_url")]
     public string? HlsUrl { get; set; }
+
+    [JsonPropertyName("mounts")]
+    public List<AzuraCastMountPoint> Mounts { get; set; } = [];
 }

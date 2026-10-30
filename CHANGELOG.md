@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### New
+- **Stations:** a filter box at the top of the station list narrows the stations by name while you type, with a button to clear it; the list can also be shown as large icons, and the app remembers your choice.
+- **On Air:** tap the station name to see the details of the stream: address, format, bitrate, sample rate, channels and genre, when the stream provides them.
+
 ## [0.52] - 2026-10-30
 
 ### New

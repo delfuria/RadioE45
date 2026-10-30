@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Dettagli tecnici dello stream (stazione, indirizzo, formato, bitrate, campionamento, canali, genere)
+     in un pannello al centro, aperto toccando il nome della stazione in OnAirPage.
+     Mostrato via IPopupService (vedi OnAirViewModel.ShowStreamInfoCommand). -->
+<toolkit:Popup
+    x:Class="RadioE45.Views.StreamInfoPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:RadioE45.ViewModels;assembly=RadioE45.Core"
+    xmlns:loc="clr-namespace:RadioE45.Services.Localization"
+    x:DataType="vm:StreamInfoViewModel"
+    VerticalOptions="Center"
+    HorizontalOptions="Center"
+    Margin="0"
+    Padding="0"
+    BackgroundColor="{DynamicResource PageBackground}">
+
+    <Grid x:Name="Panel" RowDefinitions="Auto,*" BackgroundColor="{DynamicResource PageBackground}">
+
+        <!-- Intestazione: sempre bianco su Accent, indipendente dal tema -->
+        <Grid
+            Grid.Row="0"
+            ColumnDefinitions="Auto,*,Auto"
+            ColumnSpacing="12"
+            Padding="20,8,8,8"
+            BackgroundColor="{DynamicResource Accent}">
+            <Label
+                Grid.Column="0"
+                Text="&#xf05a;"
+                FontFamily="FaSolid"
+                FontSize="20"
+                TextColor="White"
+                VerticalOptions="Center" />
+            <Label
+                Grid.Column="1"
+                Text="{Binding Title}"
+                TextColor="White"
+                FontSize="20"
+                FontAttributes="Bold"
+                VerticalOptions="Center" />
+            <Button
+                Grid.Column="2"
+                Text="&#xf00d;"
+                FontFamily="FaSolid"
+                FontSize="18"
+                WidthRequest="44"
+                HeightRequest="44"
+                Padding="0"
+                CornerRadius="22"
+                BackgroundColor="Transparent"
+                TextColor="White"
+                SemanticProperties.Description="{loc:Translate Common_Close}"
+                Clicked="OnCloseClicked" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout
+                BindableLayout.ItemsSource="{Binding Rows}"
+                Spacing="14"
+                Padding="20,16,20,20">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:StreamInfoRow">
+                        <VerticalStackLayout Spacing="2">
+                            <Label
+                                Text="{Binding Label}"
+                                Style="{StaticResource CaptionLabel}" />
+                            <Label
+                                Text="{Binding Value}"
+                                TextColor="{DynamicResource PrimaryText}"
+                                FontSize="16"
+                                LineBreakMode="CharacterWrap" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</toolkit:Popup>

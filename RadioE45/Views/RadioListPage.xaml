@@ -12,11 +12,84 @@
     Shell.NavBarIsVisible="True"
     Shell.TabBarIsVisible="False">
 
-    <Grid>
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Barra degli strumenti: filtro (si applica mentre si scrive) e scelta della vista -->
+        <Grid
+            Grid.Row="0"
+            ColumnDefinitions="*,Auto,Auto"
+            ColumnSpacing="8"
+            Padding="16,8,16,0">
+
+            <Grid Grid.Column="0">
+                <Entry
+                    Text="{Binding FilterText}"
+                    Placeholder="{loc:Translate RadioList_FilterPlaceholder}"
+                    ClearButtonVisibility="Never"
+                    ReturnType="Search"
+                    BackgroundColor="{DynamicResource CardElevated}"
+                    TextColor="{DynamicResource PrimaryText}"
+                    PlaceholderColor="{DynamicResource MutedText}"
+                    SemanticProperties.Description="{loc:Translate RadioList_FilterPlaceholder}" />
+                <Button
+                    Text="&#xf00d;"
+                    FontFamily="FaSolid"
+                    Command="{Binding ClearFilterCommand}"
+                    IsVisible="{Binding HasFilter}"
+                    HorizontalOptions="End"
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"
+                    TextColor="{DynamicResource MutedText}"
+                    WidthRequest="40"
+                    HeightRequest="40"
+                    Padding="0"
+                    SemanticProperties.Description="{loc:Translate RadioList_ClearFilter}" />
+            </Grid>
+
+            <Button
+                Grid.Column="1"
+                Text="&#xf03a;"
+                FontFamily="FaSolid"
+                Command="{Binding ShowListViewCommand}"
+                BackgroundColor="{DynamicResource CardElevated}"
+                TextColor="{DynamicResource PrimaryText}"
+                WidthRequest="44"
+                HeightRequest="44"
+                Padding="0"
+                SemanticProperties.Description="{loc:Translate RadioList_ViewList}">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding IsListMode}" Value="True">
+                        <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+
+            <Button
+                Grid.Column="2"
+                Text="&#xf00a;"
+                FontFamily="FaSolid"
+                Command="{Binding ShowGridViewCommand}"
+                BackgroundColor="{DynamicResource CardElevated}"
+                TextColor="{DynamicResource PrimaryText}"
+                WidthRequest="44"
+                HeightRequest="44"
+                Padding="0"
+                SemanticProperties.Description="{loc:Translate RadioList_ViewGrid}">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding IsGridMode}" Value="True">
+                        <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+        </Grid>
+
+    <Grid Grid.Row="1">
 
         <CollectionView
+            x:Name="ListCollection"
             Margin="0"
-            ItemsSource="{Binding Stations}"
+            ItemsSource="{Binding FilteredStations}"
+            IsVisible="{Binding IsListMode}"
             SelectionMode="None"
             BackgroundColor="Transparent">
 
@@ -33,7 +106,7 @@
                         FontSize="48"
                         HorizontalTextAlignment="Center" />
                     <Label
-                        Text="{loc:Translate RadioList_Empty}"
+                        Text="{Binding EmptyMessage}"
                         Style="{StaticResource SubtitleLabel}" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
@@ -189,6 +262,139 @@
 
         </CollectionView>
 
+        <!-- Vista a icone grandi: niente riordino (nessuna maniglia), modifica ed eliminazione dal menu contestuale -->
+        <CollectionView
+            x:Name="GridCollection"
+            ItemsSource="{Binding FilteredStations}"
+            IsVisible="{Binding IsGridMode}"
+            SelectionMode="None"
+            BackgroundColor="Transparent"
+            Margin="8,8,8,0">
+
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="2" VerticalItemSpacing="8" HorizontalItemSpacing="8" />
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    Spacing="12"
+                    Padding="32">
+                    <Label
+                        Text="&#xf8d7;"
+                        FontFamily="FaSolid"
+                        TextColor="{DynamicResource MutedText}"
+                        FontSize="48"
+                        HorizontalTextAlignment="Center" />
+                    <Label
+                        Text="{Binding EmptyMessage}"
+                        Style="{StaticResource SubtitleLabel}" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:AzuraStation">
+                    <Border Style="{StaticResource CardBorder}" Padding="8">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding PlayCommand}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <FlyoutBase.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem
+                                    x:DataType="models:AzuraStation"
+                                    Text="{loc:Translate RadioList_EditStation}"
+                                    Command="{Binding EditCommand}"
+                                    CommandParameter="{Binding .}" />
+                                <MenuFlyoutItem
+                                    x:DataType="models:AzuraStation"
+                                    Text="{loc:Translate RadioList_DeleteStation}"
+                                    Command="{Binding DeleteCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </MenuFlyout>
+                        </FlyoutBase.ContextFlyout>
+                        <VerticalStackLayout Spacing="8">
+                            <Border
+                                BackgroundColor="{DynamicResource Accent}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="Transparent"
+                                HeightRequest="110"
+                                HorizontalOptions="Fill">
+                                <Grid>
+                                    <Label
+                                        Text="&#xf8d7;"
+                                        FontFamily="FaSolid"
+                                        TextColor="{DynamicResource MutedText}"
+                                        FontSize="36"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center" />
+                                    <Image
+                                        Source="{Binding LogoUrl}"
+                                        Aspect="AspectFill"
+                                        IsVisible="{Binding LogoUrl, Converter={toolkit:IsNotNullConverter}}" />
+                                    <!-- Stazione attiva -->
+                                    <Label
+                                        Text="&#xf04b;"
+                                        FontFamily="FaSolid"
+                                        TextColor="White"
+                                        BackgroundColor="#66000000"
+                                        FontSize="12"
+                                        WidthRequest="26"
+                                        HeightRequest="26"
+                                        HorizontalTextAlignment="Center"
+                                        VerticalTextAlignment="Center"
+                                        HorizontalOptions="End"
+                                        VerticalOptions="Start"
+                                        Margin="6"
+                                        IsVisible="{Binding IsActive}" />
+                                </Grid>
+                            </Border>
+                            <HorizontalStackLayout Spacing="6" HorizontalOptions="Center">
+                                <Label
+                                    Text="{Binding Name}"
+                                    TextColor="{DynamicResource PrimaryText}"
+                                    FontSize="14"
+                                    FontAttributes="Bold"
+                                    LineBreakMode="TailTruncation"
+                                    MaximumWidthRequest="120"
+                                    VerticalOptions="Center" />
+                                <Image
+                                    Source="heart_filled.png"
+                                    HeightRequest="12"
+                                    WidthRequest="12"
+                                    VerticalOptions="Center"
+                                    IsVisible="{Binding IsFavorite}" />
+                                <Border
+                                    BackgroundColor="{DynamicResource Accent}"
+                                    StrokeShape="RoundRectangle 6"
+                                    Stroke="Transparent"
+                                    Padding="5,1"
+                                    VerticalOptions="Center"
+                                    IsVisible="{Binding HlsEnabled}">
+                                    <Label
+                                        Text="HLS"
+                                        TextColor="{DynamicResource PrimaryText}"
+                                        FontSize="10"
+                                        FontAttributes="Bold" />
+                                </Border>
+                            </HorizontalStackLayout>
+                            <Label
+                                Text="{loc:Translate RadioList_Offline}"
+                                TextColor="{DynamicResource MutedText}"
+                                FontSize="12"
+                                FontAttributes="Italic"
+                                HorizontalOptions="Center"
+                                IsVisible="{Binding IsOnline, Converter={toolkit:InvertedBoolConverter}}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.Footer>
+                <BoxView HeightRequest="80" Color="Transparent" />
+            </CollectionView.Footer>
+        </CollectionView>
+
         <!-- Refresh -->
         <Button
             Text="&#xf021;"
@@ -236,6 +442,8 @@
                 <Shadow Brush="Black" Offset="2,4" Radius="8" Opacity="0.35" />
             </Button.Shadow>
         </Button>
+
+    </Grid>
 
     </Grid>
 

@@ -74,6 +74,11 @@
   <data name="OnAir_RecentlyPlayed" xml:space="preserve"><value>Ultimi brani trasmessi</value></data>
 
   <!-- Radio list -->
+  <data name="RadioList_FilterPlaceholder" xml:space="preserve"><value>Filtra le stazioni</value></data>
+  <data name="RadioList_ClearFilter" xml:space="preserve"><value>Cancella filtro</value></data>
+  <data name="RadioList_ViewList" xml:space="preserve"><value>Elenco</value></data>
+  <data name="RadioList_ViewGrid" xml:space="preserve"><value>Icone grandi</value></data>
+  <data name="RadioList_NoResults" xml:space="preserve"><value>Nessuna stazione trovata</value></data>
   <data name="RadioList_Empty" xml:space="preserve"><value>Nessuna stazione disponibile</value></data>
   <data name="RadioList_Offline" xml:space="preserve"><value>● Off Line</value></data>
   <data name="RadioList_Refresh" xml:space="preserve"><value>Aggiorna</value></data>
@@ -191,6 +196,18 @@
   <data name="Common_Cancel" xml:space="preserve"><value>Annulla</value></data>
   <data name="Common_Save" xml:space="preserve"><value>Salva</value></data>
   <data name="Splash_Version" xml:space="preserve"><value>Versione {0}</value></data>
+  <data name="StreamInfo_Title" xml:space="preserve"><value>Info stream</value></data>
+  <data name="StreamInfo_Station" xml:space="preserve"><value>Stazione</value></data>
+  <data name="StreamInfo_Address" xml:space="preserve"><value>Indirizzo</value></data>
+  <data name="StreamInfo_Format" xml:space="preserve"><value>Formato</value></data>
+  <data name="StreamInfo_Bitrate" xml:space="preserve"><value>Bitrate</value></data>
+  <data name="StreamInfo_SampleRate" xml:space="preserve"><value>Frequenza di campionamento</value></data>
+  <data name="StreamInfo_Channels" xml:space="preserve"><value>Canali</value></data>
+  <data name="StreamInfo_Genre" xml:space="preserve"><value>Genere</value></data>
+  <data name="StreamInfo_Mono" xml:space="preserve"><value>mono</value></data>
+  <data name="StreamInfo_Stereo" xml:space="preserve"><value>stereo</value></data>
+  <data name="Err_StreamInfo" xml:space="preserve"><value>Impossibile leggere le informazioni dello stream</value></data>
+  <data name="OnAir_StreamInfoHint" xml:space="preserve"><value>Info stream</value></data>
   <data name="Common_Close" xml:space="preserve"><value>Chiudi</value></data>
 
   <!-- Error prefixes (shown as "prefix: message") -->

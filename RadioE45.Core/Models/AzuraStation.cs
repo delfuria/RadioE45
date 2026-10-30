@@ -40,6 +40,9 @@ public partial class AzuraStation : ObservableObject
     public bool HlsIsDefault { get; set; }
     public string? HlsUrl { get; set; }
 
+    // Mount points with their format and bitrate — shown by the stream info.
+    public List<AzuraCastMountPoint> Mounts { get; set; } = [];
+
     public bool IsOnline { get; set; }
 
     [ObservableProperty]

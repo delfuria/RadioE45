@@ -10,6 +10,13 @@ public class AzuraCastMountPoint
     [JsonPropertyName("is_default")]
     public bool IsDefault { get; set; }
 
+    // Configured bitrate (kb/s) and format ("mp3", "aac"…) of the mount, as AzuraCast reports them.
+    [JsonPropertyName("bitrate")]
+    public int? Bitrate { get; set; }
+
+    [JsonPropertyName("format")]
+    public string? Format { get; set; }
+
     // Full public URL of the mount (e.g. http://host/listen/{shortcode}/radio.mp3 behind the web
     // proxy, or http://host:8000/radio.mp3 with the proxy disabled). Path alone is relative to the
     // Icecast listener port, so it 404s when the stream is only reachable through the proxy.

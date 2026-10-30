@@ -209,6 +209,7 @@ public static class MauiProgram
         builder.Services.AddTransient<EditStationPage>();
         builder.Services.AddTransient<RadioListPage>();
         builder.Services.AddTransientPopup<SchedulePopup, ScheduleViewModel>();
+        builder.Services.AddTransientPopup<StreamInfoPopup, StreamInfoViewModel>();
         builder.Services.AddTransient<SettingsPage>();
         builder.Services.AddTransient<PodcastListPage>();
         builder.Services.AddTransient<PodcastEpisodesPage>();

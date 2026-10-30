@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -19,9 +21,35 @@ public partial class RadioListViewModel : BaseViewModel
     private readonly INavigationService _navigation;
     private readonly IDialogService _dialogs;
     private readonly IUiDispatcher _dispatcher;
+    private readonly ISettingsStore _settings;
+
+    private const string ViewModeKey = "RadioList.ViewMode";
 
     [ObservableProperty]
     public partial ObservableCollection<AzuraStation> Stations { get; set; } = [];
+
+    /// <summary>The stations that match <see cref="FilterText"/>, in the order of <see cref="Stations"/>.</summary>
+    [ObservableProperty]
+    public partial ObservableCollection<AzuraStation> FilteredStations { get; set; } = [];
+
+    [ObservableProperty]
+    public partial string FilterText { get; set; } = "";
+
+    [ObservableProperty]
+    public partial StationListViewMode ViewMode { get; set; }
+
+    public bool HasFilter => !string.IsNullOrWhiteSpace(FilterText);
+
+    public bool IsListMode => ViewMode == StationListViewMode.List;
+
+    public bool IsGridMode => ViewMode == StationListViewMode.Grid;
+
+    /// <summary>Reordering needs the full list: the grid has no drag handle, a filter hides rows.</summary>
+    public bool CanReorder => IsListMode && !HasFilter;
+
+    public string EmptyMessage => Stations.Count > 0 && HasFilter
+        ? LocalizationResourceManager.Instance["RadioList_NoResults"]
+        : LocalizationResourceManager.Instance["RadioList_Empty"];
 
     public OnAirViewModel OnAirViewModel => _onAirViewModel;
 
@@ -33,20 +61,78 @@ public partial class RadioListViewModel : BaseViewModel
         INavigationService navigation,
         IDialogService dialogs,
         IUiDispatcher dispatcher,
+        ISettingsStore settings,
         ILogger<RadioListViewModel> logger)
     {
         Logger = logger;
         _navigation = navigation;
         _dialogs = dialogs;
         _dispatcher = dispatcher;
+        _settings = settings;
         _catalog = catalog;
         _onAirViewModel = onAirViewModel;
         _radioRepository = radioRepository;
         _databaseService = databaseService;
         Title = LocalizationResourceManager.Instance["Tab_Radio"];
 
+        int savedMode = settings.Get(ViewModeKey, (int)StationListViewMode.List);
+        ViewMode = Enum.IsDefined((StationListViewMode)savedMode) ? (StationListViewMode)savedMode : StationListViewMode.List;
+
         _catalog.StationsRefreshed += OnStationsRefreshed;
     }
+
+    partial void OnStationsChanged(ObservableCollection<AzuraStation> value)
+    {
+        ApplyFilter();
+        OnPropertyChanged(nameof(EmptyMessage));
+    }
+
+    partial void OnFilterTextChanged(string value)
+    {
+        ApplyFilter();
+        OnPropertyChanged(nameof(HasFilter));
+        OnPropertyChanged(nameof(CanReorder));
+        OnPropertyChanged(nameof(EmptyMessage));
+    }
+
+    partial void OnViewModeChanged(StationListViewMode value)
+    {
+        _settings.Set(ViewModeKey, (int)value);
+        OnPropertyChanged(nameof(IsListMode));
+        OnPropertyChanged(nameof(IsGridMode));
+        OnPropertyChanged(nameof(CanReorder));
+    }
+
+    private void ApplyFilter()
+    {
+        string filter = Fold(FilterText.Trim());
+        FilteredStations = filter.Length == 0
+            ? new ObservableCollection<AzuraStation>(Stations)
+            : new ObservableCollection<AzuraStation>(Stations.Where(s =>
+                Fold(s.Name).Contains(filter, StringComparison.Ordinal)));
+    }
+
+    // Case- and accent-insensitive on every platform: it does not depend on the ICU data (the web
+    // and some Android builds run with invariant globalization).
+    private static string Fold(string text)
+    {
+        var builder = new StringBuilder(text.Length);
+        foreach (char c in text.Normalize(NormalizationForm.FormD))
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                builder.Append(char.ToLowerInvariant(c));
+        }
+        return builder.ToString();
+    }
+
+    [RelayCommand]
+    private void ClearFilter() => FilterText = "";
+
+    [RelayCommand]
+    private void ShowListView() => ViewMode = StationListViewMode.List;
+
+    [RelayCommand]
+    private void ShowGridView() => ViewMode = StationListViewMode.Grid;
 
     [RelayCommand]
     private async Task LoadStationsAsync()
@@ -146,7 +232,7 @@ public partial class RadioListViewModel : BaseViewModel
 
     public async Task MoveStationToEndAsync(AzuraStation dragged)
     {
-        if (Stations.Count == 0)
+        if (Stations.Count == 0 || !CanReorder)
             return;
 
         await MoveStationAsync(dragged, Stations[^1]);
@@ -154,12 +240,16 @@ public partial class RadioListViewModel : BaseViewModel
 
     public async Task MoveStationAsync(AzuraStation dragged, AzuraStation target)
     {
+        if (!CanReorder)
+            return;
+
         int oldIndex = Stations.IndexOf(dragged);
         int newIndex = Stations.IndexOf(target);
         if (oldIndex < 0 || newIndex < 0 || oldIndex == newIndex)
             return;
 
         Stations.Move(oldIndex, newIndex);
+        ApplyFilter();
 
         try
         {

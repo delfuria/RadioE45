@@ -28,6 +28,7 @@ public sealed partial class ShellPage : Page
     private bool _menuOpening;
     private Storyboard? _sheetStoryboard;
     private ScheduleDialog? _sheet;
+    private StreamInfoDialog? _info;
 
     public ShellPage(
         UnoNavigationService navigation,
@@ -160,7 +161,9 @@ public sealed partial class ShellPage : Page
 
     private void OnEscapeInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
-        if (_sheet is not null)
+        if (_info is not null)
+            CloseInfo();
+        else if (_sheet is not null)
             CloseSheet();
         else if (MenuPane.Visibility == Visibility.Visible)
             CloseMenu();
@@ -193,6 +196,36 @@ public sealed partial class ShellPage : Page
         AnimateSheet(open: true);
         sheet.Load();
     }
+
+    /// <summary>Shows the stream info as a panel in the middle of the window (MAUI: centered StreamInfoPopup).</summary>
+    public void ShowInfo(StreamInfoDialog info)
+    {
+        if (_info is not null)
+            return;
+        _info = info;
+        info.CloseRequested += OnInfoCloseRequested;
+
+        InfoPane.MaxHeight = MenuHost.ActualHeight * 0.85;
+        InfoPane.Child = info;
+        InfoPane.Visibility = Visibility.Visible;
+        InfoDismissLayer.Visibility = Visibility.Visible;
+        info.Load();
+    }
+
+    public void CloseInfo()
+    {
+        if (_info is not { } info)
+            return;
+        info.CloseRequested -= OnInfoCloseRequested;
+        _info = null;
+        InfoPane.Visibility = Visibility.Collapsed;
+        InfoDismissLayer.Visibility = Visibility.Collapsed;
+        InfoPane.Child = null;
+    }
+
+    private void OnInfoCloseRequested(object? sender, EventArgs e) => CloseInfo();
+
+    private void OnInfoDismissLayerTapped(object sender, TappedRoutedEventArgs e) => CloseInfo();
 
     public void CloseSheet()
     {

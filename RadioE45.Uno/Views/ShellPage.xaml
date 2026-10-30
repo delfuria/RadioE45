@@ -261,6 +261,23 @@
                 <TranslateTransform x:Name="SheetPaneTransform" />
             </Border.RenderTransform>
         </Border>
+
+        <!-- Centered panel (MAUI: toolkit Popup in the middle, e.g. the stream info) -->
+        <Rectangle
+            x:Name="InfoDismissLayer"
+            Fill="#80000000"
+            Visibility="Collapsed"
+            Tapped="OnInfoDismissLayerTapped" />
+
+        <Border
+            x:Name="InfoPane"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            MaxWidth="440"
+            Margin="24"
+            CornerRadius="20"
+            Background="{ThemeResource PageBackgroundBrush}"
+            Visibility="Collapsed" />
     </Grid>
 
 </Page>

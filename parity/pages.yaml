@@ -66,6 +66,10 @@
   uno: RadioE45.Uno/Views/OnAirPage.xaml
   tv: RadioE45/Views/Tv/TvNowPlayingView.xaml
   ignoreTv:
+    - name: ShowStreamInfoCommand
+      reason: "onair.stream-info n/a: dettagli tecnici dello stream, non servono col telecomando"
+    - name: OnAir_StreamInfoHint
+      reason: "onair.stream-info n/a: dettagli tecnici dello stream, non servono col telecomando"
     - name: IsSongHistoryExpanded
       reason: "onair.song-history n/a: la cronologia non si visualizza su TV (decisione 2026-10-23)"
     - name: NowPlaying.SongHistory
@@ -126,6 +130,32 @@
       reason: "Il preferito si imposta dal lettore (onair.favorite), non dall'elenco TV (radiolist.list limited)"
     - name: LogoUrl
       reason: "Nessun logo nell'elenco TV (radiolist.list limited)"
+    - name: ClearFilterCommand
+      reason: "radiolist.filter n/a"
+    - name: EmptyMessage
+      reason: "radiolist.filter n/a: su TV il messaggio di lista vuota resta quello fisso"
+    - name: FilterText
+      reason: "radiolist.filter n/a"
+    - name: FilteredStations
+      reason: "radiolist.filter n/a: la TV mostra Stations"
+    - name: HasFilter
+      reason: "radiolist.filter n/a"
+    - name: RadioList_ClearFilter
+      reason: "radiolist.filter n/a"
+    - name: RadioList_FilterPlaceholder
+      reason: "radiolist.filter n/a"
+    - name: IsGridMode
+      reason: "radiolist.view-mode n/a"
+    - name: IsListMode
+      reason: "radiolist.view-mode n/a"
+    - name: ShowGridViewCommand
+      reason: "radiolist.view-mode n/a"
+    - name: ShowListViewCommand
+      reason: "radiolist.view-mode n/a"
+    - name: RadioList_ViewGrid
+      reason: "radiolist.view-mode n/a"
+    - name: RadioList_ViewList
+      reason: "radiolist.view-mode n/a"
   viewmodels: [RadioListViewModel]
   ignore:
     - name: Common_Delete
@@ -199,6 +229,14 @@
   tv: n/a
   tvReason: "Nessuna impostazione su TV (decisione 2026-10-22, docs/ANDROID-TV-ROADMAP.md §1)"
   viewmodels: [SettingsViewModel]
+  ignore: []
+
+- page: StreamInfo
+  maui: RadioE45/Views/StreamInfoPopup.xaml
+  uno: RadioE45.Uno/Views/StreamInfoDialog.xaml
+  tv: n/a
+  tvReason: "Dettagli tecnici dello stream: non servono col telecomando (onair.stream-info n/a)"
+  viewmodels: [StreamInfoViewModel]
   ignore: []
 
 - page: Schedule

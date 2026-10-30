@@ -31,6 +31,9 @@ public interface INavigationService
 
     /// <summary>Shows the station schedule (MAUI: bottom popup).</summary>
     Task ShowScheduleAsync();
+
+    /// <summary>Shows the technical details of the stream being played (MAUI: centered popup). Not on TV.</summary>
+    Task ShowStreamInfoAsync();
 }
 
 public enum MenuPage

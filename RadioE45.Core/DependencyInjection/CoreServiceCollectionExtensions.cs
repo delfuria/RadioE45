@@ -27,6 +27,7 @@ public static class CoreServiceCollectionExtensions
 
         services.AddSingleton<ITermsService, TermsService>();
         services.AddSingleton<IStreamUrlProber, StreamUrlProber>();
+        services.AddSingleton<IStreamInfoProvider, StreamInfoProvider>();
         services.AddSingleton<RemoteArtworkLoader>();
 
         // Heads register the source of their distribution channel; without one there is no update check.

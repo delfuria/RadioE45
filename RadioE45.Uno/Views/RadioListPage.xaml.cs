@@ -25,6 +25,37 @@ public sealed partial class RadioListPage : Page
         await ViewModel.LoadStationsCommand.ExecuteAsync(null);
     }
 
+    // The filter is for this visit only: leaving the page clears it.
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        base.OnNavigatedFrom(e);
+        ViewModel.ClearFilterCommand.Execute(null);
+    }
+
+    // Visual only: the clear button of the toolbar replaces the TextBox's own delete button.
+    private void OnFilterBoxLoaded(object sender, RoutedEventArgs e)
+    {
+        // Width, not Visibility: the focus visual states set Visibility back.
+        if (FindDeleteButton(FilterBox) is { } button)
+        {
+            button.Width = 0;
+            button.IsHitTestVisible = false;
+        }
+    }
+
+    private static FrameworkElement? FindDeleteButton(DependencyObject parent)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+            if (child is FrameworkElement { Name: "DeleteButton" } found)
+                return found;
+            if (FindDeleteButton(child) is { } nested)
+                return nested;
+        }
+        return null;
+    }
+
     private void OnStationDragStarting(UIElement sender, DragStartingEventArgs e)
     {
         if (sender is FrameworkElement { DataContext: AzuraStation station })

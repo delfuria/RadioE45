@@ -89,12 +89,29 @@
                             VerticalAlignment="Center"
                             Background="{StaticResource AccentBrush}"
                             CornerRadius="12"
-                            Padding="8,2">
-                            <TextBlock
-                                Text="{x:Bind ViewModel.CurrentStation.Name, Mode=OneWay}"
-                                Foreground="{ThemeResource PrimaryTextBrush}"
-                                FontSize="11"
-                                FontWeight="Bold" />
+                            Padding="0">
+                            <!-- The tap on the name opens the stream info: the icon makes it discoverable -->
+                            <Button
+                                Style="{StaticResource IconButton}"
+                                Padding="8,2"
+                                Command="{x:Bind ViewModel.ShowStreamInfoCommand}"
+                                AutomationProperties.Name="{loc:Translate Key=OnAir_StreamInfoHint}"
+                                ToolTipService.ToolTip="{loc:Translate Key=OnAir_StreamInfoHint}">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <TextBlock
+                                        Text="{x:Bind ViewModel.CurrentStation.Name, Mode=OneWay}"
+                                        Foreground="{ThemeResource PrimaryTextBrush}"
+                                        FontSize="11"
+                                        FontWeight="Bold"
+                                        VerticalAlignment="Center" />
+                                    <FontIcon
+                                        FontFamily="{StaticResource FaSolid}"
+                                        Glyph="&#xf05a;"
+                                        FontSize="10"
+                                        Foreground="{ThemeResource PrimaryTextBrush}"
+                                        VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                         </Border>
 
                         <StackPanel

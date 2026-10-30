@@ -165,6 +165,15 @@ public partial class OnAirViewModel : BaseViewModel
         await _navigation.ShowScheduleAsync();
     }
 
+    [RelayCommand]
+    private async Task ShowStreamInfoAsync()
+    {
+        if (CurrentStation is null)
+            return;
+
+        await _navigation.ShowStreamInfoAsync();
+    }
+
     [ObservableProperty]
     public partial double TrackProgress { get; set; }
 

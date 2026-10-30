@@ -79,5 +79,12 @@ public sealed class UnoNavigationService : INavigationService
         return Task.CompletedTask;
     }
 
+    // MAUI: StreamInfoPopup through IPopupService; here a centered panel of the shell.
+    public Task ShowStreamInfoAsync()
+    {
+        _shell?.ShowInfo(new StreamInfoDialog());
+        return Task.CompletedTask;
+    }
+
     public void CloseSchedule() => _shell?.CloseSheet();
 }

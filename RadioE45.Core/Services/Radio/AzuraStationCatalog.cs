@@ -127,6 +127,7 @@ public class AzuraStationCatalog : IAzuraStationCatalog
             station.HlsEnabled = detail.HlsEnabled;
             station.HlsIsDefault = detail.HlsIsDefault;
             station.HlsUrl = detail.HlsUrl;
+            station.Mounts = detail.Mounts;
             station.IsOnline = true;
             anyChanged = true;
             _logger.LogInformation("Station back online: {Name}", station.Name);
@@ -250,6 +251,7 @@ public class AzuraStationCatalog : IAzuraStationCatalog
             HlsEnabled = detail.HlsEnabled,
             HlsIsDefault = detail.HlsIsDefault,
             HlsUrl = detail.HlsUrl,
+            Mounts = detail.Mounts,
             IsOnline = true
         };
 

@@ -15,6 +15,8 @@
         <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0" />
         <PackageReference Include="NSubstitute" Version="6.2.0" />
         <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.10.0" />
+        <!-- Runtime copy for NSubstitute: IDatabaseService exposes SQLite types (the Core only references it at compile time). -->
+        <PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
     </ItemGroup>
 
     <ItemGroup>

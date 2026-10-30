@@ -140,6 +140,22 @@ public sealed class MauiNavigationService : INavigationService
         });
     }
 
+    // Not on TV: the remote has no use for the technical details of the stream (onair.stream-info n/a).
+    public async Task ShowStreamInfoAsync()
+    {
+        if (_tv.Current is not null || Shell.Current is null)
+            return;
+
+        await _popupService.ShowPopupAsync<StreamInfoViewModel>(Shell.Current, new PopupOptions
+        {
+            Shape = new Microsoft.Maui.Controls.Shapes.RoundRectangle
+            {
+                CornerRadius = new CornerRadius(20),
+                StrokeThickness = 0
+            }
+        });
+    }
+
     private static Task GoToAsync(string route) =>
         MainThread.InvokeOnMainThreadAsync(() => Shell.Current?.GoToAsync(route) ?? Task.CompletedTask);
 }

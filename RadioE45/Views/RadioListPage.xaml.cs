@@ -22,6 +22,21 @@ public partial class RadioListPage : ContentPage
         await _viewModel.LoadStationsCommand.ExecuteAsync(null);
     }
 
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _viewModel.ClearFilterCommand.Execute(null);
+    }
+
+    // Visual only: as many tiles per row as fit, at least two.
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+
+        if (width > 0 && GridCollection.ItemsLayout is GridItemsLayout layout)
+            layout.Span = Math.Max(2, (int)(width / 170));
+    }
+
     private void OnStationDragStarting(object? sender, DragStartingEventArgs e)
     {
         if (sender is Element { BindingContext: AzuraStation station })

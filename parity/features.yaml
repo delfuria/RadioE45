@@ -204,6 +204,14 @@
   status: { maui: done, desktop: done, web: done, tv: limited }
   tvNotes: "Pulsante Schedule nella riga dei controlli, centrata sotto copertina e informazioni (solo se la stazione ha un palinsesto); il prossimo brano e la riga compatta arrivano in T6"
 
+- id: onair.stream-info
+  title: Apertura delle info dello stream toccando il nome della stazione (con icona che lo segnala)
+  since: "0.53"
+  page: OnAir
+  viewmodel: OnAirViewModel
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Dettagli tecnici senza utilità col telecomando; il nome della stazione sulla TV non è un controllo"
+
 - id: onair.playback-controls
   title: Play/pausa (pausa live = chiusura stream, ripresa in diretta) e indicatore di buffering
   since: "0.44"
@@ -261,6 +269,17 @@
   status: { maui: done, desktop: done, web: done, tv: n/a }
   tvNotes: "Animazione decorativa, non serve su TV"
   notes: "Uno: SKCanvasElement al posto di GraphicsView; livelli condivisi in RadioE45.Core/Visuals/VuMeterLevels"
+
+# --- Stream info -----------------------------------------------------------------------------
+
+- id: streaminfo.panel
+  title: Pannello con stazione, indirizzo, formato, bitrate, campionamento, canali e genere dello stream
+  since: "0.53"
+  page: StreamInfo
+  viewmodel: StreamInfoViewModel
+  status: { maui: done, desktop: done, web: limited, tv: n/a }
+  tvNotes: "Dettagli tecnici dello stream: non servono col telecomando"
+  notes: "Formato e bitrate arrivano dall'API AzuraCast (mount), il resto dagli header Icecast dello stream (ice-audio-info, icy-genre): le righe senza valore non si mostrano. Web: il browser non lascia leggere gli header senza CORS, quindi di solito restano stazione, indirizzo, formato e bitrate. Uno: pannello al centro della shell invece del Popup del toolkit. Con HLS solo il formato"
 
 # --- Radio list ------------------------------------------------------------------------------
 
@@ -330,6 +349,24 @@
   viewmodel: RadioListViewModel
   status: { maui: done, desktop: done, web: done, tv: done }
   tvNotes: "Pulsante «Aggiungi stazione» sopra l'elenco, non flottante"
+
+- id: radiolist.filter
+  title: Filtro delle stazioni per nome, che si applica mentre si scrive, con pulsante per cancellarlo
+  since: "0.53"
+  page: RadioList
+  viewmodel: RadioListViewModel
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "Scrivere col telecomando non è pratico e l'elenco TV è corto: nessun filtro"
+  notes: "Il filtro si azzera quando si lascia la pagina; con un filtro attivo il riordino è disattivato. Uno: il pulsante di cancellazione nativo della TextBox è nascosto (compare solo col focus), c'è il pulsante X della barra"
+
+- id: radiolist.view-mode
+  title: Scelta della vista della lista stazioni, elenco o icone grandi, ricordata tra un avvio e l'altro
+  since: "0.53"
+  page: RadioList
+  viewmodel: RadioListViewModel
+  status: { maui: done, desktop: done, web: done, tv: n/a }
+  tvNotes: "L'elenco TV resta uno solo, pensato per il D-pad"
+  notes: "Nella vista a icone non c'è il riordino (nessuna maniglia); modifica ed eliminazione dal menu contestuale (tasto destro, pressione lunga al tocco). Preferenza salvata in ISettingsStore"
 
 # --- Add / edit station ----------------------------------------------------------------------
 
