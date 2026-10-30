@@ -49,9 +49,6 @@ public sealed class MauiNavigationService : INavigationService
         return GoToAsync("AddStationPage");
     }
 
-    // Settings is not on TV (docs/ANDROID-TV-ROADMAP.md §1), so there is no TV branch.
-    public Task GoToOpenSourceLicensesAsync() => GoToAsync("OpenSourceLicensesPage");
-
     public Task GoToEditStationAsync(int stationId)
     {
         if (_tv.Current is { } tv)

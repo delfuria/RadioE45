@@ -24,7 +24,6 @@ public partial class AppShell : Shell
 
         Routing.RegisterRoute("RadioListPage", typeof(RadioListPage));
         Routing.RegisterRoute("SettingsPage", typeof(SettingsPage));
-        Routing.RegisterRoute("OpenSourceLicensesPage", typeof(OpenSourceLicensesPage));
         Routing.RegisterRoute("AddStationPage", typeof(AddStationPage));
         Routing.RegisterRoute("EditStationPage", typeof(EditStationPage));
         Routing.RegisterRoute("PodcastEpisodesPage", typeof(PodcastEpisodesPage));

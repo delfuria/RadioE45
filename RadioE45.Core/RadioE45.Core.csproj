@@ -36,9 +36,4 @@
         <PackageReference Include="sqlite-net-pcl" Version="1.11.285" PrivateAssets="all" ExcludeAssets="runtime" />
     </ItemGroup>
 
-    <ItemGroup>
-        <!-- Shown on the "Open source licenses" screen (OpenSourceLicensesViewModel). Edit the root file. -->
-        <EmbeddedResource Include="../THIRD-PARTY-NOTICES.txt" LogicalName="RadioE45.Legal.THIRD-PARTY-NOTICES.txt" />
-    </ItemGroup>
-
 </Project>

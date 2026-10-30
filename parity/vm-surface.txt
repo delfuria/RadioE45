@@ -84,9 +84,6 @@ OnAirViewModel.ToggleSongHistoryCommand : IRelayCommand { get; }
 OnAirViewModel.TotalTimeText : string { get; set; }
 OnAirViewModel.TrackProgress : double { get; set; }
 OnAirViewModel.Volume : double { get; set; }
-OpenSourceLicensesViewModel : type
-OpenSourceLicensesViewModel.IntroText : string { get; }
-OpenSourceLicensesViewModel.NoticesText : string { get; }
 PodcastEpisodesViewModel : type
 PodcastEpisodesViewModel.Activate() : void
 PodcastEpisodesViewModel.Cleanup() : void

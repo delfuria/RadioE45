@@ -450,10 +450,10 @@
   tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
 
 - id: settings.info.open-source-licenses
-  title: Impostazioni, Info, licenze open source (note di copyright e testi delle licenze dei componenti e dei font, THIRD-PARTY-NOTICES.txt)
+  title: Impostazioni, Info, licenze open source (apre THIRD-PARTY-NOTICES.txt del repository GitHub nel browser)
   since: "0.52"
-  page: OpenSourceLicenses
-  viewmodel: OpenSourceLicensesViewModel
+  page: Settings
+  viewmodel: SettingsViewModel
   status: { maui: done, desktop: done, web: done, tv: n/a }
   tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
 

@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### New
-- **Settings → Info:** new "Open source licenses" screen with the copyright notices and license texts of the libraries and fonts the app uses.
+- **Settings → Info:** new "Open source licenses" row that opens the copyright notices and license texts of the libraries and fonts the app uses in your browser.
 
 ### Fixed
 - **Android:** when the connection comes back after a gap, the radio now resumes right away instead of waiting for the next retry, and it also resumes after a long gap (a tunnel, a garage) without pressing Play.

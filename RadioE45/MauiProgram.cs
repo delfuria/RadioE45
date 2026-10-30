@@ -199,7 +199,6 @@ public static class MauiProgram
         builder.Services.AddTransient<AddStationViewModel>();
         builder.Services.AddTransient<EditStationViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
-        builder.Services.AddTransient<OpenSourceLicensesViewModel>();
         builder.Services.AddTransient<PodcastListViewModel>();
         builder.Services.AddTransient<PodcastEpisodesViewModel>();
         builder.Services.AddTransient<SongRequestViewModel>();
@@ -211,7 +210,6 @@ public static class MauiProgram
         builder.Services.AddTransient<RadioListPage>();
         builder.Services.AddTransientPopup<SchedulePopup, ScheduleViewModel>();
         builder.Services.AddTransient<SettingsPage>();
-        builder.Services.AddTransient<OpenSourceLicensesPage>();
         builder.Services.AddTransient<PodcastListPage>();
         builder.Services.AddTransient<PodcastEpisodesPage>();
         builder.Services.AddTransient<SongRequestPage>();

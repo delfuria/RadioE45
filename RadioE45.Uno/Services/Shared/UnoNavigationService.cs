@@ -33,12 +33,6 @@ public sealed class UnoNavigationService : INavigationService
         return Task.CompletedTask;
     }
 
-    public Task GoToOpenSourceLicensesAsync()
-    {
-        _shell?.Push(typeof(OpenSourceLicensesPage));
-        return Task.CompletedTask;
-    }
-
     public Task GoToEditStationAsync(int stationId)
     {
         _shell?.Push(typeof(EditStationPage), stationId);

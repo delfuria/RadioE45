@@ -12,6 +12,9 @@ namespace RadioE45.ViewModels;
 
 public partial class SettingsViewModel : BaseViewModel
 {
+    /// <summary>Copyright notices and license texts of the third-party components: too long for a phone screen, so they open in the browser.</summary>
+    private static readonly Uri LicensesUri = new("https://github.com/delfuria/RadioE45/blob/main/THIRD-PARTY-NOTICES.txt");
+
     private readonly IAppSettingsRepository _settingsRepo;
     private readonly IDatabaseService _databaseService;
     private readonly INavigationService _navigation;
@@ -21,6 +24,7 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly ICrashReportingService _crashReporting;
     private readonly IAppEnvironment _environment;
     private readonly ITermsService _terms;
+    private readonly IUrlLauncher _urlLauncher;
     private readonly AppUpdateCoordinator _updateCoordinator;
     private readonly AppUpdatePrompter _updatePrompter;
     private AppUpdateInfo? _availableUpdate;
@@ -81,6 +85,7 @@ public partial class SettingsViewModel : BaseViewModel
         ICrashReportingService crashReporting,
         IAppEnvironment environment,
         ITermsService terms,
+        IUrlLauncher urlLauncher,
         AppUpdateCoordinator updateCoordinator,
         AppUpdatePrompter updatePrompter,
         ILogger<SettingsViewModel> logger)
@@ -95,6 +100,7 @@ public partial class SettingsViewModel : BaseViewModel
         _crashReporting = crashReporting;
         _environment = environment;
         _terms = terms;
+        _urlLauncher = urlLauncher;
         _updateCoordinator = updateCoordinator;
         _updatePrompter = updatePrompter;
         Title = "Impostazioni";
@@ -145,7 +151,17 @@ public partial class SettingsViewModel : BaseViewModel
     private Task ShowTermsAsync() => _terms.ShowAsync();
 
     [RelayCommand]
-    private Task OpenLicensesAsync() => _navigation.GoToOpenSourceLicensesAsync();
+    private async Task OpenLicensesAsync()
+    {
+        try
+        {
+            await _urlLauncher.OpenAsync(LicensesUri);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Unable to open {Uri}", LicensesUri);
+        }
+    }
 
     [RelayCommand]
     private async Task CheckForUpdatesAsync()
