@@ -49,8 +49,19 @@ public partial class SettingsViewModel : BaseViewModel
     [ObservableProperty]
     public partial bool MustUpdate { get; set; }
 
+    // Same order as StartStationOptions: favorite, last, first.
     [ObservableProperty]
-    public partial bool StartWithFavorite { get; set; }
+    public partial int StartStationIndex { get; set; }
+
+    public IReadOnlyList<string> StartStationOptions { get; } =
+    [
+        LocalizationResourceManager.Instance["Settings_StartStation_Favorite"],
+        LocalizationResourceManager.Instance["Settings_StartStation_Last"],
+        LocalizationResourceManager.Instance["Settings_StartStation_First"],
+    ];
+
+    private static readonly StartStationMode[] StartStationModes =
+        [StartStationMode.Favorite, StartStationMode.Last, StartStationMode.First];
 
     [ObservableProperty]
     public partial bool CrashReportingEnabled { get; set; }
@@ -116,7 +127,7 @@ public partial class SettingsViewModel : BaseViewModel
         ThemePreference = _settingsStore.Get("theme_preference", _currentSettings.ThemePreference);
         SeedVersion = (float) _currentSettings.SeedVersion;
         MustUpdate = _currentSettings.MustUpdate;
-        StartWithFavorite = _currentSettings.StartWithFavorite;
+        StartStationIndex = Math.Max(0, Array.IndexOf(StartStationModes, _currentSettings.StartStationMode));
         CrashReportingEnabled = _currentSettings.CrashReportingEnabled;
         PlaybackLatencyOffsetSeconds = _currentSettings.PlaybackLatencyOffsetSeconds;
         PreferHlsStream = _currentSettings.PreferHlsStream;
@@ -131,7 +142,7 @@ public partial class SettingsViewModel : BaseViewModel
         MarkChanged();
     }
     
-    partial void OnStartWithFavoriteChanged(bool value) => MarkChanged();
+    partial void OnStartStationIndexChanged(int value) => MarkChanged();
 
     partial void OnCrashReportingEnabledChanged(bool value) => MarkChanged();
 
@@ -226,7 +237,8 @@ public partial class SettingsViewModel : BaseViewModel
         bool crashReportingChanged = _currentSettings.CrashReportingEnabled != CrashReportingEnabled;
 
         _currentSettings.ThemePreference = ThemePreference;
-        _currentSettings.StartWithFavorite = StartWithFavorite;
+        if (StartStationIndex >= 0 && StartStationIndex < StartStationModes.Length)
+            _currentSettings.StartStationMode = StartStationModes[StartStationIndex];
         _currentSettings.PlaybackLatencyOffsetSeconds = PlaybackLatencyOffsetSeconds;
         _currentSettings.PreferHlsStream = PreferHlsStream;
         _currentSettings.RequestPageSize = RequestPageSize;

@@ -87,6 +87,14 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
                 $"ALTER TABLE AppSettings ADD COLUMN {nameof(AppSettings.PreferHlsStream)} INTEGER NOT NULL DEFAULT 0");
         }
 
+        if (!columnNames.Contains(nameof(AppSettings.StartStationMode)))
+        {
+            await conn.ExecuteAsync(
+                $"ALTER TABLE AppSettings ADD COLUMN {nameof(AppSettings.StartStationMode)} INTEGER NOT NULL DEFAULT 0");
+            await conn.ExecuteAsync(
+                $"UPDATE AppSettings SET {nameof(AppSettings.StartStationMode)} = 1 WHERE {nameof(AppSettings.StartWithFavorite)} = 1");
+        }
+
         if (!columnNames.Contains(nameof(AppSettings.RequestPageSize)))
         {
             await conn.ExecuteAsync(

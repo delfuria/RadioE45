@@ -85,8 +85,11 @@ Assicurarsi che nelle proprietà del file sia impostato:
 | `Section_Diagnostics` | `DIAGNOSTICS` |
 | `Section_Info` | `INFO` |
 | `Label_Volume` | `Volume` |
-| `Setting_StartWithFavorite` | `Start with favourite station` |
-| `Setting_StartWithFavorite_Hint` | `If no favourite is set, the first station in the list is loaded` |
+| `Setting_StartStation` | `Station at start` |
+| `Setting_StartStation_Hint` | `If the chosen station is not available, the first one in the list is loaded` |
+| `Setting_StartStation_Favorite` | `Favorite station` |
+| `Setting_StartStation_Last` | `Last played` |
+| `Setting_StartStation_First` | `First in the list` |
 | `Setting_ThemePreference` | `Theme preference` |
 | `Setting_WindowOrientation` | `Window orientation` |
 | `Setting_WindowOrientation_Hint` | `Change the application layout orientation.` |
@@ -128,8 +131,11 @@ Stessa struttura del file inglese, con i valori in italiano.
 | `Section_Diagnostics` | `DIAGNOSTICA` |
 | `Section_Info` | `INFO` |
 | `Label_Volume` | `Volume` |
-| `Setting_StartWithFavorite` | `Avvia con la stazione preferita` |
-| `Setting_StartWithFavorite_Hint` | `Se non c'è una stazione preferita viene caricata la prima della lista` |
+| `Setting_StartStation` | `Stazione all'avvio` |
+| `Setting_StartStation_Hint` | `Se la stazione scelta non c'è, viene caricata la prima della lista` |
+| `Setting_StartStation_Favorite` | `Stazione preferita` |
+| `Setting_StartStation_Last` | `Ultima ascoltata` |
+| `Setting_StartStation_First` | `Prima della lista` |
 | `Setting_ThemePreference` | `Preferenza tema` |
 | `Setting_WindowOrientation` | `Orientamento finestra` |
 | `Setting_WindowOrientation_Hint` | `Modifica orientamento dell'applicazione.` |
@@ -217,7 +223,7 @@ Tutti i `Text=` con valore letterale diventano `x:Static`. Esempio:
 ```xml
 <Label Text="{x:Static resx:AppResources.Section_Audio}" />
 <Label Text="{x:Static resx:AppResources.Label_Volume}" />
-<Label Text="{x:Static resx:AppResources.Setting_StartWithFavorite}" />
+<Label Text="{x:Static resx:AppResources.Setting_StartStation}" />
 <Button Text="{x:Static resx:AppResources.Button_SaveSettings}" />
 ```
 

@@ -87,6 +87,8 @@ public partial class OnAirViewModel : BaseViewModel
     partial void OnCurrentStationChanged(AzuraStation? value)
     {
         IsFavorite = value?.IsFavorite ?? false;
+        if (value is not null)
+            StartStationSelector.RememberLast(_settingsStore, value.Id);
         NotifyAdjacentStationsChanged();
         _ = RefreshHasPodcastsAsync(value);
         _ = RefreshHasScheduleAsync(value);
@@ -260,8 +262,8 @@ public partial class OnAirViewModel : BaseViewModel
     private async Task SelectDefaultStationAsync()
     {
         AppSettings settings = await _settingsRepo.GetAsync();
-        AzuraStation? station = settings.StartWithFavorite || _environment.AlwaysStartsWithFavorite ? _catalog.GetFavorite() : null;
-        station ??= _catalog.GetFirst();
+        StartStationMode mode = _environment.AlwaysStartsWithFavorite ? StartStationMode.Favorite : settings.StartStationMode;
+        AzuraStation? station = StartStationSelector.Select(_catalog, _settingsStore, mode);
 
         if (station is not null)
         {

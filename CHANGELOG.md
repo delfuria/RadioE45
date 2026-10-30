@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### New
 - **Settings → Info:** new "Open source licenses" row that opens the copyright notices and license texts of the libraries and fonts the app uses in your browser.
 
+### Improved
+- **Settings → Playback:** "Start with favorite station" is now a choice of which station the app loads at start: the favorite, the last one you listened to, or the first in the list. Android Auto and the steering-wheel Play use the same choice when the app was closed.
+
 ### Fixed
 - **Android:** when the connection comes back after a gap, the radio now resumes right away instead of waiting for the next retry, and it also resumes after a long gap (a tunnel, a garage) without pressing Play.
 - **Android Auto:** swiping the app away on the phone no longer stops the radio in the car; the app closes by itself 15 seconds after the car disconnects, and the song title, artist and cover keep following the song and the station you pick in the car.
@@ -17,7 +20,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Android Auto:** while the radio reconnects after a coverage gap, the car screen no longer flips between the now-playing screen and a full-screen "Source error"; it shows the radio buffering, and the error only appears if reconnecting fails for good.
 - **Android:** pressing pause while the radio is reconnecting no longer makes it start again by itself, and in Android Auto it no longer ends on a "Source error".
 - **Android Auto:** pausing the radio no longer sends you back to the station list; the now-playing screen stays and Play still puts you back on the live broadcast.
+- **Android Auto:** when the app is closed and you press Play or pick a station in the car, the song title, artist and cover now show up instead of only the station name.
 - **Android Auto:** after you pick a station, the song title, artist and cover now show up within a few seconds instead of only at the next song.
+
+- **Android Auto:** the station list in the car now updates by itself when you add, edit, remove or reorder stations on the phone.
+- **Desktop:** turning on "Prefer HLS" now takes effect at the next station change, even if the direct stream was working before.
 
 ## [0.51] - 2026-10-28
 

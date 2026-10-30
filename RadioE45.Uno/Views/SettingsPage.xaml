@@ -46,21 +46,16 @@
 
                 <Border Style="{StaticResource CardBorder}" Margin="16,0">
                     <StackPanel Spacing="12">
-                        <Grid ColumnSpacing="10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                                <TextBlock Text="{loc:Translate Key=Settings_StartWithFavorite}" Style="{StaticResource SettingLabel}" />
-                                <TextBlock Text="{loc:Translate Key=Settings_StartWithFavorite_Hint}" Style="{StaticResource HintLabel}" />
-                            </StackPanel>
-                            <CheckBox
-                                Grid.Column="1"
-                                MinWidth="0"
-                                VerticalAlignment="Center"
-                                IsChecked="{x:Bind ViewModel.StartWithFavorite, Mode=TwoWay}" />
-                        </Grid>
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{loc:Translate Key=Settings_StartStation}" Style="{StaticResource SettingLabel}" />
+                            <TextBlock Text="{loc:Translate Key=Settings_StartStation_Hint}" Style="{StaticResource HintLabel}" />
+                            <ComboBox
+                                HorizontalAlignment="Stretch"
+                                Background="{ThemeResource CardElevatedBrush}"
+                                Foreground="{ThemeResource PrimaryTextBrush}"
+                                ItemsSource="{x:Bind ViewModel.StartStationOptions}"
+                                SelectedIndex="{x:Bind ViewModel.StartStationIndex, Mode=TwoWay}" />
+                        </StackPanel>
 
                         <Border Style="{StaticResource Divider}" />
 

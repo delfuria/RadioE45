@@ -268,18 +268,24 @@ public class LiveStreamAudioService : IAudioService
     /// Stream URLs to try, in order. Default is the direct Icecast/MP3 stream first — even a tuned
     /// AzuraCast HLS config has a structural floor of a few seconds behind the live edge (standard
     /// HLS forbids starting closer than ~3 segments from the end), which the direct stream doesn't
-    /// have. See AppSettings.PreferHlsStream. The last URL that worked always comes first.
+    /// have. See AppSettings.PreferHlsStream. The last URL that worked comes first, but only while
+    /// it is of the preferred kind (HLS or direct): otherwise a stale MP3 would hide a new HLS preference.
     /// Private-host URLs are dropped for public stations (see PrivateHostDetector.FilterCandidates).
     /// </summary>
-    public static string[] GetCandidateUrls(AzuraStation station, bool preferHls) =>
-        PrivateHostDetector.FilterCandidates(
+    public static string[] GetCandidateUrls(AzuraStation station, bool preferHls)
+    {
+        bool lastWasHls = !string.IsNullOrEmpty(station.HlsUrl) && station.OnAirStreamUrl == station.HlsUrl;
+        string? lastWorking = lastWasHls == preferHls ? station.OnAirStreamUrl : null;
+
+        return PrivateHostDetector.FilterCandidates(
             (preferHls
-                ? new[] { station.OnAirStreamUrl, station.HlsUrl, station.StreamUrl, station.StreamUrlFallback }
-                : new[] { station.OnAirStreamUrl, station.StreamUrl, station.StreamUrlFallback, station.HlsUrl })
+                ? new[] { lastWorking, station.HlsUrl, station.StreamUrl, station.StreamUrlFallback, station.OnAirStreamUrl }
+                : new[] { lastWorking, station.StreamUrl, station.StreamUrlFallback, station.HlsUrl, station.OnAirStreamUrl })
             .Where(u => !string.IsNullOrEmpty(u))
             .Distinct()
             .ToArray()!,
             station);
+    }
 
     private async Task TryOpenStreamAsync(AzuraStation station, IStreamPlayer player, CancellationToken ct = default)
     {

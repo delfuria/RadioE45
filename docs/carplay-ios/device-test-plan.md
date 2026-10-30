@@ -85,7 +85,7 @@ Verifica che le Fasi A (scene) e C (player AVPlayer) non abbiano rotto l'app per
 
 ### A1. Avvio a freddo
 - **Passi:** chiudi l'app dal multitasking, poi aprila.
-- **Atteso:** parte la stazione preferita, o la prima se non c'è una preferita, come nella versione in produzione.
+- **Atteso:** parte la stazione scelta in Impostazioni → «Stazione all'avvio» (preferita, ultima ascoltata o prima della lista; di default la prima della lista). Se la scelta non è disponibile, parte la prima.
 - **Misura:** stazione mostrata; nel log `StateChanged: ... → Playing` entro pochi secondi.
 
 ### A2. Comandi base

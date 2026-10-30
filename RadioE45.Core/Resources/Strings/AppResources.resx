@@ -118,8 +118,11 @@
 
   <!-- Settings -->
   <data name="Settings_Section_Playback" xml:space="preserve"><value>RIPRODUZIONE</value></data>
-  <data name="Settings_StartWithFavorite" xml:space="preserve"><value>Avvia con la stazione preferita</value></data>
-  <data name="Settings_StartWithFavorite_Hint" xml:space="preserve"><value>Se non c'è una stazione preferita viene caricata la prima della lista</value></data>
+  <data name="Settings_StartStation" xml:space="preserve"><value>Stazione all'avvio</value></data>
+  <data name="Settings_StartStation_Hint" xml:space="preserve"><value>Se la stazione scelta non c'è, viene caricata la prima della lista</value></data>
+  <data name="Settings_StartStation_Favorite" xml:space="preserve"><value>Stazione preferita</value></data>
+  <data name="Settings_StartStation_Last" xml:space="preserve"><value>Ultima ascoltata</value></data>
+  <data name="Settings_StartStation_First" xml:space="preserve"><value>Prima della lista</value></data>
   <data name="Settings_LatencyOffset" xml:space="preserve"><value>Correzione ritardo NowPlaying</value></data>
   <data name="Settings_LatencyOffset_Hint" xml:space="preserve"><value>Secondi da sottrarre alla posizione riportata dal server per allinearla all'audio reale</value></data>
   <data name="Settings_PreferHls" xml:space="preserve"><value>Preferisci flusso HLS come principale</value></data>

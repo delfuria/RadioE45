@@ -10,7 +10,9 @@ public class AppSettings
     public string ThemePreference { get; set; } = "Dark";
     public bool MustUpdate { get; set; }
     public decimal SeedVersion { get; set; }
+    // Legacy: replaced by StartStationMode (copied by the migration). The column stays for old databases.
     public bool StartWithFavorite { get; set; }
+    public StartStationMode StartStationMode { get; set; } = StartStationMode.First;
     public bool CrashReportingEnabled { get; set; }
     public bool CrashReportingConsentRequested { get; set; }
     public string DesktopOrientation { get; set; } = "Portrait";

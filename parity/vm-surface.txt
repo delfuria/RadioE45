@@ -148,7 +148,8 @@ SettingsViewModel.SaveSettingsCommand : IAsyncRelayCommand { get; }
 SettingsViewModel.SeedVersion : float { get; set; }
 SettingsViewModel.SendCrashReportTestCommand : IAsyncRelayCommand { get; }
 SettingsViewModel.ShowTermsCommand : IAsyncRelayCommand { get; }
-SettingsViewModel.StartWithFavorite : bool { get; set; }
+SettingsViewModel.StartStationIndex : int { get; set; }
+SettingsViewModel.StartStationOptions : IReadOnlyList<string> { get; }
 SettingsViewModel.ThemePreference : string { get; set; }
 SettingsViewModel.UpdateNowCommand : IAsyncRelayCommand { get; }
 SettingsViewModel.UpdateStatusText : string { get; set; }

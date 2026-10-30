@@ -392,8 +392,8 @@
 
 # --- Settings --------------------------------------------------------------------------------
 
-- id: settings.playback.start-with-favorite
-  title: Avvio con la stazione preferita
+- id: settings.playback.start-station
+  title: Stazione all'avvio (preferita, ultima ascoltata, prima della lista)
   since: "0.44"
   page: Settings
   viewmodel: SettingsViewModel

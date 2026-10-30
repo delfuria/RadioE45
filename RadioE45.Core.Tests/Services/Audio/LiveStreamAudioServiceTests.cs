@@ -63,6 +63,24 @@ public sealed class LiveStreamAudioServiceTests : IDisposable
         Assert.Equal([Fallback, Mp3, Hls], LiveStreamAudioService.GetCandidateUrls(station, preferHls: false));
     }
 
+    [Fact]
+    public void Last_working_mp3_does_not_hide_a_new_hls_preference()
+    {
+        AzuraStation station = Station();
+        station.OnAirStreamUrl = Fallback;
+
+        Assert.Equal([Hls, Mp3, Fallback], LiveStreamAudioService.GetCandidateUrls(station, preferHls: true));
+    }
+
+    [Fact]
+    public void Last_working_hls_does_not_hide_a_direct_preference()
+    {
+        AzuraStation station = Station();
+        station.OnAirStreamUrl = Hls;
+
+        Assert.Equal([Mp3, Fallback, Hls], LiveStreamAudioService.GetCandidateUrls(station, preferHls: false));
+    }
+
     // AzuraCast with a LAN Base URL: listen_url points to 192.168.x.x even for a public station.
     private const string LanMp3 = "http://192.168.1.100/listen/radioe45/radio.mp3";
     private const string LanHls = "http://192.168.1.100/hls/radioe45/live.m3u8";

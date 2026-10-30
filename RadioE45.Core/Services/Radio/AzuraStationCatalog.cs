@@ -19,6 +19,7 @@ public class AzuraStationCatalog : IAzuraStationCatalog
     private CancellationTokenSource? _offlineTimerCts;
 
     public event Action? StationsRefreshed;
+    public event Action? StationListChanged;
 
     public IReadOnlyList<AzuraStation> Stations => _stations.AsReadOnly();
     public DateTimeOffset LastLoadedAt => _lastLoadedAt;
@@ -287,6 +288,7 @@ public class AzuraStationCatalog : IAzuraStationCatalog
     public void RemoveStation(int id)
     {
         _stations = _stations.Where(s => s.Id != id).ToList();
+        StationListChanged?.Invoke();
     }
 
     public async Task ReorderAsync(IReadOnlyList<int> orderedIds)
@@ -303,6 +305,7 @@ public class AzuraStationCatalog : IAzuraStationCatalog
         _stations = reordered;
 
         await _radioRepository.ReorderAsync(orderedIds);
+        StationListChanged?.Invoke();
     }
 
     public async Task SetFavoriteAsync(int dbId, bool isFavorite)

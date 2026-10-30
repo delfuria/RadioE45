@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using RadioE45.Models;
 using RadioE45.Services.Audio;
 using RadioE45.Services.Data;
+using RadioE45.Services.Platform;
 using RadioE45.Services.Radio;
 using System.Runtime.InteropServices;
 
@@ -150,12 +151,27 @@ public sealed class RadioPlaybackService : MediaLibraryService
                 builder.SetSessionActivity(sessionActivity);
 
             _session = builder.Build();
+
+            if (Catalog is { } catalog)
+            {
+                catalog.StationsRefreshed += OnStationListChanged;
+                catalog.StationListChanged += OnStationListChanged;
+            }
         }
         catch (Exception ex)
         {
             _logger?.LogError(ex, "RadioPlaybackService: failed to initialize Media3 session");
         }
     }
+
+    // Tells the controllers that browse the tree (Android Auto) to ask for the station list again.
+    // Session calls belong to the application thread, the catalog events can come from any.
+    private void OnStationListChanged()
+        => new Handler(Looper.MainLooper!).Post(() =>
+        {
+            if (_session is { } session)
+                session.NotifyChildrenChanged(RootId, Catalog?.Stations.Count ?? 0, null);
+        });
 
     public override MediaLibrarySession? OnGetSessionFromMediaLibraryService(MediaSession.ControllerInfo? controllerInfo) => _session;
 
@@ -220,6 +236,10 @@ public sealed class RadioPlaybackService : MediaLibraryService
     private INowPlayingService? _closeWatchNowPlaying;
     private static RadioPlaybackService? _current;
 
+    // True once MainActivity ran in this process. A process started only for the service (the car after a
+    // kill) has no screen of the app, so nothing else polls the song: see BeginFollowWithoutApp.
+    private static bool _appOpenedInProcess;
+
     private bool IsAutoController(MediaSession.ControllerInfo controller)
         => _session is { } session && (session.IsAutoCompanionController(controller) || session.IsAutomotiveController(controller));
 
@@ -269,9 +289,28 @@ public sealed class RadioPlaybackService : MediaLibraryService
         new Handler(Looper.MainLooper!).PostDelayed(() => CheckCloseWatch(generation), (long)CloseWatchInterval.TotalMilliseconds);
     }
 
+    // The service was started by the car (Play after the process died) and no screen of the app exists, so
+    // nothing polls the song. Same follow as while a close is pending, without the close; MainActivity ends it.
+    private bool _followWithoutApp;
+
+    private void BeginFollowWithoutApp(string? mediaId)
+    {
+        _followWithoutApp = true;
+
+        if (_closeWatchNowPlaying is null)
+        {
+            _closeWatchNowPlaying = Services?.GetService<INowPlayingService>();
+            if (_closeWatchNowPlaying is not null)
+                _closeWatchNowPlaying.NowPlayingUpdated += OnNowPlayingWhileClosing;
+        }
+
+        FollowStationWhileClosing(mediaId);
+    }
+
     private void EndCloseWatch()
     {
         _closeWhenAutoLeaves = false;
+        _followWithoutApp = false;
         _autoGoneSince = null;
         _closeGeneration++;
 
@@ -289,7 +328,7 @@ public sealed class RadioPlaybackService : MediaLibraryService
     private void FollowStationWhileClosing(string? mediaId)
     {
         INowPlayingService? nowPlaying = _closeWatchNowPlaying;
-        if (!_closeWhenAutoLeaves || nowPlaying is null || mediaId is null || mediaId == _followedMediaId)
+        if (!(_closeWhenAutoLeaves || _followWithoutApp) || nowPlaying is null || mediaId is null || mediaId == _followedMediaId)
             return;
 
         AzuraStation? station = Catalog?.Stations.FirstOrDefault(s => s.Id.ToString() == mediaId);
@@ -347,7 +386,7 @@ public sealed class RadioPlaybackService : MediaLibraryService
         {
             IExoPlayer? player = _player;
             MediaItem? current = player?.CurrentMediaItem;
-            if (!_closeWhenAutoLeaves || player is null || current is null || string.IsNullOrWhiteSpace(info.Title)
+            if (!(_closeWhenAutoLeaves || _followWithoutApp) || player is null || current is null || string.IsNullOrWhiteSpace(info.Title)
                 || current.MediaId != _followedMediaId)
                 return;
 
@@ -372,9 +411,11 @@ public sealed class RadioPlaybackService : MediaLibraryService
     // open now, so it must not be closed under their hands when the car leaves.
     internal static void NotifyAppOpened()
     {
-        if (_current is { _closeWhenAutoLeaves: true } service)
+        _appOpenedInProcess = true;
+
+        if (_current is { } service && (service._closeWhenAutoLeaves || service._followWithoutApp))
         {
-            service._logger?.LogInformation("RadioPlaybackService: app opened again, the pending close is cancelled");
+            service._logger?.LogInformation("RadioPlaybackService: app opened, the service stops following the song and cancels any pending close");
             service.EndCloseWatch();
         }
     }
@@ -386,6 +427,12 @@ public sealed class RadioPlaybackService : MediaLibraryService
 
         EndCloseWatch();
         CancelRecovery();
+
+        if (Catalog is { } catalog)
+        {
+            catalog.StationsRefreshed -= OnStationListChanged;
+            catalog.StationListChanged -= OnStationListChanged;
+        }
 
         _session?.Release();
         _session = null;
@@ -827,6 +874,10 @@ public sealed class RadioPlaybackService : MediaLibraryService
             CancelRecovery();
 
         FollowStationWhileClosing(mediaId);
+
+        // The car and the phone both go through here, so this is the "last station" for the next start.
+        if (int.TryParse(mediaId, out int stationId) && Services?.GetService<ISettingsStore>() is { } store)
+            StartStationSelector.RememberLast(store, stationId);
     }
 
     // Pause from the session (notification, lock screen, Bluetooth, media keys, Android Auto, in-app) is a
@@ -1046,6 +1097,31 @@ public sealed class RadioPlaybackService : MediaLibraryService
                 return LibraryResult.OfItemList(items, @params);
             });
 
+        // Play from the car or a media key after the process died (or the app was brought back by Android Auto):
+        // Media3 asks which items to play. Start the station chosen in Settings, with the whole list as queue.
+        public IListenableFuture OnPlaybackResumption(MediaSession? session, MediaSession.ControllerInfo? controller, bool isForPlayback)
+            => FutureFromTask(async () =>
+            {
+                IList<AzuraStation> stations = await GetStationsAsync();
+                IAzuraStationCatalog? catalog = Catalog;
+                ISettingsStore? store = Services?.GetService<ISettingsStore>();
+                IAppSettingsRepository? settingsRepo = SettingsRepo;
+                if (catalog is null || store is null || settingsRepo is null || stations.Count == 0)
+                    return LibraryResult.OfError(LibraryResult.ResultErrorBadValue);
+
+                StartStationMode mode = (await settingsRepo.GetAsync()).StartStationMode;
+                AzuraStation? start = StartStationSelector.Select(catalog, store, mode);
+
+                List<MediaItem> queue = stations.Select(s => _service.BuildStationItem(s, playable: true)).ToList();
+                int index = Math.Max(0, queue.FindIndex(i => i.MediaId == start?.Id.ToString()));
+                queue[index] = await _service.BuildStationItemProbedAsync(stations.First(s => s.Id.ToString() == queue[index].MediaId), queue[index].MediaMetadata);
+
+                if (isForPlayback && !_appOpenedInProcess)
+                    _service.BeginFollowWithoutApp(queue[index].MediaId);
+
+                return new MediaSession.MediaItemsWithStartPosition(queue, index, C.TimeUnset);
+            });
+
         // When a controller (Android Auto / Assistant) selects a browse item it sends media items
         // that carry only the mediaId (no URI, stripped across the binder). Rebuild each with its
         // resolved stream URI so ExoPlayer can play it.
@@ -1099,6 +1175,9 @@ public sealed class RadioPlaybackService : MediaLibraryService
                 AzuraStation? selectedStation = stations.FirstOrDefault(s => s.Id.ToString() == queue[index].MediaId);
                 if (selectedStation is not null)
                     queue[index] = await _service.BuildStationItemProbedAsync(selectedStation, queue[index].MediaMetadata);
+
+                if (!_appOpenedInProcess)
+                    _service.BeginFollowWithoutApp(queue[index].MediaId);
 
                 return new MediaSession.MediaItemsWithStartPosition(queue, index, startPositionMs);
             });

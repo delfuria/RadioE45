@@ -112,8 +112,11 @@
   <data name="Request_Err_Bot" xml:space="preserve"><value>Crawlers are not permitted to use this feature.</value></data>
 
   <data name="Settings_Section_Playback" xml:space="preserve"><value>PLAYBACK</value></data>
-  <data name="Settings_StartWithFavorite" xml:space="preserve"><value>Start with favorite station</value></data>
-  <data name="Settings_StartWithFavorite_Hint" xml:space="preserve"><value>If there is no favorite station, the first one in the list is loaded</value></data>
+  <data name="Settings_StartStation" xml:space="preserve"><value>Station at start</value></data>
+  <data name="Settings_StartStation_Hint" xml:space="preserve"><value>If the chosen station is not available, the first one in the list is loaded</value></data>
+  <data name="Settings_StartStation_Favorite" xml:space="preserve"><value>Favorite station</value></data>
+  <data name="Settings_StartStation_Last" xml:space="preserve"><value>Last played</value></data>
+  <data name="Settings_StartStation_First" xml:space="preserve"><value>First in the list</value></data>
   <data name="Settings_LatencyOffset" xml:space="preserve"><value>NowPlaying delay correction</value></data>
   <data name="Settings_LatencyOffset_Hint" xml:space="preserve"><value>Seconds subtracted from the server-reported position to align it with the real audio</value></data>
   <data name="Settings_PreferHls" xml:space="preserve"><value>Prefer HLS stream as primary</value></data>
