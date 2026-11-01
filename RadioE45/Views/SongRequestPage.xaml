@@ -121,9 +121,15 @@
                                     Stroke="Transparent">
                                     <Grid>
                                         <Image
-                                            Source="{Binding ArtworkUrl}"
                                             Aspect="AspectFill"
-                                            IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNotNullConverter}}" />
+                                            IsVisible="{Binding ArtworkUrl, Converter={toolkit:IsNotNullConverter}}">
+                                            <Image.Source>
+                                                <UriImageSource
+                                                    Uri="{Binding ArtworkUrl}"
+                                                    CachingEnabled="True"
+                                                    CacheValidity="7.00:00:00" />
+                                            </Image.Source>
+                                        </Image>
                                         <Image
                                             Source="radio_placeholder.png"
                                             Aspect="AspectFit"

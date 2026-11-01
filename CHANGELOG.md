@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Stations:** a filter box at the top of the station list narrows the stations by name while you type, with a button to clear it; the list can also be shown as large icons, and the app remembers your choice.
 - **On Air:** tap the station name to see the details of the stream: address, format, bitrate, sample rate, channels and genre, when the stream provides them.
 
+### Fixed
+- **Song requests:** the cover images in the request list no longer fail to load while you type in the search box or change page, and they are kept on the device so they show up faster next time.
+
 ## [0.52] - 2026-10-30
 
 ### New

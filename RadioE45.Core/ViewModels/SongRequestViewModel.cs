@@ -13,6 +13,9 @@ namespace RadioE45.ViewModels;
 public partial class SongRequestViewModel : BaseViewModel
 {
     private const int DefaultPageSize = 10;
+    private static readonly TimeSpan SearchDebounce = TimeSpan.FromMilliseconds(300);
+
+    private CancellationTokenSource? _searchCts;
 
     private readonly ISongRequestService _songRequestService;
     private readonly IAppSettingsRepository _settingsRepo;
@@ -95,6 +98,23 @@ public partial class SongRequestViewModel : BaseViewModel
 
     partial void OnSearchTextChanged(string value)
     {
+        // Debounce: digitando non si rigenera l'elenco a ogni tasto (ogni rigenerazione annulla i download delle copertine).
+        _searchCts?.Cancel();
+        CancellationTokenSource cts = _searchCts = new CancellationTokenSource();
+        _ = ApplySearchAsync(cts.Token);
+    }
+
+    private async Task ApplySearchAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(SearchDebounce, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
         PageNumber = 1;
         ApplyFilter();
     }
@@ -137,8 +157,43 @@ public partial class SongRequestViewModel : BaseViewModel
 
     private void ApplyPage()
     {
-        Songs = new ObservableCollection<AzuraCastRequestItem>(
-            _filtered.Skip((PageNumber - 1) * _pageSize).Take(_pageSize));
+        // La collezione resta la stessa: il CollectionView aggiorna solo le righe che cambiano,
+        // senza ricreare le celle (e quindi senza annullare i download delle copertine).
+        SyncSongs(_filtered.Skip((PageNumber - 1) * _pageSize).Take(_pageSize).ToList());
+    }
+
+    // Porta Songs allo stato di target con il minimo di modifiche (rimuove, sposta, inserisce).
+    // Il confronto è per riferimento: gli elementi sono gli stessi oggetti di _allSongs.
+    private void SyncSongs(IReadOnlyList<AzuraCastRequestItem> target)
+    {
+        var keep = new HashSet<AzuraCastRequestItem>(target, ReferenceEqualityComparer.Instance);
+        for (int i = Songs.Count - 1; i >= 0; i--)
+        {
+            if (!keep.Contains(Songs[i]))
+                Songs.RemoveAt(i);
+        }
+
+        for (int i = 0; i < target.Count; i++)
+        {
+            AzuraCastRequestItem item = target[i];
+            if (i < Songs.Count && ReferenceEquals(Songs[i], item))
+                continue;
+
+            int current = -1;
+            for (int j = i; j < Songs.Count; j++)
+            {
+                if (ReferenceEquals(Songs[j], item))
+                {
+                    current = j;
+                    break;
+                }
+            }
+
+            if (current >= 0)
+                Songs.Move(current, i);
+            else
+                Songs.Insert(i, item);
+        }
     }
 
     [RelayCommand]
