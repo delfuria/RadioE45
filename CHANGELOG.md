@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 - **Song requests:** the cover images in the request list no longer fail to load while you type in the search box or change page, and they are kept on the device so they show up faster next time.
+- **Linux:** the window now opens directly in the portrait size, as on the other desktops, instead of showing a wide window for a moment first.
+- **Podcasts (Linux):** resuming an episode after leaving and coming back to the Podcast page no longer plays a moment of its beginning before jumping to where you stopped.
 - **Podcasts (web and Linux):** podcasts and episodes without a cover, or whose cover cannot be loaded, now show the app's own picture instead of the old radio drawing.
 - **Podcasts (web, Safari):** episodes now start in Safari, and an episode that was paused halfway resumes from where you stopped instead of being marked as finished; if the browser cannot start an episode, an error is shown.
 

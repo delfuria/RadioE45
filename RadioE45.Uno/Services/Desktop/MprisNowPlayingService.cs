@@ -30,6 +30,7 @@ public sealed class MprisNowPlayingService : IPlatformNowPlayingService, IPathMe
           <property name="CanRaise" type="b" access="read"/>
           <property name="HasTrackList" type="b" access="read"/>
           <property name="Identity" type="s" access="read"/>
+          <property name="DesktopEntry" type="s" access="read"/>
           <property name="SupportedUriSchemes" type="as" access="read"/>
           <property name="SupportedMimeTypes" type="as" access="read"/>
         </interface>
@@ -288,6 +289,9 @@ public sealed class MprisNowPlayingService : IPlatformNowPlayingService, IPathMe
             ["CanRaise"] = VariantValue.Bool(false),
             ["HasTrackList"] = VariantValue.Bool(false),
             ["Identity"] = VariantValue.String("Radio E45"),
+            // Name of the installed .desktop file (packaging/linux/com.radioe45.app.desktop): GNOME uses it to
+            // tie the player to the app (icon and name on the lock screen and in the media controls).
+            ["DesktopEntry"] = VariantValue.String("com.radioe45.app"),
             ["SupportedUriSchemes"] = VariantValue.Array(Array.Empty<string>()),
             ["SupportedMimeTypes"] = VariantValue.Array(Array.Empty<string>()),
         },

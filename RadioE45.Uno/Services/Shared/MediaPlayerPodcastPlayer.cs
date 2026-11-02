@@ -60,7 +60,7 @@ public sealed class MediaPlayerPodcastPlayer : IPodcastMediaPlayer, IDisposable
         {
             _volume = value;
             if (_player is not null)
-                _player.Volume = value;
+                ApplyVolume(_player);
         }
     }
 
@@ -91,11 +91,21 @@ public sealed class MediaPlayerPodcastPlayer : IPodcastMediaPlayer, IDisposable
 
     private MediaPlayer CreatePlayer()
     {
-        var player = new MediaPlayer { AutoPlay = false, Volume = _volume };
+        var player = new MediaPlayer { AutoPlay = false };
+        ApplyVolume(player);
         player.MediaFailed += OnMediaFailed;
         player.MediaEnded += OnMediaEnded;
         player.PlaybackSession.PlaybackStateChanged += OnPlaybackStateChanged;
         return player;
+    }
+
+    // The service mutes the player (volume 0) while it seeks to the resume position. libVLC ignores a
+    // volume set before the media is playing, so the mute is also set explicitly and both are applied
+    // again when playback really starts (OnPlaybackStateChanged).
+    private void ApplyVolume(MediaPlayer player)
+    {
+        player.Volume = _volume;
+        player.IsMuted = _volume <= 0;
     }
 
     public void Play() => _player?.Play();
@@ -174,6 +184,8 @@ public sealed class MediaPlayerPodcastPlayer : IPodcastMediaPlayer, IDisposable
             _ => StreamPlayerState.None,
         };
         SetSampling(state == StreamPlayerState.Playing);
+        if (state == StreamPlayerState.Playing)
+            ApplyVolume(_player);
         _states.Push(state);
     }
 

@@ -118,10 +118,17 @@ public partial class App : Application
             return;
         }
 
+        // Before the window is shown the scale is not known yet: size it right away at scale 1, so it
+        // never opens at the platform's default (landscape) size, and correct it once the content is
+        // loaded if the display scale is different.
+        Resize(1.0);
+
         void OnLoaded(object sender, RoutedEventArgs e)
         {
             root.Loaded -= OnLoaded;
-            Resize(root.XamlRoot?.RasterizationScale ?? 1.0);
+            var scale = root.XamlRoot?.RasterizationScale ?? 1.0;
+            if (Math.Abs(scale - 1.0) > 0.01)
+                Resize(scale);
         }
         root.Loaded += OnLoaded;
     }

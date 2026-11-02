@@ -4,11 +4,11 @@ Stato al 2026-11-02. Dettagli per sessione in [`LINUX-UNO-ROADMAP.md`](LINUX-UNO
 
 ## 1. Prove utente pendenti
 
-- [ ] **Web, podcast:** prova a mano con la scheda visibile (la prova automatica non è valida: Chrome sospende i media nelle schede nascoste).
-- [ ] **PWA, Chrome/Edge:** installazione dall'icona nella barra degli indirizzi e avvio in finestra propria.
-- [ ] **PWA, Safari:** Archivio → Aggiungi al Dock.
-- [ ] **Media di sistema, VM Ubuntu:** pannello multimediale di GNOME e tasti multimediali reali.
-- [ ] **Media di sistema, browser:** controllo multimediale della barra di Chrome e tasti della tastiera.
+- [x] **Web, podcast:** prova a mano con la scheda visibile — ok in Chrome e Safari (2026-11-02; Safari richiedeva un `<audio>` al posto del `<video>` di Uno).
+- [x] **PWA, Chrome/Edge:** installazione dall'icona nella barra degli indirizzi e avvio in finestra propria — ok.
+- [x] **PWA, Safari:** Archivio → Aggiungi al Dock — ok.
+- [x] **Media di sistema, VM Ubuntu:** scheda multimediale di GNOME (pausa, play, avanti, indietro) e tasti — ok (2026-11-02). Controlli sulla schermata di blocco: non compaiono, ma nemmeno per altri programmi nella VM, quindi è un limite della VM e non dell'app.
+- [x] **Media di sistema, browser:** controllo multimediale della barra di Chrome e tasti della tastiera — ok.
 
 ## 2. S9c — test sugli ambienti (VM + Mac)
 
