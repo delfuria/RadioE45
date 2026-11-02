@@ -107,6 +107,9 @@ public partial class App : Application
                 presenter.IsMaximizable = false;
                 presenter.PreferredMinimumWidth = size.Width;
                 presenter.PreferredMinimumHeight = size.Height;
+                // MAUI pins min = max: without a maximum the X11 window stays resizable.
+                presenter.PreferredMaximumWidth = size.Width;
+                presenter.PreferredMaximumHeight = size.Height;
             }
         }
 

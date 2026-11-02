@@ -705,10 +705,10 @@ Divisa con l'utente il 2026-10-16, un branch per fase come in S8.
   - **Da fare con l'utente:** installazione in Chrome/Edge (icona nella barra degli indirizzi) e avvio in finestra propria; Safari (Archivio → Aggiungi al Dock).
   - Nota: in console `ManagedError: Overflow_TimeSpanTooLong` da `ondurationchange` (durata infinita dello stream live nel player Uno), innocuo, già presente.
 
-#### S9c — Test sugli ambienti · VM + Mac — ⏸ in sospeso (2026-10-16: si passa a S10.0, da riprendere prima di S11)
-- [ ] Linux: GNOME Wayland, KDE, Xfce su X11 puro ("Ubuntu on Xorg", in sospeso da S1).
-- [ ] Browser: Chrome, Firefox (audio mai provato, §S2), Safari.
-- [ ] Correzioni emerse; regressione MAUI se toccato il Core.
+#### S9c — Test sugli ambienti · VM + Mac — ✅ completata 2026-11-02 (regressione MAUI ok)
+- [x] Linux (VM Ubuntu 24.04 arm64): GNOME Wayland, "Ubuntu on Xorg", Xfce, Plasma X11 e Plasma Wayland: finestra 500×855 fissa (min = max), radio, MPRIS (pausa, play, avanti, indietro) ok. Widget multimediale a schermo bloccato: ok in KDE; in GNOME non compare nemmeno per altri programmi nella VM (limite della VM). Solo x64 resta alla CI.
+- [x] Browser: Chrome, Firefox, Safari.
+- [x] Correzioni emerse: finestra aperta subito in verticale e non ridimensionabile (`App.xaml.cs`), crash all'avvio con font bitmap installati (`FT_Get_BDF_Property`, `Platforms/Desktop/Program.cs`), ripresa podcast silenziata su libVLC, podcast web su `<audio>` per Safari, `ended` spurio non più "completato" (Core `PodcastPlaybackService`). **Regressione MAUI dei podcast** (iOS, Android, Mac, Windows) fatta dall'utente: ok dappertutto (il Core è stato toccato).
 
 ### S10 — Packaging, CI, hosting (divisa in S10.0 + S10.1)
 
@@ -776,6 +776,7 @@ Obiettivo: installabili Linux x64 e arm64 nella pagina delle release di GitHub, 
 
 | Data | Sessione | Esito | Note |
 |---|---|---|---|
+| 2026-11-02 | S9c | Completata (regressione MAUI ok) | Linux provato su VM Ubuntu 24.04 arm64: GNOME Wayland, Ubuntu on Xorg, Xfce, Plasma X11 e Wayland (finestra 500×855 fissa, radio, MPRIS, widget a schermo bloccato ok in KDE; in GNOME non compare per nessun programma nella VM). Correzioni: finestra aperta subito in verticale e non ridimensionabile; crash all'avvio con font bitmap (`FT_Get_BDF_Property`, caricamento globale di FreeType); ripresa podcast silenziata su libVLC; podcast web su `<audio>` (Safari); `ended` spurio non più "completato". x64 alla CI. Prossima: S10.0 (VM col `.deb` installato, CI) |
 | 2026-10-16 | S10.0 | Codice completato (installazione nella VM e primo giro CI da fare) | S9c sospesa, S10 divisa in S10.0 (`.deb`) e S10.1. `packaging/linux/` con `build-deb.sh` (macOS e Linux), script esterno `build-deb-linux.sh` in `0.build-all.sh`, workflow `linux-deb.yml` (x64 e arm64 nativi, Xvfb, Ubuntu 22.04/Debian 12/13). libVLC Windows esclusa dai publish Linux. `.deb` 44 MB (amd64) e 41 MB (arm64), avvio dell'arm64 estratto nella VM ok, `WM_CLASS` `com.radioe45.app`. Build verde; ParityCheck = 1. Prossima: prove utente + CI, poi S10.1 o S9c |
 | 2026-10-16 | S9b | Codice completato (installazione e Safari da provare con l'utente) | Branch `S9b` da `S9a`. Manifest completo con icone proprie (`Platforms/WebAssembly/Pwa`), offline con il service worker di Uno avvolto da `radioe45-sw.js` (stream e altre origini fuori dal worker: Safari muto su Radio E45) e `RadioE45Pwa.js` (`uno-assets.txt` in cache); trovata e corretta la Release web senza dati (reflection JSON disattivata dal trimming); verificata in Chrome sulla Release (stream attraverso il worker, avvio con il server spento); build verdi; ParityCheck = 1 (solo crash report). Core e MAUI invariati. Prossima: S9c |
 | 2026-10-16 | S9a | Codice completato (prove manuali dell'utente) | Branch `S9a` da `S8.7`. S9 divisa in S9a/S9b/S9c. MPRIS su Linux (`Tmds.DBus.Protocol`) e Media Session sul web, comandi play/pausa come MAUI iOS; verificati con `playerctl` nella VM e in Chrome; autotest macOS ok; build verdi; ParityCheck = 1 (solo crash report). Core e MAUI invariati. Prossima: S9b |

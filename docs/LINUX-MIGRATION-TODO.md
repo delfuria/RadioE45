@@ -1,6 +1,6 @@
 # Migrazione Linux e Web (Uno Platform) — cosa resta da fare
 
-Stato al 2026-11-02. Dettagli per sessione in [`LINUX-UNO-ROADMAP.md`](LINUX-UNO-ROADMAP.md) (§12). Già chiuso: S0–S8 (S8.7 incluso), S9a, S9b (codice).
+Stato al 2026-11-02. Dettagli per sessione in [`LINUX-UNO-ROADMAP.md`](LINUX-UNO-ROADMAP.md) (§12). Già chiuso: S0–S8 (S8.7 incluso), S9a, S9b, S9c.
 
 ## 1. Prove utente pendenti
 
@@ -10,11 +10,14 @@ Stato al 2026-11-02. Dettagli per sessione in [`LINUX-UNO-ROADMAP.md`](LINUX-UNO
 - [x] **Media di sistema, VM Ubuntu:** scheda multimediale di GNOME (pausa, play, avanti, indietro) e tasti — ok (2026-11-02). Controlli sulla schermata di blocco: non compaiono, ma nemmeno per altri programmi nella VM, quindi è un limite della VM e non dell'app.
 - [x] **Media di sistema, browser:** controllo multimediale della barra di Chrome e tasti della tastiera — ok.
 
-## 2. S9c — test sugli ambienti (VM + Mac)
+## 2. S9c — test sugli ambienti (VM + Mac) — ✅ completata 2026-11-02
 
-- [ ] Linux: GNOME Wayland, KDE, Xfce su X11 puro ("Ubuntu on Xorg", in sospeso da S1).
-- [ ] Browser: Chrome, Firefox (audio mai provato), Safari.
-- [ ] Correzioni emerse; regressione MAUI se si tocca il Core.
+- [x] Linux, GNOME Wayland: ok (VM Ubuntu 24.04 ARM64, 2026-11-02).
+- [x] Linux, "Ubuntu on Xorg": finestra 500×855 subito e non ridimensionabile (min = max), radio, MPRIS (pausa, play, avanti, indietro) ok (2026-11-02).
+- [x] Linux, Xfce (Ubuntu 24.04 arm64, 2026-11-02): trovato un crash all'avvio (`symbol lookup error: FT_Get_BDF_Property` in `libSkiaSharp.so`, causato dai font bitmap di `xfonts-base` installati con Xfce), corretto caricando `libfreetype.so.6` nello scope globale in `Platforms/Desktop/Program.cs`; poi finestra 500×855 fissa, radio e MPRIS ok. Da verificare su x64 (CI).
+- [x] Linux, KDE Plasma X11 e Wayland (2026-11-02): finestra 500×855 fissa, radio, MPRIS e widget a schermo bloccato ok.
+- [x] **Regressione MAUI dei podcast** (iOS, Android, Mac, Windows): ok dappertutto (il Core è stato toccato: `PodcastPlaybackService`).
+- [x] Browser: Chrome, Firefox, Safari.
 
 ## 3. S10.0 — pacchetti `.deb` su GitHub Releases
 
