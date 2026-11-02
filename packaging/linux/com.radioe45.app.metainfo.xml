@@ -9,7 +9,7 @@
   </developer>
   <description>
     <p>Listen to the Radio E45 stations and to any AzuraCast station: live streams, now playing and history, song requests, schedule and podcasts.</p>
-    <p>Linux preview of the Radio E45 desktop app.</p>
+    <p>Linux desktop app of Radio E45.</p>
   </description>
   <launchable type="desktop-id">com.radioe45.app.desktop</launchable>
   <url type="homepage">https://github.com/delfuria/RadioE45</url>

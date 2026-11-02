@@ -5,7 +5,7 @@ Le build si fanno in locale (firme Apple, Inno Setup, keystore Android). GitHub 
 ## Regole
 
 - Versione e tag: due cifre, da `version.json` (es. `0.47` → tag `v0.47`).
-- `CHANGELOG.md` (inglese) ha `## [Unreleased]` sempre in cima; ogni modifica visibile all'utente aggiunge una riga lì. Alla release diventa `## [0.47] - AAAA-MM-GG`. Il corpo della release GitHub è la sezione di quella versione, più il testo "Linux (preview)".
+- `CHANGELOG.md` (inglese) ha `## [Unreleased]` sempre in cima; ogni modifica visibile all'utente aggiunge una riga lì. Alla release diventa `## [0.47] - AAAA-MM-GG`. Il corpo della release GitHub è la sezione di quella versione, più il testo "Linux".
 - Claude prepara i file e propone i comandi (skill `release-prep`); non esegue commit, tag, release.
 
 ## Sequenza

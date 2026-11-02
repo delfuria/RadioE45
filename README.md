@@ -12,17 +12,17 @@ Cross-platform .NET MAUI 10 and Uno Platform app for AzuraCast webradio streamin
 Want to try RadioE45 before the public release? Join the preliminary tests:
 
 [![Android beta](https://img.shields.io/badge/Android-Beta%20testers-3DDC84?logo=android&logoColor=white&style=for-the-badge)](https://groups.google.com/g/radioe45-testers)
-[![Linux preview](https://img.shields.io/badge/Linux-Preview%20(.deb)-FCC624?logo=linux&logoColor=black&style=for-the-badge)](https://github.com/delfuria/RadioE45/releases)
+[![Linux](https://img.shields.io/badge/Linux-.deb%20(x64%20%26%20arm64)-FCC624?logo=linux&logoColor=black&style=for-the-badge)](https://github.com/delfuria/RadioE45/releases)
 
 - 📱 Android beta: https://groups.google.com/g/radioe45-testers
-- 🐧 Linux preview (.deb, x64 and arm64): https://github.com/delfuria/RadioE45/releases
+- 🐧 Linux (.deb, x64 and arm64): https://github.com/delfuria/RadioE45/releases
 
 ## Platforms
 - iOS 15+
 - Android 8.0+ (API 26), including Android TV and Google TV
 - macOS (Mac Catalyst) 15+
 - Windows 10 (build 17763+)
-- Linux (preview): Debian/Ubuntu-based distributions, `.deb` package for x64 and arm64
+- Linux: Debian/Ubuntu-based distributions, `.deb` package for x64 and arm64
 - Web: modern desktop and mobile browsers, nothing to install (installable as an app)
 
 ## Features
@@ -244,8 +244,19 @@ Output: `RadioE45/bin/Release/net10.0-android/publish/`
 
 ### Linux and Web (Uno Platform)
 
-> The Linux desktop app and the web app are built with **Uno Platform** from the `RadioE45.Uno` project, which shares the logic in `RadioE45.Core`. Build them on Linux (Ubuntu/Debian recommended) or on macOS for the desktop and web targets.  
-> `AppSecrets.cs` is not needed: the Uno projects do not use it.
+The Linux desktop app and the web app are developed with **Uno Platform** from the `RadioE45.Uno` project, which shares the logic in `RadioE45.Core` with the MAUI app. Both can be built on Linux (Ubuntu/Debian recommended) or on macOS for the desktop and web targets. `AppSecrets.cs` is not needed: the Uno projects do not use it.
+
+#### Linux (desktop)
+
+**Install:** download the `.deb` package from the [GitHub Releases](https://github.com/delfuria/RadioE45/releases) page (`radioe45_<version>_amd64.deb` for x64, `radioe45_<version>_arm64.deb` for ARM64, e.g. Raspberry Pi), then:
+
+```bash
+sudo apt install ./radioe45_<version>_amd64.deb
+```
+
+Tested on Ubuntu 24.04. Requires a distribution with apt (Ubuntu 22.04+, Debian 12+, Linux Mint, …). Please report issues on GitHub. The MAUI app remains the main app on macOS and Windows.
+
+**Build from source:**
 
 Requirements (Ubuntu/Debian):
 
@@ -257,9 +268,8 @@ sudo apt update && sudo apt install -y git curl \
 # .NET 10 SDK (or: dotnet-install.sh --channel 10.0)
 sudo apt install -y dotnet-sdk-10.0
 
-# Uno Platform checks and WebAssembly workload (web target)
+# Uno Platform checks
 dotnet tool install -g uno.check && uno-check --target linux --non-interactive
-dotnet workload install wasm-tools
 ```
 
 Packaging a `.deb` also needs `dpkg-deb` (included in `dpkg` on Linux; on macOS: `brew install dpkg`).
@@ -272,19 +282,32 @@ dotnet restore RadioE45.Uno/RadioE45.Uno.csproj
 dotnet build RadioE45.Uno -f net10.0-desktop
 dotnet run --project RadioE45.Uno -f net10.0-desktop
 
-# Web debug build and run (http://localhost:5045)
-dotnet build RadioE45.Uno -f net10.0-browserwasm
-dotnet run --project RadioE45.Uno -f net10.0-browserwasm
-
 # Release .deb package (x64 or arm64)
 packaging/linux/build-deb.sh linux-x64 <output-dir>
 packaging/linux/build-deb.sh linux-arm64 <output-dir>
 ```
 
-Output: `<output-dir>/radioe45_<version>_<amd64|arm64>.deb`. The `.deb` is self-contained for .NET; libVLC and the other libraries come from the system and are declared as package dependencies.
+Output: `<output-dir>/radioe45_<version>_<amd64|arm64>.deb`. The `.deb` is self-contained for .NET; libVLC and the other libraries come from the system and are declared as package dependencies. The Windows libVLC binaries (pulled in by the Uno media player package) are excluded from the Linux publish, so the `.deb` stays around 40–45 MB.
 
-> The Windows libVLC binaries (pulled in by the Uno media player package) are excluded from the Linux publish, so the `.deb` stays around 40–45 MB.  
-> The Linux package is a preview; the MAUI app remains the main app on macOS and Windows.
+#### Web (WebAssembly)
+
+**Install:** nothing to install. Open **<https://delfuria.github.io/RadioE45/>** in a browser, or install it as an app from the browser menu (progressive web app), as described in [Run it in the browser](#run-it-in-the-browser).
+
+**Build from source:**
+
+Requirements: the .NET 10 SDK (see above) and the WebAssembly workload.
+
+```bash
+# WebAssembly workload (web target)
+dotnet workload install wasm-tools
+
+# Restore packages
+dotnet restore RadioE45.Uno/RadioE45.Uno.csproj
+
+# Web debug build and run (http://localhost:5045)
+dotnet build RadioE45.Uno -f net10.0-browserwasm
+dotnet run --project RadioE45.Uno -f net10.0-browserwasm
+```
 
 ## Tech stack
 - **Uno Platform** — Linux desktop and web app (shares `RadioE45.Core` with the MAUI app)

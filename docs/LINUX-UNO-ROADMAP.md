@@ -713,7 +713,7 @@ Divisa con l'utente il 2026-10-16, un branch per fase come in S8.
 ### S10 — Packaging, CI, hosting (divisa in S10.0 + S10.1)
 
 #### S10.0 — Pacchetti `.deb` per Linux su GitHub Releases · Mac + VM + GitHub — 🔧 codice 2026-10-16, branch `S9b`
-Obiettivo: installabili Linux x64 e arm64 nella pagina delle release di GitHub, accanto ad APK, DMG e installer Windows; dicitura "Linux (preview)" finché S9c e il debito di parità restano aperti. macOS e Windows continuano a usare l'app MAUI.
+Obiettivo: installabili Linux x64 e arm64 nella pagina delle release di GitHub, accanto ad APK, DMG e installer Windows. macOS e Windows continuano a usare l'app MAUI.
 - [x] `packaging/linux/` (repo): `build-deb.sh <linux-x64|linux-arm64> <output>`, `control.in`, `com.radioe45.app.desktop`, `com.radioe45.app.metainfo.xml`, icone 48…512 (dall'icona PWA). Gira su macOS (`brew install dpkg`) e su Linux.
   - Publish self-contained in `/opt/radioe45`, link `/usr/bin/radioe45`; versione NBGV `BuildVersionSimple` (`radioe45_0.45.29_amd64.deb`).
   - Dipendenze: `libvlc5`, `vlc-plugin-base` (Recommends `vlc`), `libfontconfig1`, `libx11-6`, `libgl1`, `libicu78 | … | libicu70`, `libssl3t64 | libssl3`, `ca-certificates`.
@@ -764,7 +764,7 @@ Obiettivo: installabili Linux x64 e arm64 nella pagina delle release di GitHub, 
 | D4 | Player desktop: Uno `MediaPlayer` o `LibVLCSharp` | Fine S1 | ✅ Uno `MediaPlayer` |
 | D5 | Storage web: SQLite WASM o repository dedicati | Fine S2 | ✅ SQLite (verificato) |
 | D6 | Navigazione: `Frame` scritto a mano o `Uno.Extensions.Navigation` | S6 | ✅ A mano (confermato 2026-10-14); tema Fluent |
-| D7 | Canali desktop: Snap Store, Flathub, AppImage | S10 | ✅ Primo canale: `.deb` x64 e arm64 nelle GitHub Releases, "preview" (S10.0, 2026-10-16). Poi snap + AppImage (S10.1), Flathub dopo |
+| D7 | Canali desktop: Snap Store, Flathub, AppImage | S10 | ✅ Primo canale: `.deb` x64 e arm64 nelle GitHub Releases (S10.0, 2026-10-16). Poi snap + AppImage (S10.1), Flathub dopo |
 | D8 | Hosting e dominio web | S10 | Da decidere con l'utente |
 | D9 | Layout desktop e web | S8.7 | ✅ Desktop: finestra fissa non ridimensionabile, stessa dimensione delle app MAUI desktop all'avvio (500×855 o 900×450). Web: una sola colonna larga 500, niente layout largo (2026-10-15) |
 | D9 | Hook Stop bloccante o solo avviso | S5 | ✅ Bloccante solo per exit 2; drift della superficie VM non tracciato = exit 2 |

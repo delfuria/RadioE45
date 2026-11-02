@@ -218,7 +218,7 @@ Una volta caricato, vai su [appstoreconnect.apple.com](https://appstoreconnect.a
 
 ---
 
-## Linux (`.deb` su GitHub Releases, preview)
+## Linux (`.deb` su GitHub Releases)
 
 App Uno (`RadioE45.Uno`, desktop Skia), due pacchetti: `radioe45_<versione>_amd64.deb` (x64) e `radioe45_<versione>_arm64.deb` (arm64, anche Raspberry Pi). Nessuno store: i file vanno nella release di GitHub.
 
@@ -248,12 +248,12 @@ Workflow **Linux .deb** (`.github/workflows/linux-deb.yml`), su runner x64 e arm
 ### Testo per la release (in inglese)
 
 ```markdown
-### Linux (preview)
+### Linux
 Download `radioe45_<version>_amd64.deb` (x64) or `radioe45_<version>_arm64.deb` (ARM64, e.g. Raspberry Pi), then:
 
     sudo apt install ./radioe45_<version>_amd64.deb
 
-Tested on Ubuntu 24.04. Requires a distribution with apt (Ubuntu 22.04+, Debian 12+, Linux Mint, …). This is a preview: please report issues on GitHub.
+Tested on Ubuntu 24.04. Requires a distribution with apt (Ubuntu 22.04+, Debian 12+, Linux Mint, …). Please report issues on GitHub.
 ```
 
 Disinstallazione: `sudo apt remove radioe45` (i dati restano in `~/.local/share/RadioE45/`).
