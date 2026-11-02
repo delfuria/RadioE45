@@ -15,6 +15,8 @@ public class PodcastPlaybackService : IPodcastPlayerService
     private static readonly TimeSpan ProgressSaveInterval = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan StartCheckDelay = TimeSpan.FromMilliseconds(1500);
     private const int StartAttempts = 5;
+    // Un "fine episodio" con meno di questa posizione raggiunta non è una vera fine (vedi OnMediaEnded).
+    private static readonly TimeSpan MinimumEndPosition = TimeSpan.FromSeconds(5);
 
     private readonly IAudioService _audioService;
     private readonly IPodcastProgressRepository _progressRepository;
@@ -276,6 +278,21 @@ public class PodcastPlaybackService : IPodcastPlayerService
 
     private async void OnMediaEnded(object? sender, EventArgs e)
     {
+        // Safari (web) can report "ended" right after Playing, with the media length collapsed to
+        // ~0 s and the position still at 0: nothing was played, so it is not the end of the episode.
+        // Saving it as completed would turn the dot red and make the next play restart from zero.
+        // Keep the resume position (not completed) and report a failure instead.
+        if (_player?.Position < MinimumEndPosition)
+        {
+            _logger.LogWarning("Podcast ended without playing (position {Position}): treated as a failure", _player?.Position);
+            await SaveProgressAsync(completed: false);
+            CurrentEpisode = null;
+            IsPlaying = false;
+            PlaybackStateChanged?.Invoke(this, false);
+            PlaybackFailed?.Invoke(this, null);
+            return;
+        }
+
         await SaveProgressAsync(completed: true);
         CurrentEpisode = null;
         IsPlaying = false;

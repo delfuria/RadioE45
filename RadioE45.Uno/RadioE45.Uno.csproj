@@ -87,6 +87,7 @@
         <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45Network.js" />
         <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45Autoplay.js" />
         <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45MediaSession.js" />
+        <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45PodcastAudio.js" />
         <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45Pwa.js" />
         <EmbeddedResource Include="Platforms\WebAssembly\WasmScripts\RadioE45Update.js" />
         <!-- PWA icons of manifest.webmanifest. The bootstrapper prefixes the manifest icon paths

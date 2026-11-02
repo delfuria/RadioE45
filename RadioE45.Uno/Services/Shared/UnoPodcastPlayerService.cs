@@ -17,6 +17,11 @@ public sealed class UnoPodcastPlayerService : PodcastPlaybackService
         ILogger<UnoPodcastPlayerService> logger)
         : base(audioService, progressRepository, dispatcher, logger)
     {
+#if RADIOE45_BROWSER
+        // Uno's browser MediaPlayer uses a <video> element, which Safari ends right away on MP3s.
+        AttachPlayer(new Browser.BrowserPodcastPlayer(logger));
+#else
         AttachPlayer(new MediaPlayerPodcastPlayer(logger));
+#endif
     }
 }

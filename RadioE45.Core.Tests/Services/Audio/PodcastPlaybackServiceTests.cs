@@ -213,6 +213,27 @@ public class PodcastPlaybackServiceTests
     }
 
     [Fact]
+    public async Task Ended_without_playing_is_a_failure_and_keeps_the_resume_position()
+    {
+        // Safari: "ended" right after Playing, position still 0 (see OnMediaEnded).
+        await PlayAsync(Episode("e1"), startSeconds: 364);
+        var failures = new List<string?>();
+        var completed = 0;
+        _service.PlaybackFailed += (_, m) => failures.Add(m);
+        _service.EpisodeCompleted += (_, _) => completed++;
+
+        _player.RaiseEnded();
+        await Task.Yield();
+
+        await _progress.DidNotReceive().SaveAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string>(),
+            Arg.Any<string>(), Arg.Any<int>(), true);
+        await _progress.Received(1).SaveAsync(30, 3, "pod", "e1", 364, false);
+        Assert.Equal([null], failures);
+        Assert.Equal(0, completed);
+        Assert.Null(_service.CurrentEpisode);
+    }
+
+    [Fact]
     public async Task Progress_is_saved_at_most_every_five_seconds_while_playing()
     {
         await PlayAsync(Episode("e1"));

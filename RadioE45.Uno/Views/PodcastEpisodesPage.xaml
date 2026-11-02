@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:loc="using:RadioE45.Services.Localization"
     xmlns:conv="using:RadioE45.Converters"
+    xmlns:controls="using:RadioE45.Controls"
     xmlns:models="using:RadioE45.Models"
     Background="{ThemeResource PageBackgroundBrush}">
 
@@ -120,9 +121,11 @@
 
                                     <Border Grid.Column="0" Width="56" Height="56" CornerRadius="8" VerticalAlignment="Top">
                                         <Grid>
-                                            <!-- Placeholder always underneath: it also shows when the cover fails to load (web, CORS) -->
-                                            <Image Source="ms-appx:///Assets/Images/radio_placeholder.png" Stretch="Uniform" />
+                                            <!-- The app's generic cover always underneath, and swapped in when the cover fails to
+                                                 load (web: AzuraCast's generic art has no CORS header) -->
+                                            <Image Source="ms-appx:///Assets/Images/generic_song.png" Stretch="UniformToFill" />
                                             <Image
+                                                controls:ArtworkFallback.IsEnabled="True"
                                                 Source="{x:Bind conv:Fn.Image(ArtworkUrl)}"
                                                 Stretch="UniformToFill"
                                                 Visibility="{x:Bind conv:Fn.IsNotNull(ArtworkUrl)}" />
