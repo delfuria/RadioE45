@@ -336,6 +336,7 @@ T1 un giorno; T2 un giorno; T3 e T4 circa una settimana insieme; T5 due o tre gi
 | Due UI da tenere allineate | Parità `tv` nel manifest, ParityCheck, skill e hook (§5) |
 | Audio in background e standby | Prova su TV reale (T7) |
 | Requisiti Play Console per TV cambiati | Rileggere la console all'upload (T9) |
+| Policy Google Play del 29 ottobre 2026 ([annuncio](https://support.google.com/googleplay/android-developer/answer/18100766)): nuovi permessi `ACCESS_LOCAL_NETWORK` (dal 2027-08-25, targetSdk 37+), `MANAGE_CONTACTS`, AppFunctions, posizione e contatti (2027-01-27) | Oggi non toccano l'app (manifest: solo rete, foreground service media, notifiche, wake lock; nessun uso di posizione, contatti, Cast o mDNS). Rifare il controllo quando si alza `targetSdk` a 37 o si aggiunge Cast/AirPlay/mDNS: servirebbero permesso e dichiarazione in Play Console. Verificare anche in Play Console la registrazione dell'app (verifica sviluppatore, scadenza 2026-09-30 già passata), la dichiarazione trader (da novembre 2026) e le soglie memoria/ottimizzazione codice (febbraio 2027) |
 
 ---
 
