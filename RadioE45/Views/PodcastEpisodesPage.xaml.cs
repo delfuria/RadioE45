@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Views;
 using RadioE45.Services.Audio;
 using RadioE45.ViewModels;
 
@@ -53,12 +54,10 @@ public partial class PodcastEpisodesPage : ContentPage
     {
         base.OnAppearing();
 
-        // Every time, not only the first: switching to another tab and back keeps this page in
-        // the tab's stack, but OnDisappearing stopped playback and unsubscribed the ViewModel, and
-        // the MediaElement's native player may have been torn down meanwhile (MAUI 9+ disconnects
-        // handlers automatically). Re-attaching gives the service a live player again (iOS crashed
-        // on the stale one) and Activate re-subscribes the ViewModel.
-        (_podcastPlayerService as IMediaElementHost)?.Initialize(PodcastPlayer);
+        // Every time, not only the first: the MediaElement is created on demand when an episode
+        // starts (see CreatePlayerAsync) and its native player is torn down when the page goes
+        // away, so the service gets a fresh one on the next play. Activate re-subscribes the ViewModel.
+        (_podcastPlayerService as IMediaElementHost)?.SetPlayerFactory(CreatePlayerAsync);
         _viewModel.Activate();
 
         // La stazione può essere cambiata (frecce OnAir) mentre eravamo su un'altra tab: gli
@@ -80,6 +79,27 @@ public partial class PodcastEpisodesPage : ContentPage
         // notifica/lockscreen in background — vedi PODCAST-FEATURE.md.
         await _viewModel.StopPlaybackAsync();
         _viewModel.Cleanup();
+        (_podcastPlayerService as IMediaElementHost)?.SetPlayerFactory(null);
+        PlayerHost.Content = null;
+    }
+
+    // A MediaElement left in the tree after the page is popped is disposed by MAUI; its native
+    // manager deactivates the iOS audio session. So it is created only when playback needs it.
+    private async Task<MediaElement> CreatePlayerAsync()
+    {
+        MediaElement element = new() { IsVisible = false, HeightRequest = 0 };
+        TaskCompletionSource connected = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        element.HandlerChanged += (_, _) =>
+        {
+            if (element.Handler is not null)
+                connected.TrySetResult();
+        };
+
+        PlayerHost.Content = element;
+        if (element.Handler is null)
+            await Task.WhenAny(connected.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+
+        return element;
     }
 
     private void OnSeekDragStarted(object? sender, EventArgs e)

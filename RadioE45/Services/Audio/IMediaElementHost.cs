@@ -9,6 +9,15 @@ namespace RadioE45.Services.Audio;
 /// </summary>
 public interface IMediaElementHost
 {
-    /// <summary>Called once from the hosting page (OnAirPage / PodcastEpisodesPage).</summary>
+    /// <summary>Called by a hosting page whose MediaElement is already in its visual tree.</summary>
     void Initialize(MediaElement mediaElement);
+
+    /// <summary>
+    /// Alternative to <see cref="Initialize"/> for engines that create the element on demand:
+    /// the factory adds a MediaElement to the page and returns it once its handler is connected.
+    /// Null when the page goes away. Ignored by engines that do not need it.
+    /// </summary>
+    void SetPlayerFactory(Func<Task<MediaElement>>? factory)
+    {
+    }
 }

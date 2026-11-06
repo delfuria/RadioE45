@@ -97,8 +97,16 @@ public class PodcastPlaybackService : IPodcastPlayerService
         return saved is { IsCompleted: false } && saved.PositionSeconds > 3 ? saved.PositionSeconds : 0;
     }
 
+    /// <summary>
+    /// Called at the start of <see cref="PlayAsync"/>: a head that creates its player on demand
+    /// (MAUI) attaches it here via <see cref="AttachPlayer"/>.
+    /// </summary>
+    protected virtual Task EnsurePlayerAsync() => Task.CompletedTask;
+
     public async Task PlayAsync(AzuraStation station, AzuraCastPodcastEpisode episode, int startPositionSeconds)
     {
+        await EnsurePlayerAsync();
+
         if (_player is null)
             return;
 

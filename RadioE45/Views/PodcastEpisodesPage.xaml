@@ -19,8 +19,8 @@
 
     <Grid RowDefinitions="*,Auto">
 
-        <!-- MediaElement dedicata al podcast — separata dal player radio, invisibile -->
-        <toolkit:MediaElement x:Name="PodcastPlayer" IsVisible="False" HeightRequest="0" />
+        <!-- Contenitore della MediaElement del podcast (creata solo quando parte un episodio), invisibile -->
+        <ContentView x:Name="PlayerHost" IsVisible="False" HeightRequest="0" />
 
         <Grid Grid.Row="0" RowDefinitions="Auto,*">
 
