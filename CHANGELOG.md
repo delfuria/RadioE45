@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Fixed
+- **Android:** when a station does not respond, the player and Android Auto now show an error after the first failed attempt instead of loading for minutes; the app keeps retrying in the background and the station starts by itself when it comes back.
 - **Android Auto:** the search in the car, by keyboard or by voice, now lists the stations that match what you type or say. A voice request for a station that does not exist no longer starts a different one.
 
 ## [0.53] - 2026-11-06

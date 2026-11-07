@@ -70,6 +70,10 @@ public sealed class RadioPlaybackService : MediaLibraryService
     // Set when the backoff ran out: from then on the session shows the error, until the listener acts.
     private bool _recoveryGaveUp;
 
+    // Set when every URL of the station failed once: the session shows the error from then on, while the
+    // retries go on in the background, so the car and the phone do not sit on a spinner for minutes.
+    private bool _recoveryShowsError;
+
     // Only registered while a recovery is wanted (see WatchNetwork). Held in a field: Java keeps just a
     // weak reference to the callback.
     private Android.Net.ConnectivityManager.NetworkCallback? _networkCallback;
@@ -143,7 +147,7 @@ public sealed class RadioPlaybackService : MediaLibraryService
             _player?.AddListener(_playerListener);
 
             _libraryCallback = new LibraryCallback(this);
-            MediaLibrarySession.Builder builder = new MediaLibrarySession.Builder(this, new LivePlayer(_player!, CancelRecovery, () => !_recoveryGaveUp), _libraryCallback)!;
+            MediaLibrarySession.Builder builder = new MediaLibrarySession.Builder(this, new LivePlayer(_player!, CancelRecovery, () => !_recoveryGaveUp, () => _recoveryShowsError), _libraryCallback)!;
 
             // Tapping the media notification, lock-screen or the Android Auto card should open the app.
             PendingIntent? sessionActivity = BuildSessionActivity();
@@ -663,6 +667,12 @@ public sealed class RadioPlaybackService : MediaLibraryService
             // Every candidate failed — reset so the retry (or a later manual Play) starts from the best URL again.
             _streamAttempts.TryRemove(mediaId, out _);
             _logger?.LogWarning("RadioPlaybackService: all {Count} stream URLs failed for station {Id}", candidateCount, mediaId);
+            if (!_recoveryShowsError)
+            {
+                _recoveryShowsError = true;
+                NudgeSession();
+            }
+
             ScheduleRecovery(mediaId);
             return;
         }
@@ -814,6 +824,13 @@ public sealed class RadioPlaybackService : MediaLibraryService
         _recovery.Cancel();
         _recoveryMediaId = null;
         _recoveryGaveUp = false;
+        if (_recoveryShowsError)
+        {
+            _recoveryShowsError = false;
+            // Not from inside the player's own callback: the session reads the player again.
+            new Handler(Looper.MainLooper!).Post(NudgeSession);
+        }
+
         StopWatchingNetwork();
     }
 
@@ -889,25 +906,44 @@ public sealed class RadioPlaybackService : MediaLibraryService
         private readonly IExoPlayer _inner;
         private readonly Action _cancelRecovery;
         private readonly Func<bool> _mayRecover;
+        private readonly Func<bool> _showError;
+        private PlaybackException? _lastError;
 
-        public LivePlayer(IExoPlayer inner, Action cancelRecovery, Func<bool> mayRecover) : base(inner)
+        public LivePlayer(IExoPlayer inner, Action cancelRecovery, Func<bool> mayRecover, Func<bool> showError) : base(inner)
         {
             _inner = inner;
             _cancelRecovery = cancelRecovery;
             _mayRecover = mayRecover;
+            _showError = showError;
         }
 
         // While the service is still retrying (a coverage gap, a bad URL with fallbacks left) the stream is not
         // failed, it is being reopened. Reporting the player error would put Android Auto on a full-screen
         // "Source error" with no controls, and back on the now-playing screen at every retry. So the session
         // sees a buffering stream until the retries run out; only then the error is real.
-        private bool IsRecovering => _inner.PlayWhenReady && _inner.PlayerError is not null && _mayRecover();
+        private bool IsRecovering => _inner.PlayWhenReady && _inner.PlayerError is not null && _mayRecover() && !_showError();
 
         // A stream that fails while the listener has it paused is not a failure they can see or act on: Play
         // opens it again. Showing it would turn a pause into "Source error".
         private bool PausedAfterFailure => !_inner.PlayWhenReady && _inner.PlayerError is not null;
 
-        public override PlaybackException? PlayerError => IsRecovering || PausedAfterFailure ? null : _inner.PlayerError;
+        // After the first round of failed attempts the error is shown and kept shown across the retries (each
+        // retry clears the player's own error for a moment), so the car does not flip back and forth.
+        public override PlaybackException? PlayerError
+        {
+            get
+            {
+                PlaybackException? error = _inner.PlayerError;
+                if (error is not null)
+                    _lastError = error;
+
+                if (_showError() && _inner.PlayWhenReady && !PausedAfterFailure)
+                    return error ?? _lastError;
+
+                _lastError = null;
+                return IsRecovering || PausedAfterFailure ? null : error;
+            }
+        }
 
         // A stream that is still opening when the listener pauses stays BUFFERING in the player, and the session
         // maps BUFFERING to a buffering state whatever playWhenReady says: the car keeps showing a stream that
