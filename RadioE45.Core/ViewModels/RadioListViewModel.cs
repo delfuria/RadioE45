@@ -1,6 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Globalization;
-using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -104,26 +102,7 @@ public partial class RadioListViewModel : BaseViewModel
     }
 
     private void ApplyFilter()
-    {
-        string filter = Fold(FilterText.Trim());
-        FilteredStations = filter.Length == 0
-            ? new ObservableCollection<AzuraStation>(Stations)
-            : new ObservableCollection<AzuraStation>(Stations.Where(s =>
-                Fold(s.Name).Contains(filter, StringComparison.Ordinal)));
-    }
-
-    // Case- and accent-insensitive on every platform: it does not depend on the ICU data (the web
-    // and some Android builds run with invariant globalization).
-    private static string Fold(string text)
-    {
-        var builder = new StringBuilder(text.Length);
-        foreach (char c in text.Normalize(NormalizationForm.FormD))
-        {
-            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
-                builder.Append(char.ToLowerInvariant(c));
-        }
-        return builder.ToString();
-    }
+        => FilteredStations = new ObservableCollection<AzuraStation>(StationFilter.Filter(Stations, FilterText));
 
     [RelayCommand]
     private void ClearFilter() => FilterText = "";

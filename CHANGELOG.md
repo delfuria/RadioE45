@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Android Auto:** the search in the car, by keyboard or by voice, now lists the stations that match what you type or say. A voice request for a station that does not exist no longer starts a different one.
+
 ## [0.53] - 2026-11-06
 
 ### New

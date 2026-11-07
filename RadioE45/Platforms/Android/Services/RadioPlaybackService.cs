@@ -1156,7 +1156,11 @@ public sealed class RadioPlaybackService : MediaLibraryService
                 {
                     string? query = TryGetSearchQuery(requested);
                     if (query is not null)
-                        selectedId = ResolveSearchStation(query, stations)?.Id.ToString() ?? selectedId;
+                    {
+                        AzuraStation? found = ResolveSearchStation(query, stations)
+                            ?? throw new InvalidOperationException($"No station matches the search '{query}'");
+                        selectedId = found.Id.ToString();
+                    }
                 }
 
                 List<MediaItem> queue = stations.Select(s => _service.BuildStationItem(s, playable: true)).ToList();
@@ -1193,7 +1197,8 @@ public sealed class RadioPlaybackService : MediaLibraryService
                 {
                     string? query = TryGetSearchQuery(item);
                     if (query is not null)
-                        station = ResolveSearchStation(query, stations);
+                        station = ResolveSearchStation(query, stations)
+                            ?? throw new InvalidOperationException($"No station matches the search '{query}'");
                 }
 
                 resolved.Add(station is not null
@@ -1203,9 +1208,9 @@ public sealed class RadioPlaybackService : MediaLibraryService
             return resolved;
         }
 
-        // query.Length == 0 means a generic voice command ("play something"): prefer the
-        // favorite station, else the first one. A non-empty query matches by name, falling
-        // back to the first station if nothing matches, same tolerance as the generic case.
+        // query.Length == 0 means a generic voice command ("play something"): prefer the favorite
+        // station, else the first one. A non-empty query matches by name; with no match nothing is
+        // returned, so a misheard word never starts an unrelated station (the caller reports the failure).
         private AzuraStation? ResolveSearchStation(string query, IList<AzuraStation> stations)
         {
             IAzuraStationCatalog? catalog = Catalog;
@@ -1213,12 +1218,43 @@ public sealed class RadioPlaybackService : MediaLibraryService
             if (query.Length == 0)
                 return catalog?.GetFavorite() ?? catalog?.GetFirst();
 
-            AzuraStation? match = stations.FirstOrDefault(s => s.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+            AzuraStation? match = FindStations(query, stations).FirstOrDefault();
             if (match is null)
-                _service._logger?.LogWarning("RadioPlaybackService: no station matches voice search '{Query}', using the first available", query);
+                _service._logger?.LogWarning("RadioPlaybackService: no station matches the search '{Query}'", query);
 
-            return match ?? catalog?.GetFirst();
+            return match;
         }
+
+        // Same name filter as the station list; the Android Auto keyboard and voice search send the
+        // text typed or spoken so far, often a single letter.
+        private static List<AzuraStation> FindStations(string query, IList<AzuraStation> stations)
+            => StationFilter.Filter(stations, query).ToList();
+
+        // Android Auto search (keyboard and voice): OnSearch announces how many results there are,
+        // OnGetSearchResult then returns them. The items are browse items (id only), like the
+        // station list: choosing one goes through OnSetMediaItems and starts the station.
+        public IListenableFuture OnSearch(MediaLibrarySession? session, MediaSession.ControllerInfo? browser, string? query, LibraryParams? @params)
+            => FutureFromTask(async () =>
+            {
+                IList<AzuraStation> stations = await GetStationsAsync();
+                int count = FindStations(query ?? string.Empty, stations).Count;
+
+                // Session calls belong to the application thread.
+                new Handler(Looper.MainLooper!).Post(() => session?.NotifySearchResultChanged(browser!, query ?? string.Empty, count, @params));
+                return LibraryResult.OfVoid(@params);
+            });
+
+        public IListenableFuture OnGetSearchResult(MediaLibrarySession? session, MediaSession.ControllerInfo? browser, string? query, int page, int pageSize, LibraryParams? @params)
+            => FutureFromTask(async () =>
+            {
+                IList<AzuraStation> stations = await GetStationsAsync();
+                List<MediaItem> items = FindStations(query ?? string.Empty, stations)
+                    .Skip(Math.Max(0, page) * Math.Max(1, pageSize))
+                    .Take(Math.Max(1, pageSize))
+                    .Select(s => _service.BuildStationItem(s, playable: false))
+                    .ToList();
+                return LibraryResult.OfItemList(items, @params);
+            });
 
         // Binding gap: MediaItem.Builder.SetRequestMetadata exists but there is no bound getter for
         // the Java field MediaItem.requestMetadata, so it is read via Java reflection instead. Returns
