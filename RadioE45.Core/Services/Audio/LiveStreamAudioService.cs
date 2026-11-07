@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
 using RadioE45.Services.Data;
+using RadioE45.Services.Localization;
 using RadioE45.Services.Platform;
 
 namespace RadioE45.Services.Audio;
@@ -33,6 +34,13 @@ public class LiveStreamAudioService : IAudioService
     private bool _isConnectivitySubscribed;
     private CancellationTokenSource _reconnectCts = new();
     private readonly object _ctsLock = new();
+
+    // The "station not responding" error is raised once per series of failed attempts, not at every
+    // watchdog retry, and withdrawn as soon as the stream plays or the listener acts (play, pause, stop).
+    private bool _streamFailureReported;
+    // Whether the stream opened by the last attempt reached Playing: a failure of a stream that was
+    // playing is a drop (the reconnect usually fixes it), one that never played is a failed attempt.
+    private bool _streamReachedPlaying;
 
     public bool IsPlaying { get; private set; }
     public bool IsBuffering { get; private set; }
@@ -124,6 +132,7 @@ public class LiveStreamAudioService : IAudioService
         _currentStation = station;
         _shouldBePlaying = true;
         _bufferingStartedAt = DateTime.MinValue;
+        ClearStreamFailure();
         StationChanged?.Invoke(this, station);
         RenewReconnectCts();
         Interlocked.Exchange(ref _reconnectGuard, 0);
@@ -144,6 +153,7 @@ public class LiveStreamAudioService : IAudioService
         _logger.LogDebug("Pause station streaming...");
 
         _shouldBePlaying = false;
+        ClearStreamFailure();
         CancelReconnect();
         Interlocked.Exchange(ref _reconnectGuard, 0);
         StopWatchdog();
@@ -176,6 +186,7 @@ public class LiveStreamAudioService : IAudioService
 
         _shouldBePlaying = true;
         _bufferingStartedAt = DateTime.MinValue;
+        ClearStreamFailure();
         RenewReconnectCts();
         Interlocked.Exchange(ref _reconnectGuard, 0);
         TryQueueReconnect();
@@ -192,6 +203,7 @@ public class LiveStreamAudioService : IAudioService
         _logger.LogDebug("Stop station streaming...");
 
         _shouldBePlaying = false;
+        ClearStreamFailure();
         CancelReconnect();
         Interlocked.Exchange(ref _reconnectGuard, 0);
         _currentStation = null;
@@ -213,6 +225,7 @@ public class LiveStreamAudioService : IAudioService
     public void StopImmediate()
     {
         _shouldBePlaying = false;
+        ClearStreamFailure();
         CancelReconnect();
         Interlocked.Exchange(ref _reconnectGuard, 0);
         _currentStation = null;
@@ -301,7 +314,10 @@ public class LiveStreamAudioService : IAudioService
         string[] candidates = GetCandidateUrls(station, preferHls);
 
         if (candidates.Length == 0)
+        {
+            ReportStreamFailure();
             return;
+        }
 
         long probeStarted = Environment.TickCount64;
         string? winner = await _streamUrlProber.ProbeFirstReachableAsync(candidates, ct);
@@ -311,12 +327,18 @@ public class LiveStreamAudioService : IAudioService
         if (winner is null)
         {
             _logger.LogWarning("All stream URLs unreachable");
+
+            // A probe cut short by pause, stop or a new station is not a failure of the station.
+            if (!ct.IsCancellationRequested)
+                ReportStreamFailure();
+
             return;
         }
 
         station.OnAirStreamUrl = winner;
         IsHlsActive = !string.IsNullOrEmpty(station.HlsUrl) && winner == station.HlsUrl;
 
+        _streamReachedPlaying = false;
         await _dispatcher.InvokeAsync(() => player.Open(winner));
 
         StreamOpened?.Invoke(this, station);
@@ -411,6 +433,12 @@ public class LiveStreamAudioService : IAudioService
         IsPlaying = e.NewState == StreamPlayerState.Playing;
         IsBuffering = e.NewState is StreamPlayerState.Buffering or StreamPlayerState.Opening;
 
+        if (IsPlaying)
+        {
+            _streamReachedPlaying = true;
+            ClearStreamFailure();
+        }
+
         _platformNowPlayingService.UpdatePlaybackState(IsPlaying);
         PlaybackStateChanged?.Invoke(this, IsPlaying);
     }
@@ -425,6 +453,10 @@ public class LiveStreamAudioService : IAudioService
         if (_shouldBePlaying)
         {
             _logger.LogError("MediaFailed: {Error}", errorMessage);
+
+            if (!_streamReachedPlaying)
+                ReportStreamFailure();
+
             TryQueueReconnect();
         }
         else
@@ -440,6 +472,24 @@ public class LiveStreamAudioService : IAudioService
         {
             TryQueueReconnect();
         }
+    }
+
+    private void ReportStreamFailure()
+    {
+        if (!_shouldBePlaying || _streamFailureReported)
+            return;
+
+        _streamFailureReported = true;
+        ErrorOccurred?.Invoke(this, LocalizationResourceManager.Instance["OnAir_StationUnreachable"]);
+    }
+
+    private void ClearStreamFailure()
+    {
+        if (!_streamFailureReported)
+            return;
+
+        _streamFailureReported = false;
+        ErrorOccurred?.Invoke(this, null);
     }
 
     private void RenewReconnectCts()
@@ -491,6 +541,7 @@ public class LiveStreamAudioService : IAudioService
         IsPlaying = false;
         IsBuffering = false;
         _currentState = StreamPlayerState.None;
+        _streamFailureReported = false;
         Interlocked.Exchange(ref _reconnectGuard, 1);
 
         StopWatchdog();

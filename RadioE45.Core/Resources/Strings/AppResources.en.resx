@@ -69,6 +69,7 @@
   <data name="OnAir_Waiting" xml:space="preserve"><value>Waiting...</value></data>
   <data name="OnAir_LiveBroadcast" xml:space="preserve"><value>Live broadcast</value></data>
   <data name="OnAir_NoStationSelected" xml:space="preserve"><value>No station selected.</value></data>
+  <data name="OnAir_StationUnreachable" xml:space="preserve"><value>The station is not responding. Trying again…</value></data>
   <data name="OnAir_RecentlyPlayed" xml:space="preserve"><value>Recently played</value></data>
 
   <data name="RadioList_FilterPlaceholder" xml:space="preserve"><value>Filter stations</value></data>

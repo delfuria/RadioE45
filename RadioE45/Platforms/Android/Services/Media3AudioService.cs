@@ -5,6 +5,7 @@ using AndroidX.Media3.Session;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using RadioE45.Models;
+using RadioE45.Services.Localization;
 using RadioE45.Services.Radio;
 
 namespace RadioE45.Services.Audio;
@@ -286,7 +287,7 @@ public sealed class Media3AudioService : Java.Lang.Object, IAudioService, IMedia
     {
         IsPlaying = false;
         IsBuffering = false;
-        ErrorOccurred?.Invoke(this, error?.Message);
+        ErrorOccurred?.Invoke(this, LocalizationResourceManager.Instance["OnAir_StationUnreachable"]);
     }
 
     // The car / steering wheel can switch stations via next/prev; keep our notion of the current

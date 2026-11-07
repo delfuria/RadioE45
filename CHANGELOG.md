@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 - **Android:** when a station does not respond, the player and Android Auto now show an error after the first failed attempt instead of loading for minutes; the app keeps retrying in the background and the station starts by itself when it comes back.
+- **iPhone, iPad, Mac, Windows, Linux and web:** when a station does not respond, the On Air page now shows an error while the app keeps retrying, instead of staying silent; the error goes away when the station plays again.
 - **Sample station:** the AzuraTest demo station now uses its correct stream address, so it no longer tries a wrong one first (new installations).
 - **Android Auto:** the search in the car, by keyboard or by voice, now lists the stations that match what you type or say. A voice request for a station that does not exist no longer starts a different one.
 

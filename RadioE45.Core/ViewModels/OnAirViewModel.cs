@@ -312,6 +312,7 @@ public partial class OnAirViewModel : BaseViewModel
             // stuck true would show a "pause" icon over a dead stream and turn the next tap into
             // another Stop() instead of a restart.
             IsPlaying = false;
+            ClearStreamError();
             await _audioService.PauseAsync();
         }
         else
@@ -330,6 +331,7 @@ public partial class OnAirViewModel : BaseViewModel
     [RelayCommand]
     private async Task StopAsync()
     {
+        ClearStreamError();
         await _audioService.StopAsync();
         StopProgressTimer();
         NowPlaying = NowPlayingInfo.Empty;
@@ -482,6 +484,7 @@ public partial class OnAirViewModel : BaseViewModel
             return;
         }
 
+        ClearStreamError();
         await _audioService.StopAsync();
         await StopNowPlayingPollingAsync();
 
@@ -580,15 +583,30 @@ public partial class OnAirViewModel : BaseViewModel
         {
             IsPlaying = isPlaying;
             IsBuffering = _audioService.IsBuffering;
+
+            if (isPlaying && _streamError is not null)
+                ClearStreamError();
         });
     }
+
+    // The error of a stream that does not play (the station is down) stays on screen while the engine keeps
+    // retrying: the now-playing poll, which keeps answering, must not wipe it. It goes away when the stream
+    // plays, when the listener acts (pause, stop, another station) or when the engine withdraws it (null).
+    private string? _streamError;
 
     private void OnErrorOccurred(object? sender, string? message)
     {
         RunOnMainThreadIfActive(() =>
         {
+            _streamError = string.IsNullOrEmpty(message) ? null : message;
             ErrorMessage = message;
         });
+    }
+
+    private void ClearStreamError()
+    {
+        _streamError = null;
+        ErrorMessage = "";
     }
 
     private void OnNowPlayingUpdated(object? sender, NowPlayingInfo info)
@@ -598,7 +616,7 @@ public partial class OnAirViewModel : BaseViewModel
 
     private async Task ApplyNowPlayingInfoAsync(NowPlayingInfo info)
     {
-        ErrorMessage = "";
+        ErrorMessage = _streamError ?? "";
         NowPlaying = info;
         ArtworkUrl = info.ArtworkUrl;
         _audioService.UpdateMetadata(info.Artist, info.Title, info.ArtworkUrl, info.TrackElapsedSeconds, info.TrackDurationSeconds);

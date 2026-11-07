@@ -215,6 +215,85 @@ public sealed class LiveStreamAudioServiceTests : IDisposable
         Assert.Empty(_player.OpenedUrls);
     }
 
+    // A station that does not answer: the listener gets one error, not one per watchdog retry.
+    [Fact]
+    public async Task Unreachable_station_raises_one_error_across_the_retries()
+    {
+        _prober.ProbeFirstReachableAsync(Arg.Any<string[]>(), Arg.Any<CancellationToken>()).Returns((string?)null);
+        List<string?> errors = [];
+        _service.ErrorOccurred += (_, message) => errors.Add(message);
+
+        await _service.PlayAsync(Station());
+        _service.CheckPlaybackHealth();
+        _service.CheckPlaybackHealth();
+
+        string? message = Assert.Single(errors);
+        Assert.False(string.IsNullOrEmpty(message));
+    }
+
+    [Fact]
+    public async Task Error_is_withdrawn_when_the_station_comes_back_and_plays()
+    {
+        _prober.ProbeFirstReachableAsync(Arg.Any<string[]>(), Arg.Any<CancellationToken>()).Returns((string?)null);
+        List<string?> errors = [];
+        _service.ErrorOccurred += (_, message) => errors.Add(message);
+        await _service.PlayAsync(Station());
+
+        _prober.ProbeFirstReachableAsync(Arg.Any<string[]>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<string[]>()[0]);
+        _service.CheckPlaybackHealth();
+        _player.RaiseState(StreamPlayerState.Opening, StreamPlayerState.Playing);
+
+        Assert.Equal(2, errors.Count);
+        Assert.False(string.IsNullOrEmpty(errors[0]));
+        Assert.Null(errors[1]);
+    }
+
+    [Fact]
+    public async Task Error_is_withdrawn_when_the_listener_pauses_or_stops()
+    {
+        _prober.ProbeFirstReachableAsync(Arg.Any<string[]>(), Arg.Any<CancellationToken>()).Returns((string?)null);
+        List<string?> errors = [];
+        _service.ErrorOccurred += (_, message) => errors.Add(message);
+        await _service.PlayAsync(Station());
+
+        await _service.PauseAsync();
+
+        Assert.Equal(2, errors.Count);
+        Assert.Null(errors[1]);
+
+        await _service.ResumeAsync();
+        await _service.StopAsync();
+
+        Assert.Equal(4, errors.Count);
+        Assert.Null(errors[3]);
+    }
+
+    [Fact]
+    public async Task Stream_that_fails_without_ever_playing_raises_the_error()
+    {
+        List<string?> errors = [];
+        _service.ErrorOccurred += (_, message) => errors.Add(message);
+        await _service.PlayAsync(Station());
+
+        _player.RaiseFailed("502");
+
+        Assert.False(string.IsNullOrEmpty(Assert.Single(errors)));
+    }
+
+    [Fact]
+    public async Task Drop_of_a_stream_that_was_playing_is_retried_without_an_error()
+    {
+        List<string?> errors = [];
+        _service.ErrorOccurred += (_, message) => errors.Add(message);
+        await _service.PlayAsync(Station());
+        _player.RaiseState(StreamPlayerState.Opening, StreamPlayerState.Playing);
+
+        _player.RaiseFailed("connection lost");
+
+        Assert.Empty(errors);
+    }
+
     [Fact]
     public async Task Play_is_blocked_without_audio_focus()
     {
@@ -284,6 +363,7 @@ public sealed class LiveStreamAudioServiceTests : IDisposable
         string? error = null;
         _service.ErrorOccurred += (_, e) => error = e;
         await _service.PlayAsync(Station());
+        _player.RaiseState(StreamPlayerState.Opening, StreamPlayerState.Playing);
 
         _player.RaiseFailed("network down");
 
