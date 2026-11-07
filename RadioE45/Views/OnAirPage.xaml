@@ -211,9 +211,18 @@
                             HorizontalOptions="End" />
                     </Grid>
 
+                    <!-- Errore: sotto la barra di avanzamento del brano -->
+                    <Label
+                        Text="{Binding ErrorMessage}"
+                        IsVisible="{Binding ErrorMessage, Converter={toolkit:IsStringNotNullOrEmptyConverter}}"
+                        TextColor="{StaticResource LiveRed}"
+                        FontSize="13"
+                        HorizontalTextAlignment="Center"
+                        Margin="24,12,24,0" />
+
                 </VerticalStackLayout>
 
-                <!-- RIGHT: prossimo brano · controlli · errore -->
+                <!-- RIGHT: prossimo brano · controlli · cronologia -->
                 <VerticalStackLayout x:Name="RightPanel" Grid.Row="1" Grid.Column="0" Spacing="0" Padding="0,0,0,20">
 
                     <!-- Prossimo brano -->
@@ -405,15 +414,6 @@
                             Value="{Binding Volume}"
                             ValueChanged="OnVolumeChanged" />
                     </Grid>
-
-                    <!-- Errore -->
-                    <Label
-                        Text="{Binding ErrorMessage}"
-                        IsVisible="{Binding ErrorMessage, Converter={toolkit:IsStringNotNullOrEmptyConverter}}"
-                        TextColor="{StaticResource LiveRed}"
-                        FontSize="13"
-                        HorizontalTextAlignment="Center"
-                        Margin="24,12,24,0" />
 
                     <!-- Ultimi brani trasmessi -->
                     <VerticalStackLayout

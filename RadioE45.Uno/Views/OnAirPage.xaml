@@ -221,9 +221,19 @@
                             HorizontalAlignment="Right" />
                     </Grid>
 
+                    <!-- Error: under the track progress bar -->
+                    <TextBlock
+                        Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                        Visibility="{x:Bind conv:Fn.IsNotNullOrEmpty(ViewModel.ErrorMessage), Mode=OneWay}"
+                        Foreground="{StaticResource LiveRedBrush}"
+                        FontSize="13"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap"
+                        Margin="24,12,24,0" />
+
                 </StackPanel>
 
-                <!-- RIGHT: next track · controls · error · history -->
+                <!-- RIGHT: next track · controls · history -->
                 <StackPanel x:Name="RightPanel" Grid.Row="1" Grid.Column="0" Padding="0,0,0,20">
 
                     <!-- Next track -->
@@ -407,16 +417,6 @@
                             Value="{x:Bind ViewModel.Volume, Mode=OneWay}"
                             ValueChanged="OnVolumeChanged" />
                     </Grid>
-
-                    <!-- Error -->
-                    <TextBlock
-                        Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
-                        Visibility="{x:Bind conv:Fn.IsNotNullOrEmpty(ViewModel.ErrorMessage), Mode=OneWay}"
-                        Foreground="{StaticResource LiveRedBrush}"
-                        FontSize="13"
-                        TextAlignment="Center"
-                        TextWrapping="Wrap"
-                        Margin="24,12,24,0" />
 
                     <!-- Recently played -->
                     <StackPanel
