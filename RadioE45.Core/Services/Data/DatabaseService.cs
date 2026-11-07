@@ -206,7 +206,7 @@ public class DatabaseService : IDatabaseService, IAsyncDisposable
                 StationId = 1,
                 Name = "AzuraTest Radio",
                 Description = "A test radio station.",
-                StreamUrl = "/radio.mp3",
+                StreamUrl = "/listen/azuratest_radio/radio.mp3",
                 UrlBase = "demo.azuracast.com",
                 LogoUrl = "",
                 WebsocketUrl = "/api/live/nowplaying/websocket",
