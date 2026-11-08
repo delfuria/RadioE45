@@ -112,6 +112,15 @@ jobs:
               echo "::error::Missing package: $pattern"; missing=1
             fi
           done
+
+          # Every package must have its minisign signature (<file>.minisig, made by sign-release.sh in RadioE45-Scripts).
+          # The workflow cannot verify it (no key here): it only checks the file is there.
+          while read -r asset; do
+            case "$asset" in *.minisig) continue ;; esac
+            if ! jq -e --arg n "$asset.minisig" '.assets[] | select(.name == $n)' release.json > /dev/null; then
+              echo "::error::Missing signature: $asset.minisig"; missing=1
+            fi
+          done < <(jq -r '.assets[].name' release.json)
           [ "$missing" = 0 ] || exit 1
 
           gh release edit "$TAG" --draft=false --latest

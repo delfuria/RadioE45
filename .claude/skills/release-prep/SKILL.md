@@ -35,6 +35,8 @@ dotnet build RadioE45.Uno -f net10.0-desktop
 dotnet build RadioE45.Uno -f net10.0-browserwasm
 ```
 
+Controllare anche che l'impronta SHA-256 del certificato in `README.md` coincida con quella dell'APK pronto in `RadioE45-Scripts/scripts/installer/RadioE45.apk` (`apksigner verify --print-certs`, dal build-tools dell'SDK Android; se l'APK non c'è, segnalarlo come verifica non fatta). Se non coincide, fermarsi: significa che l'APK non è firmato con la chiave di release.
+
 Con `--strict` un debito di parità dichiarato è un errore: elencarlo e chiedere all'utente se rilasciare comunque (allora i `Parity-Debt` finiscono nelle note) o chiuderlo prima con `ui-parity-port`.
 
 ## 4. Output finale
@@ -45,7 +47,7 @@ Stampare, in inglese e come testo:
 2. **Sequenza manuale** (da `docs/RELEASE.md`, con tag e versione reali):
    1. Commit e push su `main`.
    2. GitHub → Actions → Release → Run workflow → `create-draft`.
-   3. Build locali e `--upload <tag>` (Android, macOS, Windows, `.deb`).
+   3. Build locali con `0.build-all.sh` (firma anche i file con minisign, serve la password) e `--upload <tag>` / `gh release upload` dei pacchetti **e dei relativi `.minisig`** (Android, macOS, Windows, `.deb`).
    4. (facoltativo) Actions → Linux .deb → Run workflow con `release_tag`.
    5. Actions → Release → Run workflow → `publish`.
    6. Pubblicazione negli store con i testi di `docs/store-descriptions.md`.
