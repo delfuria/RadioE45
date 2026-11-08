@@ -10,6 +10,30 @@ Cross-platform .NET MAUI 10 and Uno Platform app for AzuraCast webradio streamin
 
 - 🐧 Linux (.deb, x64 and arm64): https://github.com/delfuria/RadioE45/releases
 
+> **Official sources:** the only official ways to get Radio E45 are the app stores linked above and the [Releases page](https://github.com/delfuria/RadioE45/releases) of this repository. Copies from any other website, forum or group may have been modified.
+
+### Verifying a download
+
+Every file on the Releases page comes with a `.minisig` signature made with the project's [minisign](https://jedisct1.github.io/minisign/) key. The public key is in [`radioe45.pub`](radioe45.pub):
+
+```
+RWSWBoBFDRAgqoFm1hMbex/fylL+i6qRp3KMdTYpC6oHBU0W1j5AQhM3
+```
+
+To check a file (for example `RadioE45.apk`) download it together with its `.minisig` and run:
+
+```bash
+minisign -Vm RadioE45.apk -P RWSWBoBFDRAgqoFm1hMbex/fylL+i6qRp3KMdTYpC6oHBU0W1j5AQhM3
+```
+
+The Android APK is also signed with a dedicated release key, so an APK from any other source cannot install as an update over it. The SHA-256 fingerprint of the signing certificate is:
+
+```
+04:b8:cf:5c:fc:e3:c0:51:95:ed:ff:a3:42:b5:59:da:5b:72:ef:3b:05:a5:ef:c2:09:ef:5f:36:1d:08:c9:cd
+```
+
+To compare it, run `apksigner verify --print-certs RadioE45.apk` (from the Android SDK build-tools) and check the `certificate SHA-256 digest` line (shown without colons).
+
 ## Join the beta
 
 Want to try RadioE45 before the public release? Join the preliminary tests:
