@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### New
+- **Android:** when a newer version is available on Google Play, the app now tells you at the first launch of the day, and a button in Settings checks on demand; "Update" opens the app page on Google Play.
+
 ## [0.54] - 2026-11-07
 
 ### Fixed

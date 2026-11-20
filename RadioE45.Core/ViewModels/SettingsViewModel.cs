@@ -81,7 +81,7 @@ public partial class SettingsViewModel : BaseViewModel
     [ObservableProperty]
     public partial bool IsUpdateAvailable { get; set; }
 
-    /// <summary>False on channels without an update check (Android, Mac Catalyst, web): the section is hidden.</summary>
+    /// <summary>False on channels without an update check (web without version.json): the section is hidden.</summary>
     public bool IsUpdateCheckSupported => _updateCoordinator.IsSupported;
 
     public bool IsCrashReportingAvailable => _crashReporting.IsAvailable;

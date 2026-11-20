@@ -518,7 +518,7 @@
   viewmodel: SettingsViewModel
   status: { maui: limited, desktop: limited, web: limited, tv: n/a }
   tvNotes: "Nessuna impostazione su TV (decisione 2026-10-22)"
-  notes: "docs/APP-UPDATE-ROADMAP.md. La sezione compare solo dove esiste una sorgente: MAUI iOS, Mac Catalyst, Windows (Store e installer), Uno desktop solo su Linux (.deb, GitHub Releases), web (version.json del sito: \"Aggiorna\" apre l'app in una nuova scheda)"
+  notes: "docs/APP-UPDATE-ROADMAP.md. La sezione compare solo dove esiste una sorgente: MAUI iOS, Android (Google Play), Mac Catalyst, Windows (Store e installer), Uno desktop solo su Linux (.deb, GitHub Releases), web (version.json del sito: \"Aggiorna\" apre l'app in una nuova scheda)"
 
 - id: update.startup-prompt
   title: Avviso di aggiornamento disponibile al primo avvio del giorno, dopo i Termini d'uso ("Aggiorna" / "Più tardi")
@@ -527,15 +527,15 @@
   viewmodel: SettingsViewModel
   status: { maui: limited, desktop: limited, web: limited, tv: n/a }
   tvNotes: "Su TV gli aggiornamenti passano dallo store"
-  notes: "Logica in AppUpdatePrompter (Core). Attivo dove esiste una sorgente: MAUI iOS, Mac Catalyst e Windows, Uno desktop solo su Linux (.deb), web con version.json del sito (solo cambi di Major.Minor)"
+  notes: "Logica in AppUpdatePrompter (Core). Attivo dove esiste una sorgente: MAUI iOS, Android (Google Play), Mac Catalyst e Windows, Uno desktop solo su Linux (.deb), web con version.json del sito (solo cambi di Major.Minor)"
 
 - id: update.android
   title: Controllo aggiornamenti su Android
   since: "0.47"
   page: Shell
-  status: { maui: todo, desktop: n/a, web: n/a, tv: n/a }
+  status: { maui: done, desktop: n/a, web: n/a, tv: n/a }
   tvNotes: "Su TV gli aggiornamenti passano dallo store"
-  notes: "Debito D3 (docs/APP-UPDATE-ROADMAP.md): rimandato, nessun interop Play. Desktop e web non hanno questo canale"
+  notes: "D3 superata (docs/APP-UPDATE-ROADMAP.md): Play In-App Updates dice se Play ha un versionCode più alto, l'avviso apre la pagina Play. Funziona solo per app installate da Play (un APK sideload non avvisa). Desktop e web non hanno questo canale"
 
 - id: update.mac
   title: Controllo aggiornamenti su Mac Catalyst

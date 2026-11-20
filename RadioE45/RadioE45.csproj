@@ -207,6 +207,13 @@
     <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
         <PackageReference Include="Xamarin.AndroidX.LocalBroadcastManager" Version="1.1.0.24" />
 
+        <!-- Play In-App Updates: used only to learn whether Play has a newer version (MauiPlayUpdateSource) -->
+        <PackageReference Include="Xamarin.Google.Android.Play.App.Update" Version="2.1.0.20" />
+        <!-- It pulls Xamarin.AndroidX.Fragment up to 1.9.0 (fragment-ktx classes merged into fragment);
+             pin Fragment.Ktx to the matching version so it's an empty stub, else D8 fails with
+             "androidx.fragment.app.FragmentKt is defined multiple times" (same cause as Core.Ktx below). -->
+        <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Version="1.9.0" />
+
         <!-- AndroidX Media3 / ExoPlayer — single MediaLibraryService for Android Auto / Bluetooth (keep 1.10.x family in sync) -->
         <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.10.1.2" />
         <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer" Version="1.10.1.1" />

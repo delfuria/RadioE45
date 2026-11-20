@@ -3,7 +3,7 @@ using RadioE45.Services.Platform;
 
 namespace RadioE45.Services.Updates;
 
-/// <summary>Channel without an update check (Android, Mac Catalyst, web).</summary>
+/// <summary>Channel without an update check (web without version.json).</summary>
 public sealed class NullUpdateSource : IAppUpdateSource
 {
     public bool IsSupported => false;

@@ -21,7 +21,7 @@ Regole di progetto che pesano su questa feature (`CLAUDE.md`): logica e testi ne
 |---|---|
 | D1 | **Windows ha due canali**: Microsoft Store (MSIX) e installer Inno Setup `.exe` (`RadioE45_Setup_x64/arm64.exe` allegati alla release GitHub). Servono due sorgenti e il rilevamento del canale a runtime. |
 | D2 | **UX**: dialog non bloccante all'avvio, dopo i Termini d'uso, **solo al primo avvio di ogni giorno** (giorno di calendario locale) se è disponibile una versione più recente ("Aggiorna" / "Più tardi"; "Più tardi" non ha memoria, il giorno dopo l'avviso riappare finché l'app non è aggiornata). In più, controllo manuale nelle Impostazioni. |
-| D3 | **Android rimandato**: il primo rilascio non controlla né aggiorna su Android (nessun interop Play). Android registra `NullUpdateSource`; il debito va dichiarato in `parity/features.yaml`. |
+| D3 | ~~Android rimandato~~ **Superata (2026-11-20)**: Android controlla Google Play con In-App Updates (solo per app installate da Play; un APK sideload non avvisa) e propone il link alla pagina Play. Dettagli in `MauiPlayUpdateSource`. |
 | D4 | **Struttura**: sessioni indipendenti stile S8.x (§9), ognuna con checklist, file toccati, criteri di uscita e commit. |
 
 | D8 | **L'app iOS è disponibile in tutti i paesi** (2026-10-20) | Lookup con il paese del dispositivo (`RegionInfo.CurrentRegion`), fallback `it` se il paese è vuoto o non valido. Nessun giro su più paesi |
@@ -47,7 +47,7 @@ Regole di progetto che pesano su questa feature (`CLAUDE.md`): logica e testi ne
 | Installer Inno | Windows non pacchettizzato | GitHub Releases `latest` | Apri pagina release | Core |
 | `.deb` | Linux Uno desktop | GitHub Releases `latest` | Apri pagina release | Core |
 | Browser | Uno WASM | niente (U7 opzionale: `version.json`) | Ricarica | Uno |
-| Google Play | Android | **nessuna (D3)** | — | `NullUpdateSource` |
+| Google Play | Android | Play In-App Updates (`AppUpdateManager`): versionCode disponibile, Minor = `versionCode >> 16` (NBGV) | Apri `https://play.google.com/store/apps/details?id=com.radioe45.app` | MAUI Android (`#if ANDROID`, `MauiPlayUpdateSource`) |
 
 Verifiche fatte il 2026-10-20 con `curl`:
 - **iOS**: `https://itunes.apple.com/lookup?bundleId=com.radioe45.app&country=it&entity=software` → `resultCount 1`, `version "0.46.6"`, `trackViewUrl "https://apps.apple.com/it/app/radio-e45/id6780274998?uo=4"`, `kind "software"`, feature `iosUniversal`. La risposta è grande (screenshot, descrizione): leggere solo i campi necessari.

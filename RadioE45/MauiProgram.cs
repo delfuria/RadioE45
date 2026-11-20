@@ -141,7 +141,7 @@ public static class MauiProgram
         builder.Services.AddRadioE45Core();
 
         // Update check source per distribution channel (docs/APP-UPDATE-ROADMAP.md). Registered after
-        // AddRadioE45Core to replace its NullUpdateSource. Android has no check yet (D3).
+        // AddRadioE45Core to replace its NullUpdateSource. Android asks Google Play.
         builder.Services.AddSingleton<IAppUpdateSource>(sp =>
         {
             // Mac Catalyst first: it must not match the iOS branch.
@@ -161,7 +161,11 @@ public static class MauiProgram
 #endif
             }
 
+#if ANDROID
+            return new MauiPlayUpdateSource();
+#else
             return new NullUpdateSource();
+#endif
         });
 
         // Singletons — survive navigation
