@@ -17,7 +17,9 @@
         <Setter Property="Shell.TabBarBackgroundColor" Value="{DynamicResource TabBarBackground}" />
         <Setter Property="Shell.TabBarForegroundColor" Value="{DynamicResource Accent}" />
         <Setter Property="Shell.TabBarUnselectedColor" Value="{DynamicResource MutedText}" />
-        <Setter Property="Shell.TabBarTitleColor" Value="{DynamicResource PrimaryText}" />
+        <!-- iOS 26 Liquid Glass draws the selected tab on a light capsule even in dark mode: white
+             text (PrimaryText) vanishes on it, so the selected title uses the accent like its icon. -->
+        <Setter Property="Shell.TabBarTitleColor" Value="{DynamicResource TabBarSelectedTitle}" />
     </Style>
 
     <Style TargetType="Label" x:Key="HeadlineLabel">

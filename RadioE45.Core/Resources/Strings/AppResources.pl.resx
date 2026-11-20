@@ -192,7 +192,6 @@
   <data name="Splash_Version" xml:space="preserve"><value>Wersja {0}</value></data>
   <data name="StreamInfo_Title" xml:space="preserve"><value>Informacje o strumieniu</value></data>
   <data name="StreamInfo_Station" xml:space="preserve"><value>Stacja</value></data>
-  <data name="StreamInfo_Address" xml:space="preserve"><value>Adres</value></data>
   <data name="StreamInfo_Format" xml:space="preserve"><value>Format</value></data>
   <data name="StreamInfo_Bitrate" xml:space="preserve"><value>Przepływność</value></data>
   <data name="StreamInfo_SampleRate" xml:space="preserve"><value>Częstotliwość próbkowania</value></data>

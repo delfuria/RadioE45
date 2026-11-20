@@ -34,6 +34,7 @@
     <Color x:Key="Accent">#E63946</Color>
     <Color x:Key="AccentBlue">#457B9D</Color>
     <Color x:Key="TabBarBackground">#111111</Color>
+    <Color x:Key="TabBarSelectedTitle">#F1FAEE</Color>
     <Color x:Key="DividerColor">#2A2A2A</Color>
 
 </ResourceDictionary>

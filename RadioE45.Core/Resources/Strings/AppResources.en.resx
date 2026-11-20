@@ -191,7 +191,6 @@
   <data name="Splash_Version" xml:space="preserve"><value>Version {0}</value></data>
   <data name="StreamInfo_Title" xml:space="preserve"><value>Stream info</value></data>
   <data name="StreamInfo_Station" xml:space="preserve"><value>Station</value></data>
-  <data name="StreamInfo_Address" xml:space="preserve"><value>Address</value></data>
   <data name="StreamInfo_Format" xml:space="preserve"><value>Format</value></data>
   <data name="StreamInfo_Bitrate" xml:space="preserve"><value>Bitrate</value></data>
   <data name="StreamInfo_SampleRate" xml:space="preserve"><value>Sample rate</value></data>

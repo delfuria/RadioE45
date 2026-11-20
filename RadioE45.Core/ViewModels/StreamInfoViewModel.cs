@@ -57,7 +57,6 @@ public partial class StreamInfoViewModel : BaseViewModel
         var rows = new ObservableCollection<StreamInfoRow>
         {
             new(text["StreamInfo_Station"], info.StationName),
-            new(text["StreamInfo_Address"], info.Address),
         };
 
         if (!string.IsNullOrEmpty(info.Format))

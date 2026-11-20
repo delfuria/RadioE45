@@ -20,6 +20,11 @@ internal static class ThemeService
         res["SecondaryText"]    = Color.FromArgb(isDark ? "#A8DADC" : "#457B9D");
         res["MutedText"]        = Color.FromArgb(isDark ? "#9CA3AF" : "#6B7280");
         res["TabBarBackground"] = Color.FromArgb(isDark ? "#111111" : "#FFFFFF");
+        // iOS 26 Liquid Glass puts the selected tab on a light capsule even in dark mode, where the
+        // white primary text vanishes: iOS and Mac use the accent (as the icon does).
+        res["TabBarSelectedTitle"] = OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst()
+            ? Color.FromArgb("#E63946")
+            : res["PrimaryText"];
         res["DividerColor"]     = Color.FromArgb(isDark ? "#2A2A2A" : "#E5E7EB");
     }
 }

@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### New
 - **Android:** when a newer version is available on Google Play, the app now tells you at the first launch of the day, and a button in Settings checks on demand; "Update" opens the app page on Google Play.
 
+### Improved
+- **On Air:** the stream details no longer show the stream address.
+
+### Fixed
+- **iPhone and iPad (iOS 26):** in dark mode the title of the selected tab was white on a light background and could not be read; it now uses the accent color.
+
 ## [0.54] - 2026-11-07
 
 ### Fixed
