@@ -5,6 +5,7 @@ Cross-platform .NET MAUI 10 and Uno Platform app for AzuraCast webradio streamin
 ## Download
 
 [![Get it from Microsoft Store](https://img.shields.io/badge/Microsoft%20Store-Download-0078D4?logo=microsoft&logoColor=white&style=for-the-badge)](https://apps.microsoft.com/detail/9pj0lkl6mnvq)
+[![Get it on Google Play](https://img.shields.io/badge/Google%20Play-Download-3DDC84?logo=googleplay&logoColor=white&style=for-the-badge)](https://play.google.com/store/apps/details?id=com.radioe45.app)
 [![Download on the App Store](https://img.shields.io/badge/App%20Store-Download-0D96F6?logo=apple&logoColor=white&style=for-the-badge)](https://apps.apple.com/it/app/radio-e45/id6780274998)
 [![Linux](https://img.shields.io/badge/Linux-.deb%20(x64%20%26%20arm64)-FCC624?logo=linux&logoColor=black&style=for-the-badge)](https://github.com/delfuria/RadioE45/releases)
 
@@ -36,11 +37,7 @@ To compare it, run `apksigner verify --print-certs RadioE45.apk` (from the Andro
 
 ## Join the beta
 
-Want to try RadioE45 before the public release? Join the preliminary tests:
-
-[![Android beta](https://img.shields.io/badge/Android-Beta%20testers-3DDC84?logo=android&logoColor=white&style=for-the-badge)](https://groups.google.com/g/radioe45-testers)
-
-- 📱 Android beta: https://groups.google.com/g/radioe45-testers
+There are currently no betas available to try.
 
 ## Platforms
 - iOS 15+
